@@ -87,7 +87,7 @@ const socialLinks = [
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-950 text-gray-400">
+    <footer className="bg-rose-950 text-rose-200">
       {/* Newsletter banner */}
       <div className="bg-gradient-to-r from-rose-500 to-pink-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -128,19 +128,14 @@ export default function Footer() {
                 <span className="text-rose-400 text-2xl leading-none">♥</span>
                 <span className="text-rose-600 text-lg leading-none -ml-1">♥</span>
               </div>
-              <div className="flex flex-col leading-tight">
-                <span
-                  className="text-xl font-bold text-white"
-                  style={{ fontFamily: "var(--font-playfair), serif" }}
-                >
-                  InstantMariage
-                </span>
-                <span className="text-[10px] tracking-widest text-gold-400 uppercase font-semibold -mt-0.5 ml-0.5">
-                  .fr
-                </span>
-              </div>
+              <span
+                className="text-xl font-bold text-white whitespace-nowrap"
+                style={{ fontFamily: "var(--font-playfair), serif" }}
+              >
+                InstantMariage<span className="text-[13px] tracking-widest text-rose-300 uppercase font-semibold">.fr</span>
+              </span>
             </div>
-            <p className="text-gray-500 text-sm leading-relaxed mb-6 max-w-xs">
+            <p className="text-rose-300 text-sm leading-relaxed mb-6 max-w-xs">
               La plateforme de référence pour trouver vos prestataires mariage
               et organiser votre grand jour en toute sérénité.
             </p>
@@ -152,7 +147,7 @@ export default function Footer() {
                   key={social.name}
                   href={social.href}
                   aria-label={social.name}
-                  className="w-9 h-9 bg-gray-800 hover:bg-rose-500 rounded-lg flex items-center justify-center transition-colors duration-200"
+                  className="w-9 h-9 bg-rose-900 hover:bg-rose-500 rounded-lg flex items-center justify-center transition-colors duration-200"
                 >
                   {social.icon}
                 </Link>
@@ -161,11 +156,11 @@ export default function Footer() {
 
             {/* Trust badges */}
             <div className="mt-6 flex flex-wrap gap-2">
-              <span className="text-xs bg-gray-800 text-gray-400 px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                <span className="text-emerald-400">🔒</span> Paiements sécurisés
+              <span className="text-xs bg-rose-900 text-rose-200 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                <span>🔒</span> Paiements sécurisés
               </span>
-              <span className="text-xs bg-gray-800 text-gray-400 px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                <span className="text-blue-400">🇫🇷</span> 100% Français
+              <span className="text-xs bg-rose-900 text-rose-200 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                <span>🇫🇷</span> 100% Français
               </span>
             </div>
           </div>
@@ -173,7 +168,7 @@ export default function Footer() {
           {/* Links columns */}
           {Object.entries(footerLinks).map(([key, section]) => (
             <div key={key}>
-              <h4 className="text-white font-semibold text-sm mb-4 tracking-wide">
+              <h4 className="text-rose-100 font-semibold text-sm mb-4 tracking-wide">
                 {section.title}
               </h4>
               <ul className="space-y-2.5">
@@ -181,7 +176,7 @@ export default function Footer() {
                   <li key={link}>
                     <Link
                       href="#"
-                      className="text-gray-500 hover:text-rose-400 text-sm transition-colors duration-200"
+                      className="text-rose-300 hover:text-white text-sm transition-colors duration-200"
                     >
                       {link}
                     </Link>
@@ -193,8 +188,8 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-gray-600 text-sm">
+        <div className="border-t border-rose-900 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-rose-400 text-sm">
             © 2024 InstantMariage.fr · Tous droits réservés
           </p>
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
@@ -208,7 +203,7 @@ export default function Footer() {
               <Link
                 key={item}
                 href="#"
-                className="text-gray-600 hover:text-gray-400 text-xs transition-colors"
+                className="text-rose-400 hover:text-rose-200 text-xs transition-colors"
               >
                 {item}
               </Link>
