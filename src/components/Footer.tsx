@@ -87,8 +87,8 @@ const socialLinks = [
 
 export default function Footer() {
   return (
-    <footer className="bg-rose-950 text-rose-200">
-      {/* Newsletter banner */}
+    <footer>
+      {/* Newsletter banner — style inchangé */}
       <div className="bg-gradient-to-r from-rose-500 to-pink-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
@@ -117,97 +117,99 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Main footer */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-10">
-          {/* Brand column */}
-          <div className="lg:col-span-2">
-            {/* Logo */}
-            <div className="flex items-center gap-2 mb-5">
-              <div className="flex items-center gap-1">
-                <span className="text-rose-400 text-2xl leading-none">♥</span>
-                <span className="text-rose-600 text-lg leading-none -ml-1">♥</span>
-              </div>
-              <span
-                className="text-xl font-bold text-white whitespace-nowrap"
-                style={{ fontFamily: "var(--font-playfair), serif" }}
-              >
-                InstantMariage<span className="text-[13px] tracking-widest text-rose-300 uppercase font-semibold">.fr</span>
-              </span>
-            </div>
-            <p className="text-rose-300 text-sm leading-relaxed mb-6 max-w-xs">
-              La plateforme de référence pour trouver vos prestataires mariage
-              et organiser votre grand jour en toute sérénité.
-            </p>
-
-            {/* Social links */}
-            <div className="flex gap-3">
-              {socialLinks.map((social) => (
-                <Link
-                  key={social.name}
-                  href={social.href}
-                  aria-label={social.name}
-                  className="w-9 h-9 bg-rose-900 hover:bg-rose-500 rounded-lg flex items-center justify-center transition-colors duration-200"
+      {/* Main footer — fond blanc, texte noir */}
+      <div className="bg-white text-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-10">
+            {/* Brand column */}
+            <div className="lg:col-span-2">
+              {/* Logo */}
+              <div className="flex items-center gap-2 mb-5">
+                <div className="flex items-center gap-1">
+                  <span className="text-rose-400 text-2xl leading-none">♥</span>
+                  <span className="text-rose-600 text-lg leading-none -ml-1">♥</span>
+                </div>
+                <span
+                  className="text-xl font-bold text-gray-900 whitespace-nowrap"
+                  style={{ fontFamily: "var(--font-playfair), serif" }}
                 >
-                  {social.icon}
+                  InstantMariage<span className="text-[13px] tracking-widest text-gray-500 uppercase font-semibold">.fr</span>
+                </span>
+              </div>
+              <p className="text-gray-500 text-sm leading-relaxed mb-6 max-w-xs">
+                La plateforme de référence pour trouver vos prestataires mariage
+                et organiser votre grand jour en toute sérénité.
+              </p>
+
+              {/* Social links */}
+              <div className="flex gap-3">
+                {socialLinks.map((social) => (
+                  <Link
+                    key={social.name}
+                    href={social.href}
+                    aria-label={social.name}
+                    className="w-9 h-9 bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-900 rounded-lg flex items-center justify-center transition-colors duration-200"
+                  >
+                    {social.icon}
+                  </Link>
+                ))}
+              </div>
+
+              {/* Trust badges */}
+              <div className="mt-6 flex flex-wrap gap-2">
+                <span className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                  <span>🔒</span> Paiements sécurisés
+                </span>
+                <span className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                  <span>🇫🇷</span> 100% Français
+                </span>
+              </div>
+            </div>
+
+            {/* Links columns */}
+            {Object.entries(footerLinks).map(([key, section]) => (
+              <div key={key}>
+                <h4 className="text-gray-900 font-semibold text-sm mb-4 tracking-wide">
+                  {section.title}
+                </h4>
+                <ul className="space-y-2.5">
+                  {section.links.map((link) => (
+                    <li key={link}>
+                      <Link
+                        href="#"
+                        className="text-gray-500 hover:text-gray-900 text-sm transition-colors duration-200"
+                      >
+                        {link}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          {/* Bottom bar */}
+          <div className="border-t border-gray-200 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-gray-400 text-sm">
+              © 2024 InstantMariage.fr · Tous droits réservés
+            </p>
+            <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+              {[
+                "Mentions légales",
+                "Politique de confidentialité",
+                "CGU",
+                "Cookies",
+                "Accessibilité",
+              ].map((item) => (
+                <Link
+                  key={item}
+                  href="#"
+                  className="text-gray-400 hover:text-gray-700 text-xs transition-colors"
+                >
+                  {item}
                 </Link>
               ))}
             </div>
-
-            {/* Trust badges */}
-            <div className="mt-6 flex flex-wrap gap-2">
-              <span className="text-xs bg-rose-900 text-rose-200 px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                <span>🔒</span> Paiements sécurisés
-              </span>
-              <span className="text-xs bg-rose-900 text-rose-200 px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                <span>🇫🇷</span> 100% Français
-              </span>
-            </div>
-          </div>
-
-          {/* Links columns */}
-          {Object.entries(footerLinks).map(([key, section]) => (
-            <div key={key}>
-              <h4 className="text-rose-100 font-semibold text-sm mb-4 tracking-wide">
-                {section.title}
-              </h4>
-              <ul className="space-y-2.5">
-                {section.links.map((link) => (
-                  <li key={link}>
-                    <Link
-                      href="#"
-                      className="text-rose-300 hover:text-white text-sm transition-colors duration-200"
-                    >
-                      {link}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-
-        {/* Bottom bar */}
-        <div className="border-t border-rose-900 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-rose-400 text-sm">
-            © 2024 InstantMariage.fr · Tous droits réservés
-          </p>
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
-            {[
-              "Mentions légales",
-              "Politique de confidentialité",
-              "CGU",
-              "Cookies",
-              "Accessibilité",
-            ].map((item) => (
-              <Link
-                key={item}
-                href="#"
-                className="text-rose-400 hover:text-rose-200 text-xs transition-colors"
-              >
-                {item}
-              </Link>
-            ))}
           </div>
         </div>
       </div>
