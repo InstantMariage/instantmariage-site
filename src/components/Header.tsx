@@ -237,6 +237,20 @@ export default function Header() {
               Blog
               <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-rose-400 group-hover:w-full transition-all duration-200" />
             </Link>
+            <Link
+              href="/a-propos"
+              className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors duration-200 relative group py-2"
+            >
+              À propos
+              <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-rose-400 group-hover:w-full transition-all duration-200" />
+            </Link>
+            <Link
+              href="/contact"
+              className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors duration-200 relative group py-2"
+            >
+              Contact
+              <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-rose-400 group-hover:w-full transition-all duration-200" />
+            </Link>
           </nav>
 
           {/* Auth Buttons */}
@@ -361,6 +375,20 @@ export default function Header() {
               onClick={() => setMobileOpen(false)}
             >
               Blog
+            </Link>
+            <Link
+              href="/a-propos"
+              className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
+              onClick={() => setMobileOpen(false)}
+            >
+              À propos
+            </Link>
+            <Link
+              href="/contact"
+              className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
+              onClick={() => setMobileOpen(false)}
+            >
+              Contact
             </Link>
 
             <div className="pt-3 px-4 flex flex-col gap-2 border-t border-rose-100">
