@@ -29,10 +29,10 @@ export default function Header() {
               className="flex-shrink-0"
             />
             <span
-              className="text-xl md:text-2xl font-bold text-gray-900 group-hover:text-rose-500 transition-colors whitespace-nowrap"
+              className="text-xl md:text-2xl font-bold whitespace-nowrap"
               style={{ fontFamily: "var(--font-playfair), serif" }}
             >
-              InstantMariage.fr
+              <span style={{ color: "#F06292" }}>Instant</span><span className="text-gray-900">Mariage.fr</span>
             </span>
           </Link>
 
