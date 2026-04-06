@@ -27,6 +27,7 @@ export default function Header() {
               width={40}
               height={40}
               className="flex-shrink-0"
+              style={{ mixBlendMode: "multiply" }}
             />
             <span
               className="text-xl md:text-2xl font-bold whitespace-nowrap"
