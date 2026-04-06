@@ -271,10 +271,10 @@ export default function Contact() {
                     E-mail
                   </h3>
                   <a
-                    href="mailto:bonjour@instantmariage.fr"
+                    href="mailto:contact@instantmariage.fr"
                     className="text-rose-500 hover:text-rose-600 text-sm font-medium transition-colors"
                   >
-                    bonjour@instantmariage.fr
+                    contact@instantmariage.fr
                   </a>
                   <p className="text-gray-400 text-xs mt-1">
                     Réponse sous 24h ouvrées
@@ -428,7 +428,7 @@ export default function Contact() {
           <p className="text-center text-gray-400 text-sm mt-8">
             Vous ne trouvez pas votre réponse ?{" "}
             <a
-              href="mailto:bonjour@instantmariage.fr"
+              href="mailto:contact@instantmariage.fr"
               className="text-rose-400 hover:text-rose-500 font-medium transition-colors"
             >
               Contactez-nous directement.

@@ -164,7 +164,7 @@ export default function APropos() {
                 </div>
                 <div>
                   <p className="font-bold text-gray-900 text-sm">Fondé en 2025</p>
-                  <p className="text-gray-500 text-xs">Paris, France</p>
+                  <p className="text-gray-500 text-xs">Marseille, France</p>
                 </div>
               </div>
             </div>
