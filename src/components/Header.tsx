@@ -1,18 +1,77 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
+const prestataires = [
+  { label: "Photographe", icon: "📷", href: "#photographes" },
+  { label: "Vidéaste", icon: "🎥", href: "#videaste" },
+  { label: "DJ & Musicien", icon: "🎵", href: "#dj" },
+  { label: "Traiteur", icon: "🍽️", href: "#traiteur" },
+  { label: "Fleuriste", icon: "💐", href: "#fleuriste" },
+  { label: "Décorateur", icon: "✨", href: "#decorateur" },
+  { label: "Coiffure & Makeup", icon: "💄", href: "#beaute" },
+  { label: "Lieu de réception", icon: "🏛️", href: "#lieux" },
+  { label: "Officiant", icon: "💍", href: "#officiant" },
+  { label: "Wedding Planner", icon: "📋", href: "#wedding-planner" },
+  { label: "Animation enfants", icon: "🎈", href: "#animation" },
+  { label: "Transport", icon: "🚗", href: "#transport" },
+];
+
+const outils = [
+  {
+    label: "Liste d'invités",
+    icon: "👥",
+    href: "#invites",
+    desc: "Gérez vos invitations",
+  },
+  {
+    label: "Plan de table",
+    icon: "🪑",
+    href: "#plan-table",
+    desc: "Organisez vos tables",
+  },
+  {
+    label: "Rétroplanning",
+    icon: "📅",
+    href: "#retroplanning",
+    desc: "Planifiez chaque étape",
+  },
+  {
+    label: "Budget mariage",
+    icon: "💰",
+    href: "#budget",
+    desc: "Suivez vos dépenses",
+  },
+  {
+    label: "Checklist",
+    icon: "✅",
+    href: "#checklist",
+    desc: "Ne rien oublier",
+  },
+];
+
+type DropdownKey = "prestataires" | "outils" | null;
+
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileExpanded, setMobileExpanded] = useState<DropdownKey>(null);
+  const [activeDropdown, setActiveDropdown] = useState<DropdownKey>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const navLinks = [
-    { label: "Trouver un prestataire", href: "#prestaires" },
-    { label: "Outils mariés", href: "#outils" },
-    { label: "Tarifs", href: "#tarifs" },
-    { label: "Blog", href: "#blog" },
-  ];
+  const openDropdown = (key: DropdownKey) => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setActiveDropdown(key);
+  };
+
+  const closeDropdown = () => {
+    closeTimer.current = setTimeout(() => setActiveDropdown(null), 120);
+  };
+
+  const toggleMobileExpanded = (key: DropdownKey) => {
+    setMobileExpanded((prev) => (prev === key ? null : key));
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-rose-100 shadow-sm">
@@ -33,22 +92,151 @@ export default function Header() {
               className="text-xl md:text-2xl font-bold whitespace-nowrap"
               style={{ fontFamily: "var(--font-playfair), serif" }}
             >
-              <span style={{ color: "#F06292" }}>Instant</span><span className="text-gray-900">Mariage.fr</span>
+              <span style={{ color: "#F06292" }}>Instant</span>
+              <span className="text-gray-900">Mariage.fr</span>
             </span>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors duration-200 relative group"
+
+            {/* Trouver un prestataire */}
+            <div
+              className="relative"
+              onMouseEnter={() => openDropdown("prestataires")}
+              onMouseLeave={closeDropdown}
+            >
+              <button
+                className="flex items-center gap-1 text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors duration-200 relative group py-2"
               >
-                {link.label}
+                Trouver un prestataire
+                <svg
+                  className={`w-3.5 h-3.5 transition-transform duration-200 ${activeDropdown === "prestataires" ? "rotate-180" : ""}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
                 <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-rose-400 group-hover:w-full transition-all duration-200" />
-              </Link>
-            ))}
+              </button>
+
+              {/* Dropdown prestataires */}
+              <div
+                className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[520px] bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.12)] border border-gray-100 overflow-hidden transition-all duration-200 origin-top ${
+                  activeDropdown === "prestataires"
+                    ? "opacity-100 scale-y-100 translate-y-0 pointer-events-auto"
+                    : "opacity-0 scale-y-95 -translate-y-1 pointer-events-none"
+                }`}
+                onMouseEnter={() => openDropdown("prestataires")}
+                onMouseLeave={closeDropdown}
+              >
+                <div className="px-5 pt-4 pb-2">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Catégories de prestataires
+                  </p>
+                </div>
+                <div className="grid grid-cols-3 gap-px px-4 pb-4">
+                  {prestataires.map((item) => (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-rose-50 group/item transition-colors duration-150"
+                    >
+                      <span className="text-lg leading-none">{item.icon}</span>
+                      <span className="text-sm text-gray-700 group-hover/item:text-rose-500 font-medium transition-colors">
+                        {item.label}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+                <div className="border-t border-gray-100 px-5 py-3 bg-gray-50/60">
+                  <Link
+                    href="#prestataires"
+                    className="text-xs text-rose-500 font-semibold hover:text-rose-600 transition-colors flex items-center gap-1"
+                  >
+                    Voir tous les prestataires
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* Outils mariés */}
+            <div
+              className="relative"
+              onMouseEnter={() => openDropdown("outils")}
+              onMouseLeave={closeDropdown}
+            >
+              <button
+                className="flex items-center gap-1 text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors duration-200 relative group py-2"
+              >
+                Outils mariés
+                <svg
+                  className={`w-3.5 h-3.5 transition-transform duration-200 ${activeDropdown === "outils" ? "rotate-180" : ""}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+                <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-rose-400 group-hover:w-full transition-all duration-200" />
+              </button>
+
+              {/* Dropdown outils */}
+              <div
+                className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.12)] border border-gray-100 overflow-hidden transition-all duration-200 origin-top ${
+                  activeDropdown === "outils"
+                    ? "opacity-100 scale-y-100 translate-y-0 pointer-events-auto"
+                    : "opacity-0 scale-y-95 -translate-y-1 pointer-events-none"
+                }`}
+                onMouseEnter={() => openDropdown("outils")}
+                onMouseLeave={closeDropdown}
+              >
+                <div className="px-5 pt-4 pb-2">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Vos outils de mariage
+                  </p>
+                </div>
+                <div className="px-3 pb-3 space-y-0.5">
+                  {outils.map((item) => (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-rose-50 group/item transition-colors duration-150"
+                    >
+                      <span className="text-xl leading-none">{item.icon}</span>
+                      <div>
+                        <p className="text-sm font-medium text-gray-800 group-hover/item:text-rose-500 transition-colors">
+                          {item.label}
+                        </p>
+                        <p className="text-xs text-gray-400">{item.desc}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Autres liens simples */}
+            <Link
+              href="#tarifs"
+              className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors duration-200 relative group py-2"
+            >
+              Tarifs
+              <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-rose-400 group-hover:w-full transition-all duration-200" />
+            </Link>
+            <Link
+              href="#blog"
+              className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors duration-200 relative group py-2"
+            >
+              Blog
+              <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-rose-400 group-hover:w-full transition-all duration-200" />
+            </Link>
           </nav>
 
           {/* Auth Buttons */}
@@ -88,16 +276,93 @@ export default function Header() {
         {/* Mobile Menu */}
         {mobileOpen && (
           <div className="lg:hidden border-t border-rose-100 py-4 space-y-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
-                onClick={() => setMobileOpen(false)}
+
+            {/* Trouver un prestataire (mobile) */}
+            <div>
+              <button
+                className="w-full flex items-center justify-between px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
+                onClick={() => toggleMobileExpanded("prestataires")}
               >
-                {link.label}
-              </Link>
-            ))}
+                Trouver un prestataire
+                <svg
+                  className={`w-4 h-4 transition-transform duration-200 ${mobileExpanded === "prestataires" ? "rotate-180" : ""}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {mobileExpanded === "prestataires" && (
+                <div className="mt-1 ml-4 grid grid-cols-2 gap-1 pb-2">
+                  {prestataires.map((item) => (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm transition-colors"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      <span>{item.icon}</span>
+                      <span>{item.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Outils mariés (mobile) */}
+            <div>
+              <button
+                className="w-full flex items-center justify-between px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
+                onClick={() => toggleMobileExpanded("outils")}
+              >
+                Outils mariés
+                <svg
+                  className={`w-4 h-4 transition-transform duration-200 ${mobileExpanded === "outils" ? "rotate-180" : ""}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {mobileExpanded === "outils" && (
+                <div className="mt-1 ml-4 space-y-0.5 pb-2">
+                  {outils.map((item) => (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      className="flex items-center gap-2.5 px-3 py-2.5 text-gray-600 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm transition-colors"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      <span>{item.icon}</span>
+                      <div>
+                        <p className="font-medium">{item.label}</p>
+                        <p className="text-xs text-gray-400">{item.desc}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <Link
+              href="#tarifs"
+              className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
+              onClick={() => setMobileOpen(false)}
+            >
+              Tarifs
+            </Link>
+            <Link
+              href="#blog"
+              className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
+              onClick={() => setMobileOpen(false)}
+            >
+              Blog
+            </Link>
+
             <div className="pt-3 px-4 flex flex-col gap-2 border-t border-rose-100">
               <Link
                 href="#"
