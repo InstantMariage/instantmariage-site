@@ -10,25 +10,18 @@ export const metadata: Metadata = {
 
 const team = [
   {
-    name: "Sophie Beaumont",
-    role: "Co-fondatrice & CEO",
-    bio: "Passionnée par les mariages depuis son enfance, Sophie a créé InstantMariage.fr après avoir vécu la complexité d'organiser son propre mariage. Elle pilote la vision et la stratégie.",
-    initials: "SB",
+    name: "Adel",
+    role: "Co-fondateur & CEO",
+    bio: "Passionné par l'univers du mariage, Adel a co-créé InstantMariage.fr en 2025 après avoir constaté le manque d'une plateforme simple et fiable pour les futurs mariés en France. Il pilote la vision, la stratégie et le développement commercial.",
+    initials: "A",
     color: "from-rose-400 to-pink-500",
   },
   {
-    name: "Thomas Leclerc",
-    role: "Co-fondateur & CTO",
-    bio: "Ingénieur de formation, Thomas a bâti la plateforme de A à Z. Il s'assure que chaque mariage soit connecté aux meilleurs prestataires grâce à une technologie de pointe.",
-    initials: "TL",
+    name: "Marina",
+    role: "Co-fondatrice & Directrice des Partenariats",
+    bio: "Experte en organisation d'événements, Marina a co-fondé InstantMariage.fr pour mettre son savoir-faire au service des couples. Elle sélectionne et accompagne chaque prestataire partenaire afin de garantir une qualité irréprochable.",
+    initials: "M",
     color: "from-pink-500 to-rose-600",
-  },
-  {
-    name: "Camille Renard",
-    role: "Directrice des Partenariats",
-    bio: "Ancienne wedding planner, Camille sélectionne et accompagne nos prestataires partenaires. Sa rigueur garantit la qualité de chaque professionnel référencé sur la plateforme.",
-    initials: "CR",
-    color: "from-rose-300 to-pink-400",
   },
 ];
 
@@ -135,17 +128,17 @@ export default function APropos() {
               </h2>
               <div className="space-y-4 text-gray-600 leading-relaxed text-base">
                 <p>
-                  En 2021, Sophie et Thomas cherchaient des prestataires pour
-                  leur propre mariage. Des heures perdues sur des forums
-                  éparpillés, des devis qui n&apos;arrivent jamais, des avis
-                  impossibles à vérifier. L&apos;organisation d&apos;un mariage
-                  en France était un vrai parcours du combattant.
+                  En 2025, Adel et Marina ont réalisé qu&apos;organiser un
+                  mariage en France restait un vrai défi : des heures perdues
+                  sur des forums éparpillés, des devis qui n&apos;arrivent
+                  jamais, des avis impossibles à vérifier. Il manquait une
+                  plateforme simple, centralisée et digne de confiance.
                 </p>
                 <p>
-                  Ils ont alors eu une idée simple : créer une plateforme
-                  centralisée, intuitive et de confiance — un endroit où les
-                  futurs mariés trouvent en quelques minutes les professionnels
-                  qui feront de leur jour le plus beau de leur vie.
+                  Ils ont alors décidé de créer InstantMariage.fr — un endroit
+                  où les futurs mariés trouvent en quelques minutes les
+                  professionnels qui feront de leur grand jour un moment
+                  inoubliable.
                 </p>
                 <p>
                   Aujourd&apos;hui, InstantMariage.fr connecte chaque mois des
@@ -170,7 +163,7 @@ export default function APropos() {
                   💍
                 </div>
                 <div>
-                  <p className="font-bold text-gray-900 text-sm">Fondé en 2021</p>
+                  <p className="font-bold text-gray-900 text-sm">Fondé en 2025</p>
                   <p className="text-gray-500 text-xs">Paris, France</p>
                 </div>
               </div>
@@ -285,7 +278,7 @@ export default function APropos() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
             {team.map((member) => (
               <div
                 key={member.name}
