@@ -21,14 +21,14 @@ export default function Header() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <Image
-              src="/logo.png"
-              alt="InstantMariage logo"
-              width={40}
-              height={40}
-              className="flex-shrink-0"
-              style={{ mixBlendMode: "multiply" }}
-            />
+            <div style={{ mixBlendMode: "multiply" }} className="flex-shrink-0">
+              <Image
+                src="/logo.png"
+                alt="InstantMariage logo"
+                width={40}
+                height={40}
+              />
+            </div>
             <span
               className="text-xl md:text-2xl font-bold whitespace-nowrap"
               style={{ fontFamily: "var(--font-playfair), serif" }}
