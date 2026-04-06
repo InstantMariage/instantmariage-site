@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 const footerLinks = {
   prestataires: {
@@ -125,16 +126,13 @@ export default function Footer() {
             <div className="lg:col-span-2">
               {/* Logo */}
               <div className="flex items-center gap-2 mb-5">
-                <div className="flex items-center gap-1">
-                  <span className="text-rose-400 text-2xl leading-none">♥</span>
-                  <span className="text-rose-600 text-lg leading-none -ml-1">♥</span>
-                </div>
-                <span
-                  className="text-xl font-bold text-gray-900 whitespace-nowrap"
-                  style={{ fontFamily: "var(--font-playfair), serif" }}
-                >
-                  InstantMariage<span className="text-[13px] tracking-widest text-gray-500 uppercase font-semibold">.fr</span>
-                </span>
+                <Image
+                  src="/logo.png"
+                  alt="InstantMariage"
+                  width={40}
+                  height={40}
+                  style={{ mixBlendMode: "multiply" }}
+                />
               </div>
               <p className="text-gray-500 text-sm leading-relaxed mb-6 max-w-xs">
                 La plateforme de référence pour trouver vos prestataires mariage
