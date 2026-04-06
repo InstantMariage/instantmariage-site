@@ -231,10 +231,17 @@ export default function Header() {
               <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-rose-400 group-hover:w-full transition-all duration-200" />
             </Link>
             <Link
-              href="#blog"
+              href="/blog"
               className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors duration-200 relative group py-2"
             >
               Blog
+              <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-rose-400 group-hover:w-full transition-all duration-200" />
+            </Link>
+            <Link
+              href="/inspiration"
+              className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors duration-200 relative group py-2"
+            >
+              Inspiration
               <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-rose-400 group-hover:w-full transition-all duration-200" />
             </Link>
             <Link
@@ -370,11 +377,18 @@ export default function Header() {
               Tarifs
             </Link>
             <Link
-              href="#blog"
+              href="/blog"
               className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
               onClick={() => setMobileOpen(false)}
             >
               Blog
+            </Link>
+            <Link
+              href="/inspiration"
+              className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
+              onClick={() => setMobileOpen(false)}
+            >
+              Inspiration
             </Link>
             <Link
               href="/a-propos"
