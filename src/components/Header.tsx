@@ -224,7 +224,7 @@ export default function Header() {
 
             {/* Autres liens simples */}
             <Link
-              href="#tarifs"
+              href="/tarifs"
               className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors duration-200 relative group py-2"
             >
               Tarifs
@@ -349,7 +349,7 @@ export default function Header() {
             </div>
 
             <Link
-              href="#tarifs"
+              href="/tarifs"
               className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
               onClick={() => setMobileOpen(false)}
             >
