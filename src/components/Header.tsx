@@ -92,7 +92,7 @@ export default function Header() {
               className="text-xl md:text-2xl font-bold whitespace-nowrap"
               style={{ fontFamily: "var(--font-playfair), serif" }}
             >
-              <span style={{ color: "#F06292" }}>Instant</span>
+              <span style={{ color: "#F06292" }} className="instant-label">Instant</span>
               <span className="text-gray-900">Mariage.fr</span>
             </span>
           </Link>
