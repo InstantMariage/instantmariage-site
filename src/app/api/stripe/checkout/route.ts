@@ -6,9 +6,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 });
 
 const ALLOWED_PRICE_IDS = new Set([
-  "price_1TJbwsKKBs85XtqBLVsaufd4", // Starter 9,90€/mois
-  "price_1TJbxsKKBs85XtqBAmc694HG", // Pro 19,90€/mois
-  "price_1TJbybKKBs85XtqBlgW83WvF", // Premium 39,90€/mois
+  "price_1TJbkIKKBs85XtqBrD4MvZDu", // Starter 9,90€/mois
+  "price_1TJblgKKBs85XtqBUD5euLaF", // Pro 19,90€/mois
+  "price_1TJbmfKKBs85XtqBN57D6Z5U", // Premium 39,90€/mois
 ]);
 
 export async function POST(req: NextRequest) {

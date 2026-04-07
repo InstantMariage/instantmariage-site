@@ -39,7 +39,7 @@ const plans = [
       "Formulaire de contact",
     ],
     cta: "Choisir Starter",
-    priceId: "price_1TJbwsKKBs85XtqBLVsaufd4",
+    priceId: "price_1TJbkIKKBs85XtqBrD4MvZDu",
     recommended: false,
   },
   {
@@ -59,7 +59,7 @@ const plans = [
       "Statistiques de visites",
     ],
     cta: "Choisir Pro",
-    priceId: "price_1TJbxsKKBs85XtqBAmc694HG",
+    priceId: "price_1TJblgKKBs85XtqBUD5euLaF",
     recommended: true,
   },
   {
@@ -79,7 +79,7 @@ const plans = [
       "Accès aux mariés en avant-première",
     ],
     cta: "Choisir Premium",
-    priceId: "price_1TJbybKKBs85XtqBlgW83WvF",
+    priceId: "price_1TJbmfKKBs85XtqBN57D6Z5U",
     recommended: false,
   },
 ];
