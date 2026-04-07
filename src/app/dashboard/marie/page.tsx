@@ -21,33 +21,37 @@ const tools = [
     label: "Liste d'invités",
     desc: "Gérez vos invitations et confirmations",
     icon: "👥",
-    href: "/outils/invites",
+    href: "https://tableau-de-bord-mariage.vercel.app",
     color: "#FFF0F5",
     iconColor: "#F06292",
+    available: true,
   },
   {
     label: "Plan de table",
     desc: "Organisez le placement de vos convives",
     icon: "🪑",
-    href: "/outils/plan-de-table",
+    href: "https://tableau-de-bord-mariage.vercel.app",
     color: "#FFF7ED",
     iconColor: "#F97316",
+    available: true,
   },
   {
     label: "Rétroplanning",
     desc: "Planifiez chaque étape jusqu'au grand jour",
     icon: "📅",
-    href: "/outils/retroplanning",
+    href: "#",
     color: "#F0FDF4",
     iconColor: "#22C55E",
+    available: false,
   },
   {
     label: "Budget mariage",
     desc: "Suivez et maîtrisez vos dépenses",
     icon: "💰",
-    href: "/outils/budget",
+    href: "#",
     color: "#FFFBEB",
     iconColor: "#EAB308",
+    available: false,
   },
 ];
 
@@ -214,26 +218,54 @@ export default function DashboardMarie() {
               </span>
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              {tools.map((tool) => (
-                <Link
-                  key={tool.label}
-                  href={tool.href}
-                  className="flex flex-col gap-3 p-4 rounded-xl border border-gray-100 hover:border-rose-200 hover:shadow-card-hover transition-all duration-200 group"
-                >
-                  <div
-                    className="w-11 h-11 rounded-xl flex items-center justify-center text-xl"
-                    style={{ background: tool.color }}
+              {tools.map((tool) =>
+                tool.available ? (
+                  <a
+                    key={tool.label}
+                    href={tool.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col gap-3 p-4 rounded-xl border border-gray-100 hover:border-rose-200 hover:shadow-card-hover transition-all duration-200 group"
                   >
-                    {tool.icon}
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-gray-900 group-hover:text-rose-500 transition-colors">
-                      {tool.label}
+                    <div
+                      className="w-11 h-11 rounded-xl flex items-center justify-center text-xl"
+                      style={{ background: tool.color }}
+                    >
+                      {tool.icon}
                     </div>
-                    <div className="text-xs text-gray-400 mt-0.5 leading-relaxed">{tool.desc}</div>
+                    <div>
+                      <div className="text-sm font-semibold text-gray-900 group-hover:text-rose-500 transition-colors">
+                        {tool.label}
+                      </div>
+                      <div className="text-xs text-gray-400 mt-0.5 leading-relaxed">{tool.desc}</div>
+                    </div>
+                  </a>
+                ) : (
+                  <div
+                    key={tool.label}
+                    className="flex flex-col gap-3 p-4 rounded-xl border border-gray-100 opacity-60 cursor-not-allowed relative"
+                  >
+                    <div
+                      className="w-11 h-11 rounded-xl flex items-center justify-center text-xl"
+                      style={{ background: tool.color }}
+                    >
+                      {tool.icon}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <div className="text-sm font-semibold text-gray-900">{tool.label}</div>
+                        <span
+                          className="text-xs font-semibold px-1.5 py-0.5 rounded-full"
+                          style={{ background: "#F3F4F6", color: "#6B7280" }}
+                        >
+                          Bientôt
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-400 mt-0.5 leading-relaxed">{tool.desc}</div>
+                    </div>
                   </div>
-                </Link>
-              ))}
+                )
+              )}
             </div>
           </div>
 
