@@ -114,16 +114,31 @@ const profileSuggestions = [
 
 const profileCompletion = 52;
 
+function getInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
 export default function DashboardPrestataire() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"avis" | "messages">("messages");
   const [authChecked, setAuthChecked] = useState(false);
+  const [nomEntreprise, setNomEntreprise] = useState("");
+  const [categorie, setCategorie] = useState("");
+  const [ville, setVille] = useState("");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
         router.replace("/login");
       } else {
+        const meta = session.user.user_metadata;
+        setNomEntreprise(meta?.nom_entreprise || session.user.email?.split("@")[0] || "");
+        setCategorie(meta?.categorie || "");
+        setVille(meta?.ville || "");
         setAuthChecked(true);
       }
     });
@@ -165,12 +180,12 @@ export default function DashboardPrestataire() {
                   className="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg"
                   style={{ background: "rgba(255,255,255,0.25)" }}
                 >
-                  ML
+                  {getInitials(nomEntreprise)}
                 </div>
                 <div>
                   <div className="flex items-center gap-3 flex-wrap">
                     <h1 className="text-2xl font-bold text-white font-playfair">
-                      Marc Lefebvre
+                      {nomEntreprise}
                     </h1>
                     <span
                       className="text-xs font-semibold px-3 py-1 rounded-full"
@@ -184,12 +199,12 @@ export default function DashboardPrestataire() {
                     </span>
                   </div>
                   <p className="text-rose-100 text-sm mt-0.5">
-                    Photographe · Paris & Île-de-France
+                    {[categorie, ville].filter(Boolean).join(" · ")}
                   </p>
                 </div>
               </div>
               <Link
-                href="/prestataires/marc-lefebvre"
+                href={`/prestataires/${nomEntreprise.toLowerCase().replace(/\s+/g, "-")}`}
                 className="inline-flex items-center gap-2 bg-white text-rose-500 font-semibold px-5 py-2.5 rounded-full text-sm hover:bg-rose-50 transition-all duration-200 shadow-sm self-start sm:self-auto"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

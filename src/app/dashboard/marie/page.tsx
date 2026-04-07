@@ -107,12 +107,15 @@ export default function DashboardMarie() {
   const [checklist, setChecklist] = useState(initialChecklist);
   const [showAll, setShowAll] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [userName, setUserName] = useState("");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
         router.replace("/login");
       } else {
+        const meta = session.user.user_metadata;
+        setUserName(meta?.prenom || session.user.email?.split("@")[0] || "");
         setAuthChecked(true);
       }
     });
@@ -169,7 +172,7 @@ export default function DashboardMarie() {
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold text-white font-playfair">
-                    Bonjour, Sophie
+                    Bonjour, {userName}
                   </h1>
                   <p className="text-rose-100 text-sm mt-0.5">
                     Votre mariage avec Thomas · 12 septembre 2026
