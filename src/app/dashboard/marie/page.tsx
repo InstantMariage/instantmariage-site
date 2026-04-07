@@ -7,15 +7,24 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { supabase } from "@/lib/supabase";
 
-// Wedding date – would normally come from user profile/DB
-const WEDDING_DATE = new Date("2026-09-12T14:00:00");
-
-function useCountdown(targetDate: Date) {
+function useCountdown(targetDate: Date | null) {
+  if (!targetDate) return { days: null };
   const now = new Date();
   const diff = targetDate.getTime() - now.getTime();
   const days = Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
-  const months = Math.max(0, Math.floor(days / 30));
-  return { days, months };
+  return { days };
+}
+
+function formatDateFr(dateStr: string | null): string {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+}
+
+function formatDateShort(dateStr: string | null): string {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
 }
 
 const soonTools = [
@@ -103,23 +112,43 @@ const initialChecklist: CheckItem[] = [
 
 export default function DashboardMarie() {
   const router = useRouter();
-  const { days } = useCountdown(WEDDING_DATE);
   const [checklist, setChecklist] = useState(initialChecklist);
   const [showAll, setShowAll] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
-  const [userName, setUserName] = useState("");
+  const [prenomMarie1, setPrenomMarie1] = useState("");
   const [prenomMarie2, setPrenomMarie2] = useState("");
+  const [dateMariage, setDateMariage] = useState<string | null>(null);
+  const [lieuMariage, setLieuMariage] = useState<string | null>(null);
+
+  const weddingDate = dateMariage ? new Date(dateMariage) : null;
+  const { days } = useCountdown(weddingDate);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) {
         router.replace("/login");
-      } else {
-        const meta = session.user.user_metadata;
-        setUserName(meta?.prenom || session.user.email?.split("@")[0] || "");
-        setPrenomMarie2(meta?.prenom_marie2 || "");
-        setAuthChecked(true);
+        return;
       }
+
+      const { data: marie } = await supabase
+        .from("maries")
+        .select("prenom_marie1, prenom_marie2, date_mariage, lieu_mariage")
+        .eq("user_id", session.user.id)
+        .single();
+
+      if (marie) {
+        setPrenomMarie1(marie.prenom_marie1 || "");
+        setPrenomMarie2(marie.prenom_marie2 || "");
+        setDateMariage(marie.date_mariage || null);
+        setLieuMariage(marie.lieu_mariage || null);
+      } else {
+        // Fallback sur les métadonnées auth si pas de ligne dans maries
+        const meta = session.user.user_metadata;
+        setPrenomMarie1(meta?.prenom || session.user.email?.split("@")[0] || "");
+        setPrenomMarie2(meta?.prenom_marie2 || "");
+      }
+
+      setAuthChecked(true);
     });
   }, [router]);
 
@@ -174,31 +203,35 @@ export default function DashboardMarie() {
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold text-white font-playfair">
-                    Bonjour, {userName}
+                    Bonjour, {prenomMarie1}
                   </h1>
                   <p className="text-rose-100 text-sm mt-0.5">
                     {prenomMarie2
-                      ? `Votre mariage avec ${prenomMarie2} · 12 septembre 2026`
-                      : "Votre mariage · 12 septembre 2026"}
+                      ? `Votre mariage avec ${prenomMarie2}`
+                      : "Votre mariage"}
+                    {dateMariage ? ` · ${formatDateFr(dateMariage)}` : ""}
+                    {lieuMariage ? ` · ${lieuMariage}` : ""}
                   </p>
                 </div>
               </div>
 
               {/* Countdown */}
-              <div
-                className="flex items-center gap-4 px-6 py-4 rounded-2xl"
-                style={{ background: "rgba(255,255,255,0.18)", backdropFilter: "blur(8px)" }}
-              >
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-white leading-none">{days}</div>
-                  <div className="text-xs text-rose-100 mt-1 font-medium">jours restants</div>
+              {dateMariage && (
+                <div
+                  className="flex items-center gap-4 px-6 py-4 rounded-2xl"
+                  style={{ background: "rgba(255,255,255,0.18)", backdropFilter: "blur(8px)" }}
+                >
+                  <div className="text-center">
+                    <div className="text-4xl font-bold text-white leading-none">{days}</div>
+                    <div className="text-xs text-rose-100 mt-1 font-medium">jours restants</div>
+                  </div>
+                  <div className="w-px h-10 bg-white/30" />
+                  <div className="text-center">
+                    <div className="text-sm text-white font-semibold">{formatDateShort(dateMariage)}</div>
+                    <div className="text-xs text-rose-100 mt-1">Grand jour</div>
+                  </div>
                 </div>
-                <div className="w-px h-10 bg-white/30" />
-                <div className="text-center">
-                  <div className="text-sm text-white font-semibold">12 Sep 2026</div>
-                  <div className="text-xs text-rose-100 mt-1">Grand jour</div>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
