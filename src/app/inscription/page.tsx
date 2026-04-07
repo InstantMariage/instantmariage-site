@@ -82,7 +82,7 @@ export default function InscriptionPage() {
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-rose-900 via-rose-700 to-rose-400" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-br from-rose-900/50 via-rose-700/25 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
         <div className="absolute inset-0 flex flex-col justify-between p-12">
           <Link href="/" className="flex items-center gap-2.5">
             <div style={{ mixBlendMode: "normal" }}>
