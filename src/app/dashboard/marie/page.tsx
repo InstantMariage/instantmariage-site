@@ -108,6 +108,7 @@ export default function DashboardMarie() {
   const [showAll, setShowAll] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [userName, setUserName] = useState("");
+  const [prenomMarie2, setPrenomMarie2] = useState("");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -116,6 +117,7 @@ export default function DashboardMarie() {
       } else {
         const meta = session.user.user_metadata;
         setUserName(meta?.prenom || session.user.email?.split("@")[0] || "");
+        setPrenomMarie2(meta?.prenom_marie2 || "");
         setAuthChecked(true);
       }
     });
@@ -175,7 +177,9 @@ export default function DashboardMarie() {
                     Bonjour, {userName}
                   </h1>
                   <p className="text-rose-100 text-sm mt-0.5">
-                    Votre mariage avec Thomas · 12 septembre 2026
+                    {prenomMarie2
+                      ? `Votre mariage avec ${prenomMarie2} · 12 septembre 2026`
+                      : "Votre mariage · 12 septembre 2026"}
                   </p>
                 </div>
               </div>
