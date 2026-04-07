@@ -22,11 +22,6 @@ function getSupabaseAdmin() {
   );
 }
 
-// Next.js App Router: désactiver le body parser pour lire le raw body Stripe
-export const config = {
-  api: { bodyParser: false },
-};
-
 export async function POST(req: NextRequest) {
   const body = await req.text();
   const sig = req.headers.get("stripe-signature");
