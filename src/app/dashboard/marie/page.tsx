@@ -16,42 +16,18 @@ function useCountdown(targetDate: Date) {
   return { days, months };
 }
 
-const tools = [
-  {
-    label: "Liste d'invités",
-    desc: "Gérez vos invitations et confirmations",
-    icon: "👥",
-    href: "https://tableau-de-bord-mariage.vercel.app",
-    color: "#FFF0F5",
-    iconColor: "#F06292",
-    available: true,
-  },
-  {
-    label: "Plan de table",
-    desc: "Organisez le placement de vos convives",
-    icon: "🪑",
-    href: "https://tableau-de-bord-mariage.vercel.app",
-    color: "#FFF7ED",
-    iconColor: "#F97316",
-    available: true,
-  },
+const soonTools = [
   {
     label: "Rétroplanning",
     desc: "Planifiez chaque étape jusqu'au grand jour",
     icon: "📅",
-    href: "#",
     color: "#F0FDF4",
-    iconColor: "#22C55E",
-    available: false,
   },
   {
     label: "Budget mariage",
     desc: "Suivez et maîtrisez vos dépenses",
     icon: "💰",
-    href: "#",
     color: "#FFFBEB",
-    iconColor: "#EAB308",
-    available: false,
   },
 ];
 
@@ -217,33 +193,48 @@ export default function DashboardMarie() {
                 100% gratuit
               </span>
             </div>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              {tools.map((tool) =>
-                tool.available ? (
-                  <a
-                    key={tool.label}
-                    href={tool.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex flex-col gap-3 p-4 rounded-xl border border-gray-100 hover:border-rose-200 hover:shadow-card-hover transition-all duration-200 group"
+            <div className="flex flex-col gap-3">
+              {/* Grande carte Tableau de Bord Mariage */}
+              <a
+                href="https://tableau-de-bord-mariage.vercel.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-xl border border-gray-100 hover:border-rose-200 hover:shadow-card-hover transition-all duration-200 group"
+                style={{ background: "#FFF0F5" }}
+              >
+                <div className="flex items-center gap-4 flex-1">
+                  <div
+                    className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
+                    style={{ background: "rgba(240,98,146,0.15)" }}
                   >
-                    <div
-                      className="w-11 h-11 rounded-xl flex items-center justify-center text-xl"
-                      style={{ background: tool.color }}
-                    >
-                      {tool.icon}
+                    💍
+                  </div>
+                  <div>
+                    <div className="text-base font-bold text-gray-900 group-hover:text-rose-500 transition-colors">
+                      Tableau de Bord Mariage
                     </div>
-                    <div>
-                      <div className="text-sm font-semibold text-gray-900 group-hover:text-rose-500 transition-colors">
-                        {tool.label}
-                      </div>
-                      <div className="text-xs text-gray-400 mt-0.5 leading-relaxed">{tool.desc}</div>
+                    <div className="text-sm text-gray-500 mt-0.5 leading-relaxed">
+                      Gérez votre liste d&apos;invités et créez votre plan de table interactif
                     </div>
-                  </a>
-                ) : (
+                  </div>
+                </div>
+                <span
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-full flex-shrink-0 transition-all duration-200 group-hover:opacity-90"
+                  style={{ background: "#F06292", color: "white" }}
+                >
+                  Accéder à l&apos;outil
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </span>
+              </a>
+
+              {/* Outils à venir */}
+              <div className="grid grid-cols-2 gap-3">
+                {soonTools.map((tool) => (
                   <div
                     key={tool.label}
-                    className="flex flex-col gap-3 p-4 rounded-xl border border-gray-100 opacity-60 cursor-not-allowed relative"
+                    className="flex flex-col gap-3 p-4 rounded-xl border border-gray-100 opacity-60 cursor-not-allowed"
                   >
                     <div
                       className="w-11 h-11 rounded-xl flex items-center justify-center text-xl"
@@ -264,8 +255,8 @@ export default function DashboardMarie() {
                       <div className="text-xs text-gray-400 mt-0.5 leading-relaxed">{tool.desc}</div>
                     </div>
                   </div>
-                )
-              )}
+                ))}
+              </div>
             </div>
           </div>
 
