@@ -61,8 +61,17 @@ export type Abonnement = {
   created_at: string
 }
 
+export type Conversation = {
+  id: string
+  participant1_id: string
+  participant2_id: string
+  last_message_at: string
+  created_at: string
+}
+
 export type Message = {
   id: string
+  conversation_id: string
   expediteur_id: string
   destinataire_id: string
   sujet: string | null

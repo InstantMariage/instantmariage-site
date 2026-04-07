@@ -62,29 +62,60 @@ export default function Header() {
   const [mobileExpanded, setMobileExpanded] = useState<DropdownKey>(null);
   const [activeDropdown, setActiveDropdown] = useState<DropdownKey>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [user, setUser] = useState<{ email: string; role: string } | null>(null);
+  const [user, setUser] = useState<{ id: string; email: string; role: string } | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const loadUnreadCount = async (uid: string) => {
+    const { count } = await supabase
+      .from("messages")
+      .select("*", { count: "exact", head: true })
+      .eq("destinataire_id", uid)
+      .eq("lu", false);
+    setUnreadCount(count ?? 0);
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
-        setUser({
+        const u = {
+          id: session.user.id,
           email: session.user.email ?? "",
           role: session.user.user_metadata?.role ?? "marie",
-        });
+        };
+        setUser(u);
+        loadUnreadCount(u.id);
       }
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
-        setUser({
+        const u = {
+          id: session.user.id,
           email: session.user.email ?? "",
           role: session.user.user_metadata?.role ?? "marie",
-        });
+        };
+        setUser(u);
+        loadUnreadCount(u.id);
       } else {
         setUser(null);
+        setUnreadCount(0);
       }
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  // Realtime : badge non-lu
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel("header-unread")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "messages" },
+        () => loadUnreadCount(user.id)
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -302,6 +333,24 @@ export default function Header() {
           <div className="hidden md:flex items-center gap-3">
             {user ? (
               <>
+                {/* Icône messages avec badge */}
+                <Link
+                  href="/messages"
+                  className="relative p-2 rounded-full hover:bg-rose-50 text-gray-500 hover:text-rose-400 transition-colors"
+                  title="Messages"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                  </svg>
+                  {unreadCount > 0 && (
+                    <span
+                      className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-white text-[10px] font-bold flex items-center justify-center"
+                      style={{ background: "#F06292" }}
+                    >
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </Link>
                 <Link
                   href={`/dashboard/${user.role}`}
                   className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors px-4 py-2"
@@ -472,6 +521,21 @@ export default function Header() {
             <div className="pt-3 px-4 flex flex-col gap-2 border-t border-rose-100">
               {user ? (
                 <>
+                  <Link
+                    href="/messages"
+                    className="flex items-center justify-between border-2 border-rose-100 text-gray-700 hover:border-rose-300 font-medium px-5 py-2.5 rounded-full transition-all duration-200 text-sm"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <span>Messages</span>
+                    {unreadCount > 0 && (
+                      <span
+                        className="w-5 h-5 rounded-full text-white text-xs font-bold flex items-center justify-center"
+                        style={{ background: "#F06292" }}
+                      >
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </Link>
                   <Link
                     href={`/dashboard/${user.role}`}
                     className="text-center border-2 border-rose-400 text-rose-400 hover:bg-rose-400 hover:text-white font-semibold px-5 py-2.5 rounded-full transition-all duration-200 text-sm"

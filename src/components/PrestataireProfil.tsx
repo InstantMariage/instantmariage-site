@@ -3,7 +3,9 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { PROVIDERS } from "@/data/providers";
+import { supabase } from "@/lib/supabase";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -610,9 +612,71 @@ function Sidebar({ prestataire }: { prestataire: PrestatireData }) {
 // ─── Composant principal ──────────────────────────────────────────────────────
 
 export default function PrestataireProfil({ id }: { id?: number }) {
+  const router = useRouter();
   const PRESTATAIRE = buildPrestataire(id ?? 1);
   const [activeTab, setActiveTab] = useState<Tab>("apropos");
   const [saved, setSaved] = useState(false);
+  const [contactLoading, setContactLoading] = useState(false);
+  const [contactModal, setContactModal] = useState<"not-registered" | "not-logged" | "not-marie" | null>(null);
+
+  const handleContacter = async () => {
+    setContactLoading(true);
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      setContactLoading(false);
+      setContactModal("not-logged");
+      return;
+    }
+
+    const role = session.user.user_metadata?.role ?? "marie";
+    if (role === "prestataire") {
+      setContactLoading(false);
+      setContactModal("not-marie");
+      return;
+    }
+
+    const userId = session.user.id;
+
+    // Chercher le prestataire dans Supabase par nom_entreprise
+    const { data: prest } = await supabase
+      .from("prestataires")
+      .select("id, user_id")
+      .eq("nom_entreprise", PRESTATAIRE.nom)
+      .maybeSingle();
+
+    if (!prest) {
+      setContactLoading(false);
+      setContactModal("not-registered");
+      return;
+    }
+
+    const otherUserId = prest.user_id;
+
+    // Chercher ou créer une conversation (participants triés pour éviter les doublons)
+    const [p1, p2] = [userId, otherUserId].sort();
+
+    let { data: conv } = await supabase
+      .from("conversations")
+      .select("id")
+      .eq("participant1_id", p1)
+      .eq("participant2_id", p2)
+      .maybeSingle();
+
+    if (!conv) {
+      const { data: newConv } = await supabase
+        .from("conversations")
+        .insert({ participant1_id: p1, participant2_id: p2 })
+        .select("id")
+        .single();
+      conv = newConv;
+    }
+
+    setContactLoading(false);
+    if (conv) {
+      router.push(`/messages/${conv.id}`);
+    }
+  };
 
   const tabs: { id: Tab; label: string }[] = [
     { id: "apropos", label: "À propos" },
@@ -713,7 +777,14 @@ export default function PrestataireProfil({ id }: { id?: number }) {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
                 </button>
-                <button className="bg-rose-400 hover:bg-rose-500 text-white font-semibold px-5 py-2.5 rounded-full text-sm shadow-sm hover:shadow-md transition-all duration-200 whitespace-nowrap">
+                <button
+                  onClick={handleContacter}
+                  disabled={contactLoading}
+                  className="bg-rose-400 hover:bg-rose-500 text-white font-semibold px-5 py-2.5 rounded-full text-sm shadow-sm hover:shadow-md transition-all duration-200 whitespace-nowrap disabled:opacity-60 flex items-center gap-2"
+                >
+                  {contactLoading ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : null}
                   Contacter
                 </button>
               </div>
@@ -762,6 +833,109 @@ export default function PrestataireProfil({ id }: { id?: number }) {
           </aside>
         </div>
       </div>
+
+      {/* Modals contact */}
+      {contactModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.4)" }}
+          onClick={() => setContactModal(null)}
+        >
+          <div
+            className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8 text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {contactModal === "not-logged" && (
+              <>
+                <div
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+                  style={{ background: "#FFF0F5" }}
+                >
+                  <svg className="w-7 h-7" style={{ color: "#F06292" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <h3 className="font-bold text-gray-900 text-lg mb-2">Connexion requise</h3>
+                <p className="text-sm text-gray-500 mb-6">
+                  Connectez-vous à votre compte marié pour envoyer un message.
+                </p>
+                <div className="flex flex-col gap-2">
+                  <Link
+                    href="/login"
+                    className="w-full text-center text-white text-sm font-semibold px-6 py-3 rounded-full transition-all hover:opacity-90"
+                    style={{ background: "#F06292" }}
+                  >
+                    Se connecter
+                  </Link>
+                  <button
+                    onClick={() => setContactModal(null)}
+                    className="text-sm text-gray-400 hover:text-gray-600 py-2"
+                  >
+                    Annuler
+                  </button>
+                </div>
+              </>
+            )}
+
+            {contactModal === "not-marie" && (
+              <>
+                <div
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+                  style={{ background: "#FFF0F5" }}
+                >
+                  <svg className="w-7 h-7" style={{ color: "#F06292" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <h3 className="font-bold text-gray-900 text-lg mb-2">Compte marié requis</h3>
+                <p className="text-sm text-gray-500 mb-6">
+                  Seuls les futurs mariés peuvent contacter les prestataires via la messagerie.
+                </p>
+                <button
+                  onClick={() => setContactModal(null)}
+                  className="w-full text-white text-sm font-semibold px-6 py-3 rounded-full transition-all hover:opacity-90"
+                  style={{ background: "#F06292" }}
+                >
+                  Compris
+                </button>
+              </>
+            )}
+
+            {contactModal === "not-registered" && (
+              <>
+                <div
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
+                  style={{ background: "#FFF0F5" }}
+                >
+                  <svg className="w-7 h-7" style={{ color: "#F06292" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                  </svg>
+                </div>
+                <h3 className="font-bold text-gray-900 text-lg mb-2">Prestataire non inscrit</h3>
+                <p className="text-sm text-gray-500 mb-6">
+                  Ce prestataire n&apos;a pas encore créé son compte InstantMariage. Découvrez d&apos;autres prestataires dans notre annuaire.
+                </p>
+                <div className="flex flex-col gap-2">
+                  <Link
+                    href="/annuaire"
+                    className="w-full text-center text-white text-sm font-semibold px-6 py-3 rounded-full transition-all hover:opacity-90"
+                    style={{ background: "#F06292" }}
+                    onClick={() => setContactModal(null)}
+                  >
+                    Voir l&apos;annuaire
+                  </Link>
+                  <button
+                    onClick={() => setContactModal(null)}
+                    className="text-sm text-gray-400 hover:text-gray-600 py-2"
+                  >
+                    Fermer
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
