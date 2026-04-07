@@ -270,13 +270,13 @@ export default function Header() {
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center gap-3">
             <Link
-              href="#"
+              href="/login"
               className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors px-4 py-2"
             >
               Connexion
             </Link>
             <Link
-              href="#"
+              href="/inscription"
               className="bg-rose-400 hover:bg-rose-500 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
             >
               Inscription gratuite
@@ -421,14 +421,16 @@ export default function Header() {
 
             <div className="pt-3 px-4 flex flex-col gap-2 border-t border-rose-100">
               <Link
-                href="#"
+                href="/login"
                 className="text-center border-2 border-rose-400 text-rose-400 hover:bg-rose-400 hover:text-white font-semibold px-5 py-2.5 rounded-full transition-all duration-200 text-sm"
+                onClick={() => setMobileOpen(false)}
               >
                 Connexion
               </Link>
               <Link
-                href="#"
+                href="/inscription"
                 className="text-center bg-rose-400 hover:bg-rose-500 text-white font-semibold px-5 py-2.5 rounded-full transition-all duration-200 text-sm"
+                onClick={() => setMobileOpen(false)}
               >
                 Inscription gratuite
               </Link>
