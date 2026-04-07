@@ -2,19 +2,30 @@ import type { Metadata } from "next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PrestataireProfil from "@/components/PrestataireProfil";
+import { PROVIDERS } from "@/data/providers";
 
-export const metadata: Metadata = {
-  title: "Lucie Fontaine Photographie – Photographe de mariage à Marseille",
-  description:
-    "Photographe de mariage à Marseille depuis 8 ans. Style naturel et émotionnel. Mariages en PACA, Var, Alpes-Maritimes. À partir de 1 900 €.",
-  keywords: "photographe mariage Marseille, reportage photo mariage PACA",
-};
+interface Props {
+  params: Promise<{ id: string }>;
+}
 
-export default function PrestatairePage() {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+  const provider = PROVIDERS.find((p) => p.id === Number(id));
+  if (!provider) {
+    return { title: "Prestataire – InstantMariage" };
+  }
+  return {
+    title: `${provider.nom} – ${provider.metier} à ${provider.ville}`,
+    description: provider.description,
+  };
+}
+
+export default async function PrestatairePage({ params }: Props) {
+  const { id } = await params;
   return (
     <main className="min-h-screen bg-gray-50">
       <Header />
-      <PrestataireProfil />
+      <PrestataireProfil id={Number(id)} />
       <Footer />
     </main>
   );

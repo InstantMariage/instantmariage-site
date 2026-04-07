@@ -3,31 +3,47 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { PROVIDERS } from "@/data/providers";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Tab = "apropos" | "galerie" | "avis" | "tarifs";
 
-// ─── Données fictives ─────────────────────────────────────────────────────────
+// ─── Couvertures par métier ────────────────────────────────────────────────────
 
-const PRESTATAIRE = {
-  nom: "Lucie Fontaine Photographie",
-  metier: "Photographe de mariage",
-  ville: "Marseille",
-  region: "Provence-Alpes-Côte d'Azur",
+const COUVERTURES: Record<string, string> = {
+  "Photographe": "https://images.unsplash.com/photo-1519741497674-611481863552?w=1400&q=80",
+  "Vidéaste": "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=1400&q=80",
+  "Salle de réception": "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=1400&q=80",
+  "DJ / Animateur": "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1400&q=80",
+  "Fleuriste": "https://images.unsplash.com/photo-1487530811015-780780e7f2a2?w=1400&q=80",
+  "Wedding Planner": "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=1400&q=80",
+  "Traiteur / Restauration": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1400&q=80",
+  "Coiffeur & Maquilleur": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=1400&q=80",
+  "Pâtissier / Wedding cake": "https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=1400&q=80",
+  "Orchestre / Groupe": "https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=1400&q=80",
+};
+
+// ─── Données fictives (fallback) ──────────────────────────────────────────────
+
+const PRESTATAIRE_FALLBACK = {
+  nom: "Sophie Martin Photographie",
+  metier: "Photographe",
+  ville: "Paris",
+  region: "Île-de-France",
   note: 4.9,
-  nbAvis: 143,
+  nbAvis: 127,
   verifie: true,
-  prixMin: 1900,
+  prixMin: 1800,
   telephone: "06 12 34 56 78",
-  email: "lucie@luciefontaine.fr",
-  site: "www.luciefontaine.fr",
-  instagram: "@luciefontaine_photo",
-  photo: "https://images.unsplash.com/photo-1554151228-14d9def656e4?w=300&q=80",
+  email: "contact@sophiemartin.fr",
+  site: "www.sophiemartin.fr",
+  instagram: "@sophiemartin_photo",
+  photo: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=300&q=80",
   couverture: "https://images.unsplash.com/photo-1519741497674-611481863552?w=1400&q=80",
-  description: `Photographe de mariage basée à Marseille depuis 8 ans, je capture chaque instant de votre grand jour avec une approche naturelle et émotionnelle. Mon style se caractérise par des photos lumineuses, intemporelles et authentiques — loin des poses figées, je préfère immortaliser les regards complices, les rires spontanés et les larmes de joie.
+  description: `Photographe de mariage basée à Paris depuis 10 ans, je capture chaque instant de votre grand jour avec une approche naturelle et émotionnelle. Mon style se caractérise par des photos lumineuses, intemporelles et authentiques — loin des poses figées, je préfère immortaliser les regards complices, les rires spontanés et les larmes de joie.
 
-Diplômée de l'École des Beaux-Arts d'Aix-en-Provence, j'ai accompagné plus de 200 couples dans toute la région PACA, du Luberon aux calanques, des bastides provençales aux jardins méditerranéens.
+Diplômée de l'École des Arts Décoratifs de Paris, j'ai accompagné plus de 200 couples dans toute la France, des châteaux de Loire aux plages normandes.
 
 Chaque mariage est unique et mérite une attention particulière. C'est pourquoi je rencontre chaque couple en amont pour comprendre leur vision, leur histoire et leurs envies. Le résultat : un album qui vous ressemble.`,
   specialites: [
@@ -38,9 +54,9 @@ Chaque mariage est unique et mérite une attention particulière. C'est pourquoi
     "Mariage laïque",
     "Séance trash the dress",
   ],
-  experience: 8,
-  zones: ["Marseille", "Aix-en-Provence", "Toulon", "Nice", "Avignon", "Toute la France sur devis"],
-  langues: ["Français", "Anglais", "Italien"],
+  experience: 10,
+  zones: ["Paris", "Île-de-France", "Normandie", "Loire", "Toute la France sur devis"],
+  langues: ["Français", "Anglais"],
   equipements: [
     "Appareils photo Sony A7 IV (x2)",
     "Objectifs 35mm, 50mm, 85mm, 135mm",
@@ -49,6 +65,35 @@ Chaque mariage est unique et mérite une attention particulière. C'est pourquoi
     "Stabilisateur",
   ],
 };
+
+// ─── Construction du profil depuis un provider ────────────────────────────────
+
+function buildPrestataire(id: number) {
+  const provider = PROVIDERS.find((p) => p.id === id);
+  if (!provider) return PRESTATAIRE_FALLBACK;
+
+  const firstNameMatch = provider.nom.match(/^(\S+)/);
+  const prenom = firstNameMatch ? firstNameMatch[1] : provider.nom.split(" ")[0];
+  const emailSlug = provider.nom.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 20);
+
+  return {
+    ...PRESTATAIRE_FALLBACK,
+    nom: provider.nom,
+    metier: provider.metier,
+    ville: provider.ville,
+    region: provider.region,
+    note: provider.note,
+    nbAvis: provider.avis,
+    verifie: provider.verifie,
+    prixMin: provider.prixMin,
+    photo: provider.photo,
+    couverture: COUVERTURES[provider.metier] ?? PRESTATAIRE_FALLBACK.couverture,
+    email: `contact@${emailSlug}.fr`,
+    site: `www.${emailSlug}.fr`,
+    instagram: `@${emailSlug}`,
+    description: provider.description + `\n\nBasé(e) à ${provider.ville} en ${provider.region}, nous intervenons sur toute la région et dans toute la France sur devis. Contactez-nous pour en savoir plus sur nos disponibilités et nos formules.`,
+  };
+}
 
 const GALERIE = [
   { id: 1, src: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=600&q=80", alt: "Cérémonie en plein air", tall: true },
@@ -205,7 +250,10 @@ function Stars({ note, size = "sm" }: { note: number; size?: "sm" | "md" | "lg" 
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
 
-function SectionAPropos() {
+type PrestatireData = ReturnType<typeof buildPrestataire>;
+
+function SectionAPropos({ prestataire }: { prestataire: PrestatireData }) {
+  const PRESTATAIRE = prestataire;
   return (
     <div className="space-y-8">
       {/* Description */}
@@ -380,7 +428,8 @@ function SectionGalerie() {
   );
 }
 
-function SectionAvis() {
+function SectionAvis({ prestataire }: { prestataire: PrestatireData }) {
+  const PRESTATAIRE = prestataire;
   return (
     <div className="space-y-6">
       {/* Note globale */}
@@ -523,7 +572,8 @@ function SectionTarifs() {
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 
-function Sidebar() {
+function Sidebar({ prestataire }: { prestataire: PrestatireData }) {
+  const PRESTATAIRE = prestataire;
   const [saved, setSaved] = useState(false);
 
   return (
@@ -660,7 +710,8 @@ function Sidebar() {
 
 // ─── Composant principal ──────────────────────────────────────────────────────
 
-export default function PrestataireProfil() {
+export default function PrestataireProfil({ id }: { id?: number }) {
+  const PRESTATAIRE = buildPrestataire(id ?? 1);
   const [activeTab, setActiveTab] = useState<Tab>("apropos");
   const [saved, setSaved] = useState(false);
 
@@ -729,7 +780,7 @@ export default function PrestataireProfil() {
                     </span>
                   )}
                 </div>
-                <p className="text-white/90 text-base font-medium drop-shadow mb-2">{PRESTATAIRE.metier}</p>
+                <p className="text-[#374151] text-base font-medium drop-shadow mb-2">{PRESTATAIRE.metier}</p>
                 <div className="flex flex-wrap items-center gap-3 text-sm">
                   <span className="flex items-center gap-1 text-white/80 drop-shadow">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -798,16 +849,16 @@ export default function PrestataireProfil() {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Colonne principale */}
           <div className="flex-1 min-w-0">
-            {activeTab === "apropos" && <SectionAPropos />}
+            {activeTab === "apropos" && <SectionAPropos prestataire={PRESTATAIRE} />}
             {activeTab === "galerie" && <SectionGalerie />}
-            {activeTab === "avis" && <SectionAvis />}
+            {activeTab === "avis" && <SectionAvis prestataire={PRESTATAIRE} />}
             {activeTab === "tarifs" && <SectionTarifs />}
           </div>
 
           {/* Sidebar */}
           <aside className="w-full lg:w-80 flex-shrink-0">
             <div className="lg:sticky lg:top-36">
-              <Sidebar />
+              <Sidebar prestataire={PRESTATAIRE} />
             </div>
           </aside>
         </div>
