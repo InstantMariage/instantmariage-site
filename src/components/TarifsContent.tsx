@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const plans = [
   {
@@ -19,7 +20,7 @@ const plans = [
       "Visible dans les recherches",
     ],
     cta: "Commencer gratuitement",
-    ctaHref: "#",
+    priceId: null,
     recommended: false,
   },
   {
@@ -38,7 +39,7 @@ const plans = [
       "Formulaire de contact",
     ],
     cta: "Choisir Starter",
-    ctaHref: "#",
+    priceId: "price_1TJbwsKKBs85XtqBLVsaufd4",
     recommended: false,
   },
   {
@@ -58,7 +59,7 @@ const plans = [
       "Statistiques de visites",
     ],
     cta: "Choisir Pro",
-    ctaHref: "#",
+    priceId: "price_1TJbxsKKBs85XtqBAmc694HG",
     recommended: true,
   },
   {
@@ -78,7 +79,7 @@ const plans = [
       "Accès aux mariés en avant-première",
     ],
     cta: "Choisir Premium",
-    ctaHref: "#",
+    priceId: "price_1TJbybKKBs85XtqBlgW83WvF",
     recommended: false,
   },
 ];
@@ -128,8 +129,35 @@ function CheckIcon() {
 }
 
 export default function TarifsContent() {
+  const router = useRouter();
   const [annual, setAnnual] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+
+  async function handleSubscribe(plan: typeof plans[number]) {
+    if (!plan.priceId) {
+      router.push("/inscription");
+      return;
+    }
+    setLoadingPlan(plan.id);
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ priceId: plan.priceId }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert("Une erreur est survenue. Veuillez réessayer.");
+        setLoadingPlan(null);
+      }
+    } catch {
+      alert("Une erreur est survenue. Veuillez réessayer.");
+      setLoadingPlan(null);
+    }
+  }
 
   return (
     <div className="pt-20 md:pt-24">
@@ -378,9 +406,10 @@ export default function TarifsContent() {
                     </ul>
 
                     {/* CTA Button */}
-                    <Link
-                      href={plan.ctaHref}
-                      className={`block w-full text-center text-sm font-semibold px-6 py-3.5 rounded-2xl transition-all duration-200 ${
+                    <button
+                      onClick={() => handleSubscribe(plan)}
+                      disabled={loadingPlan === plan.id}
+                      className={`block w-full text-center text-sm font-semibold px-6 py-3.5 rounded-2xl transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed ${
                         isPro
                           ? "bg-white text-rose-500 hover:bg-rose-50 shadow-md hover:shadow-lg"
                           : isGold
@@ -397,8 +426,8 @@ export default function TarifsContent() {
                           : {}
                       }
                     >
-                      {plan.cta}
-                    </Link>
+                      {loadingPlan === plan.id ? "Chargement…" : plan.cta}
+                    </button>
                   </div>
                 </div>
               );

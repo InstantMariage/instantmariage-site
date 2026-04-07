@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { supabase } from "@/lib/supabase";
@@ -122,13 +122,23 @@ function getInitials(name: string): string {
     .join("");
 }
 
-export default function DashboardPrestataire() {
+function DashboardPrestataire() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<"avis" | "messages">("messages");
   const [authChecked, setAuthChecked] = useState(false);
   const [nomEntreprise, setNomEntreprise] = useState("");
   const [categorie, setCategorie] = useState("");
   const [ville, setVille] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("success") === "true") {
+      setShowSuccess(true);
+      const timer = setTimeout(() => setShowSuccess(false), 8000);
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -176,6 +186,25 @@ export default function DashboardPrestataire() {
   return (
     <main className="min-h-screen bg-gray-50">
       <Header />
+
+      {showSuccess && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg px-4">
+          <div
+            className="flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl text-white text-sm font-medium"
+            style={{ background: "linear-gradient(135deg, #16a34a, #15803d)" }}
+          >
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+            </svg>
+            <span>Abonnement activé avec succès ! Bienvenue dans votre nouvel espace prestataire.</span>
+            <button onClick={() => setShowSuccess(false)} className="ml-auto flex-shrink-0 opacity-70 hover:opacity-100">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="pt-20 pb-16">
         {/* Hero Header */}
@@ -510,5 +539,13 @@ export default function DashboardPrestataire() {
 
       <Footer />
     </main>
+  );
+}
+
+export default function DashboardPrestatairePage() {
+  return (
+    <Suspense>
+      <DashboardPrestataire />
+    </Suspense>
   );
 }
