@@ -4,10 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
+const WEDDING_IMG = "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80";
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,13 +21,18 @@ export default function LoginPage() {
     <div className="min-h-screen flex">
       {/* Left — Photo */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        <Image
-          src="/mariage-hero.jpg"
-          alt="Mariage élégant"
-          fill
-          className="object-cover"
-          priority
-        />
+        {!imgError ? (
+          <Image
+            src={WEDDING_IMG}
+            alt="Mariage élégant"
+            fill
+            className="object-cover"
+            priority
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-rose-900 via-rose-700 to-rose-400" />
+        )}
         <div className="absolute inset-0 bg-gradient-to-br from-rose-900/40 via-rose-800/20 to-transparent" />
         <div className="absolute inset-0 flex flex-col justify-between p-12">
           <Link href="/" className="flex items-center gap-2.5 group">
