@@ -10,9 +10,6 @@ import { supabase } from "@/lib/supabase";
 const stats = [
   {
     label: "Vues du profil",
-    value: "247",
-    change: "+12%",
-    up: true,
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -22,9 +19,6 @@ const stats = [
   },
   {
     label: "Contacts reçus",
-    value: "18",
-    change: "+3",
-    up: true,
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -33,9 +27,6 @@ const stats = [
   },
   {
     label: "Devis envoyés",
-    value: "9",
-    change: "+2",
-    up: true,
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -44,62 +35,11 @@ const stats = [
   },
   {
     label: "Note moyenne",
-    value: "4.8",
-    change: "↑ 0.2",
-    up: true,
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
       </svg>
     ),
-  },
-];
-
-const reviews = [
-  {
-    name: "Sophie & Thomas",
-    date: "28 mars 2026",
-    rating: 5,
-    text: "Un travail exceptionnel, des photos magnifiques qui capturent parfaitement l'émotion de notre journée. Nous recommandons vivement !",
-    avatar: "ST",
-  },
-  {
-    name: "Camille & Antoine",
-    date: "15 mars 2026",
-    rating: 5,
-    text: "Professionnel, discret et talentueux. Nos souvenirs sont immortalisés de la plus belle des façons.",
-    avatar: "CA",
-  },
-  {
-    name: "Lucie & Romain",
-    date: "2 mars 2026",
-    rating: 4,
-    text: "Très belles photos, une prestation soignée du début à la fin. Merci pour votre disponibilité.",
-    avatar: "LR",
-  },
-];
-
-const messages = [
-  {
-    name: "Emma Dupont",
-    preview: "Bonjour, nous sommes intéressés par votre formule complète pour notre mariage en juillet...",
-    time: "Aujourd'hui, 14h32",
-    unread: true,
-    avatar: "ED",
-  },
-  {
-    name: "Julien Martin",
-    preview: "Pourriez-vous nous envoyer votre disponibilité pour le 12 septembre 2026 ?",
-    time: "Hier, 09h15",
-    unread: true,
-    avatar: "JM",
-  },
-  {
-    name: "Clara Leroy",
-    preview: "Merci pour le devis, nous allons en discuter et revenir vers vous rapidement.",
-    time: "5 avr.",
-    unread: false,
-    avatar: "CL",
   },
 ];
 
@@ -270,19 +210,10 @@ function DashboardPrestataire() {
                   >
                     {stat.icon}
                   </div>
-                  <span
-                    className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                    style={{
-                      background: stat.up ? "#F0FDF4" : "#FEF2F2",
-                      color: stat.up ? "#16A34A" : "#DC2626",
-                    }}
-                  >
-                    {stat.change}
-                  </span>
                 </div>
-                <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+                <div className="text-2xl font-bold text-gray-300">—</div>
                 <div className="text-xs text-gray-500 mt-0.5">{stat.label}</div>
-                <div className="text-xs text-gray-400 mt-1">Ce mois-ci</div>
+                <div className="text-xs text-gray-400 mt-1">Données à venir</div>
               </div>
             ))}
           </div>
@@ -304,14 +235,6 @@ function DashboardPrestataire() {
                       }}
                     >
                       {tab === "messages" ? "Mes messages" : "Mes avis"}
-                      {tab === "messages" && (
-                        <span
-                          className="ml-2 text-xs px-2 py-0.5 rounded-full"
-                          style={{ background: "#FFF0F5", color: "#F06292" }}
-                        >
-                          2
-                        </span>
-                      )}
                       {activeTab === tab && (
                         <div
                           className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full"
@@ -323,84 +246,32 @@ function DashboardPrestataire() {
                 </div>
 
                 {activeTab === "messages" && (
-                  <div className="divide-y divide-gray-50">
-                    {messages.map((msg) => (
-                      <div
-                        key={msg.name}
-                        className="flex items-start gap-3 p-4 hover:bg-gray-50 transition-colors cursor-pointer"
-                      >
-                        <div
-                          className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
-                          style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)" }}
-                        >
-                          {msg.avatar}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className={`text-sm font-semibold ${msg.unread ? "text-gray-900" : "text-gray-600"}`}>
-                              {msg.name}
-                            </span>
-                            <span className="text-xs text-gray-400 flex-shrink-0">{msg.time}</span>
-                          </div>
-                          <p className="text-sm text-gray-500 truncate mt-0.5">{msg.preview}</p>
-                        </div>
-                        {msg.unread && (
-                          <div
-                            className="w-2 h-2 rounded-full flex-shrink-0 mt-2"
-                            style={{ background: "#F06292" }}
-                          />
-                        )}
-                      </div>
-                    ))}
-                    <div className="p-4">
-                      <Link
-                        href="/messages"
-                        className="text-sm font-semibold flex items-center justify-center gap-1 py-2 rounded-xl hover:bg-gray-50 transition-colors"
-                        style={{ color: "#F06292" }}
-                      >
-                        Voir tous les messages
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </Link>
+                  <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
+                    <div
+                      className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
+                      style={{ background: "#FFF0F5" }}
+                    >
+                      <svg className="w-7 h-7" style={{ color: "#F06292" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
                     </div>
+                    <p className="font-semibold text-gray-700 mb-1">Pas encore de messages</p>
+                    <p className="text-sm text-gray-400">Vos échanges avec les futurs mariés apparaîtront ici</p>
                   </div>
                 )}
 
                 {activeTab === "avis" && (
-                  <div className="divide-y divide-gray-50">
-                    {reviews.map((review) => (
-                      <div key={review.name} className="p-4">
-                        <div className="flex items-start gap-3">
-                          <div
-                            className="w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                            style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)" }}
-                          >
-                            {review.avatar}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="text-sm font-semibold text-gray-900">{review.name}</span>
-                              <span className="text-xs text-gray-400">{review.date}</span>
-                            </div>
-                            <Stars count={review.rating} />
-                            <p className="text-sm text-gray-600 mt-1.5 leading-relaxed">{review.text}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    <div className="p-4">
-                      <Link
-                        href="/avis"
-                        className="text-sm font-semibold flex items-center justify-center gap-1 py-2 rounded-xl hover:bg-gray-50 transition-colors"
-                        style={{ color: "#F06292" }}
-                      >
-                        Voir tous mes avis
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </Link>
+                  <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
+                    <div
+                      className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
+                      style={{ background: "#FFF0F5" }}
+                    >
+                      <svg className="w-7 h-7" style={{ color: "#F06292" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                      </svg>
                     </div>
+                    <p className="font-semibold text-gray-700 mb-1">Pas encore d&apos;avis</p>
+                    <p className="text-sm text-gray-400">Les avis de vos clients apparaîtront ici après leurs mariages</p>
                   </div>
                 )}
               </div>

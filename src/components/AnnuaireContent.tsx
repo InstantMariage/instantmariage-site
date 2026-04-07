@@ -637,9 +637,17 @@ export default function AnnuaireContent() {
           <div className="flex-1 min-w-0">
             {/* Sort + count bar */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
-              <p className="text-gray-500 text-sm">
-                <span className="font-bold text-gray-900">{filtered.length}</span> prestataire{filtered.length !== 1 ? "s" : ""} trouvé{filtered.length !== 1 ? "s" : ""}
-              </p>
+              <div className="flex items-center gap-3 flex-wrap">
+                <p className="text-gray-500 text-sm">
+                  <span className="font-bold text-gray-900">{filtered.length}</span> prestataire{filtered.length !== 1 ? "s" : ""} trouvé{filtered.length !== 1 ? "s" : ""}
+                </p>
+                <span className="inline-flex items-center gap-1 text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full border border-gray-200">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Profils de démonstration
+                </span>
+              </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-500 whitespace-nowrap">Trier par</span>
                 <select

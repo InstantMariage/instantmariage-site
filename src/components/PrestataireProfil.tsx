@@ -107,61 +107,6 @@ const GALERIE = [
   { id: 9, src: "https://images.unsplash.com/photo-1523438885200-e635ba2c371e?w=600&q=80", alt: "Confettis", tall: false },
 ];
 
-const AVIS = [
-  {
-    id: 1,
-    prenom: "Camille & Thomas",
-    photo: "https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=100&q=80",
-    dateMariage: "Juin 2025",
-    lieu: "Château de la Pioline, Aix-en-Provence",
-    note: 5,
-    commentaire: "Lucie est une photographe exceptionnelle ! Elle a su capturer chaque moment avec une sensibilité rare. Les photos sont sublimes, lumineuses et naturelles. Elle est discrète pendant le jour J mais toujours au bon endroit au bon moment. Nos albums sont magnifiques, on les regarde encore et encore. Merci infiniment Lucie !",
-  },
-  {
-    id: 2,
-    prenom: "Amandine & Rémi",
-    photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80",
-    dateMariage: "Septembre 2024",
-    lieu: "Bastide des Magnans, Marseille",
-    note: 5,
-    commentaire: "On a eu le coup de cœur pour le style de Lucie dès qu'on a vu son portfolio. Elle correspond exactement à ce qu'on cherchait : des photos naturelles, des couleurs chaudes, beaucoup d'émotion. La séance engagement avant le mariage nous a vraiment mis à l'aise. Parfaite du début à la fin.",
-  },
-  {
-    id: 3,
-    prenom: "Sophie & Marc",
-    photo: "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=100&q=80",
-    dateMariage: "Mai 2024",
-    lieu: "Les Calanques, Marseille",
-    note: 5,
-    commentaire: "Lucie a immortalisé notre mariage dans les calanques de façon magistrale. Les lumières dorées, la mer turquoise... elle a tout saisi. Très professionnelle, ponctuelle, et tellement agréable à travailler avec. Livraison des photos en 4 semaines comme promis. Je recommande à 100% !",
-  },
-  {
-    id: 4,
-    prenom: "Laura & Axel",
-    photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80",
-    dateMariage: "Juillet 2024",
-    lieu: "Domaine de la Croix, Var",
-    note: 4,
-    commentaire: "Très belles photos, Lucie est professionnelle et sympathique. Quelques photos un peu sombres en intérieur mais dans l'ensemble on est ravis du résultat. La séance de couple au coucher de soleil est magique.",
-  },
-  {
-    id: 5,
-    prenom: "Inès & Guillaume",
-    photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80",
-    dateMariage: "Octobre 2024",
-    lieu: "Abbaye de Silvacane, Var",
-    note: 5,
-    commentaire: "Un grand merci à Lucie pour ces souvenirs inoubliables. Elle a su créer une belle ambiance, mettre nos invités à l'aise. Les photos racontent vraiment l'histoire de notre journée. On reviendra pour un renouvellement de vœux !",
-  },
-];
-
-const REPARTITION_NOTES = [
-  { etoiles: 5, count: 128, pct: 90 },
-  { etoiles: 4, count: 11, pct: 8 },
-  { etoiles: 3, count: 3, pct: 2 },
-  { etoiles: 2, count: 1, pct: 0.5 },
-  { etoiles: 1, count: 0, pct: 0 },
-];
 
 const TARIFS = [
   {
@@ -428,68 +373,22 @@ function SectionGalerie() {
   );
 }
 
-function SectionAvis({ prestataire }: { prestataire: PrestatireData }) {
-  const PRESTATAIRE = prestataire;
+function SectionAvis() {
   return (
     <div className="space-y-6">
-      {/* Note globale */}
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
         <h2 className="text-xl font-bold text-gray-900 mb-6">Avis clients</h2>
-        <div className="flex flex-col sm:flex-row gap-8 items-center sm:items-start">
-          {/* Score global */}
-          <div className="text-center flex-shrink-0">
-            <div className="text-6xl font-bold text-gray-900 leading-none">{PRESTATAIRE.note}</div>
-            <Stars note={PRESTATAIRE.note} size="lg" />
-            <p className="text-sm text-gray-500 mt-2">{PRESTATAIRE.nbAvis} avis vérifiés</p>
+        <div className="flex flex-col items-center justify-center py-10 text-center">
+          <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mb-4">
+            <svg className="w-8 h-8 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+            </svg>
           </div>
-          {/* Barres */}
-          <div className="flex-1 w-full space-y-2">
-            {REPARTITION_NOTES.map((r) => (
-              <div key={r.etoiles} className="flex items-center gap-3">
-                <span className="text-sm text-gray-500 w-3 text-right">{r.etoiles}</span>
-                <svg className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-                <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
-                  <div
-                    className="h-full bg-amber-400 rounded-full transition-all duration-700"
-                    style={{ width: `${r.pct}%` }}
-                  />
-                </div>
-                <span className="text-xs text-gray-400 w-8">{r.count}</span>
-              </div>
-            ))}
-          </div>
+          <p className="font-semibold text-gray-700 mb-1">Soyez le premier à laisser un avis</p>
+          <p className="text-sm text-gray-400 max-w-sm">
+            Les avis clients apparaîtront ici après leurs mariages. Votre retour d&apos;expérience aide les futurs mariés à choisir en confiance.
+          </p>
         </div>
-      </div>
-
-      {/* Liste des avis */}
-      <div className="space-y-4">
-        {AVIS.map((avis) => (
-          <div key={avis.id} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <div className="flex items-start gap-4">
-              <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-                <Image src={avis.photo} alt={avis.prenom} fill className="object-cover" sizes="48px" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
-                  <h4 className="font-semibold text-gray-900">{avis.prenom}</h4>
-                  <div className="flex items-center gap-2">
-                    <Stars note={avis.note} size="sm" />
-                    <span className="text-xs text-gray-400">{avis.dateMariage}</span>
-                  </div>
-                </div>
-                <p className="text-xs text-gray-400 mb-3">
-                  <svg className="w-3 h-3 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  </svg>
-                  {avis.lieu}
-                </p>
-                <p className="text-gray-600 text-sm leading-relaxed">{avis.commentaire}</p>
-              </div>
-            </div>
-          </div>
-        ))}
       </div>
     </div>
   );
@@ -718,7 +617,7 @@ export default function PrestataireProfil({ id }: { id?: number }) {
   const tabs: { id: Tab; label: string }[] = [
     { id: "apropos", label: "À propos" },
     { id: "galerie", label: "Galerie" },
-    { id: "avis", label: `Avis (${PRESTATAIRE.nbAvis})` },
+    { id: "avis", label: "Avis" },
     { id: "tarifs", label: "Tarifs" },
   ];
 
@@ -851,7 +750,7 @@ export default function PrestataireProfil({ id }: { id?: number }) {
           <div className="flex-1 min-w-0">
             {activeTab === "apropos" && <SectionAPropos prestataire={PRESTATAIRE} />}
             {activeTab === "galerie" && <SectionGalerie />}
-            {activeTab === "avis" && <SectionAvis prestataire={PRESTATAIRE} />}
+            {activeTab === "avis" && <SectionAvis />}
             {activeTab === "tarifs" && <SectionTarifs />}
           </div>
 

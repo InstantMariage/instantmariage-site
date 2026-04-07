@@ -42,52 +42,6 @@ const soonTools = [
   },
 ];
 
-const savedVendors = [
-  {
-    name: "Atelier Lumière",
-    category: "Photographe",
-    rating: 4.9,
-    reviews: 87,
-    location: "Paris 11e",
-    avatar: "AL",
-    contacted: true,
-  },
-  {
-    name: "Château des Bruyères",
-    category: "Lieu de réception",
-    rating: 4.8,
-    reviews: 134,
-    location: "Seine-et-Marne",
-    avatar: "CB",
-    contacted: false,
-  },
-  {
-    name: "Fleurs de Soie",
-    category: "Fleuriste",
-    rating: 4.7,
-    reviews: 52,
-    location: "Paris 6e",
-    avatar: "FS",
-    contacted: true,
-  },
-];
-
-const messages = [
-  {
-    name: "Marc Lefebvre Photo",
-    preview: "Bonjour, j'ai bien reçu votre message. Je serais disponible le 12 septembre...",
-    time: "Aujourd'hui, 15h04",
-    unread: true,
-    avatar: "ML",
-  },
-  {
-    name: "Château des Bruyères",
-    preview: "Nous avons le plaisir de vous transmettre notre brochure tarifaire 2026.",
-    time: "Hier, 11h20",
-    unread: false,
-    avatar: "CB",
-  },
-];
 
 interface CheckItem {
   id: number;
@@ -334,95 +288,46 @@ export default function DashboardMarie() {
                     Découvrir +
                   </Link>
                 </div>
-                <div className="divide-y divide-gray-50">
-                  {savedVendors.map((vendor) => (
-                    <div
-                      key={vendor.name}
-                      className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors"
-                    >
-                      <div
-                        className="w-11 h-11 rounded-xl flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
-                        style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)" }}
-                      >
-                        {vendor.avatar}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-sm font-semibold text-gray-900">{vendor.name}</span>
-                          <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                            {vendor.category}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Stars count={vendor.rating} />
-                          <span className="text-xs text-gray-500">{vendor.rating} ({vendor.reviews} avis)</span>
-                          <span className="text-xs text-gray-400">· {vendor.location}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        {vendor.contacted && (
-                          <span
-                            className="text-xs font-medium px-2 py-0.5 rounded-full"
-                            style={{ background: "#F0FDF4", color: "#16A34A" }}
-                          >
-                            Contacté
-                          </span>
-                        )}
-                        <Link
-                          href={`/prestataires/${vendor.name.toLowerCase().replace(/\s/g, "-")}`}
-                          className="text-xs font-semibold px-3 py-1.5 rounded-full border transition-all duration-200 hover:bg-rose-50"
-                          style={{ borderColor: "#F06292", color: "#F06292" }}
-                        >
-                          Voir
-                        </Link>
-                      </div>
-                    </div>
-                  ))}
+                <div className="flex flex-col items-center justify-center py-10 px-6 text-center">
+                  <div
+                    className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
+                    style={{ background: "#FFF0F5" }}
+                  >
+                    <svg className="w-7 h-7" style={{ color: "#F06292" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                  </div>
+                  <p className="font-semibold text-gray-700 mb-1">Aucun prestataire sauvegardé</p>
+                  <p className="text-sm text-gray-400 mb-4">Explorez l&apos;annuaire et sauvegardez vos coups de cœur</p>
+                  <Link
+                    href="/prestataires"
+                    className="text-sm font-semibold px-5 py-2.5 rounded-full transition-all duration-200 hover:opacity-90"
+                    style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)", color: "white" }}
+                  >
+                    Parcourir l&apos;annuaire
+                  </Link>
                 </div>
               </div>
 
               {/* Messages */}
               <div className="bg-white rounded-2xl shadow-card overflow-hidden">
                 <div className="flex items-center justify-between px-6 pt-6 pb-4">
-                  <h2 className="font-semibold text-gray-900">
-                    Mes messages
-                    <span
-                      className="ml-2 text-xs px-2 py-0.5 rounded-full"
-                      style={{ background: "#FFF0F5", color: "#F06292" }}
-                    >
-                      1
-                    </span>
-                  </h2>
+                  <h2 className="font-semibold text-gray-900">Mes messages</h2>
                   <Link href="/messages" className="text-xs font-semibold" style={{ color: "#F06292" }}>
                     Tout voir
                   </Link>
                 </div>
-                <div className="divide-y divide-gray-50">
-                  {messages.map((msg) => (
-                    <div
-                      key={msg.name}
-                      className="flex items-start gap-3 px-6 py-4 hover:bg-gray-50 transition-colors cursor-pointer"
-                    >
-                      <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                        style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)" }}
-                      >
-                        {msg.avatar}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className={`text-sm font-semibold ${msg.unread ? "text-gray-900" : "text-gray-600"}`}>
-                            {msg.name}
-                          </span>
-                          <span className="text-xs text-gray-400 flex-shrink-0">{msg.time}</span>
-                        </div>
-                        <p className="text-sm text-gray-500 truncate mt-0.5">{msg.preview}</p>
-                      </div>
-                      {msg.unread && (
-                        <div className="w-2 h-2 rounded-full flex-shrink-0 mt-2" style={{ background: "#F06292" }} />
-                      )}
-                    </div>
-                  ))}
+                <div className="flex flex-col items-center justify-center py-10 px-6 text-center">
+                  <div
+                    className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
+                    style={{ background: "#FFF0F5" }}
+                  >
+                    <svg className="w-7 h-7" style={{ color: "#F06292" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <p className="font-semibold text-gray-700 mb-1">Pas encore de messages</p>
+                  <p className="text-sm text-gray-400">Contactez un prestataire pour démarrer une conversation</p>
                 </div>
               </div>
             </div>
