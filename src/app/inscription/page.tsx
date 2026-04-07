@@ -63,34 +63,60 @@ export default function InscriptionPage() {
         ? { role: "marie", prenom: mPrenom, nom: mNom, date_mariage: mDate || null }
         : { role: "prestataire", nom_entreprise: pEntreprise, categorie: pMetier, ville: pVille, telephone: pTel };
 
+    console.log("[inscription] Tentative signUp", { email, accountType, metadata });
+
     const { data: signUpData, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: { data: metadata },
     });
 
+    console.log("[inscription] Résultat signUp", { user: signUpData?.user?.id, authError });
+
     if (authError) {
+      console.error("[inscription] Erreur auth Supabase:", authError);
       setLoading(false);
       setError(authError.message === "User already registered"
         ? "Un compte existe déjà avec cet email."
-        : "Une erreur est survenue. Veuillez réessayer.");
+        : `Erreur : ${authError.message}`);
       return;
     }
 
-    if (accountType === "marie" && signUpData.user) {
-      await supabase.from("maries").insert({
+    if (!signUpData.user) {
+      console.error("[inscription] Pas d'utilisateur retourné par signUp");
+      setLoading(false);
+      setError("Erreur : aucun utilisateur créé. Vérifiez la configuration Supabase.");
+      return;
+    }
+
+    if (accountType === "marie") {
+      const { error: insertError } = await supabase.from("maries").insert({
         user_id: signUpData.user.id,
         prenom_marie1: mPrenom,
         date_mariage: mDate || null,
       });
-    } else if (accountType === "prestataire" && signUpData.user) {
-      await supabase.from("prestataires").insert({
+      if (insertError) console.error("[inscription] Erreur insert maries:", insertError);
+    } else if (accountType === "prestataire") {
+      console.log("[inscription] Insert prestataire", {
         user_id: signUpData.user.id,
         nom_entreprise: pEntreprise,
         categorie: pMetier,
         ville: pVille,
         telephone: pTel,
       });
+      const { error: insertError } = await supabase.from("prestataires").insert({
+        user_id: signUpData.user.id,
+        nom_entreprise: pEntreprise,
+        categorie: pMetier,
+        ville: pVille,
+        telephone: pTel,
+      });
+      if (insertError) {
+        console.error("[inscription] Erreur insert prestataires:", insertError);
+        setLoading(false);
+        setError(`Erreur création profil prestataire : ${insertError.message}`);
+        return;
+      }
     }
 
     setLoading(false);
