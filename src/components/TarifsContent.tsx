@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 const plans = [
   {
@@ -133,18 +134,39 @@ export default function TarifsContent() {
   const [annual, setAnnual] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [prestataireId, setPrestataireId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) return;
+      const { data } = await supabase
+        .from("prestataires")
+        .select("id")
+        .eq("user_id", session.user.id)
+        .single();
+      if (data) setPrestataireId(data.id);
+    });
+  }, []);
 
   async function handleSubscribe(plan: typeof plans[number]) {
     if (!plan.priceId) {
       router.push("/inscription");
       return;
     }
+
+    // Vérifier que l'utilisateur est connecté avant de payer
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      router.push("/login?redirect=/tarifs");
+      return;
+    }
+
     setLoadingPlan(plan.id);
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId: plan.priceId }),
+        body: JSON.stringify({ priceId: plan.priceId, prestataireId }),
       });
       const data = await res.json();
       if (data.url) {

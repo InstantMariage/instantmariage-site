@@ -13,7 +13,7 @@ const ALLOWED_PRICE_IDS = new Set([
 
 export async function POST(req: NextRequest) {
   try {
-    const { priceId } = await req.json();
+    const { priceId, prestataireId } = await req.json();
 
     if (!priceId || !ALLOWED_PRICE_IDS.has(priceId)) {
       return NextResponse.json({ error: "Price ID invalide" }, { status: 400 });
@@ -21,12 +21,23 @@ export async function POST(req: NextRequest) {
 
     const origin = req.headers.get("origin") ?? "http://localhost:3000";
 
-    const session = await stripe.checkout.sessions.create({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sessionParams: any = {
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${origin}/dashboard/prestataire?success=true`,
       cancel_url: `${origin}/tarifs`,
-    });
+    };
+
+    // Attacher le prestataire_id aux métadonnées si disponible
+    if (prestataireId) {
+      sessionParams.metadata = { prestataire_id: prestataireId };
+      sessionParams.subscription_data = {
+        metadata: { prestataire_id: prestataireId },
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     return NextResponse.json({ url: session.url });
   } catch (error) {

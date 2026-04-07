@@ -46,14 +46,18 @@ export type Marie = {
   updated_at: string
 }
 
+export type PlanAbonnement = 'gratuit' | 'starter' | 'pro' | 'premium'
+
 export type Abonnement = {
   id: string
   prestataire_id: string
-  plan: 'gratuit' | 'essentiel' | 'premium'
+  plan: PlanAbonnement
   statut: 'actif' | 'inactif' | 'expire'
   date_debut: string
   date_fin: string | null
   prix: number
+  stripe_subscription_id: string | null
+  stripe_customer_id: string | null
   created_at: string
 }
 

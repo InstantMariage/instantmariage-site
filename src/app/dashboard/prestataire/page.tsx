@@ -6,6 +6,80 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { supabase } from "@/lib/supabase";
+import type { PlanAbonnement } from "@/lib/supabase";
+
+// ─── Config des plans ────────────────────────────────────────────────────────
+
+type PlanConfig = {
+  label: string
+  badgeColor: string
+  badgeBg: string
+  features: string[]
+  canAccessDevis: boolean
+  canAccessFactures: boolean
+  canAccessContrats: boolean
+  hasPremiumBadge: boolean
+  devisLabel: string
+  upgradeLabel: string | null
+  upgradeHref: string | null
+}
+
+const PLAN_CONFIG: Record<PlanAbonnement, PlanConfig> = {
+  gratuit: {
+    label: "GRATUIT",
+    badgeColor: "white",
+    badgeBg: "#6B7280",
+    features: ["Profil de base visible", "Annuaire des prestataires"],
+    canAccessDevis: false,
+    canAccessFactures: false,
+    canAccessContrats: false,
+    hasPremiumBadge: false,
+    devisLabel: "",
+    upgradeLabel: "Passer Starter →",
+    upgradeHref: "/tarifs",
+  },
+  starter: {
+    label: "STARTER",
+    badgeColor: "white",
+    badgeBg: "#3B82F6",
+    features: ["Profil enrichi", "Générateur de devis (limité)", "Support email"],
+    canAccessDevis: true,
+    canAccessFactures: false,
+    canAccessContrats: false,
+    hasPremiumBadge: false,
+    devisLabel: "Limité à 5 devis/mois",
+    upgradeLabel: "Passer Pro →",
+    upgradeHref: "/tarifs",
+  },
+  pro: {
+    label: "PRO",
+    badgeColor: "white",
+    badgeBg: "#F06292",
+    features: ["Devis illimités", "Factures & contrats", "Statistiques avancées", "Support prioritaire"],
+    canAccessDevis: true,
+    canAccessFactures: true,
+    canAccessContrats: true,
+    hasPremiumBadge: false,
+    devisLabel: "Illimité",
+    upgradeLabel: "Passer Premium →",
+    upgradeHref: "/tarifs",
+  },
+  premium: {
+    label: "PREMIUM",
+    badgeColor: "white",
+    badgeBg: "#F59E0B",
+    features: ["Tout Pro inclus", "Badge Premium", "Profil en avant-première", "Support dédié"],
+    canAccessDevis: true,
+    canAccessFactures: true,
+    canAccessContrats: true,
+    hasPremiumBadge: true,
+    devisLabel: "Illimité",
+    upgradeLabel: null,
+    upgradeHref: null,
+  },
+};
+
+// ─── Composants ─────────────────────────────────────────────────────────────
 
 const stats = [
   {
@@ -62,6 +136,31 @@ function getInitials(name: string): string {
     .join("");
 }
 
+function LockOverlay({ planRequired }: { planRequired: string }) {
+  return (
+    <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center z-10 gap-2">
+      <div
+        className="w-10 h-10 rounded-full flex items-center justify-center"
+        style={{ background: "#FFF0F5" }}
+      >
+        <svg className="w-5 h-5" style={{ color: "#F06292" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+      </div>
+      <p className="text-sm font-semibold text-gray-700">Réservé au plan {planRequired}</p>
+      <Link
+        href="/tarifs"
+        className="text-xs font-semibold px-4 py-1.5 rounded-full text-white transition-all hover:opacity-90"
+        style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)" }}
+      >
+        Mettre à niveau →
+      </Link>
+    </div>
+  );
+}
+
+// ─── Dashboard ───────────────────────────────────────────────────────────────
+
 function DashboardPrestataire() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -71,6 +170,8 @@ function DashboardPrestataire() {
   const [categorie, setCategorie] = useState("");
   const [ville, setVille] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [plan, setPlan] = useState<PlanAbonnement>("gratuit");
+  const [dateRenouvellement, setDateRenouvellement] = useState<string | null>(null);
 
   useEffect(() => {
     if (searchParams.get("success") === "true") {
@@ -84,44 +185,53 @@ function DashboardPrestataire() {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) {
         router.replace("/login");
-      } else {
-        const { data } = await supabase
-          .from("prestataires")
-          .select("nom_entreprise, categorie, ville")
-          .eq("user_id", session.user.id)
+        return;
+      }
+
+      // Récupérer profil prestataire
+      const { data: prestataire } = await supabase
+        .from("prestataires")
+        .select("id, nom_entreprise, categorie, ville")
+        .eq("user_id", session.user.id)
+        .single();
+
+      if (prestataire) {
+        setNomEntreprise(prestataire.nom_entreprise || "");
+        setCategorie(prestataire.categorie || "");
+        setVille(prestataire.ville || "");
+
+        // Récupérer l'abonnement actif
+        const { data: abonnement } = await supabase
+          .from("abonnements")
+          .select("plan, statut, date_fin")
+          .eq("prestataire_id", prestataire.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
           .single();
 
-        if (data) {
-          setNomEntreprise(data.nom_entreprise || "");
-          setCategorie(data.categorie || "");
-          setVille(data.ville || "");
-        } else {
-          const meta = session.user.user_metadata;
-          setNomEntreprise(meta?.nom_entreprise || session.user.email?.split("@")[0] || "");
-          setCategorie(meta?.categorie || "");
-          setVille(meta?.ville || "");
+        if (abonnement && abonnement.statut === "actif") {
+          setPlan(abonnement.plan as PlanAbonnement);
+          if (abonnement.date_fin) {
+            const d = new Date(abonnement.date_fin);
+            setDateRenouvellement(
+              d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })
+            );
+          }
         }
-        setAuthChecked(true);
+      } else {
+        const meta = session.user.user_metadata;
+        setNomEntreprise(meta?.nom_entreprise || session.user.email?.split("@")[0] || "");
+        setCategorie(meta?.categorie || "");
+        setVille(meta?.ville || "");
       }
+
+      setAuthChecked(true);
     });
   }, [router]);
 
   if (!authChecked) return null;
 
-  const Stars = ({ count }: { count: number }) => (
-    <div className="flex gap-0.5">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <svg
-          key={i}
-          className={`w-4 h-4 ${i <= count ? "text-amber-400" : "text-gray-200"}`}
-          fill="currentColor"
-          viewBox="0 0 20 20"
-        >
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-        </svg>
-      ))}
-    </div>
-  );
+  const planConfig = PLAN_CONFIG[plan];
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -150,9 +260,7 @@ function DashboardPrestataire() {
         {/* Hero Header */}
         <div
           className="px-4 py-10"
-          style={{
-            background: "linear-gradient(135deg, #F06292 0%, #E91E8C 100%)",
-          }}
+          style={{ background: "linear-gradient(135deg, #F06292 0%, #E91E8C 100%)" }}
         >
           <div className="max-w-6xl mx-auto">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -171,13 +279,17 @@ function DashboardPrestataire() {
                     <span
                       className="text-xs font-semibold px-3 py-1 rounded-full"
                       style={{
-                        background: "rgba(255,255,255,0.25)",
-                        color: "white",
-                        backdropFilter: "blur(4px)",
+                        background: planConfig.badgeBg,
+                        color: planConfig.badgeColor,
                       }}
                     >
-                      PRO
+                      {planConfig.label}
                     </span>
+                    {planConfig.hasPremiumBadge && (
+                      <span className="text-xs font-semibold px-3 py-1 rounded-full" style={{ background: "#F59E0B", color: "white" }}>
+                        ★ Premium
+                      </span>
+                    )}
                   </div>
                   <p className="text-rose-100 text-sm mt-0.5">
                     {[categorie, ville].filter(Boolean).join(" · ")}
@@ -230,9 +342,7 @@ function DashboardPrestataire() {
                       key={tab}
                       onClick={() => setActiveTab(tab)}
                       className="flex-1 py-4 text-sm font-semibold transition-all duration-200 relative"
-                      style={{
-                        color: activeTab === tab ? "#F06292" : "#9CA3AF",
-                      }}
+                      style={{ color: activeTab === tab ? "#F06292" : "#9CA3AF" }}
                     >
                       {tab === "messages" ? "Mes messages" : "Mes avis"}
                       {activeTab === tab && (
@@ -247,10 +357,7 @@ function DashboardPrestataire() {
 
                 {activeTab === "messages" && (
                   <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
-                    <div
-                      className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
-                      style={{ background: "#FFF0F5" }}
-                    >
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: "#FFF0F5" }}>
                       <svg className="w-7 h-7" style={{ color: "#F06292" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
@@ -262,10 +369,7 @@ function DashboardPrestataire() {
 
                 {activeTab === "avis" && (
                   <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
-                    <div
-                      className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
-                      style={{ background: "#FFF0F5" }}
-                    >
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: "#FFF0F5" }}>
                       <svg className="w-7 h-7" style={{ color: "#F06292" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                       </svg>
@@ -279,31 +383,60 @@ function DashboardPrestataire() {
               {/* Mes Outils */}
               <div className="bg-white rounded-2xl shadow-card p-6">
                 <h2 className="font-semibold text-gray-900 mb-4">Mes outils</h2>
-                <a
-                  href="https://wedding-devis.vercel.app"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-xl border border-gray-100 hover:border-rose-200 hover:bg-rose-50/30 transition-all duration-200 group"
-                >
-                  <div
-                    className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 text-2xl"
-                    style={{ background: "#FFF0F5" }}
+
+                {/* Générateur de Devis */}
+                <div className="relative">
+                  {!planConfig.canAccessDevis && (
+                    <LockOverlay planRequired="Starter" />
+                  )}
+                  <a
+                    href={planConfig.canAccessDevis ? "https://wedding-devis.vercel.app" : undefined}
+                    target={planConfig.canAccessDevis ? "_blank" : undefined}
+                    rel="noopener noreferrer"
+                    className={`flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-xl border transition-all duration-200 group ${
+                      planConfig.canAccessDevis
+                        ? "border-gray-100 hover:border-rose-200 hover:bg-rose-50/30 cursor-pointer"
+                        : "border-gray-100 cursor-default select-none opacity-60"
+                    }`}
                   >
-                    📄
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-sm font-semibold text-gray-900">Générateur de Devis, Factures & Contrats</div>
-                    <div className="text-xs text-gray-500 mt-1 leading-relaxed">
-                      Créez vos devis professionnels, convertissez-les en factures et générez vos contrats en quelques clics
+                    <div
+                      className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 text-2xl"
+                      style={{ background: "#FFF0F5" }}
+                    >
+                      📄
                     </div>
-                  </div>
-                  <span
-                    className="flex-shrink-0 text-xs font-semibold px-4 py-2 rounded-xl transition-all duration-200 group-hover:opacity-90 whitespace-nowrap"
-                    style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)", color: "white" }}
-                  >
-                    Accéder à l&apos;outil →
-                  </span>
-                </a>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <div className="text-sm font-semibold text-gray-900">Générateur de Devis, Factures & Contrats</div>
+                        {planConfig.canAccessDevis && planConfig.devisLabel && (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">
+                            {planConfig.devisLabel}
+                          </span>
+                        )}
+                        {planConfig.canAccessDevis && !planConfig.canAccessFactures && (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">
+                            Devis uniquement
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1 leading-relaxed">
+                        {planConfig.canAccessDevis
+                          ? planConfig.canAccessFactures
+                            ? "Créez vos devis professionnels, convertissez-les en factures et générez vos contrats en quelques clics"
+                            : "Créez vos devis professionnels. Passez en Pro pour accéder aux factures et contrats."
+                          : "Disponible à partir du plan Starter — créez vos devis professionnels"}
+                      </div>
+                    </div>
+                    {planConfig.canAccessDevis && (
+                      <span
+                        className="flex-shrink-0 text-xs font-semibold px-4 py-2 rounded-xl transition-all duration-200 group-hover:opacity-90 whitespace-nowrap"
+                        style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)", color: "white" }}
+                      >
+                        Accéder à l&apos;outil →
+                      </span>
+                    )}
+                  </a>
+                </div>
               </div>
             </div>
 
@@ -332,9 +465,7 @@ function DashboardPrestataire() {
                     <div key={s.label} className="flex items-center gap-2.5">
                       <div
                         className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
-                        style={{
-                          background: s.done ? "#F0FDF4" : "#F3F4F6",
-                        }}
+                        style={{ background: s.done ? "#F0FDF4" : "#F3F4F6" }}
                       >
                         {s.done ? (
                           <svg className="w-3 h-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -371,18 +502,13 @@ function DashboardPrestataire() {
                     <h2 className="font-semibold text-white">Mon abonnement</h2>
                     <span
                       className="text-xs font-bold px-2.5 py-1 rounded-full"
-                      style={{ background: "#F06292" }}
+                      style={{ background: planConfig.badgeBg }}
                     >
-                      PRO
+                      {planConfig.label}
                     </span>
                   </div>
                   <div className="space-y-2 mb-5">
-                    {[
-                      "Profil en avant première",
-                      "Outils de gestion",
-                      "Statistiques avancées",
-                      "Support prioritaire",
-                    ].map((feat) => (
+                    {planConfig.features.map((feat) => (
                       <div key={feat} className="flex items-center gap-2">
                         <svg className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "#F06292" }} fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -391,16 +517,31 @@ function DashboardPrestataire() {
                       </div>
                     ))}
                   </div>
-                  <div className="text-xs text-gray-400 mb-4">
-                    Renouvellement le <span className="text-white font-medium">15 mai 2026</span>
-                  </div>
-                  <Link
-                    href="/abonnement/upgrade"
-                    className="block w-full text-center py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 hover:opacity-90"
-                    style={{ background: "#F06292" }}
-                  >
-                    Passer Premium →
-                  </Link>
+
+                  {dateRenouvellement && plan !== "gratuit" && (
+                    <div className="text-xs text-gray-400 mb-4">
+                      Renouvellement le <span className="text-white font-medium">{dateRenouvellement}</span>
+                    </div>
+                  )}
+
+                  {planConfig.upgradeLabel && planConfig.upgradeHref && (
+                    <Link
+                      href={planConfig.upgradeHref}
+                      className="block w-full text-center py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 hover:opacity-90"
+                      style={{ background: "#F06292" }}
+                    >
+                      {planConfig.upgradeLabel}
+                    </Link>
+                  )}
+
+                  {plan === "premium" && (
+                    <div
+                      className="text-center py-2.5 rounded-xl text-sm font-semibold"
+                      style={{ background: "rgba(245,158,11,0.2)", color: "#F59E0B" }}
+                    >
+                      ★ Vous êtes Premium !
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
