@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
-const WEDDING_IMG = "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80";
+const WEDDING_IMG = "https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&q=95";
 
 type AccountType = "marie" | "prestataire" | null;
 
