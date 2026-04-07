@@ -83,7 +83,7 @@ const PROVIDERS: Provider[] = [
     verifie: true,
     prixMin: 1800,
     prixLabel: "à partir de 1 800 €",
-    photo: "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=500&q=80",
+    photo: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=500&q=80",
     disponible: true,
     nouveau: false,
     description: "Photographe de mariage depuis 10 ans, spécialiste du reportage naturel et émotionnel.",
@@ -99,7 +99,7 @@ const PROVIDERS: Provider[] = [
     verifie: true,
     prixMin: 1200,
     prixLabel: "à partir de 1 200 €",
-    photo: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=500&q=80",
+    photo: "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500&q=80",
     disponible: true,
     nouveau: false,
     description: "Films de mariage cinématographiques, drone inclus. Style moderne et épuré.",
@@ -115,7 +115,7 @@ const PROVIDERS: Provider[] = [
     verifie: true,
     prixMin: 3500,
     prixLabel: "à partir de 3 500 €",
-    photo: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=500&q=80",
+    photo: "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=500&q=80",
     disponible: false,
     nouveau: false,
     description: "Domaine provençal de charme, 200 couverts, piscine et jardins fleuris.",
@@ -131,7 +131,7 @@ const PROVIDERS: Provider[] = [
     verifie: true,
     prixMin: 800,
     prixLabel: "à partir de 800 €",
-    photo: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=500&q=80",
+    photo: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=500&q=80",
     disponible: true,
     nouveau: false,
     description: "DJ professionnel, sonorisation et lumières incluses. Playlist personnalisée.",
@@ -147,7 +147,7 @@ const PROVIDERS: Provider[] = [
     verifie: false,
     prixMin: 600,
     prixLabel: "à partir de 600 €",
-    photo: "https://images.unsplash.com/photo-1487530811015-780780a7e2b3?w=500&q=80",
+    photo: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=500&q=80",
     disponible: true,
     nouveau: true,
     description: "Bouquets de mariée, art floral de cérémonie et décoration de tables.",
@@ -163,7 +163,7 @@ const PROVIDERS: Provider[] = [
     verifie: true,
     prixMin: 2500,
     prixLabel: "à partir de 2 500 €",
-    photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=500&q=80",
+    photo: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=500&q=80",
     disponible: true,
     nouveau: false,
     description: "Wedding planner certifiée, organisation complète ou coordination jour J.",
@@ -179,7 +179,7 @@ const PROVIDERS: Provider[] = [
     verifie: true,
     prixMin: 55,
     prixLabel: "à partir de 55 €/pers.",
-    photo: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=500&q=80",
+    photo: "https://images.unsplash.com/photo-1555244162-803834f70033?w=500&q=80",
     disponible: true,
     nouveau: false,
     description: "Cuisine méditerranéenne raffinée, cocktail dînatoire ou service à table.",
@@ -195,7 +195,7 @@ const PROVIDERS: Provider[] = [
     verifie: true,
     prixMin: 350,
     prixLabel: "à partir de 350 €",
-    photo: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=500&q=80",
+    photo: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500&q=80",
     disponible: true,
     nouveau: false,
     description: "Coiffure et maquillage mariée + témoins. Essai offert sur chaque prestation.",
@@ -211,7 +211,7 @@ const PROVIDERS: Provider[] = [
     verifie: true,
     prixMin: 4500,
     prixLabel: "à partir de 4 500 €",
-    photo: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=500&q=80",
+    photo: "https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?w=500&q=80",
     disponible: false,
     nouveau: false,
     description: "Château du XVIIe siècle, parc de 5 ha, hébergement sur place, 150 couverts.",
@@ -227,7 +227,7 @@ const PROVIDERS: Provider[] = [
     verifie: true,
     prixMin: 1500,
     prixLabel: "à partir de 1 500 €",
-    photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=500&q=80",
+    photo: "https://images.unsplash.com/photo-1537633468-59c7b5e33577?w=500&q=80",
     disponible: true,
     nouveau: false,
     description: "Reportage mariage et portraits de couple. Livraison album premium incluse.",
@@ -243,7 +243,7 @@ const PROVIDERS: Provider[] = [
     verifie: true,
     prixMin: 450,
     prixLabel: "à partir de 450 €",
-    photo: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&q=80",
+    photo: "https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=500&q=80",
     disponible: true,
     nouveau: true,
     description: "Wedding cakes sur mesure, pièces montées et candy bar. Dégustation offerte.",
@@ -259,12 +259,29 @@ const PROVIDERS: Provider[] = [
     verifie: false,
     prixMin: 2200,
     prixLabel: "à partir de 2 200 €",
-    photo: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&q=80",
+    photo: "https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=500&q=80",
     disponible: true,
     nouveau: true,
     description: "Quatuor à cordes et jazz band, cérémonie laïque et soirée. Répertoire illimité.",
   },
 ];
+
+// ─── Fallback images par métier ───────────────────────────────────────────────
+
+const FALLBACK_IMAGES: Record<string, string> = {
+  "Photographe": "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=500&q=80",
+  "Vidéaste": "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500&q=80",
+  "Salle de réception": "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=500&q=80",
+  "DJ / Animateur": "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=500&q=80",
+  "Fleuriste": "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=500&q=80",
+  "Wedding Planner": "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=500&q=80",
+  "Traiteur / Restauration": "https://images.unsplash.com/photo-1555244162-803834f70033?w=500&q=80",
+  "Coiffeur & Maquilleur": "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500&q=80",
+  "Orchestre / Groupe": "https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=500&q=80",
+  "Pâtissier / Wedding cake": "https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=500&q=80",
+};
+
+const DEFAULT_FALLBACK = "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=500&q=80";
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -298,6 +315,7 @@ function ProviderCard({ provider }: { provider: Provider }) {
           src={provider.photo}
           alt={provider.nom}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          onError={(e) => { e.currentTarget.src = FALLBACK_IMAGES[provider.metier] ?? DEFAULT_FALLBACK; e.currentTarget.onerror = null; }}
         />
         {/* Badges top */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5">
