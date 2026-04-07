@@ -85,12 +85,12 @@ export default function InscriptionPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-rose-900/50 via-rose-700/25 to-transparent" />
         <div className="absolute inset-0 flex flex-col justify-between p-12">
           <Link href="/" className="flex items-center gap-2.5">
-            <div style={{ mixBlendMode: "multiply" }}>
+            <div style={{ mixBlendMode: "normal" }}>
               <Image src="/logo.png" alt="InstantMariage logo" width={44} height={44} />
             </div>
             <span className="text-2xl font-bold" style={{ fontFamily: "var(--font-playfair), serif" }}>
-              <span className="text-white">Instant</span>
-              <span className="text-white/90">Mariage.fr</span>
+              <span style={{ color: "#F06292" }}>Instant</span>
+              <span style={{ color: "white" }}>Mariage.fr</span>
             </span>
           </Link>
           <div className="text-white">

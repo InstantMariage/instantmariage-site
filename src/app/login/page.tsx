@@ -36,7 +36,7 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
         <div className="absolute inset-0 flex flex-col justify-between p-12">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div style={{ mixBlendMode: "multiply" }}>
+            <div style={{ mixBlendMode: "normal" }}>
               <Image src="/logo.png" alt="InstantMariage logo" width={44} height={44} />
             </div>
             <span
