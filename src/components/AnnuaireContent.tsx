@@ -1,0 +1,916 @@
+"use client";
+
+import { useState, useMemo } from "react";
+
+// ─── Data ────────────────────────────────────────────────────────────────────
+
+const METIERS = [
+  "Tous les métiers",
+  "Photographe",
+  "Vidéaste",
+  "DJ / Animateur",
+  "Traiteur / Restauration",
+  "Fleuriste",
+  "Salle de réception",
+  "Coiffeur & Maquilleur",
+  "Wedding Planner",
+  "Orchestre / Groupe",
+  "Voiture de mariée",
+  "Pâtissier / Wedding cake",
+  "Officiant de cérémonie",
+  "Décorateur",
+];
+
+const REGIONS = [
+  "Toute la France",
+  "Île-de-France",
+  "Provence-Alpes-Côte d'Azur",
+  "Auvergne-Rhône-Alpes",
+  "Occitanie",
+  "Nouvelle-Aquitaine",
+  "Bretagne",
+  "Normandie",
+  "Grand Est",
+  "Hauts-de-France",
+  "Pays de la Loire",
+  "Bourgogne-Franche-Comté",
+  "Centre-Val de Loire",
+  "Corse",
+];
+
+const DEPARTEMENTS: Record<string, string[]> = {
+  "Île-de-France": ["Paris (75)", "Seine-et-Marne (77)", "Yvelines (78)", "Essonne (91)", "Hauts-de-Seine (92)", "Seine-Saint-Denis (93)", "Val-de-Marne (94)", "Val-d'Oise (95)"],
+  "Provence-Alpes-Côte d'Azur": ["Bouches-du-Rhône (13)", "Var (83)", "Alpes-Maritimes (06)", "Vaucluse (84)", "Hautes-Alpes (05)", "Alpes-de-Haute-Provence (04)"],
+  "Auvergne-Rhône-Alpes": ["Rhône (69)", "Isère (38)", "Haute-Savoie (74)", "Savoie (73)", "Ain (01)", "Loire (42)", "Puy-de-Dôme (63)"],
+  "Occitanie": ["Haute-Garonne (31)", "Hérault (34)", "Gard (30)", "Pyrénées-Orientales (66)", "Aude (11)"],
+  "Nouvelle-Aquitaine": ["Gironde (33)", "Pyrénées-Atlantiques (64)", "Charente-Maritime (17)", "Lot-et-Garonne (47)"],
+  "Bretagne": ["Ille-et-Vilaine (35)", "Finistère (29)", "Morbihan (56)", "Côtes-d'Armor (22)"],
+  "Normandie": ["Seine-Maritime (76)", "Calvados (14)", "Manche (50)", "Orne (61)", "Eure (27)"],
+  "Grand Est": ["Bas-Rhin (67)", "Haut-Rhin (68)", "Moselle (57)", "Meurthe-et-Moselle (54)", "Marne (51)"],
+  "Hauts-de-France": ["Nord (59)", "Pas-de-Calais (62)", "Somme (80)", "Oise (60)", "Aisne (02)"],
+  "Pays de la Loire": ["Loire-Atlantique (44)", "Maine-et-Loire (49)", "Sarthe (72)", "Vendée (85)", "Mayenne (53)"],
+  "Bourgogne-Franche-Comté": ["Côte-d'Or (21)", "Saône-et-Loire (71)", "Yonne (89)", "Doubs (25)"],
+  "Centre-Val de Loire": ["Loiret (45)", "Indre-et-Loire (37)", "Loir-et-Cher (41)", "Eure-et-Loir (28)"],
+  "Corse": ["Corse-du-Sud (2A)", "Haute-Corse (2B)"],
+};
+
+interface Provider {
+  id: number;
+  nom: string;
+  metier: string;
+  ville: string;
+  region: string;
+  note: number;
+  avis: number;
+  verifie: boolean;
+  prixMin: number;
+  prixLabel: string;
+  photo: string;
+  disponible: boolean;
+  nouveau: boolean;
+  description: string;
+}
+
+const PROVIDERS: Provider[] = [
+  {
+    id: 1,
+    nom: "Sophie Martin Photographie",
+    metier: "Photographe",
+    ville: "Paris",
+    region: "Île-de-France",
+    note: 4.9,
+    avis: 127,
+    verifie: true,
+    prixMin: 1800,
+    prixLabel: "à partir de 1 800 €",
+    photo: "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=500&q=80",
+    disponible: true,
+    nouveau: false,
+    description: "Photographe de mariage depuis 10 ans, spécialiste du reportage naturel et émotionnel.",
+  },
+  {
+    id: 2,
+    nom: "Julien Films & Cinéma",
+    metier: "Vidéaste",
+    ville: "Lyon",
+    region: "Auvergne-Rhône-Alpes",
+    note: 4.8,
+    avis: 89,
+    verifie: true,
+    prixMin: 1200,
+    prixLabel: "à partir de 1 200 €",
+    photo: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=500&q=80",
+    disponible: true,
+    nouveau: false,
+    description: "Films de mariage cinématographiques, drone inclus. Style moderne et épuré.",
+  },
+  {
+    id: 3,
+    nom: "Le Mas des Oliviers",
+    metier: "Salle de réception",
+    ville: "Aix-en-Provence",
+    region: "Provence-Alpes-Côte d'Azur",
+    note: 4.7,
+    avis: 204,
+    verifie: true,
+    prixMin: 3500,
+    prixLabel: "à partir de 3 500 €",
+    photo: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=500&q=80",
+    disponible: false,
+    nouveau: false,
+    description: "Domaine provençal de charme, 200 couverts, piscine et jardins fleuris.",
+  },
+  {
+    id: 4,
+    nom: "DJ Mix & Mariage",
+    metier: "DJ / Animateur",
+    ville: "Bordeaux",
+    region: "Nouvelle-Aquitaine",
+    note: 4.6,
+    avis: 63,
+    verifie: true,
+    prixMin: 800,
+    prixLabel: "à partir de 800 €",
+    photo: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=500&q=80",
+    disponible: true,
+    nouveau: false,
+    description: "DJ professionnel, sonorisation et lumières incluses. Playlist personnalisée.",
+  },
+  {
+    id: 5,
+    nom: "Fleurs de Mariage Nantes",
+    metier: "Fleuriste",
+    ville: "Nantes",
+    region: "Pays de la Loire",
+    note: 4.8,
+    avis: 51,
+    verifie: false,
+    prixMin: 600,
+    prixLabel: "à partir de 600 €",
+    photo: "https://images.unsplash.com/photo-1487530811015-780780a7e2b3?w=500&q=80",
+    disponible: true,
+    nouveau: true,
+    description: "Bouquets de mariée, art floral de cérémonie et décoration de tables.",
+  },
+  {
+    id: 6,
+    nom: "Marie-Claire Events",
+    metier: "Wedding Planner",
+    ville: "Paris",
+    region: "Île-de-France",
+    note: 5.0,
+    avis: 38,
+    verifie: true,
+    prixMin: 2500,
+    prixLabel: "à partir de 2 500 €",
+    photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=500&q=80",
+    disponible: true,
+    nouveau: false,
+    description: "Wedding planner certifiée, organisation complète ou coordination jour J.",
+  },
+  {
+    id: 7,
+    nom: "Traiteur Provençal",
+    metier: "Traiteur / Restauration",
+    ville: "Marseille",
+    region: "Provence-Alpes-Côte d'Azur",
+    note: 4.5,
+    avis: 176,
+    verifie: true,
+    prixMin: 55,
+    prixLabel: "à partir de 55 €/pers.",
+    photo: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=500&q=80",
+    disponible: true,
+    nouveau: false,
+    description: "Cuisine méditerranéenne raffinée, cocktail dînatoire ou service à table.",
+  },
+  {
+    id: 8,
+    nom: "Élodie Beauté Mariage",
+    metier: "Coiffeur & Maquilleur",
+    ville: "Strasbourg",
+    region: "Grand Est",
+    note: 4.9,
+    avis: 94,
+    verifie: true,
+    prixMin: 350,
+    prixLabel: "à partir de 350 €",
+    photo: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=500&q=80",
+    disponible: true,
+    nouveau: false,
+    description: "Coiffure et maquillage mariée + témoins. Essai offert sur chaque prestation.",
+  },
+  {
+    id: 9,
+    nom: "Château des Landes",
+    metier: "Salle de réception",
+    ville: "Rennes",
+    region: "Bretagne",
+    note: 4.6,
+    avis: 87,
+    verifie: true,
+    prixMin: 4500,
+    prixLabel: "à partir de 4 500 €",
+    photo: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=500&q=80",
+    disponible: false,
+    nouveau: false,
+    description: "Château du XVIIe siècle, parc de 5 ha, hébergement sur place, 150 couverts.",
+  },
+  {
+    id: 10,
+    nom: "Antoine Leblanc Photo",
+    metier: "Photographe",
+    ville: "Lille",
+    region: "Hauts-de-France",
+    note: 4.7,
+    avis: 72,
+    verifie: true,
+    prixMin: 1500,
+    prixLabel: "à partir de 1 500 €",
+    photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=500&q=80",
+    disponible: true,
+    nouveau: false,
+    description: "Reportage mariage et portraits de couple. Livraison album premium incluse.",
+  },
+  {
+    id: 11,
+    nom: "Pâtisserie Lumière",
+    metier: "Pâtissier / Wedding cake",
+    ville: "Nice",
+    region: "Provence-Alpes-Côte d'Azur",
+    note: 4.8,
+    avis: 45,
+    verifie: true,
+    prixMin: 450,
+    prixLabel: "à partir de 450 €",
+    photo: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&q=80",
+    disponible: true,
+    nouveau: true,
+    description: "Wedding cakes sur mesure, pièces montées et candy bar. Dégustation offerte.",
+  },
+  {
+    id: 12,
+    nom: "Les Voix du Bonheur",
+    metier: "Orchestre / Groupe",
+    ville: "Toulouse",
+    region: "Occitanie",
+    note: 4.7,
+    avis: 29,
+    verifie: false,
+    prixMin: 2200,
+    prixLabel: "à partir de 2 200 €",
+    photo: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&q=80",
+    disponible: true,
+    nouveau: true,
+    description: "Quatuor à cordes et jazz band, cérémonie laïque et soirée. Répertoire illimité.",
+  },
+];
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function StarRating({ note }: { note: number }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((star) => {
+        const filled = note >= star;
+        const half = !filled && note >= star - 0.5;
+        return (
+          <svg
+            key={star}
+            className={`w-3.5 h-3.5 ${filled || half ? "text-amber-400" : "text-gray-200"}`}
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+        );
+      })}
+    </div>
+  );
+}
+
+function ProviderCard({ provider }: { provider: Provider }) {
+  return (
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md border border-gray-100 transition-all duration-300 group flex flex-col">
+      {/* Image */}
+      <div className="relative h-48 overflow-hidden">
+        <img
+          src={provider.photo}
+          alt={provider.nom}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+        />
+        {/* Badges top */}
+        <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+          {provider.verifie && (
+            <span className="inline-flex items-center gap-1 bg-white/95 backdrop-blur-sm text-rose-500 text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm">
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              Vérifié
+            </span>
+          )}
+          {provider.nouveau && (
+            <span className="inline-flex items-center bg-emerald-500 text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm">
+              Nouveau
+            </span>
+          )}
+        </div>
+        {/* Disponibilité */}
+        <div className="absolute top-3 right-3">
+          <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full backdrop-blur-sm shadow-sm ${
+            provider.disponible
+              ? "bg-white/95 text-emerald-600"
+              : "bg-white/95 text-gray-400"
+          }`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${provider.disponible ? "bg-emerald-500" : "bg-gray-300"}`} />
+            {provider.disponible ? "Disponible" : "Complet"}
+          </span>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-4 flex flex-col flex-1">
+        {/* Métier */}
+        <span className="text-xs font-semibold text-rose-400 uppercase tracking-wider mb-1.5">
+          {provider.metier}
+        </span>
+        {/* Nom */}
+        <h3 className="font-bold text-gray-900 text-base mb-1 leading-snug group-hover:text-rose-500 transition-colors">
+          {provider.nom}
+        </h3>
+        {/* Ville */}
+        <div className="flex items-center gap-1 text-gray-400 text-sm mb-2">
+          <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <span>{provider.ville}</span>
+        </div>
+        {/* Description */}
+        <p className="text-gray-500 text-xs leading-relaxed mb-3 flex-1 line-clamp-2">
+          {provider.description}
+        </p>
+
+        {/* Note */}
+        <div className="flex items-center gap-2 mb-3">
+          <StarRating note={provider.note} />
+          <span className="text-sm font-bold text-gray-800">{provider.note.toFixed(1)}</span>
+          <span className="text-xs text-gray-400">({provider.avis} avis)</span>
+        </div>
+
+        {/* Prix + CTA */}
+        <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+          <div>
+            <span className="text-xs text-gray-400">Prix</span>
+            <p className="text-sm font-bold text-gray-900">{provider.prixLabel}</p>
+          </div>
+          <button className="bg-rose-400 hover:bg-rose-500 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md">
+            Voir le profil
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Pagination ───────────────────────────────────────────────────────────────
+
+function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (p: number) => void;
+}) {
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+  return (
+    <div className="flex items-center justify-center gap-2 mt-10">
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center text-gray-500 hover:border-rose-300 hover:text-rose-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+      >
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+      {pages.map((p) => (
+        <button
+          key={p}
+          onClick={() => onPageChange(p)}
+          className={`w-10 h-10 rounded-xl text-sm font-medium transition-all ${
+            p === currentPage
+              ? "bg-rose-400 text-white shadow-sm"
+              : "border border-gray-200 text-gray-600 hover:border-rose-300 hover:text-rose-500"
+          }`}
+        >
+          {p}
+        </button>
+      ))}
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="w-10 h-10 rounded-xl border border-gray-200 flex items-center justify-center text-gray-500 hover:border-rose-300 hover:text-rose-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+      >
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+
+const ITEMS_PER_PAGE = 12;
+
+export default function AnnuaireContent() {
+  // Search bar state
+  const [searchMetier, setSearchMetier] = useState("");
+  const [searchRegion, setSearchRegion] = useState("");
+  const [searchBudgetMax, setSearchBudgetMax] = useState("");
+
+  // Active filters state (applied after clicking "Rechercher")
+  const [activeMetier, setActiveMetier] = useState("");
+  const [activeRegion, setActiveRegion] = useState("");
+  const [activeBudgetMax, setActiveBudgetMax] = useState(10000);
+
+  // Sidebar filters
+  const [sideMetier, setSideMetier] = useState("");
+  const [sideDept, setSideDept] = useState("");
+  const [sideBudget, setSideBudget] = useState(10000);
+  const [sideNoteMin, setSideNoteMin] = useState(0);
+  const [sideVerifie, setSideVerifie] = useState(false);
+  const [sideDisponible, setSideDisponible] = useState(false);
+
+  // UI state
+  const [tri, setTri] = useState("pertinence");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
+  // Derived: departements for selected sidebar region
+  const sidebarRegion = activeRegion || searchRegion;
+  const deptList = sidebarRegion && sidebarRegion !== "Toute la France"
+    ? (DEPARTEMENTS[sidebarRegion] || [])
+    : [];
+
+  // Apply search bar
+  function handleSearch() {
+    setActiveMetier(searchMetier);
+    setActiveRegion(searchRegion);
+    setActiveBudgetMax(searchBudgetMax ? parseInt(searchBudgetMax) : 10000);
+    setSideMetier(searchMetier);
+    setSideDept("");
+    setCurrentPage(1);
+  }
+
+  // Filtered + sorted results
+  const filtered = useMemo(() => {
+    let list = PROVIDERS.filter((p) => {
+      // Métier (sidebar takes priority)
+      const metier = sideMetier || activeMetier;
+      if (metier && metier !== "Tous les métiers" && p.metier !== metier) return false;
+      // Région
+      const region = activeRegion;
+      if (region && region !== "Toute la France" && p.region !== region) return false;
+      // Budget
+      if (p.prixMin > activeBudgetMax) return false;
+      // Note min
+      if (p.note < sideNoteMin) return false;
+      // Vérifié
+      if (sideVerifie && !p.verifie) return false;
+      // Disponible
+      if (sideDisponible && !p.disponible) return false;
+      return true;
+    });
+
+    // Sort
+    if (tri === "note") {
+      list = [...list].sort((a, b) => b.note - a.note);
+    } else if (tri === "prix_asc") {
+      list = [...list].sort((a, b) => a.prixMin - b.prixMin);
+    } else if (tri === "prix_desc") {
+      list = [...list].sort((a, b) => b.prixMin - a.prixMin);
+    } else if (tri === "nouveaux") {
+      list = [...list].sort((a, b) => (b.nouveau ? 1 : 0) - (a.nouveau ? 1 : 0));
+    }
+
+    return list;
+  }, [activeMetier, activeRegion, activeBudgetMax, sideMetier, sideNoteMin, sideVerifie, sideDisponible, tri]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  function handlePageChange(p: number) {
+    setCurrentPage(p);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function resetFilters() {
+    setSideMetier("");
+    setSideDept("");
+    setSideBudget(10000);
+    setSideNoteMin(0);
+    setSideVerifie(false);
+    setSideDisponible(false);
+    setActiveMetier("");
+    setActiveRegion("");
+    setActiveBudgetMax(10000);
+    setSearchMetier("");
+    setSearchRegion("");
+    setSearchBudgetMax("");
+    setCurrentPage(1);
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
+
+  return (
+    <>
+      {/* ── Hero / Search Bar ─────────────────────────────────────────── */}
+      <section className="bg-gradient-to-br from-rose-500 via-rose-400 to-pink-400 pt-28 pb-16 px-4">
+        <div className="max-w-5xl mx-auto text-center">
+          <h1
+            className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-3"
+            style={{ fontFamily: "var(--font-playfair), serif" }}
+          >
+            Annuaire des prestataires mariage
+          </h1>
+          <p className="text-white/85 text-base md:text-lg mb-10 max-w-2xl mx-auto">
+            Plus de <strong className="text-white">12 000 professionnels vérifiés</strong> partout en France
+          </p>
+
+          {/* Search card */}
+          <div className="bg-white rounded-2xl shadow-2xl p-3 md:p-4">
+            <div className="flex flex-col md:flex-row gap-3">
+              {/* Métier */}
+              <div className="flex-1 relative">
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-rose-400 pointer-events-none">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <select
+                  value={searchMetier}
+                  onChange={(e) => setSearchMetier(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3.5 text-gray-700 text-sm bg-gray-50 hover:bg-gray-100 rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none cursor-pointer font-medium"
+                >
+                  {METIERS.map((m) => (
+                    <option key={m} value={m === "Tous les métiers" ? "" : m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="hidden md:block w-px bg-gray-200 my-1" />
+
+              {/* Région */}
+              <div className="flex-1 relative">
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-rose-400 pointer-events-none">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <select
+                  value={searchRegion}
+                  onChange={(e) => setSearchRegion(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3.5 text-gray-700 text-sm bg-gray-50 hover:bg-gray-100 rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none cursor-pointer font-medium"
+                >
+                  {REGIONS.map((r) => (
+                    <option key={r} value={r === "Toute la France" ? "" : r}>
+                      {r}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="hidden md:block w-px bg-gray-200 my-1" />
+
+              {/* Budget */}
+              <div className="flex-1 relative">
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-rose-400 pointer-events-none">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <input
+                  type="number"
+                  placeholder="Budget max (€)"
+                  value={searchBudgetMax}
+                  onChange={(e) => setSearchBudgetMax(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3.5 text-gray-700 text-sm bg-gray-50 hover:bg-gray-100 rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-rose-300 font-medium placeholder-gray-400"
+                />
+              </div>
+
+              {/* Search button */}
+              <button
+                onClick={handleSearch}
+                className="bg-rose-400 hover:bg-rose-500 text-white font-semibold px-8 py-3.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow-lg flex items-center justify-center gap-2 whitespace-nowrap"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                Rechercher
+              </button>
+            </div>
+          </div>
+
+          {/* Quick tags */}
+          <div className="flex flex-wrap justify-center gap-2 mt-6">
+            {["Photographe Paris", "DJ Lyon", "Traiteur PACA", "Wedding Planner Bordeaux", "Fleuriste Nantes"].map((tag) => (
+              <button
+                key={tag}
+                className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-xs px-3.5 py-1.5 rounded-full border border-white/30 transition-all"
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Main content ──────────────────────────────────────────────── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="flex gap-8">
+
+          {/* ── Sidebar Filters ──────────────────────────────────────── */}
+          {/* Mobile toggle */}
+          <div className="lg:hidden mb-4 w-full">
+            <button
+              onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
+              className="w-full flex items-center justify-between bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-semibold text-gray-700 shadow-sm"
+            >
+              <span className="flex items-center gap-2">
+                <svg className="w-4 h-4 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                Filtrer les résultats
+              </span>
+              <svg
+                className={`w-4 h-4 transition-transform ${mobileFiltersOpen ? "rotate-180" : ""}`}
+                fill="none" viewBox="0 0 24 24" stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Sidebar */}
+          <aside className={`
+            lg:w-72 lg:flex-shrink-0 lg:block
+            ${mobileFiltersOpen ? "block w-full" : "hidden"}
+          `}>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden sticky top-24">
+              {/* Header */}
+              <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <h2 className="font-bold text-gray-900 text-sm">Filtres</h2>
+                <button
+                  onClick={resetFilters}
+                  className="text-xs text-rose-400 hover:text-rose-600 font-medium transition-colors"
+                >
+                  Réinitialiser
+                </button>
+              </div>
+
+              <div className="px-5 py-5 space-y-6">
+
+                {/* Métier */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    Métier
+                  </label>
+                  <select
+                    value={sideMetier}
+                    onChange={(e) => { setSideMetier(e.target.value); setCurrentPage(1); }}
+                    className="w-full px-3 py-2.5 text-sm text-gray-700 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none"
+                  >
+                    {METIERS.map((m) => (
+                      <option key={m} value={m === "Tous les métiers" ? "" : m}>{m}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Région */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    Région
+                  </label>
+                  <select
+                    value={activeRegion}
+                    onChange={(e) => { setActiveRegion(e.target.value); setSideDept(""); setCurrentPage(1); }}
+                    className="w-full px-3 py-2.5 text-sm text-gray-700 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none"
+                  >
+                    {REGIONS.map((r) => (
+                      <option key={r} value={r === "Toute la France" ? "" : r}>{r}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Département */}
+                {deptList.length > 0 && (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                      Département
+                    </label>
+                    <select
+                      value={sideDept}
+                      onChange={(e) => { setSideDept(e.target.value); setCurrentPage(1); }}
+                      className="w-full px-3 py-2.5 text-sm text-gray-700 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none"
+                    >
+                      <option value="">Tous les départements</option>
+                      {deptList.map((d) => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Budget slider */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                    Budget maximum
+                    <span className="float-right text-rose-400 font-bold normal-case tracking-normal">
+                      {sideBudget >= 10000 ? "Illimité" : `${sideBudget.toLocaleString("fr-FR")} €`}
+                    </span>
+                  </label>
+                  <input
+                    type="range"
+                    min={200}
+                    max={10000}
+                    step={100}
+                    value={sideBudget}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      setSideBudget(val);
+                      setActiveBudgetMax(val);
+                      setCurrentPage(1);
+                    }}
+                    className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-rose-400"
+                  />
+                  <div className="flex justify-between text-xs text-gray-400 mt-1.5">
+                    <span>200 €</span>
+                    <span>10 000 €+</span>
+                  </div>
+                </div>
+
+                {/* Note minimum */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    Note minimale
+                  </label>
+                  <div className="flex gap-2 flex-wrap">
+                    {[0, 3, 4, 4.5].map((n) => (
+                      <button
+                        key={n}
+                        onClick={() => { setSideNoteMin(n); setCurrentPage(1); }}
+                        className={`flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-full border transition-all ${
+                          sideNoteMin === n
+                            ? "bg-rose-400 text-white border-rose-400"
+                            : "border-gray-200 text-gray-600 hover:border-rose-300 hover:text-rose-500"
+                        }`}
+                      >
+                        {n === 0 ? (
+                          "Tous"
+                        ) : (
+                          <>
+                            <svg className="w-3 h-3 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            {n}+
+                          </>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Toggles */}
+                <div className="space-y-3 pt-1 border-t border-gray-100">
+                  {/* Vérifié */}
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm text-gray-700 font-medium flex items-center gap-2 cursor-pointer">
+                      <svg className="w-4 h-4 text-rose-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      Badge vérifié uniquement
+                    </label>
+                    <button
+                      onClick={() => { setSideVerifie(!sideVerifie); setCurrentPage(1); }}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${sideVerifie ? "bg-rose-400" : "bg-gray-200"}`}
+                    >
+                      <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200 ${sideVerifie ? "translate-x-4" : "translate-x-0.5"}`} />
+                    </button>
+                  </div>
+                  {/* Disponible */}
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm text-gray-700 font-medium flex items-center gap-2 cursor-pointer">
+                      <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      Disponible uniquement
+                    </label>
+                    <button
+                      onClick={() => { setSideDisponible(!sideDisponible); setCurrentPage(1); }}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${sideDisponible ? "bg-rose-400" : "bg-gray-200"}`}
+                    >
+                      <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200 ${sideDisponible ? "translate-x-4" : "translate-x-0.5"}`} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          {/* ── Results ────────────────────────────────────────────────── */}
+          <div className="flex-1 min-w-0">
+            {/* Sort + count bar */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
+              <p className="text-gray-500 text-sm">
+                <span className="font-bold text-gray-900">{filtered.length}</span> prestataire{filtered.length !== 1 ? "s" : ""} trouvé{filtered.length !== 1 ? "s" : ""}
+              </p>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500 whitespace-nowrap">Trier par</span>
+                <select
+                  value={tri}
+                  onChange={(e) => { setTri(e.target.value); setCurrentPage(1); }}
+                  className="text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-300 appearance-none cursor-pointer pr-8"
+                >
+                  <option value="pertinence">Pertinence</option>
+                  <option value="note">Meilleure note</option>
+                  <option value="prix_asc">Prix croissant</option>
+                  <option value="prix_desc">Prix décroissant</option>
+                  <option value="nouveaux">Nouveaux en premier</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Grid */}
+            {paginated.length === 0 ? (
+              <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
+                <div className="text-5xl mb-4">🔍</div>
+                <h3 className="text-lg font-bold text-gray-800 mb-2">Aucun résultat</h3>
+                <p className="text-gray-500 text-sm mb-6">
+                  Essayez d&apos;élargir vos critères de recherche.
+                </p>
+                <button
+                  onClick={resetFilters}
+                  className="bg-rose-400 hover:bg-rose-500 text-white font-semibold px-6 py-2.5 rounded-xl transition-all text-sm"
+                >
+                  Réinitialiser les filtres
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                {paginated.map((provider) => (
+                  <ProviderCard key={provider.id} provider={provider} />
+                ))}
+              </div>
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            )}
+
+            {/* Info text */}
+            {filtered.length > 0 && (
+              <p className="text-center text-xs text-gray-400 mt-6">
+                Affichage de {Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, filtered.length)}–{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} sur {filtered.length} résultats
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── CTA Banner ────────────────────────────────────────────────── */}
+      <section className="bg-gradient-to-r from-rose-50 to-pink-50 border-t border-rose-100">
+        <div className="max-w-4xl mx-auto px-4 py-14 text-center">
+          <h2
+            className="text-2xl md:text-3xl font-bold text-gray-900 mb-3"
+            style={{ fontFamily: "var(--font-playfair), serif" }}
+          >
+            Vous êtes prestataire mariage ?
+          </h2>
+          <p className="text-gray-600 mb-8 max-w-xl mx-auto text-sm leading-relaxed">
+            Rejoignez plus de 12 000 professionnels référencés sur InstantMariage.fr et recevez des demandes de devis qualifiées chaque semaine.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button className="bg-rose-400 hover:bg-rose-500 text-white font-semibold px-8 py-3.5 rounded-xl transition-all shadow-sm hover:shadow-md text-sm">
+              Inscrire mon entreprise gratuitement
+            </button>
+            <button className="border-2 border-rose-300 text-rose-500 hover:bg-rose-50 font-semibold px-8 py-3.5 rounded-xl transition-all text-sm">
+              En savoir plus sur nos offres
+            </button>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
