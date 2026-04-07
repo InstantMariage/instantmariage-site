@@ -33,7 +33,7 @@ export default function LoginPage() {
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-rose-900 via-rose-700 to-rose-400" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-br from-rose-900/40 via-rose-800/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
         <div className="absolute inset-0 flex flex-col justify-between p-12">
           <Link href="/" className="flex items-center gap-2.5 group">
             <div style={{ mixBlendMode: "multiply" }}>
@@ -43,8 +43,8 @@ export default function LoginPage() {
               className="text-2xl font-bold"
               style={{ fontFamily: "var(--font-playfair), serif" }}
             >
-              <span className="text-white">Instant</span>
-              <span className="text-white/90">Mariage.fr</span>
+              <span style={{ color: "#F06292" }}>Instant</span>
+              <span className="text-white">Mariage.fr</span>
             </span>
           </Link>
           <div className="text-white">
