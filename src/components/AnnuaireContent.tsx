@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -382,9 +383,9 @@ function ProviderCard({ provider }: { provider: Provider }) {
             <span className="text-xs text-gray-400">Prix</span>
             <p className="text-sm font-bold text-gray-900">{provider.prixLabel}</p>
           </div>
-          <button className="bg-rose-400 hover:bg-rose-500 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md">
+          <Link href={`/prestataires/${provider.id}`} className="bg-rose-400 hover:bg-rose-500 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md">
             Voir le profil
-          </button>
+          </Link>
         </div>
       </div>
     </div>
