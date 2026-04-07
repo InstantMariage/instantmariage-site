@@ -133,6 +133,13 @@ export default function Footer() {
                   height={40}
                   style={{ mixBlendMode: "multiply" }}
                 />
+                <span
+                  className="text-xl font-bold whitespace-nowrap"
+                  style={{ fontFamily: "var(--font-playfair), serif" }}
+                >
+                  <span style={{ color: "#F06292" }}>Instant</span>
+                  <span className="text-gray-900">Mariage.fr</span>
+                </span>
               </div>
               <p className="text-gray-500 text-sm leading-relaxed mb-6 max-w-xs">
                 La plateforme de référence pour trouver vos prestataires mariage
