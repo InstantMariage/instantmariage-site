@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { PROVIDERS, type Provider } from "@/data/providers";
+import { PROVIDERS } from "@/data/providers";
+import { supabase } from "@/lib/supabase";
+import type { Prestataire } from "@/lib/supabase";
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -74,6 +76,89 @@ const FALLBACK_IMAGES: Record<string, string> = {
 
 const DEFAULT_FALLBACK = "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=500&q=80";
 
+// ─── Type unifié pour l'affichage ─────────────────────────────────────────────
+
+interface DisplayProvider {
+  id: string;
+  nom: string;
+  metier: string;
+  ville: string;
+  region: string;
+  note: number;
+  avis: number;
+  verifie: boolean;
+  prixMin: number;
+  prixLabel: string;
+  photo: string;
+  disponible: boolean;
+  nouveau: boolean;
+  description: string;
+}
+
+// Construire la map inverse département → région une seule fois
+const DEPT_TO_REGION: Record<string, string> = {};
+for (const [region, depts] of Object.entries(DEPARTEMENTS)) {
+  for (const dept of depts) {
+    DEPT_TO_REGION[dept.toLowerCase()] = region;
+  }
+}
+
+function getRegionFromDepartement(dept: string | null): string {
+  if (!dept) return "";
+  const lower = dept.toLowerCase();
+  // Correspondance exacte
+  if (DEPT_TO_REGION[lower]) return DEPT_TO_REGION[lower];
+  // Correspondance partielle (ex : "Rhône" dans "Rhône (69)")
+  for (const [key, region] of Object.entries(DEPT_TO_REGION)) {
+    if (key.includes(lower) || lower.includes(key.split(" (")[0])) return region;
+  }
+  return "";
+}
+
+function isRecentDate(dateStr: string): boolean {
+  const d = new Date(dateStr);
+  const now = new Date();
+  return (now.getTime() - d.getTime()) < 30 * 24 * 60 * 60 * 1000;
+}
+
+function prestataireToDisplay(p: Prestataire): DisplayProvider {
+  return {
+    id: p.id,
+    nom: p.nom_entreprise,
+    metier: p.categorie,
+    ville: p.ville || "",
+    region: getRegionFromDepartement(p.departement),
+    note: p.note_moyenne,
+    avis: p.nb_avis,
+    verifie: p.abonnement_actif,
+    prixMin: 0,
+    prixLabel: "Sur devis",
+    photo: p.photos?.[0] || FALLBACK_IMAGES[p.categorie] || DEFAULT_FALLBACK,
+    disponible: true,
+    nouveau: isRecentDate(p.created_at),
+    description: p.description || "",
+  };
+}
+
+function mockToDisplay(p: typeof PROVIDERS[number]): DisplayProvider {
+  return {
+    id: String(p.id),
+    nom: p.nom,
+    metier: p.metier,
+    ville: p.ville,
+    region: p.region,
+    note: p.note,
+    avis: p.avis,
+    verifie: p.verifie,
+    prixMin: p.prixMin,
+    prixLabel: p.prixLabel,
+    photo: p.photo,
+    disponible: p.disponible,
+    nouveau: p.nouveau,
+    description: p.description,
+  };
+}
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function StarRating({ note }: { note: number }) {
@@ -97,7 +182,7 @@ function StarRating({ note }: { note: number }) {
   );
 }
 
-function ProviderCard({ provider }: { provider: Provider }) {
+function ProviderCard({ provider }: { provider: DisplayProvider }) {
   return (
     <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md border border-gray-100 transition-all duration-300 group flex flex-col">
       {/* Image */}
@@ -254,6 +339,27 @@ export default function AnnuaireContent() {
   const [sideVerifie, setSideVerifie] = useState(false);
   const [sideDisponible, setSideDisponible] = useState(false);
 
+  // Données Supabase
+  const [supabaseProviders, setSupabaseProviders] = useState<DisplayProvider[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isDemo, setIsDemo] = useState(false);
+
+  useEffect(() => {
+    supabase
+      .from("prestataires")
+      .select("*")
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setSupabaseProviders((data as Prestataire[]).map(prestataireToDisplay));
+          setIsDemo(false);
+        } else {
+          setSupabaseProviders(PROVIDERS.map(mockToDisplay));
+          setIsDemo(true);
+        }
+        setLoading(false);
+      });
+  }, []);
+
   // UI state
   const [tri, setTri] = useState("pertinence");
   const [currentPage, setCurrentPage] = useState(1);
@@ -277,14 +383,14 @@ export default function AnnuaireContent() {
 
   // Filtered + sorted results
   const filtered = useMemo(() => {
-    let list = PROVIDERS.filter((p) => {
+    let list = supabaseProviders.filter((p) => {
       // Métier (sidebar takes priority)
       const metier = sideMetier || activeMetier;
       if (metier && metier !== "Tous les métiers" && p.metier !== metier) return false;
       // Région
       const region = activeRegion;
       if (region && region !== "Toute la France" && p.region !== region) return false;
-      // Budget
+      // Budget (prixMin=0 pour les vrais prestataires → toujours inclus)
       if (p.prixMin > activeBudgetMax) return false;
       // Note min
       if (p.note < sideNoteMin) return false;
@@ -307,7 +413,7 @@ export default function AnnuaireContent() {
     }
 
     return list;
-  }, [activeMetier, activeRegion, activeBudgetMax, sideMetier, sideNoteMin, sideVerifie, sideDisponible, tri]);
+  }, [supabaseProviders, activeMetier, activeRegion, activeBudgetMax, sideMetier, sideNoteMin, sideVerifie, sideDisponible, tri]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
@@ -638,15 +744,26 @@ export default function AnnuaireContent() {
             {/* Sort + count bar */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
               <div className="flex items-center gap-3 flex-wrap">
-                <p className="text-gray-500 text-sm">
-                  <span className="font-bold text-gray-900">{filtered.length}</span> prestataire{filtered.length !== 1 ? "s" : ""} trouvé{filtered.length !== 1 ? "s" : ""}
-                </p>
-                <span className="inline-flex items-center gap-1 text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full border border-gray-200">
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Profils de démonstration
-                </span>
+                {loading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-rose-300 border-t-rose-500 rounded-full animate-spin" />
+                    <span className="text-sm text-gray-400">Chargement…</span>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-gray-500 text-sm">
+                      <span className="font-bold text-gray-900">{filtered.length}</span> prestataire{filtered.length !== 1 ? "s" : ""} trouvé{filtered.length !== 1 ? "s" : ""}
+                    </p>
+                    {isDemo && (
+                      <span className="inline-flex items-center gap-1 text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full border border-gray-200">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Profils de démonstration
+                      </span>
+                    )}
+                  </>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-500 whitespace-nowrap">Trier par</span>
@@ -664,8 +781,28 @@ export default function AnnuaireContent() {
               </div>
             </div>
 
+            {/* Bannière "Soyez le premier" si aucun vrai prestataire */}
+            {isDemo && !loading && (
+              <div className="mb-6 bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-200 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-center gap-4">
+                <div className="flex-1">
+                  <p className="text-rose-500 font-bold text-base mb-0.5">
+                    Soyez le premier prestataire à rejoindre InstantMariage&nbsp;!
+                  </p>
+                  <p className="text-gray-500 text-sm">
+                    Ces profils sont des exemples. Inscrivez votre entreprise et apparaissez ici dès aujourd&apos;hui.
+                  </p>
+                </div>
+                <Link
+                  href="/inscription"
+                  className="flex-shrink-0 bg-rose-400 hover:bg-rose-500 text-white font-semibold px-5 py-2.5 rounded-xl transition-all text-sm shadow-sm hover:shadow-md whitespace-nowrap"
+                >
+                  Inscrire mon entreprise
+                </Link>
+              </div>
+            )}
+
             {/* Grid */}
-            {paginated.length === 0 ? (
+            {!loading && paginated.length === 0 ? (
               <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
                 <div className="text-5xl mb-4">🔍</div>
                 <h3 className="text-lg font-bold text-gray-800 mb-2">Aucun résultat</h3>
@@ -679,10 +816,26 @@ export default function AnnuaireContent() {
                   Réinitialiser les filtres
                 </button>
               </div>
-            ) : (
+            ) : !loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
                 {paginated.map((provider) => (
                   <ProviderCard key={provider.id} provider={provider} />
+                ))}
+              </div>
+            ) : (
+              /* Squelette de chargement */
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 animate-pulse">
+                    <div className="h-48 bg-gray-200" />
+                    <div className="p-4 space-y-3">
+                      <div className="h-3 bg-gray-200 rounded w-1/3" />
+                      <div className="h-4 bg-gray-200 rounded w-2/3" />
+                      <div className="h-3 bg-gray-200 rounded w-1/2" />
+                      <div className="h-3 bg-gray-200 rounded w-full" />
+                      <div className="h-3 bg-gray-200 rounded w-5/6" />
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
