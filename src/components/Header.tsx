@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 const prestataires = [
   { label: "Photographe", icon: "📷", href: "#photographes" },
@@ -55,10 +57,39 @@ const outils = [
 type DropdownKey = "prestataires" | "outils" | null;
 
 export default function Header() {
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState<DropdownKey>(null);
   const [activeDropdown, setActiveDropdown] = useState<DropdownKey>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [user, setUser] = useState<{ email: string; role: string } | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser({
+          email: session.user.email ?? "",
+          role: session.user.user_metadata?.role ?? "marie",
+        });
+      }
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser({
+          email: session.user.email ?? "",
+          role: session.user.user_metadata?.role ?? "marie",
+        });
+      } else {
+        setUser(null);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/");
+  };
 
   const openDropdown = (key: DropdownKey) => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
@@ -269,18 +300,37 @@ export default function Header() {
 
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center gap-3">
-            <Link
-              href="/login"
-              className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors px-4 py-2"
-            >
-              Connexion
-            </Link>
-            <Link
-              href="/inscription"
-              className="bg-rose-400 hover:bg-rose-500 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
-            >
-              Inscription gratuite
-            </Link>
+            {user ? (
+              <>
+                <Link
+                  href={`/dashboard/${user.role}`}
+                  className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors px-4 py-2"
+                >
+                  Mon espace
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="text-sm font-semibold px-5 py-2.5 rounded-full border-2 border-rose-400 text-rose-400 hover:bg-rose-400 hover:text-white transition-all duration-200"
+                >
+                  Déconnexion
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors px-4 py-2"
+                >
+                  Connexion
+                </Link>
+                <Link
+                  href="/inscription"
+                  className="bg-rose-400 hover:bg-rose-500 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
+                >
+                  Inscription gratuite
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -420,20 +470,40 @@ export default function Header() {
             </Link>
 
             <div className="pt-3 px-4 flex flex-col gap-2 border-t border-rose-100">
-              <Link
-                href="/login"
-                className="text-center border-2 border-rose-400 text-rose-400 hover:bg-rose-400 hover:text-white font-semibold px-5 py-2.5 rounded-full transition-all duration-200 text-sm"
-                onClick={() => setMobileOpen(false)}
-              >
-                Connexion
-              </Link>
-              <Link
-                href="/inscription"
-                className="text-center bg-rose-400 hover:bg-rose-500 text-white font-semibold px-5 py-2.5 rounded-full transition-all duration-200 text-sm"
-                onClick={() => setMobileOpen(false)}
-              >
-                Inscription gratuite
-              </Link>
+              {user ? (
+                <>
+                  <Link
+                    href={`/dashboard/${user.role}`}
+                    className="text-center border-2 border-rose-400 text-rose-400 hover:bg-rose-400 hover:text-white font-semibold px-5 py-2.5 rounded-full transition-all duration-200 text-sm"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    Mon espace
+                  </Link>
+                  <button
+                    onClick={() => { setMobileOpen(false); handleLogout(); }}
+                    className="text-center bg-rose-400 hover:bg-rose-500 text-white font-semibold px-5 py-2.5 rounded-full transition-all duration-200 text-sm"
+                  >
+                    Déconnexion
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="text-center border-2 border-rose-400 text-rose-400 hover:bg-rose-400 hover:text-white font-semibold px-5 py-2.5 rounded-full transition-all duration-200 text-sm"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    Connexion
+                  </Link>
+                  <Link
+                    href="/inscription"
+                    className="text-center bg-rose-400 hover:bg-rose-500 text-white font-semibold px-5 py-2.5 rounded-full transition-all duration-200 text-sm"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    Inscription gratuite
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}

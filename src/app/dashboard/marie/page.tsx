@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { supabase } from "@/lib/supabase";
 
 // Wedding date – would normally come from user profile/DB
 const WEDDING_DATE = new Date("2026-09-12T14:00:00");
@@ -100,9 +102,21 @@ const initialChecklist: CheckItem[] = [
 ];
 
 export default function DashboardMarie() {
+  const router = useRouter();
   const { days } = useCountdown(WEDDING_DATE);
   const [checklist, setChecklist] = useState(initialChecklist);
   const [showAll, setShowAll] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        router.replace("/login");
+      } else {
+        setAuthChecked(true);
+      }
+    });
+  }, [router]);
 
   const toggle = (id: number) => {
     setChecklist((prev) =>
@@ -129,6 +143,8 @@ export default function DashboardMarie() {
       ))}
     </div>
   );
+
+  if (!authChecked) return null;
 
   return (
     <main className="min-h-screen bg-gray-50">

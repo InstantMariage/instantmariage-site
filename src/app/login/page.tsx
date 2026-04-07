@@ -3,18 +3,36 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 const WEDDING_IMG = "https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&q=95";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Auth logic here
+    setError(null);
+    setLoading(true);
+    const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+    if (authError) {
+      setError("Email ou mot de passe incorrect.");
+      return;
+    }
+    const role = data.user?.user_metadata?.role;
+    if (role === "prestataire") {
+      router.push("/dashboard/prestataire");
+    } else {
+      router.push("/dashboard/marie");
+    }
   };
 
   return (
@@ -127,6 +145,13 @@ export default function LoginPage() {
             <div className="flex-1 h-px bg-gray-200" />
           </div>
 
+          {/* Erreur */}
+          {error && (
+            <div className="mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-600">
+              {error}
+            </div>
+          )}
+
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -186,10 +211,11 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              className="w-full text-white font-semibold py-3.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md text-sm mt-2"
+              disabled={loading}
+              className="w-full text-white font-semibold py-3.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md text-sm mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
               style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)" }}
             >
-              Se connecter
+              {loading ? "Connexion…" : "Se connecter"}
             </button>
           </form>
 

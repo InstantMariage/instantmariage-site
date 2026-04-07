@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { supabase } from "@/lib/supabase";
 
 const stats = [
   {
@@ -113,7 +115,21 @@ const profileSuggestions = [
 const profileCompletion = 52;
 
 export default function DashboardPrestataire() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"avis" | "messages">("messages");
+  const [authChecked, setAuthChecked] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        router.replace("/login");
+      } else {
+        setAuthChecked(true);
+      }
+    });
+  }, [router]);
+
+  if (!authChecked) return null;
 
   const Stars = ({ count }: { count: number }) => (
     <div className="flex gap-0.5">

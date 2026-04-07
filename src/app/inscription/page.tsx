@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 const WEDDING_IMG = "https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&q=95";
 
@@ -25,9 +27,12 @@ const metiers = [
 ];
 
 export default function InscriptionPage() {
+  const router = useRouter();
   const [accountType, setAccountType] = useState<AccountType>(null);
   const [cgu, setCgu] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Mariés form
   const [mPrenom, setMPrenom] = useState("");
@@ -46,9 +51,33 @@ export default function InscriptionPage() {
   const [pTel, setPTel] = useState("");
   const [pShowPwd, setPShowPwd] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Auth logic here
+    setError(null);
+    setLoading(true);
+
+    const email = accountType === "marie" ? mEmail : pEmail;
+    const password = accountType === "marie" ? mPassword : pPassword;
+    const metadata =
+      accountType === "marie"
+        ? { role: "marie", prenom: mPrenom, nom: mNom, date_mariage: mDate || null }
+        : { role: "prestataire", nom_entreprise: pEntreprise, categorie: pMetier, ville: pVille, telephone: pTel };
+
+    const { error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: metadata },
+    });
+
+    setLoading(false);
+    if (authError) {
+      setError(authError.message === "User already registered"
+        ? "Un compte existe déjà avec cet email."
+        : "Une erreur est survenue. Veuillez réessayer.");
+      return;
+    }
+
+    router.push(accountType === "prestataire" ? "/dashboard/prestataire" : "/dashboard/marie");
   };
 
   const EyeIcon = ({ show, onClick }: { show: boolean; onClick: () => void }) => (
@@ -225,6 +254,13 @@ export default function InscriptionPage() {
                 <div className="flex-1 h-px bg-gray-200" />
               </div>
 
+              {/* Erreur */}
+              {error && (
+                <div className="mb-2 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-600">
+                  {error}
+                </div>
+              )}
+
               {/* Mariés form */}
               {accountType === "marie" && (
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -291,7 +327,7 @@ export default function InscriptionPage() {
                     />
                   </div>
 
-                  <CguAndSubmit cgu={cgu} setCgu={setCgu} label="Créer mon compte" />
+                  <CguAndSubmit cgu={cgu} setCgu={setCgu} label="Créer mon compte" loading={loading} />
                 </form>
               )}
 
@@ -376,7 +412,7 @@ export default function InscriptionPage() {
                     </div>
                   </div>
 
-                  <CguAndSubmit cgu={cgu} setCgu={setCgu} label="Créer mon profil prestataire" />
+                  <CguAndSubmit cgu={cgu} setCgu={setCgu} label="Créer mon profil prestataire" loading={loading} />
                 </form>
               )}
             </>
@@ -398,10 +434,12 @@ function CguAndSubmit({
   cgu,
   setCgu,
   label,
+  loading,
 }: {
   cgu: boolean;
   setCgu: (v: boolean) => void;
   label: string;
+  loading?: boolean;
 }) {
   return (
     <>
@@ -441,11 +479,11 @@ function CguAndSubmit({
 
       <button
         type="submit"
-        disabled={!cgu}
+        disabled={!cgu || loading}
         className="w-full text-white font-semibold py-3.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)" }}
       >
-        {label}
+        {loading ? "Création du compte…" : label}
       </button>
     </>
   );
