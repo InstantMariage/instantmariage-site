@@ -131,14 +131,26 @@ export default function DashboardPrestataire() {
   const [ville, setVille] = useState("");
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) {
         router.replace("/login");
       } else {
-        const meta = session.user.user_metadata;
-        setNomEntreprise(meta?.nom_entreprise || session.user.email?.split("@")[0] || "");
-        setCategorie(meta?.categorie || "");
-        setVille(meta?.ville || "");
+        const { data } = await supabase
+          .from("prestataires")
+          .select("nom_entreprise, categorie, ville")
+          .eq("user_id", session.user.id)
+          .single();
+
+        if (data) {
+          setNomEntreprise(data.nom_entreprise || "");
+          setCategorie(data.categorie || "");
+          setVille(data.ville || "");
+        } else {
+          const meta = session.user.user_metadata;
+          setNomEntreprise(meta?.nom_entreprise || session.user.email?.split("@")[0] || "");
+          setCategorie(meta?.categorie || "");
+          setVille(meta?.ville || "");
+        }
         setAuthChecked(true);
       }
     });

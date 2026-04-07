@@ -83,6 +83,14 @@ export default function InscriptionPage() {
         prenom_marie1: mPrenom,
         date_mariage: mDate || null,
       });
+    } else if (accountType === "prestataire" && signUpData.user) {
+      await supabase.from("prestataires").insert({
+        user_id: signUpData.user.id,
+        nom_entreprise: pEntreprise,
+        categorie: pMetier,
+        ville: pVille,
+        telephone: pTel,
+      });
     }
 
     setLoading(false);
