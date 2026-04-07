@@ -336,42 +336,31 @@ export default function DashboardPrestataire() {
               {/* Mes Outils */}
               <div className="bg-white rounded-2xl shadow-card p-6">
                 <h2 className="font-semibold text-gray-900 mb-4">Mes outils</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {[
-                    {
-                      label: "Devis",
-                      desc: "Créez et envoyez des devis pro",
-                      icon: "📄",
-                      href: "https://wedding-devis.vercel.app",
-                    },
-                    {
-                      label: "Factures",
-                      desc: "Historique et facturation",
-                      icon: "🧾",
-                      href: "https://wedding-devis.vercel.app",
-                    },
-                    {
-                      label: "Contrats",
-                      desc: "Contrats personnalisables",
-                      icon: "📋",
-                      href: "https://wedding-devis.vercel.app",
-                    },
-                  ].map((outil) => (
-                    <a
-                      key={outil.label}
-                      href={outil.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex flex-col gap-2 p-4 rounded-xl border border-gray-100 hover:border-rose-200 hover:bg-rose-50/30 transition-all duration-200"
-                    >
-                      <span className="text-2xl">{outil.icon}</span>
-                      <div>
-                        <div className="text-sm font-semibold text-gray-900">{outil.label}</div>
-                        <div className="text-xs text-gray-400 mt-0.5">{outil.desc}</div>
-                      </div>
-                    </a>
-                  ))}
-                </div>
+                <a
+                  href="https://wedding-devis.vercel.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-xl border border-gray-100 hover:border-rose-200 hover:bg-rose-50/30 transition-all duration-200 group"
+                >
+                  <div
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 text-2xl"
+                    style={{ background: "#FFF0F5" }}
+                  >
+                    📄
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-sm font-semibold text-gray-900">Générateur de Devis, Factures & Contrats</div>
+                    <div className="text-xs text-gray-500 mt-1 leading-relaxed">
+                      Créez vos devis professionnels, convertissez-les en factures et générez vos contrats en quelques clics
+                    </div>
+                  </div>
+                  <span
+                    className="flex-shrink-0 text-xs font-semibold px-4 py-2 rounded-xl transition-all duration-200 group-hover:opacity-90 whitespace-nowrap"
+                    style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)", color: "white" }}
+                  >
+                    Accéder à l&apos;outil →
+                  </span>
+                </a>
               </div>
             </div>
 
