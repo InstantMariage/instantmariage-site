@@ -780,7 +780,7 @@ export default function PrestataireProfil({ id }: { id?: number }) {
                     </span>
                   )}
                 </div>
-                <p className="text-[#374151] text-base font-medium drop-shadow mb-2">{PRESTATAIRE.metier}</p>
+                <span className="inline-block bg-white text-[#F06292] text-sm font-semibold px-3 py-1 rounded-full mb-2 shadow">{PRESTATAIRE.metier}</span>
                 <div className="flex flex-wrap items-center gap-3 text-sm">
                   <span className="flex items-center gap-1 text-white/80 drop-shadow">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
