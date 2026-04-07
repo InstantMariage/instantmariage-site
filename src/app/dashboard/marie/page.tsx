@@ -146,6 +146,7 @@ export default function DashboardMarie() {
         const meta = session.user.user_metadata;
         setPrenomMarie1(meta?.prenom || session.user.email?.split("@")[0] || "");
         setPrenomMarie2(meta?.prenom_marie2 || "");
+        setDateMariage(meta?.date_mariage || null);
       }
 
       setAuthChecked(true);
@@ -209,7 +210,8 @@ export default function DashboardMarie() {
                     {prenomMarie2
                       ? `Votre mariage avec ${prenomMarie2}`
                       : "Votre mariage"}
-                    {dateMariage ? ` · ${formatDateFr(dateMariage)}` : ""}
+                    {` · `}
+                    {dateMariage ? formatDateFr(dateMariage) : "Date non renseignée"}
                     {lieuMariage ? ` · ${lieuMariage}` : ""}
                   </p>
                 </div>

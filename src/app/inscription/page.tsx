@@ -63,20 +63,29 @@ export default function InscriptionPage() {
         ? { role: "marie", prenom: mPrenom, nom: mNom, date_mariage: mDate || null }
         : { role: "prestataire", nom_entreprise: pEntreprise, categorie: pMetier, ville: pVille, telephone: pTel };
 
-    const { error: authError } = await supabase.auth.signUp({
+    const { data: signUpData, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: { data: metadata },
     });
 
-    setLoading(false);
     if (authError) {
+      setLoading(false);
       setError(authError.message === "User already registered"
         ? "Un compte existe déjà avec cet email."
         : "Une erreur est survenue. Veuillez réessayer.");
       return;
     }
 
+    if (accountType === "marie" && signUpData.user) {
+      await supabase.from("maries").insert({
+        user_id: signUpData.user.id,
+        prenom_marie1: mPrenom,
+        date_mariage: mDate || null,
+      });
+    }
+
+    setLoading(false);
     router.push(accountType === "prestataire" ? "/dashboard/prestataire" : "/dashboard/marie");
   };
 
