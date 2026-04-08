@@ -27,14 +27,7 @@ function formatDateShort(dateStr: string | null): string {
   return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
 }
 
-const soonTools = [
-  {
-    label: "Budget mariage",
-    desc: "Suivez et maîtrisez vos dépenses",
-    icon: "💰",
-    color: "#FFFBEB",
-  },
-];
+const soonTools: { label: string; desc: string; icon: string; color: string }[] = [];
 
 
 interface CheckItem {
@@ -193,7 +186,7 @@ export default function DashboardMarie() {
               </span>
             </div>
             <div className="flex flex-col gap-3">
-              {/* Liste d'invités */}
+              {/* Invités & Plan de table */}
               <a
                 href="https://tableau-de-bord-mariage.vercel.app"
                 target="_blank"
@@ -206,14 +199,14 @@ export default function DashboardMarie() {
                     className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
                     style={{ background: "rgba(240,98,146,0.15)" }}
                   >
-                    👥
+                    🪑
                   </div>
                   <div>
                     <div className="text-base font-bold text-gray-900 group-hover:text-rose-500 transition-colors">
-                      Liste d&apos;invités
+                      Invités &amp; Plan de table
                     </div>
                     <div className="text-sm text-gray-500 mt-0.5 leading-relaxed">
-                      Gérez vos invités, confirmations et repas
+                      Gérez vos invités et organisez votre plan de table
                     </div>
                   </div>
                 </div>
@@ -228,27 +221,25 @@ export default function DashboardMarie() {
                 </span>
               </a>
 
-              {/* Plan de table */}
-              <a
-                href="https://tableau-de-bord-mariage.vercel.app"
-                target="_blank"
-                rel="noopener noreferrer"
+              {/* Budget mariage */}
+              <Link
+                href="/dashboard/marie/budget"
                 className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-xl border border-gray-100 hover:border-rose-200 hover:shadow-card-hover transition-all duration-200 group"
-                style={{ background: "#F0F4FF" }}
+                style={{ background: "#FFFBEB" }}
               >
                 <div className="flex items-center gap-4 flex-1">
                   <div
                     className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
-                    style={{ background: "rgba(99,102,241,0.12)" }}
+                    style={{ background: "rgba(245,158,11,0.12)" }}
                   >
-                    🪑
+                    💰
                   </div>
                   <div>
                     <div className="text-base font-bold text-gray-900 group-hover:text-rose-500 transition-colors">
-                      Plan de table
+                      Budget mariage
                     </div>
                     <div className="text-sm text-gray-500 mt-0.5 leading-relaxed">
-                      Créez et organisez votre plan de table interactif
+                      Suivez et maîtrisez vos dépenses
                     </div>
                   </div>
                 </div>
@@ -258,10 +249,10 @@ export default function DashboardMarie() {
                 >
                   Ouvrir
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </span>
-              </a>
+              </Link>
 
               {/* Rétroplanning — outil actif */}
               <Link
@@ -296,34 +287,6 @@ export default function DashboardMarie() {
                 </span>
               </Link>
 
-              {/* Outils à venir */}
-              <div className="grid grid-cols-2 gap-3">
-                {soonTools.map((tool) => (
-                  <div
-                    key={tool.label}
-                    className="flex flex-col gap-3 p-4 rounded-xl border border-gray-100 opacity-60 cursor-not-allowed"
-                  >
-                    <div
-                      className="w-11 h-11 rounded-xl flex items-center justify-center text-xl"
-                      style={{ background: tool.color }}
-                    >
-                      {tool.icon}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <div className="text-sm font-semibold text-gray-900">{tool.label}</div>
-                        <span
-                          className="text-xs font-semibold px-1.5 py-0.5 rounded-full"
-                          style={{ background: "#F3F4F6", color: "#6B7280" }}
-                        >
-                          Bientôt
-                        </span>
-                      </div>
-                      <div className="text-xs text-gray-400 mt-0.5 leading-relaxed">{tool.desc}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
 

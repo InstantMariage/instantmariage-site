@@ -23,10 +23,10 @@ const prestataires = [
 
 const outils = [
   {
-    label: "Tableau de bord",
-    icon: "🏠",
-    href: "/dashboard/marie",
-    desc: "Votre espace personnel",
+    label: "Invités & Plan de table",
+    icon: "🪑",
+    href: "https://tableau-de-bord-mariage.vercel.app",
+    desc: "Gérez vos invités et votre plan de table",
   },
   {
     label: "Rétroplanning",
