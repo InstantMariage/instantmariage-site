@@ -44,6 +44,7 @@ export default function ConversationPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [otherUserName, setOtherUserName] = useState("...");
   const [otherUserId, setOtherUserId] = useState<string | null>(null);
+  const [myName, setMyName] = useState("");
   const [messages, setMessages] = useState<MessageItem[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
@@ -108,12 +109,11 @@ export default function ConversationPage() {
         conv.participant1_id === uid ? conv.participant2_id : conv.participant1_id;
       setOtherUserId(otherId);
 
-      // Nom de l'interlocuteur
-      const { data: prest } = await supabase
-        .from("prestataires")
-        .select("nom_entreprise")
-        .eq("user_id", otherId)
-        .maybeSingle();
+      // Nom de l'interlocuteur et de l'utilisateur courant
+      const [{ data: prest }, { data: myPrest }] = await Promise.all([
+        supabase.from("prestataires").select("nom_entreprise").eq("user_id", otherId).maybeSingle(),
+        supabase.from("prestataires").select("nom_entreprise").eq("user_id", uid).maybeSingle(),
+      ]);
 
       if (prest) {
         setOtherUserName(prest.nom_entreprise);
@@ -137,6 +137,23 @@ export default function ConversationPage() {
             .eq("id", otherId)
             .maybeSingle();
           if (u) setOtherUserName(u.email.split("@")[0]);
+        }
+      }
+
+      if (myPrest) {
+        setMyName(myPrest.nom_entreprise);
+      } else {
+        const { data: myMarie } = await supabase
+          .from("maries")
+          .select("prenom_marie1, prenom_marie2")
+          .eq("user_id", uid)
+          .maybeSingle();
+        if (myMarie) {
+          setMyName(
+            myMarie.prenom_marie2
+              ? `${myMarie.prenom_marie1} & ${myMarie.prenom_marie2}`
+              : myMarie.prenom_marie1
+          );
         }
       }
 
@@ -203,6 +220,30 @@ export default function ConversationPage() {
         .from("conversations")
         .update({ last_message_at: new Date().toISOString() })
         .eq("id", convId);
+
+      // Envoyer notification email au destinataire (fire-and-forget)
+      try {
+        const { data: recipientUser } = await supabase
+          .from("users")
+          .select("email")
+          .eq("id", otherUserId)
+          .maybeSingle();
+
+        if (recipientUser?.email) {
+          fetch("/api/emails", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              type: "new_message",
+              recipientEmail: recipientUser.email,
+              recipientName: otherUserName,
+              senderName: myName || "Un utilisateur",
+              messagePreview: content,
+              conversationId: convId,
+            }),
+          }).catch(() => {});
+        }
+      } catch {}
     }
 
     setSending(false);

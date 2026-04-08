@@ -390,34 +390,6 @@ type AvisWithMarie = {
   } | null
 }
 
-// ─── Étoiles interactives ─────────────────────────────────────────────────────
-
-function StarPicker({ value, onChange }: { value: number; onChange: (n: number) => void }) {
-  const [hovered, setHovered] = useState(0);
-  return (
-    <span className="flex items-center gap-1">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <button
-          key={i}
-          type="button"
-          onClick={() => onChange(i)}
-          onMouseEnter={() => setHovered(i)}
-          onMouseLeave={() => setHovered(0)}
-          className="focus:outline-none"
-          aria-label={`${i} étoile${i > 1 ? "s" : ""}`}
-        >
-          <svg
-            className={`w-8 h-8 transition-colors ${i <= (hovered || value) ? "text-amber-400" : "text-gray-200"}`}
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-          </svg>
-        </button>
-      ))}
-    </span>
-  );
-}
 
 // ─── Section avis réels ────────────────────────────────────────────────────────
 
@@ -517,6 +489,35 @@ function SectionAvis({ prestataireName }: { prestataireName: string }) {
       return;
     }
 
+    // Notification email au prestataire (fire-and-forget)
+    try {
+      const { data: prestUser } = await supabase
+        .from("users")
+        .select("email")
+        .eq("id", prestataire.user_id)
+        .maybeSingle();
+
+      const reviewerName = marie.prenom_marie2
+        ? `${marie.prenom_marie1} & ${marie.prenom_marie2}`
+        : marie.prenom_marie1;
+
+      if (prestUser?.email) {
+        fetch("/api/emails", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "new_avis",
+            recipientEmail: prestUser.email,
+            recipientName: prestataireName,
+            reviewerName,
+            note,
+            commentaire: commentaire.trim() || null,
+            prestaireId: prestataire.id,
+          }),
+        }).catch(() => {});
+      }
+    } catch {}
+
     const reviews = await fetchAvis(prestataire.id);
     setAvis(reviews);
     setAlreadyReviewed(true);
@@ -536,8 +537,8 @@ function SectionAvis({ prestataireName }: { prestataireName: string }) {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 flex items-center justify-center">
-        <div className="animate-spin w-6 h-6 border-2 border-rose-300 border-t-transparent rounded-full" />
+      <div className="bg-white rounded-2xl p-12 flex items-center justify-center">
+        <div className="animate-spin w-5 h-5 border-2 border-gray-200 border-t-transparent rounded-full" style={{ borderTopColor: "#F06292" }} />
       </div>
     );
   }
@@ -545,7 +546,7 @@ function SectionAvis({ prestataireName }: { prestataireName: string }) {
   // Prestataire not in Supabase yet
   if (prestataire === null) {
     return (
-      <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center">
+      <div className="bg-white rounded-2xl p-10 text-center">
         <p className="text-gray-400 text-sm">Les avis seront disponibles lorsque ce prestataire aura activé son profil.</p>
       </div>
     );
@@ -564,161 +565,225 @@ function SectionAvis({ prestataireName }: { prestataireName: string }) {
     new Date(iso).toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
 
   return (
-    <div className="space-y-6">
-      {/* ── Synthèse ── */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <h2 className="text-xl font-bold text-gray-900 mb-6">Avis clients</h2>
+    <div className="space-y-5">
 
-        {avis.length > 0 ? (
-          <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
-            {/* Note globale */}
-            <div className="flex flex-col items-center justify-center w-32 flex-shrink-0">
-              <span className="text-5xl font-extrabold text-gray-900">{noteMoyenne}</span>
-              <Stars note={noteMoyenne} size="md" />
-              <span className="text-sm text-gray-400 mt-1">{avis.length} avis</span>
-            </div>
-
-            {/* Répartition */}
-            <div className="flex-1 w-full space-y-1.5">
-              {repartition.map(({ note: n, count }) => (
-                <div key={n} className="flex items-center gap-2">
-                  <span className="text-xs text-gray-500 w-4 text-right">{n}</span>
-                  <svg className="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+      {/* ── En-tête synthèse ── */}
+      {avis.length > 0 ? (
+        <div className="bg-white rounded-2xl p-8">
+          <h2 className="text-lg font-semibold text-gray-900 mb-8 tracking-tight">Avis clients</h2>
+          <div className="flex flex-col sm:flex-row gap-10 items-start sm:items-center">
+            {/* Score global */}
+            <div className="flex flex-col items-center gap-2 flex-shrink-0">
+              <span className="text-6xl font-bold tracking-tight text-gray-900" style={{ fontVariantNumeric: "tabular-nums" }}>
+                {noteMoyenne}
+              </span>
+              <div className="flex items-center gap-0.5">
+                {[1,2,3,4,5].map((i) => (
+                  <svg
+                    key={i}
+                    className="w-4 h-4"
+                    fill={i <= Math.round(noteMoyenne) ? "#F06292" : "none"}
+                    stroke={i <= Math.round(noteMoyenne) ? "none" : "#d1d5db"}
+                    strokeWidth="1.5"
+                    viewBox="0 0 20 20"
+                  >
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
-                  <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
-                    <div
-                      className="bg-amber-400 h-2 rounded-full transition-all"
-                      style={{ width: avis.length > 0 ? `${(count / avis.length) * 100}%` : "0%" }}
-                    />
+                ))}
+              </div>
+              <span className="text-sm text-gray-400">{avis.length} avis</span>
+            </div>
+
+            {/* Barres répartition */}
+            <div className="flex-1 w-full space-y-2">
+              {repartition.map(({ note: n, count }) => {
+                const pct = avis.length > 0 ? (count / avis.length) * 100 : 0;
+                return (
+                  <div key={n} className="flex items-center gap-3">
+                    <span className="text-xs text-gray-400 w-2 text-right leading-none">{n}</span>
+                    <div className="flex-1 bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                      <div
+                        className="h-1.5 rounded-full transition-all duration-500"
+                        style={{ width: `${pct}%`, backgroundColor: "#F06292" }}
+                      />
+                    </div>
+                    <span className="text-xs text-gray-300 w-3 text-right leading-none">{count}</span>
                   </div>
-                  <span className="text-xs text-gray-400 w-4">{count}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center mb-3">
-              <svg className="w-7 h-7 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+        </div>
+      ) : (
+        <div className="bg-white rounded-2xl p-10 text-center">
+          <div className="flex items-center justify-center gap-0.5 mb-5">
+            {[1,2,3,4,5].map((i) => (
+              <svg key={i} className="w-6 h-6 text-gray-200" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
               </svg>
-            </div>
-            <p className="font-semibold text-gray-700 mb-1">Aucun avis pour le moment</p>
-            <p className="text-sm text-gray-400 max-w-sm">
-              Votre retour d&apos;expérience aide les futurs mariés à choisir en confiance.
-            </p>
+            ))}
           </div>
-        )}
-      </div>
+          <p className="font-medium text-gray-800 mb-1.5">Aucun avis pour le moment</p>
+          <p className="text-sm text-gray-400 max-w-xs mx-auto leading-relaxed">
+            Soyez le premier à partager votre expérience avec ce prestataire.
+          </p>
+        </div>
+      )}
 
       {/* ── Formulaire ── */}
       {!loggedIn && (
-        <div className="bg-rose-50 border border-rose-100 rounded-2xl p-5 text-center">
-          <p className="text-sm text-rose-700 font-medium mb-2">Vous avez travaillé avec ce prestataire ?</p>
+        <div className="bg-white rounded-2xl p-8 text-center">
+          <p className="text-sm text-gray-500 mb-5 leading-relaxed">
+            Vous avez travaillé avec ce prestataire ?<br/>Partagez votre expérience.
+          </p>
           <Link
             href="/login"
-            className="inline-block bg-rose-400 hover:bg-rose-500 text-white text-sm font-semibold px-5 py-2 rounded-full transition-colors"
+            className="inline-flex items-center gap-2 text-white text-sm font-medium px-6 py-3 rounded-full transition-opacity hover:opacity-90"
+            style={{ backgroundColor: "#F06292" }}
           >
-            Connectez-vous pour laisser un avis
+            Laisser un avis
           </Link>
         </div>
       )}
 
       {loggedIn && userRole === "prestataire" && (
-        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 text-center">
-          <p className="text-sm text-gray-500">Seuls les mariés peuvent laisser un avis.</p>
+        <div className="bg-white rounded-2xl p-6 text-center">
+          <p className="text-sm text-gray-400">Seuls les mariés peuvent laisser un avis.</p>
         </div>
       )}
 
       {loggedIn && userRole === "marie" && !alreadyReviewed && !formSuccess && (
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <h3 className="text-lg font-bold text-gray-900 mb-5">Laisser un avis</h3>
-          <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="bg-white rounded-2xl p-8">
+          <h3 className="text-base font-semibold text-gray-900 mb-6 tracking-tight">Laisser un avis</h3>
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Note */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Note *</label>
-              <StarPicker value={note} onChange={setNote} />
+              <label className="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">Note *</label>
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setNote(i)}
+                    className="focus:outline-none transition-transform hover:scale-110"
+                    aria-label={`${i} étoile${i > 1 ? "s" : ""}`}
+                  >
+                    <svg
+                      className="w-9 h-9 transition-all duration-150"
+                      fill={i <= note ? "#F06292" : "none"}
+                      stroke={i <= note ? "none" : "#e5e7eb"}
+                      strokeWidth="1.5"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  </button>
+                ))}
+                <span className="ml-2 text-sm text-gray-400">{note}/5</span>
+              </div>
             </div>
 
             {/* Date du mariage */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Date de votre mariage
-                <span className="text-gray-400 font-normal ml-1">(optionnel)</span>
+              <label className="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
+                Date de votre mariage <span className="normal-case font-normal">(optionnel)</span>
               </label>
               <input
                 type="date"
                 value={dateMariage}
                 onChange={(e) => setDateMariage(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-rose-300"
+                className="w-full border-0 border-b border-gray-200 bg-transparent px-0 py-2 text-sm text-gray-700 focus:outline-none focus:border-gray-400 transition-colors"
               />
             </div>
 
             {/* Commentaire */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Commentaire
-                <span className="text-gray-400 font-normal ml-1">(optionnel)</span>
+              <label className="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
+                Commentaire <span className="normal-case font-normal">(optionnel)</span>
               </label>
               <textarea
                 value={commentaire}
                 onChange={(e) => setCommentaire(e.target.value)}
                 rows={4}
-                placeholder="Décrivez votre expérience avec ce prestataire…"
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 resize-none focus:outline-none focus:ring-2 focus:ring-rose-300"
+                placeholder="Décrivez votre expérience…"
+                className="w-full border-0 border-b border-gray-200 bg-transparent px-0 py-2 text-sm text-gray-700 resize-none focus:outline-none focus:border-gray-400 transition-colors placeholder:text-gray-300"
               />
             </div>
 
             {formError && (
-              <p className="text-sm text-red-500">{formError}</p>
+              <p className="text-xs text-red-400">{formError}</p>
             )}
 
             <button
               type="submit"
               disabled={submitting}
-              className="bg-rose-400 hover:bg-rose-500 disabled:bg-rose-200 text-white font-semibold text-sm px-6 py-2.5 rounded-full transition-colors"
+              className="inline-flex items-center gap-2 text-white text-sm font-medium px-6 py-3 rounded-full transition-opacity disabled:opacity-40 hover:opacity-90"
+              style={{ backgroundColor: "#F06292" }}
             >
-              {submitting ? "Envoi en cours…" : "Publier mon avis"}
+              {submitting ? (
+                <>
+                  <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Publication…
+                </>
+              ) : "Publier mon avis"}
             </button>
           </form>
         </div>
       )}
 
       {(formSuccess || alreadyReviewed) && loggedIn && userRole === "marie" && (
-        <div className="bg-green-50 border border-green-100 rounded-2xl p-4 text-center">
-          <p className="text-sm text-green-700 font-medium">
-            {formSuccess ? "Merci, votre avis a bien été publié !" : "Vous avez déjà laissé un avis pour ce prestataire."}
+        <div className="bg-white rounded-2xl p-6 text-center">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3" style={{ backgroundColor: "#FFF0F5" }}>
+            <svg className="w-5 h-5" style={{ color: "#F06292" }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <p className="text-sm font-medium text-gray-800">
+            {formSuccess ? "Merci, votre avis a été publié." : "Vous avez déjà laissé un avis."}
           </p>
         </div>
       )}
 
       {/* ── Liste des avis ── */}
       {avis.length > 0 && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {avis.map((a) => (
-            <div key={a.id} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-              <div className="flex items-start justify-between gap-3 mb-3">
+            <div key={a.id} className="bg-white rounded-2xl p-6">
+              <div className="flex items-start justify-between gap-4 mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-rose-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-rose-500 font-bold text-sm">
-                      {marieName(a).charAt(0).toUpperCase()}
-                    </span>
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-white text-sm font-semibold"
+                    style={{ backgroundColor: "#F06292" }}
+                  >
+                    {marieName(a).charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900 text-sm">{marieName(a)}</p>
+                    <p className="font-medium text-gray-900 text-sm">{marieName(a)}</p>
                     {a.date_mariage_couple && (
-                      <p className="text-xs text-gray-400">Mariage en {formatDateMariage(a.date_mariage_couple)}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">Mariage · {formatDateMariage(a.date_mariage_couple)}</p>
                     )}
                   </div>
                 </div>
-                <div className="flex flex-col items-end gap-1">
-                  <Stars note={a.note} size="sm" />
-                  <span className="text-xs text-gray-400">{formatDate(a.created_at)}</span>
+                <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                  <div className="flex items-center gap-0.5">
+                    {[1,2,3,4,5].map((i) => (
+                      <svg
+                        key={i}
+                        className="w-3.5 h-3.5"
+                        fill={i <= a.note ? "#F06292" : "none"}
+                        stroke={i <= a.note ? "none" : "#e5e7eb"}
+                        strokeWidth="1.5"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                  </div>
+                  <span className="text-xs text-gray-300">{formatDate(a.created_at)}</span>
                 </div>
               </div>
               {a.commentaire && (
-                <p className="text-gray-600 text-sm leading-relaxed">{a.commentaire}</p>
+                <p className="text-gray-500 text-sm leading-relaxed mt-1">{a.commentaire}</p>
               )}
             </div>
           ))}

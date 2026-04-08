@@ -117,6 +117,20 @@ export default function InscriptionPage() {
         setError(`Erreur création profil prestataire : ${insertError.message}`);
         return;
       }
+
+      // Notification admin (fire-and-forget)
+      fetch("/api/emails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "new_prestataire",
+          entreprise: pEntreprise,
+          categorie: pMetier,
+          ville: pVille,
+          email: pEmail,
+          userId: signUpData.user.id,
+        }),
+      }).catch(() => {});
     }
 
     setLoading(false);
