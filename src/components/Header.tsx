@@ -23,16 +23,10 @@ const prestataires = [
 
 const outils = [
   {
-    label: "Liste d'invités",
-    icon: "👥",
+    label: "Tableau de bord",
+    icon: "🏠",
     href: "/dashboard/marie",
-    desc: "Gérez vos invitations",
-  },
-  {
-    label: "Plan de table",
-    icon: "🪑",
-    href: "/dashboard/marie",
-    desc: "Organisez vos tables",
+    desc: "Votre espace personnel",
   },
   {
     label: "Rétroplanning",

@@ -261,7 +261,7 @@ export default function DashboardMarie() {
                 </div>
                 <span
                   className="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-full flex-shrink-0 transition-all duration-200 group-hover:opacity-90"
-                  style={{ background: "#6366F1", color: "white" }}
+                  style={{ background: "#F06292", color: "white" }}
                 >
                   Ouvrir
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
