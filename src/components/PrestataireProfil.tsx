@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PROVIDERS } from "@/data/providers";
-import { supabase } from "@/lib/supabase";
+import { supabase, type Marie } from "@/lib/supabase";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -375,23 +375,355 @@ function SectionGalerie() {
   );
 }
 
-function SectionAvis() {
+// ─── Types avis ──────────────────────────────────────────────────────────────
+
+type AvisWithMarie = {
+  id: string
+  note: number
+  commentaire: string | null
+  date_mariage_couple: string | null
+  created_at: string
+  marie_id: string
+  maries: {
+    prenom_marie1: string
+    prenom_marie2: string | null
+  } | null
+}
+
+// ─── Étoiles interactives ─────────────────────────────────────────────────────
+
+function StarPicker({ value, onChange }: { value: number; onChange: (n: number) => void }) {
+  const [hovered, setHovered] = useState(0);
+  return (
+    <span className="flex items-center gap-1">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <button
+          key={i}
+          type="button"
+          onClick={() => onChange(i)}
+          onMouseEnter={() => setHovered(i)}
+          onMouseLeave={() => setHovered(0)}
+          className="focus:outline-none"
+          aria-label={`${i} étoile${i > 1 ? "s" : ""}`}
+        >
+          <svg
+            className={`w-8 h-8 transition-colors ${i <= (hovered || value) ? "text-amber-400" : "text-gray-200"}`}
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+        </button>
+      ))}
+    </span>
+  );
+}
+
+// ─── Section avis réels ────────────────────────────────────────────────────────
+
+function SectionAvis({ prestataireName }: { prestataireName: string }) {
+  const [prestataire, setPrestataire] = useState<{ id: string; user_id: string } | null | undefined>(undefined);
+  const [avis, setAvis] = useState<AvisWithMarie[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [marie, setMarie] = useState<Marie | null>(null);
+  const [alreadyReviewed, setAlreadyReviewed] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  // Form
+  const [note, setNote] = useState(5);
+  const [commentaire, setCommentaire] = useState("");
+  const [dateMariage, setDateMariage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [formSuccess, setFormSuccess] = useState(false);
+
+  const fetchAvis = async (prestId: string) => {
+    const { data } = await supabase
+      .from("avis")
+      .select("*, maries(prenom_marie1, prenom_marie2)")
+      .eq("prestataire_id", prestId)
+      .order("created_at", { ascending: false });
+    return (data ?? []) as AvisWithMarie[];
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoading(true);
+
+      const [{ data: { session } }, { data: prest }] = await Promise.all([
+        supabase.auth.getSession(),
+        supabase.from("prestataires").select("id, user_id").eq("nom_entreprise", prestataireName).maybeSingle(),
+      ]);
+
+      if (cancelled) return;
+
+      setLoggedIn(!!session);
+      setPrestataire(prest ?? null);
+
+      if (!prest) {
+        setLoading(false);
+        return;
+      }
+
+      const reviews = await fetchAvis(prest.id);
+      if (cancelled) return;
+      setAvis(reviews);
+
+      if (session) {
+        const role = session.user.user_metadata?.role ?? "marie";
+        setUserRole(role);
+
+        if (role === "marie") {
+          const { data: marieData } = await supabase
+            .from("maries")
+            .select("*")
+            .eq("user_id", session.user.id)
+            .maybeSingle();
+          if (cancelled) return;
+          setMarie(marieData ?? null);
+          if (marieData) {
+            setAlreadyReviewed(reviews.some((r) => r.marie_id === marieData.id));
+          }
+        }
+      }
+
+      setLoading(false);
+    }
+
+    load();
+    return () => { cancelled = true; };
+  }, [prestataireName]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!marie || !prestataire) return;
+    setSubmitting(true);
+    setFormError("");
+
+    const { error } = await supabase.from("avis").insert({
+      prestataire_id: prestataire.id,
+      marie_id: marie.id,
+      note,
+      commentaire: commentaire.trim() || null,
+      date_mariage_couple: dateMariage || null,
+    });
+
+    if (error) {
+      setFormError("Une erreur est survenue. Veuillez réessayer.");
+      setSubmitting(false);
+      return;
+    }
+
+    const reviews = await fetchAvis(prestataire.id);
+    setAvis(reviews);
+    setAlreadyReviewed(true);
+    setFormSuccess(true);
+    setSubmitting(false);
+  };
+
+  const noteMoyenne =
+    avis.length > 0
+      ? Math.round((avis.reduce((s, a) => s + a.note, 0) / avis.length) * 10) / 10
+      : 0;
+
+  const repartition = [5, 4, 3, 2, 1].map((n) => ({
+    note: n,
+    count: avis.filter((a) => a.note === n).length,
+  }));
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 flex items-center justify-center">
+        <div className="animate-spin w-6 h-6 border-2 border-rose-300 border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  // Prestataire not in Supabase yet
+  if (prestataire === null) {
+    return (
+      <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center">
+        <p className="text-gray-400 text-sm">Les avis seront disponibles lorsque ce prestataire aura activé son profil.</p>
+      </div>
+    );
+  }
+
+  const marieName = (a: AvisWithMarie) => {
+    if (!a.maries) return "Marié(e)";
+    const { prenom_marie1, prenom_marie2 } = a.maries;
+    return prenom_marie2 ? `${prenom_marie1} & ${prenom_marie2}` : prenom_marie1;
+  };
+
+  const formatDate = (iso: string) =>
+    new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+
+  const formatDateMariage = (iso: string) =>
+    new Date(iso).toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+
   return (
     <div className="space-y-6">
+      {/* ── Synthèse ── */}
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
         <h2 className="text-xl font-bold text-gray-900 mb-6">Avis clients</h2>
-        <div className="flex flex-col items-center justify-center py-10 text-center">
-          <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mb-4">
-            <svg className="w-8 h-8 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-            </svg>
+
+        {avis.length > 0 ? (
+          <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
+            {/* Note globale */}
+            <div className="flex flex-col items-center justify-center w-32 flex-shrink-0">
+              <span className="text-5xl font-extrabold text-gray-900">{noteMoyenne}</span>
+              <Stars note={noteMoyenne} size="md" />
+              <span className="text-sm text-gray-400 mt-1">{avis.length} avis</span>
+            </div>
+
+            {/* Répartition */}
+            <div className="flex-1 w-full space-y-1.5">
+              {repartition.map(({ note: n, count }) => (
+                <div key={n} className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500 w-4 text-right">{n}</span>
+                  <svg className="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="bg-amber-400 h-2 rounded-full transition-all"
+                      style={{ width: avis.length > 0 ? `${(count / avis.length) * 100}%` : "0%" }}
+                    />
+                  </div>
+                  <span className="text-xs text-gray-400 w-4">{count}</span>
+                </div>
+              ))}
+            </div>
           </div>
-          <p className="font-semibold text-gray-700 mb-1">Soyez le premier à laisser un avis</p>
-          <p className="text-sm text-gray-400 max-w-sm">
-            Les avis clients apparaîtront ici après leurs mariages. Votre retour d&apos;expérience aide les futurs mariés à choisir en confiance.
+        ) : (
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <div className="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center mb-3">
+              <svg className="w-7 h-7 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              </svg>
+            </div>
+            <p className="font-semibold text-gray-700 mb-1">Aucun avis pour le moment</p>
+            <p className="text-sm text-gray-400 max-w-sm">
+              Votre retour d&apos;expérience aide les futurs mariés à choisir en confiance.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* ── Formulaire ── */}
+      {!loggedIn && (
+        <div className="bg-rose-50 border border-rose-100 rounded-2xl p-5 text-center">
+          <p className="text-sm text-rose-700 font-medium mb-2">Vous avez travaillé avec ce prestataire ?</p>
+          <Link
+            href="/login"
+            className="inline-block bg-rose-400 hover:bg-rose-500 text-white text-sm font-semibold px-5 py-2 rounded-full transition-colors"
+          >
+            Connectez-vous pour laisser un avis
+          </Link>
+        </div>
+      )}
+
+      {loggedIn && userRole === "prestataire" && (
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 text-center">
+          <p className="text-sm text-gray-500">Seuls les mariés peuvent laisser un avis.</p>
+        </div>
+      )}
+
+      {loggedIn && userRole === "marie" && !alreadyReviewed && !formSuccess && (
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <h3 className="text-lg font-bold text-gray-900 mb-5">Laisser un avis</h3>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Note */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Note *</label>
+              <StarPicker value={note} onChange={setNote} />
+            </div>
+
+            {/* Date du mariage */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Date de votre mariage
+                <span className="text-gray-400 font-normal ml-1">(optionnel)</span>
+              </label>
+              <input
+                type="date"
+                value={dateMariage}
+                onChange={(e) => setDateMariage(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-rose-300"
+              />
+            </div>
+
+            {/* Commentaire */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Commentaire
+                <span className="text-gray-400 font-normal ml-1">(optionnel)</span>
+              </label>
+              <textarea
+                value={commentaire}
+                onChange={(e) => setCommentaire(e.target.value)}
+                rows={4}
+                placeholder="Décrivez votre expérience avec ce prestataire…"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 resize-none focus:outline-none focus:ring-2 focus:ring-rose-300"
+              />
+            </div>
+
+            {formError && (
+              <p className="text-sm text-red-500">{formError}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="bg-rose-400 hover:bg-rose-500 disabled:bg-rose-200 text-white font-semibold text-sm px-6 py-2.5 rounded-full transition-colors"
+            >
+              {submitting ? "Envoi en cours…" : "Publier mon avis"}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {(formSuccess || alreadyReviewed) && loggedIn && userRole === "marie" && (
+        <div className="bg-green-50 border border-green-100 rounded-2xl p-4 text-center">
+          <p className="text-sm text-green-700 font-medium">
+            {formSuccess ? "Merci, votre avis a bien été publié !" : "Vous avez déjà laissé un avis pour ce prestataire."}
           </p>
         </div>
-      </div>
+      )}
+
+      {/* ── Liste des avis ── */}
+      {avis.length > 0 && (
+        <div className="space-y-4">
+          {avis.map((a) => (
+            <div key={a.id} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 bg-rose-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-rose-500 font-bold text-sm">
+                      {marieName(a).charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm">{marieName(a)}</p>
+                    {a.date_mariage_couple && (
+                      <p className="text-xs text-gray-400">Mariage en {formatDateMariage(a.date_mariage_couple)}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-1">
+                  <Stars note={a.note} size="sm" />
+                  <span className="text-xs text-gray-400">{formatDate(a.created_at)}</span>
+                </div>
+              </div>
+              {a.commentaire && (
+                <p className="text-gray-600 text-sm leading-relaxed">{a.commentaire}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -821,7 +1153,7 @@ export default function PrestataireProfil({ id }: { id?: number }) {
           <div className="flex-1 min-w-0">
             {activeTab === "apropos" && <SectionAPropos prestataire={PRESTATAIRE} />}
             {activeTab === "galerie" && <SectionGalerie />}
-            {activeTab === "avis" && <SectionAvis />}
+            {activeTab === "avis" && <SectionAvis prestataireName={PRESTATAIRE.nom} />}
             {activeTab === "tarifs" && <SectionTarifs />}
           </div>
 
