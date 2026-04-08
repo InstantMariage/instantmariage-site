@@ -444,7 +444,7 @@ export default function AnnuaireContent() {
   return (
     <>
       {/* ── Hero / Search Bar ─────────────────────────────────────────── */}
-      <section className="bg-gradient-to-br from-rose-500 via-rose-400 to-pink-400 pt-28 pb-16 px-4">
+      <section className="w-full bg-gradient-to-br from-rose-500 via-rose-400 to-pink-400 pt-28 pb-16 px-4">
         <div className="max-w-5xl mx-auto text-center">
           <h1
             className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-3"
@@ -549,11 +549,11 @@ export default function AnnuaireContent() {
 
       {/* ── Main content ──────────────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="flex gap-8">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
 
           {/* ── Sidebar Filters ──────────────────────────────────────── */}
           {/* Mobile toggle */}
-          <div className="lg:hidden mb-4 w-full">
+          <div className="lg:hidden w-full">
             <button
               onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
               className="w-full flex items-center justify-between bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-semibold text-gray-700 shadow-sm"
@@ -575,10 +575,10 @@ export default function AnnuaireContent() {
 
           {/* Sidebar */}
           <aside className={`
-            lg:w-72 lg:flex-shrink-0 lg:block
-            ${mobileFiltersOpen ? "block w-full" : "hidden"}
+            w-full lg:w-72 lg:flex-shrink-0 lg:block
+            ${mobileFiltersOpen ? "block" : "hidden"}
           `}>
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden sticky top-24">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden lg:sticky lg:top-24">
               {/* Header */}
               <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                 <h2 className="font-bold text-gray-900 text-sm">Filtres</h2>
@@ -742,8 +742,8 @@ export default function AnnuaireContent() {
           {/* ── Results ────────────────────────────────────────────────── */}
           <div className="flex-1 min-w-0">
             {/* Sort + count bar */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
-              <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6 min-w-0">
+              <div className="flex items-center gap-3 flex-wrap min-w-0">
                 {loading ? (
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-rose-300 border-t-rose-500 rounded-full animate-spin" />
@@ -783,7 +783,7 @@ export default function AnnuaireContent() {
 
             {/* Bannière "Soyez le premier" si aucun vrai prestataire */}
             {isDemo && !loading && (
-              <div className="mb-6 bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-200 rounded-2xl px-6 py-5 flex flex-col sm:flex-row items-center gap-4">
+              <div className="mb-6 bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-200 rounded-2xl px-4 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 <div className="flex-1">
                   <p className="text-rose-500 font-bold text-base mb-0.5">
                     Soyez le premier prestataire à rejoindre InstantMariage&nbsp;!
@@ -817,14 +817,14 @@ export default function AnnuaireContent() {
                 </button>
               </div>
             ) : !loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                 {paginated.map((provider) => (
                   <ProviderCard key={provider.id} provider={provider} />
                 ))}
               </div>
             ) : (
               /* Squelette de chargement */
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 animate-pulse">
                     <div className="h-48 bg-gray-200" />
@@ -860,7 +860,7 @@ export default function AnnuaireContent() {
       </div>
 
       {/* ── CTA Banner ────────────────────────────────────────────────── */}
-      <section className="bg-gradient-to-r from-rose-50 to-pink-50 border-t border-rose-100">
+      <section className="w-full bg-gradient-to-r from-rose-50 to-pink-50 border-t border-rose-100">
         <div className="max-w-4xl mx-auto px-4 py-14 text-center">
           <h2
             className="text-2xl md:text-3xl font-bold text-gray-900 mb-3"
