@@ -60,8 +60,7 @@ const initialChecklist: CheckItem[] = [
 
 export default function DashboardMarie() {
   const router = useRouter();
-  const [checklist, setChecklist] = useState(initialChecklist);
-  const [showAll, setShowAll] = useState(false);
+  const [checklist] = useState(initialChecklist);
   const [authChecked, setAuthChecked] = useState(false);
   const [prenomMarie1, setPrenomMarie1] = useState("");
   const [prenomMarie2, setPrenomMarie2] = useState("");
@@ -101,16 +100,10 @@ export default function DashboardMarie() {
     });
   }, [router]);
 
-  const toggle = (id: number) => {
-    setChecklist((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, done: !item.done } : item))
-    );
-  };
-
   const done = checklist.filter((i) => i.done).length;
   const total = checklist.length;
   const pct = Math.round((done / total) * 100);
-  const displayed = showAll ? checklist : checklist.slice(0, 6);
+  const displayed = checklist.slice(0, 6);
 
   const Stars = ({ count }: { count: number }) => (
     <div className="flex gap-0.5">
@@ -422,7 +415,7 @@ export default function DashboardMarie() {
                       <input
                         type="checkbox"
                         checked={item.done}
-                        onChange={() => toggle(item.id)}
+                        onChange={() => {}}
                         className="sr-only"
                       />
                       <div
@@ -463,21 +456,21 @@ export default function DashboardMarie() {
                 ))}
               </div>
 
-              <button
-                onClick={() => setShowAll(!showAll)}
+              <Link
+                href="/dashboard/marie/checklist"
                 className="mt-4 w-full text-sm font-semibold py-2 rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-1"
                 style={{ color: "#F06292" }}
               >
-                {showAll ? "Réduire" : `Voir les ${total - 6} tâches restantes`}
+                Ouvrir la checklist complète
                 <svg
-                  className={`w-4 h-4 transition-transform duration-200 ${showAll ? "rotate-180" : ""}`}
+                  className="w-4 h-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
-              </button>
+              </Link>
             </div>
           </div>
         </div>
