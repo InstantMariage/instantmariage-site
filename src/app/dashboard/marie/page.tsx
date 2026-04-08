@@ -21,26 +21,18 @@ function formatDateFr(dateStr: string | null): string {
   return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
 }
 
-interface CheckItem {
-  id: number;
-  label: string;
-  category: string;
-  done: boolean;
-  urgent?: boolean;
-}
-
-const initialChecklist: CheckItem[] = [
-  { id: 1, label: "Fixer la date et le lieu", category: "Essentiel", done: false },
-  { id: 2, label: "Définir le budget global", category: "Essentiel", done: false },
-  { id: 3, label: "Choisir un photographe", category: "Prestataires", done: false, urgent: true },
-  { id: 4, label: "Réserver le traiteur", category: "Prestataires", done: false, urgent: true },
-  { id: 5, label: "Envoyer les faire-parts", category: "Invités", done: false },
-  { id: 6, label: "Choisir la robe / le costume", category: "Tenues", done: false },
-  { id: 7, label: "Organiser l'hébergement des invités", category: "Invités", done: false },
-  { id: 8, label: "Préparer la liste de musique", category: "Animation", done: false },
-  { id: 9, label: "Réserver le wedding planner", category: "Prestataires", done: false },
-  { id: 10, label: "Planifier la lune de miel", category: "Voyage", done: false },
+// Aperçu des 6 premiers items (IDs identiques à la checklist complète)
+const PREVIEW_ITEMS = [
+  { id: "admin-1", label: "Réserver la mairie et déposer le dossier" },
+  { id: "admin-5", label: "Commander et envoyer les faire-part" },
+  { id: "beaute-1", label: "Choisir et commander la robe de mariée" },
+  { id: "cere-7", label: "Commander ou récupérer les alliances" },
+  { id: "recep-1", label: "Choisir le traiteur et valider le menu" },
+  { id: "voyage-1", label: "Choisir la destination du voyage de noces" },
 ];
+
+// Total d'items dans la checklist complète (DEFAULT_CATEGORIES)
+const FULL_TOTAL = 66;
 
 // Clean SVG icons — Apple SF Symbols style
 const IconRing = () => (
@@ -101,9 +93,17 @@ const IconCheck = () => (
   </svg>
 );
 
+const IconChecklist = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 3h6a1 1 0 011 1v2a1 1 0 01-1 1H9a1 1 0 01-1-1V4a1 1 0 011-1z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4" />
+  </svg>
+);
+
 export default function DashboardMarie() {
   const router = useRouter();
-  const [checklist] = useState(initialChecklist);
+  const [doneIds, setDoneIds] = useState<Set<string>>(new Set());
   const [authChecked, setAuthChecked] = useState(false);
   const [prenomMarie1, setPrenomMarie1] = useState("");
   const [prenomMarie2, setPrenomMarie2] = useState("");
@@ -138,14 +138,24 @@ export default function DashboardMarie() {
         setDateMariage(meta?.date_mariage || null);
       }
 
+      // Lire le localStorage de la checklist complète
+      const saved = localStorage.getItem(`checklist_${session.user.id}`);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed.doneIds) setDoneIds(new Set(parsed.doneIds));
+        } catch {
+          // ignore
+        }
+      }
+
       setAuthChecked(true);
     });
   }, [router]);
 
-  const done = checklist.filter((i) => i.done).length;
-  const total = checklist.length;
+  const done = doneIds.size;
+  const total = FULL_TOTAL;
   const pct = Math.round((done / total) * 100);
-  const displayed = checklist.slice(0, 6);
 
   if (!authChecked) return null;
 
@@ -180,9 +190,9 @@ export default function DashboardMarie() {
     {
       href: "/dashboard/marie/checklist",
       external: false,
-      icon: <IconCheck />,
+      icon: <IconChecklist />,
       label: "Checklist",
-      desc: "64 étapes pour ne rien oublier",
+      desc: "66 étapes pour ne rien oublier",
       iconBg: "#FFF0F5",
       iconColor: "#F06292",
     },
@@ -331,37 +341,34 @@ export default function DashboardMarie() {
               </div>
 
               <div className="space-y-1">
-                {displayed.map((item) => (
-                  <label
-                    key={item.id}
-                    className="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer"
-                  >
+                {PREVIEW_ITEMS.map((item) => {
+                  const isDone = doneIds.has(item.id);
+                  return (
                     <div
-                      className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-all duration-200"
-                      style={{
-                        border: item.done ? "none" : "1.5px solid #D1D5DB",
-                        background: item.done ? "#F06292" : "transparent",
-                      }}
+                      key={item.id}
+                      className="flex items-center gap-3 px-2 py-2.5 rounded-xl"
                     >
-                      {item.done && <IconCheck />}
-                    </div>
-                    <span
-                      className={`text-sm flex-1 transition-colors ${
-                        item.done ? "line-through text-gray-300" : "text-gray-700"
-                      }`}
-                    >
-                      {item.label}
-                    </span>
-                    {item.urgent && !item.done && (
-                      <span
-                        className="text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0"
-                        style={{ background: "#FFF0F5", color: "#F06292" }}
+                      <div
+                        className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0"
+                        style={{
+                          border: isDone ? "none" : "1.5px solid #D1D5DB",
+                          background: isDone ? "#F06292" : "transparent",
+                        }}
                       >
-                        urgent
+                        {isDone && <IconCheck />}
+                      </div>
+                      <span
+                        className="text-sm flex-1"
+                        style={{
+                          color: isDone ? "#D1D5DB" : "#374151",
+                          textDecoration: isDone ? "line-through" : "none",
+                        }}
+                      >
+                        {item.label}
                       </span>
-                    )}
-                  </label>
-                ))}
+                    </div>
+                  );
+                })}
               </div>
 
               <Link
