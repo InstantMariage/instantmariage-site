@@ -265,7 +265,7 @@ export default function TarifsContent() {
       {/* ─── PRICING CARDS ───────────────────────────────────── */}
       <section className="py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 md:gap-6 items-stretch">
             {plans.map((plan) => {
               const displayPrice = annual ? plan.priceAnnual : plan.price;
               const isPro = plan.id === "pro";
@@ -276,7 +276,7 @@ export default function TarifsContent() {
                   key={plan.id}
                   className={`relative flex flex-col rounded-3xl transition-all duration-300 ${
                     isPro
-                      ? "shadow-2xl scale-105 z-10"
+                      ? "shadow-2xl md:scale-105 z-10"
                       : "shadow-md hover:shadow-xl hover:-translate-y-1"
                   }`}
                   style={
@@ -318,7 +318,7 @@ export default function TarifsContent() {
                     </div>
                   )}
 
-                  <div className="p-7 flex flex-col flex-1">
+                  <div className="p-8 sm:p-7 flex flex-col flex-1">
                     {/* Plan name & description */}
                     <div className="mb-6">
                       <p
