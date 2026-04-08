@@ -30,8 +30,8 @@ interface CheckItem {
 }
 
 const initialChecklist: CheckItem[] = [
-  { id: 1, label: "Fixer la date et le lieu", category: "Essentiel", done: true },
-  { id: 2, label: "Définir le budget global", category: "Essentiel", done: true },
+  { id: 1, label: "Fixer la date et le lieu", category: "Essentiel", done: false },
+  { id: 2, label: "Définir le budget global", category: "Essentiel", done: false },
   { id: 3, label: "Choisir un photographe", category: "Prestataires", done: false, urgent: true },
   { id: 4, label: "Réserver le traiteur", category: "Prestataires", done: false, urgent: true },
   { id: 5, label: "Envoyer les faire-parts", category: "Invités", done: false },
