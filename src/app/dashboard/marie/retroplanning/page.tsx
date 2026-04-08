@@ -397,30 +397,30 @@ export default function Retroplanning() {
   if (!authChecked) return null;
 
   return (
-    <main className="min-h-screen" style={{ background: "#FFF5F8" }}>
+    <main className="min-h-screen" style={{ background: "#FEF0F5" }}>
       <Header />
 
       <div className="pt-20 pb-20">
         {/* ── Header ── */}
         <section
           className="max-w-4xl mx-auto px-6 pt-12 pb-8 mb-2 rounded-b-3xl"
-          style={{ background: "linear-gradient(160deg, #FFDDE8 0%, #FFF0F5 50%, #FFF5F8 100%)" }}
+          style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)" }}
         >
           <Link
             href="/dashboard/marie"
             className="inline-flex items-center gap-1.5 text-xs font-medium hover:opacity-70 transition-opacity mb-6"
-            style={{ color: "#C2768D" }}
+            style={{ color: "rgba(255,255,255,0.8)" }}
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
             Tableau de bord
           </Link>
-          <p className="text-sm font-medium tracking-widest uppercase mb-3" style={{ color: "#E91E8C", letterSpacing: "0.12em" }}>
+          <p className="text-sm font-medium tracking-widest uppercase mb-3" style={{ color: "rgba(255,255,255,0.75)", letterSpacing: "0.12em" }}>
             Outils mariés
           </p>
-          <h1 className="text-3xl font-semibold text-gray-900 leading-tight mb-1">Rétroplanning</h1>
-          <p className="text-base mb-8" style={{ color: "#C2768D" }}>
+          <h1 className="text-3xl font-semibold text-white leading-tight mb-1">Rétroplanning</h1>
+          <p className="text-base mb-8" style={{ color: "rgba(255,255,255,0.8)" }}>
             {prenomMarie1 ? `Bonjour ${prenomMarie1} · ` : ""}
             {totalTasks} tâches pour votre mariage parfait
           </p>
@@ -429,19 +429,19 @@ export default function Retroplanning() {
             <div
               className="inline-flex items-center gap-5 px-6 py-4 rounded-2xl"
               style={{
-                background: "linear-gradient(135deg, #fff 60%, #FFF0F5 100%)",
-                boxShadow: "0 4px 24px rgba(240,98,146,0.13)",
-                border: "1px solid #FECDD3",
+                background: "rgba(255,255,255,0.18)",
+                boxShadow: "0 4px 24px rgba(0,0,0,0.12)",
+                border: "1px solid rgba(255,255,255,0.3)",
               }}
             >
               <div>
-                <span className="text-4xl font-bold tabular-nums" style={{ color: "#E91E8C" }}>{daysUntil}</span>
-                <span className="text-lg text-gray-400 ml-1.5">jours</span>
+                <span className="text-4xl font-bold tabular-nums text-white">{daysUntil}</span>
+                <span className="text-lg ml-1.5" style={{ color: "rgba(255,255,255,0.8)" }}>jours</span>
               </div>
-              <div className="w-px h-8" style={{ background: "#FECDD3" }} />
+              <div className="w-px h-8" style={{ background: "rgba(255,255,255,0.3)" }} />
               <div>
-                <p className="text-xs uppercase tracking-wider mb-0.5" style={{ color: "#C2768D" }}>Jour J</p>
-                <p className="text-sm font-medium text-gray-700">{formatDateFr(weddingDate)}</p>
+                <p className="text-xs uppercase tracking-wider mb-0.5" style={{ color: "rgba(255,255,255,0.7)" }}>Jour J</p>
+                <p className="text-sm font-medium text-white">{formatDateFr(weddingDate)}</p>
               </div>
             </div>
           )}

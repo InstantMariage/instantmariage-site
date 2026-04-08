@@ -189,7 +189,7 @@ export default function DashboardMarie() {
   ];
 
   return (
-    <main className="min-h-screen" style={{ background: "#FFF5F8" }}>
+    <main className="min-h-screen" style={{ background: "#FEF0F5" }}>
       <Header />
 
       <div className="pt-20 pb-20">
@@ -198,16 +198,16 @@ export default function DashboardMarie() {
         <section
           className="max-w-3xl mx-auto px-6 pt-12 pb-10 mb-2 rounded-b-3xl"
           style={{
-            background: "linear-gradient(160deg, #FFDDE8 0%, #FFF0F5 50%, #FFF5F8 100%)",
+            background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)",
           }}
         >
-          <p className="text-sm font-medium tracking-widest uppercase mb-3" style={{ color: "#E91E8C", letterSpacing: "0.12em" }}>
+          <p className="text-sm font-medium tracking-widest uppercase mb-3" style={{ color: "rgba(255,255,255,0.75)", letterSpacing: "0.12em" }}>
             Mon espace
           </p>
-          <h1 className="text-3xl font-semibold text-gray-900 leading-tight mb-1" style={{ fontFamily: "inherit" }}>
+          <h1 className="text-3xl font-semibold text-white leading-tight mb-1" style={{ fontFamily: "inherit" }}>
             Bonjour{prenomMarie1 ? `, ${prenomMarie1}` : ""}
           </h1>
-          <p className="text-base mb-8" style={{ color: "#C2768D" }}>
+          <p className="text-base mb-8" style={{ color: "rgba(255,255,255,0.8)" }}>
             {prenomMarie2 ? `Votre mariage avec ${prenomMarie2}` : "Votre mariage"}
             {dateMariage ? ` · ${formatDateFr(dateMariage)}` : ""}
             {lieuMariage ? ` · ${lieuMariage}` : ""}
@@ -218,19 +218,19 @@ export default function DashboardMarie() {
             <div
               className="inline-flex items-center gap-5 px-6 py-4 rounded-2xl"
               style={{
-                background: "linear-gradient(135deg, #fff 60%, #FFF0F5 100%)",
-                boxShadow: "0 4px 24px rgba(240,98,146,0.13)",
-                border: "1px solid #FECDD3",
+                background: "rgba(255,255,255,0.18)",
+                boxShadow: "0 4px 24px rgba(0,0,0,0.12)",
+                border: "1px solid rgba(255,255,255,0.3)",
               }}
             >
               <div>
-                <span className="text-4xl font-bold tabular-nums" style={{ color: "#E91E8C" }}>{days}</span>
-                <span className="text-lg text-gray-400 ml-1.5">jours</span>
+                <span className="text-4xl font-bold tabular-nums text-white">{days}</span>
+                <span className="text-lg ml-1.5" style={{ color: "rgba(255,255,255,0.8)" }}>jours</span>
               </div>
-              <div className="w-px h-8" style={{ background: "#FECDD3" }} />
+              <div className="w-px h-8" style={{ background: "rgba(255,255,255,0.3)" }} />
               <div>
-                <p className="text-xs uppercase tracking-wider mb-0.5" style={{ color: "#C2768D" }}>jusqu&apos;au grand jour</p>
-                <p className="text-sm font-medium text-gray-700">{formatDateFr(dateMariage)}</p>
+                <p className="text-xs uppercase tracking-wider mb-0.5" style={{ color: "rgba(255,255,255,0.7)" }}>jusqu&apos;au grand jour</p>
+                <p className="text-sm font-medium text-white">{formatDateFr(dateMariage)}</p>
               </div>
             </div>
           )}

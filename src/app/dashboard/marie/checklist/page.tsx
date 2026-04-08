@@ -297,37 +297,37 @@ export default function ChecklistPage() {
       : "Tout est prêt, félicitations !";
 
   return (
-    <main className="min-h-screen" style={{ background: "#FFF5F8" }}>
+    <main className="min-h-screen" style={{ background: "#FEF0F5" }}>
       <Header />
 
       <div className="pt-20 pb-20">
         {/* ── Header ── */}
         <section
           className="max-w-3xl mx-auto px-6 pt-12 pb-8 mb-2 rounded-b-3xl"
-          style={{ background: "linear-gradient(160deg, #FFDDE8 0%, #FFF0F5 50%, #FFF5F8 100%)" }}
+          style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)" }}
         >
           <Link
             href="/dashboard/marie"
             className="inline-flex items-center gap-1.5 text-xs font-medium hover:opacity-70 transition-opacity mb-6"
-            style={{ color: "#C2768D" }}
+            style={{ color: "rgba(255,255,255,0.8)" }}
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
             Tableau de bord
           </Link>
-          <p className="text-sm font-medium tracking-widest uppercase mb-3" style={{ color: "#E91E8C", letterSpacing: "0.12em" }}>
+          <p className="text-sm font-medium tracking-widest uppercase mb-3" style={{ color: "rgba(255,255,255,0.75)", letterSpacing: "0.12em" }}>
             Outils mariés
           </p>
-          <h1 className="text-3xl font-semibold text-gray-900 leading-tight mb-1">Checklist mariage</h1>
-          <p className="text-base mb-8" style={{ color: "#C2768D" }}>
+          <h1 className="text-3xl font-semibold text-white leading-tight mb-1">Checklist mariage</h1>
+          <p className="text-base mb-8" style={{ color: "rgba(255,255,255,0.8)" }}>
             {prenomMarie1 ? `Bonjour ${prenomMarie1} · ne` : "Ne"} rien oublier pour votre grand jour
           </p>
 
           {/* Progress */}
           <div
             className="rounded-3xl p-5"
-            style={{ background: "white", boxShadow: "0 4px 24px rgba(240,98,146,0.08)", border: "1px solid #FECDD3" }}
+            style={{ background: "white", boxShadow: "0 8px 32px rgba(0,0,0,0.15)", border: "none" }}
           >
             <div className="flex items-center justify-between mb-3">
               <div>
