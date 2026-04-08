@@ -156,6 +156,8 @@ export default function DashboardMarie() {
       icon: <IconChair />,
       label: "Invités & Plan de table",
       desc: "Gérez vos invités et organisez le placement",
+      iconBg: "#EDE9FE",
+      iconColor: "#7C3AED",
     },
     {
       href: "/dashboard/marie/budget",
@@ -163,6 +165,8 @@ export default function DashboardMarie() {
       icon: <IconWallet />,
       label: "Budget mariage",
       desc: "Suivez et maîtrisez chaque dépense",
+      iconBg: "#D1FAE5",
+      iconColor: "#059669",
     },
     {
       href: "/dashboard/marie/retroplanning",
@@ -170,6 +174,8 @@ export default function DashboardMarie() {
       icon: <IconCalendar />,
       label: "Rétroplanning",
       desc: "+150 tâches planifiées mois par mois",
+      iconBg: "#DBEAFE",
+      iconColor: "#2563EB",
     },
     {
       href: "/dashboard/marie/checklist",
@@ -177,25 +183,31 @@ export default function DashboardMarie() {
       icon: <IconCheck />,
       label: "Checklist",
       desc: "64 étapes pour ne rien oublier",
-      iconBg: true,
+      iconBg: "#FFF0F5",
+      iconColor: "#F06292",
     },
   ];
 
   return (
-    <main className="min-h-screen" style={{ background: "#F9F9FB" }}>
+    <main className="min-h-screen" style={{ background: "#FFF5F8" }}>
       <Header />
 
       <div className="pt-20 pb-20">
 
         {/* ── Hero ── */}
-        <section className="max-w-3xl mx-auto px-6 pt-12 pb-10">
-          <p className="text-sm font-medium tracking-widest uppercase mb-3" style={{ color: "#F06292", letterSpacing: "0.12em" }}>
+        <section
+          className="max-w-3xl mx-auto px-6 pt-12 pb-10 mb-2 rounded-b-3xl"
+          style={{
+            background: "linear-gradient(160deg, #FFDDE8 0%, #FFF0F5 50%, #FFF5F8 100%)",
+          }}
+        >
+          <p className="text-sm font-medium tracking-widest uppercase mb-3" style={{ color: "#E91E8C", letterSpacing: "0.12em" }}>
             Mon espace
           </p>
           <h1 className="text-3xl font-semibold text-gray-900 leading-tight mb-1" style={{ fontFamily: "inherit" }}>
             Bonjour{prenomMarie1 ? `, ${prenomMarie1}` : ""}
           </h1>
-          <p className="text-base text-gray-400 mb-8">
+          <p className="text-base mb-8" style={{ color: "#C2768D" }}>
             {prenomMarie2 ? `Votre mariage avec ${prenomMarie2}` : "Votre mariage"}
             {dateMariage ? ` · ${formatDateFr(dateMariage)}` : ""}
             {lieuMariage ? ` · ${lieuMariage}` : ""}
@@ -206,24 +218,25 @@ export default function DashboardMarie() {
             <div
               className="inline-flex items-center gap-5 px-6 py-4 rounded-2xl"
               style={{
-                background: "white",
-                boxShadow: "0 2px 20px rgba(0,0,0,0.06)",
+                background: "linear-gradient(135deg, #fff 60%, #FFF0F5 100%)",
+                boxShadow: "0 4px 24px rgba(240,98,146,0.13)",
+                border: "1px solid #FECDD3",
               }}
             >
               <div>
-                <span className="text-4xl font-bold text-gray-900 tabular-nums">{days}</span>
+                <span className="text-4xl font-bold tabular-nums" style={{ color: "#E91E8C" }}>{days}</span>
                 <span className="text-lg text-gray-400 ml-1.5">jours</span>
               </div>
-              <div className="w-px h-8 bg-gray-100" />
+              <div className="w-px h-8" style={{ background: "#FECDD3" }} />
               <div>
-                <p className="text-xs text-gray-400 uppercase tracking-wider mb-0.5">jusqu&apos;au grand jour</p>
+                <p className="text-xs uppercase tracking-wider mb-0.5" style={{ color: "#C2768D" }}>jusqu&apos;au grand jour</p>
                 <p className="text-sm font-medium text-gray-700">{formatDateFr(dateMariage)}</p>
               </div>
             </div>
           )}
         </section>
 
-        <div className="max-w-3xl mx-auto px-6 space-y-5">
+        <div className="max-w-3xl mx-auto px-6 space-y-5 pt-4">
 
           {/* ── Outils ── */}
           <section>
@@ -239,19 +252,19 @@ export default function DashboardMarie() {
 
             <div
               className="rounded-3xl overflow-hidden"
-              style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
+              style={{ background: "white", boxShadow: "0 4px 24px rgba(240,98,146,0.08)", border: "1px solid #FECDD3" }}
             >
               {tools.map((tool, i) => {
                 const isLast = i === tools.length - 1;
                 const inner = (
                   <div
-                    className="flex items-center gap-4 px-5 py-4 group transition-colors duration-200 hover:bg-gray-50 cursor-pointer"
-                    style={{ borderBottom: isLast ? "none" : "1px solid #F3F4F6" }}
+                    className="flex items-center gap-4 px-5 py-4 group transition-colors duration-200 hover:bg-rose-50/40 cursor-pointer"
+                    style={{ borderBottom: isLast ? "none" : "1px solid #FEE2E2" }}
                   >
                     {/* Icon */}
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-105"
-                      style={{ background: "#FFF0F5", color: "#F06292" }}
+                      className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-105"
+                      style={{ background: tool.iconBg, color: tool.iconColor }}
                     >
                       {tool.icon}
                     </div>
@@ -302,7 +315,7 @@ export default function DashboardMarie() {
 
             <div
               className="rounded-3xl overflow-hidden p-5"
-              style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
+              style={{ background: "white", boxShadow: "0 4px 24px rgba(240,98,146,0.08)", border: "1px solid #FECDD3" }}
             >
               {/* Progress */}
               <div className="flex items-center gap-3 mb-5">
@@ -368,7 +381,7 @@ export default function DashboardMarie() {
             {/* Prestataires sauvegardés */}
             <section
               className="rounded-3xl p-5"
-              style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
+              style={{ background: "white", boxShadow: "0 4px 24px rgba(240,98,146,0.08)", border: "1px solid #FECDD3" }}
             >
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400">Prestataires</h2>
@@ -405,7 +418,7 @@ export default function DashboardMarie() {
             {/* Messages */}
             <section
               className="rounded-3xl p-5"
-              style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
+              style={{ background: "white", boxShadow: "0 4px 24px rgba(240,98,146,0.08)", border: "1px solid #FECDD3" }}
             >
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400">Messages</h2>

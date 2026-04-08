@@ -182,33 +182,37 @@ export default function BudgetPage() {
   const maxPrevu = Math.max(...categories.map((c) => c.prevu), 1);
 
   return (
-    <main className="min-h-screen" style={{ background: "#F9F9FB" }}>
+    <main className="min-h-screen" style={{ background: "#FFF5F8" }}>
       <Header />
 
       <div className="pt-20 pb-24">
         {/* ── Header ── */}
-        <section className="max-w-3xl mx-auto px-6 pt-12 pb-8">
+        <section
+          className="max-w-3xl mx-auto px-6 pt-12 pb-8 mb-2 rounded-b-3xl"
+          style={{ background: "linear-gradient(160deg, #FFDDE8 0%, #FFF0F5 50%, #FFF5F8 100%)" }}
+        >
           <Link
             href="/dashboard/marie"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-gray-600 transition-colors mb-6"
+            className="inline-flex items-center gap-1.5 text-xs font-medium hover:opacity-70 transition-opacity mb-6"
+            style={{ color: "#C2768D" }}
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
             Tableau de bord
           </Link>
-          <p className="text-sm font-medium tracking-widest uppercase mb-3" style={{ color: "#F06292", letterSpacing: "0.12em" }}>
+          <p className="text-sm font-medium tracking-widest uppercase mb-3" style={{ color: "#E91E8C", letterSpacing: "0.12em" }}>
             Outils mariés
           </p>
           <h1 className="text-3xl font-semibold text-gray-900 leading-tight mb-1">Budget mariage</h1>
-          <p className="text-base text-gray-400 mb-8">
+          <p className="text-base mb-8" style={{ color: "#C2768D" }}>
             {prenomMarie1 ? `Bonjour ${prenomMarie1} · suivez` : "Suivez"} vos dépenses en toute sérénité
           </p>
 
           {/* Budget global */}
           <div
             className="rounded-3xl p-6"
-            style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
+            style={{ background: "white", boxShadow: "0 4px 24px rgba(240,98,146,0.08)", border: "1px solid #FECDD3" }}
           >
             {editingBudget ? (
               <div>
@@ -313,7 +317,7 @@ export default function BudgetPage() {
               <div
                 key={card.label}
                 className="rounded-2xl p-4"
-                style={{ background: card.highlight ? "#FFF0F5" : "white", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}
+                style={{ background: card.highlight ? "#FFF0F5" : "white", boxShadow: "0 2px 12px rgba(240,98,146,0.07)", border: "1px solid #FECDD3" }}
               >
                 <p className="text-xs text-gray-400 mb-1 leading-tight">{card.label}</p>
                 <p
@@ -330,7 +334,7 @@ export default function BudgetPage() {
           {totalPrevu > 0 && (
             <div
               className="rounded-3xl p-5"
-              style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
+              style={{ background: "white", boxShadow: "0 4px 24px rgba(240,98,146,0.08)", border: "1px solid #FECDD3" }}
             >
               <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-4">Répartition</h2>
               <div className="space-y-4">
@@ -374,7 +378,7 @@ export default function BudgetPage() {
             <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3 px-1">Détail par poste</h2>
             <div
               className="rounded-3xl overflow-hidden"
-              style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
+              style={{ background: "white", boxShadow: "0 4px 24px rgba(240,98,146,0.08)", border: "1px solid #FECDD3" }}
             >
               {categories.map((cat, i) => {
                 const isOpen = openCat === cat.id;
@@ -383,11 +387,17 @@ export default function BudgetPage() {
                 const isLast = i === categories.length - 1;
 
                 return (
-                  <div key={cat.id} style={{ borderBottom: isLast ? "none" : "1px solid #F3F4F6" }}>
+                  <div key={cat.id} style={{ borderBottom: isLast ? "none" : "1px solid #FEE2E2" }}>
                     <button
-                      className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-gray-50/60 transition-colors"
+                      className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-rose-50/30 transition-colors"
                       onClick={() => toggleCat(cat.id)}
                     >
+                      <div
+                        className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 text-lg"
+                        style={{ background: "#FFF0F5" }}
+                      >
+                        {cat.emoji}
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-medium text-gray-800 text-sm">{cat.label}</span>
@@ -421,7 +431,7 @@ export default function BudgetPage() {
                     </button>
 
                     {isOpen && ev && (
-                      <div className="px-5 pb-5 border-t border-gray-50 bg-gray-50/40">
+                      <div className="px-5 pb-5 border-t border-rose-50 bg-rose-50/20">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
                           <div>
                             <label className="text-xs font-medium text-gray-400 mb-1.5 block">Montant prévu (€)</label>
@@ -496,7 +506,7 @@ export default function BudgetPage() {
           {resteAPayer > 0 && (
             <div
               className="rounded-3xl p-5"
-              style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
+              style={{ background: "white", boxShadow: "0 4px 24px rgba(240,98,146,0.08)", border: "1px solid #FECDD3" }}
             >
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#FFF0F5", color: "#F06292" }}>

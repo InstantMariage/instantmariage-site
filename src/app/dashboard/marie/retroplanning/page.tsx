@@ -397,26 +397,30 @@ export default function Retroplanning() {
   if (!authChecked) return null;
 
   return (
-    <main className="min-h-screen" style={{ background: "#F9F9FB" }}>
+    <main className="min-h-screen" style={{ background: "#FFF5F8" }}>
       <Header />
 
       <div className="pt-20 pb-20">
         {/* ── Header ── */}
-        <section className="max-w-4xl mx-auto px-6 pt-12 pb-8">
+        <section
+          className="max-w-4xl mx-auto px-6 pt-12 pb-8 mb-2 rounded-b-3xl"
+          style={{ background: "linear-gradient(160deg, #FFDDE8 0%, #FFF0F5 50%, #FFF5F8 100%)" }}
+        >
           <Link
             href="/dashboard/marie"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-gray-600 transition-colors mb-6"
+            className="inline-flex items-center gap-1.5 text-xs font-medium hover:opacity-70 transition-opacity mb-6"
+            style={{ color: "#C2768D" }}
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
             Tableau de bord
           </Link>
-          <p className="text-sm font-medium tracking-widest uppercase mb-3" style={{ color: "#F06292", letterSpacing: "0.12em" }}>
+          <p className="text-sm font-medium tracking-widest uppercase mb-3" style={{ color: "#E91E8C", letterSpacing: "0.12em" }}>
             Outils mariés
           </p>
           <h1 className="text-3xl font-semibold text-gray-900 leading-tight mb-1">Rétroplanning</h1>
-          <p className="text-base text-gray-400 mb-8">
+          <p className="text-base mb-8" style={{ color: "#C2768D" }}>
             {prenomMarie1 ? `Bonjour ${prenomMarie1} · ` : ""}
             {totalTasks} tâches pour votre mariage parfait
           </p>
@@ -424,15 +428,19 @@ export default function Retroplanning() {
           {weddingDate && daysUntil !== null && (
             <div
               className="inline-flex items-center gap-5 px-6 py-4 rounded-2xl"
-              style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
+              style={{
+                background: "linear-gradient(135deg, #fff 60%, #FFF0F5 100%)",
+                boxShadow: "0 4px 24px rgba(240,98,146,0.13)",
+                border: "1px solid #FECDD3",
+              }}
             >
               <div>
-                <span className="text-4xl font-bold text-gray-900 tabular-nums">{daysUntil}</span>
+                <span className="text-4xl font-bold tabular-nums" style={{ color: "#E91E8C" }}>{daysUntil}</span>
                 <span className="text-lg text-gray-400 ml-1.5">jours</span>
               </div>
-              <div className="w-px h-8 bg-gray-100" />
+              <div className="w-px h-8" style={{ background: "#FECDD3" }} />
               <div>
-                <p className="text-xs text-gray-400 uppercase tracking-wider mb-0.5">Jour J</p>
+                <p className="text-xs uppercase tracking-wider mb-0.5" style={{ color: "#C2768D" }}>Jour J</p>
                 <p className="text-sm font-medium text-gray-700">{formatDateFr(weddingDate)}</p>
               </div>
             </div>
@@ -445,7 +453,7 @@ export default function Retroplanning() {
           {!weddingDateStr && (
             <div
               className="rounded-3xl p-6"
-              style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
+              style={{ background: "white", boxShadow: "0 4px 24px rgba(240,98,146,0.08)", border: "1px solid #FECDD3" }}
             >
               <div className="flex items-start gap-4">
                 <div
@@ -486,7 +494,7 @@ export default function Retroplanning() {
           {weddingDateStr && (
             <div
               className="rounded-3xl overflow-hidden"
-              style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
+              style={{ background: "white", boxShadow: "0 4px 24px rgba(240,98,146,0.08)", border: "1px solid #FECDD3" }}
             >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
@@ -556,7 +564,7 @@ export default function Retroplanning() {
           {weddingDateStr && (
             <div
               className="rounded-3xl p-4"
-              style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
+              style={{ background: "white", boxShadow: "0 4px 24px rgba(240,98,146,0.08)", border: "1px solid #FECDD3" }}
             >
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
@@ -607,7 +615,7 @@ export default function Retroplanning() {
               <div
                 key={period.id}
                 className="rounded-3xl overflow-hidden"
-                style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
+                style={{ background: "white", boxShadow: "0 4px 24px rgba(240,98,146,0.08)", border: "1px solid #FECDD3" }}
               >
                 {/* Header période */}
                 <button
@@ -615,17 +623,17 @@ export default function Retroplanning() {
                   className="w-full flex items-center gap-4 p-5 hover:bg-gray-50/60 transition-colors text-left"
                 >
                   <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: allDone ? "#F06292" : "#FFF0F5", color: allDone ? "white" : "#F06292" }}
+                    className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 text-xl"
+                    style={{
+                      background: allDone ? period.color : `${period.color}22`,
+                    }}
                   >
                     {allDone ? (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     ) : (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                        <rect x="3" y="4" width="18" height="18" rx="3" /><path strokeLinecap="round" d="M16 2v4M8 2v4M3 10h18" />
-                      </svg>
+                      <span>{period.emoji}</span>
                     )}
                   </div>
 
@@ -638,7 +646,7 @@ export default function Retroplanning() {
                       <div className="flex-1 bg-gray-100 rounded-full h-1 max-w-28">
                         <div
                           className="h-1 rounded-full transition-all duration-500"
-                          style={{ width: `${pct}%`, background: "#F06292" }}
+                          style={{ width: `${pct}%`, background: period.color }}
                         />
                       </div>
                       <span className="text-xs text-gray-400 flex-shrink-0 tabular-nums">{done}/{tasks.length}</span>
@@ -741,7 +749,7 @@ export default function Retroplanning() {
           {!weddingDateStr && (
             <div
               className="rounded-3xl p-12 text-center"
-              style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
+              style={{ background: "white", boxShadow: "0 4px 24px rgba(240,98,146,0.08)", border: "1px solid #FECDD3" }}
             >
               <div
                 className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4"

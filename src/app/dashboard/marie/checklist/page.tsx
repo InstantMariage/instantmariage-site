@@ -297,33 +297,37 @@ export default function ChecklistPage() {
       : "Tout est prêt, félicitations !";
 
   return (
-    <main className="min-h-screen" style={{ background: "#F9F9FB" }}>
+    <main className="min-h-screen" style={{ background: "#FFF5F8" }}>
       <Header />
 
       <div className="pt-20 pb-20">
         {/* ── Header ── */}
-        <section className="max-w-3xl mx-auto px-6 pt-12 pb-8">
+        <section
+          className="max-w-3xl mx-auto px-6 pt-12 pb-8 mb-2 rounded-b-3xl"
+          style={{ background: "linear-gradient(160deg, #FFDDE8 0%, #FFF0F5 50%, #FFF5F8 100%)" }}
+        >
           <Link
             href="/dashboard/marie"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-gray-600 transition-colors mb-6"
+            className="inline-flex items-center gap-1.5 text-xs font-medium hover:opacity-70 transition-opacity mb-6"
+            style={{ color: "#C2768D" }}
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
             Tableau de bord
           </Link>
-          <p className="text-sm font-medium tracking-widest uppercase mb-3" style={{ color: "#F06292", letterSpacing: "0.12em" }}>
+          <p className="text-sm font-medium tracking-widest uppercase mb-3" style={{ color: "#E91E8C", letterSpacing: "0.12em" }}>
             Outils mariés
           </p>
           <h1 className="text-3xl font-semibold text-gray-900 leading-tight mb-1">Checklist mariage</h1>
-          <p className="text-base text-gray-400 mb-8">
+          <p className="text-base mb-8" style={{ color: "#C2768D" }}>
             {prenomMarie1 ? `Bonjour ${prenomMarie1} · ne` : "Ne"} rien oublier pour votre grand jour
           </p>
 
           {/* Progress */}
           <div
             className="rounded-3xl p-5"
-            style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
+            style={{ background: "white", boxShadow: "0 4px 24px rgba(240,98,146,0.08)", border: "1px solid #FECDD3" }}
           >
             <div className="flex items-center justify-between mb-3">
               <div>
@@ -358,7 +362,7 @@ export default function ChecklistPage() {
               <div
                 key={cat.id}
                 className="rounded-3xl overflow-hidden"
-                style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
+                style={{ background: "white", boxShadow: "0 4px 24px rgba(240,98,146,0.08)", border: "1px solid #FECDD3" }}
               >
                 {/* Category header */}
                 <button
@@ -366,17 +370,17 @@ export default function ChecklistPage() {
                   className="w-full flex items-center gap-4 p-5 hover:bg-gray-50/60 transition-colors text-left"
                 >
                   <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: allDone ? "#F06292" : "#FFF0F5", color: allDone ? "white" : "#F06292" }}
+                    className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 text-xl"
+                    style={{
+                      background: allDone ? cat.color : `${cat.color}22`,
+                    }}
                   >
                     {allDone ? (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     ) : (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                      </svg>
+                      <span>{cat.emoji}</span>
                     )}
                   </div>
 
@@ -517,7 +521,7 @@ export default function ChecklistPage() {
           {/* Bottom tip */}
           <div
             className="rounded-3xl p-5"
-            style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
+            style={{ background: "white", boxShadow: "0 4px 24px rgba(240,98,146,0.08)", border: "1px solid #FECDD3" }}
           >
             <div className="flex items-start gap-3">
               <div
