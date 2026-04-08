@@ -286,13 +286,15 @@ export default function Header() {
               Annuaire
               <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-rose-400 group-hover:w-full transition-all duration-200" />
             </Link>
-            <Link
-              href="/tarifs"
-              className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors duration-200 relative group py-2"
-            >
-              Tarifs
-              <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-rose-400 group-hover:w-full transition-all duration-200" />
-            </Link>
+            {user?.role !== "marie" && (
+              <Link
+                href="/tarifs"
+                className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors duration-200 relative group py-2"
+              >
+                Tarifs
+                <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-rose-400 group-hover:w-full transition-all duration-200" />
+              </Link>
+            )}
             <Link
               href="/blog"
               className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors duration-200 relative group py-2"
@@ -476,13 +478,15 @@ export default function Header() {
             >
               Annuaire
             </Link>
-            <Link
-              href="/tarifs"
-              className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
-              onClick={() => setMobileOpen(false)}
-            >
-              Tarifs
-            </Link>
+            {user?.role !== "marie" && (
+              <Link
+                href="/tarifs"
+                className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
+                onClick={() => setMobileOpen(false)}
+              >
+                Tarifs
+              </Link>
+            )}
             <Link
               href="/blog"
               className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"

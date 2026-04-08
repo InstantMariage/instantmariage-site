@@ -139,6 +139,11 @@ export default function TarifsContent() {
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) return;
+      const role = session.user.user_metadata?.role ?? "marie";
+      if (role === "marie") {
+        router.replace("/dashboard/marie");
+        return;
+      }
       const { data } = await supabase
         .from("prestataires")
         .select("id")
@@ -146,7 +151,7 @@ export default function TarifsContent() {
         .single();
       if (data) setPrestataireId(data.id);
     });
-  }, []);
+  }, [router]);
 
   async function handleSubscribe(plan: typeof plans[number]) {
     if (!plan.priceId) {
