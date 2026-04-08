@@ -267,9 +267,9 @@ function getRelativeLabel(deadline: Date, weddingDate: Date): { text: string; la
 }
 
 const PRIORITY_CONFIG: Record<Priority, { label: string; bg: string; text: string; dot: string }> = {
-  urgent: { label: "Urgent", bg: "#FEF2F2", text: "#EF4444", dot: "#EF4444" },
-  important: { label: "Important", bg: "#FFFBEB", text: "#F59E0B", dot: "#F59E0B" },
-  normal: { label: "Normal", bg: "#F9FAFB", text: "#6B7280", dot: "#9CA3AF" },
+  urgent: { label: "Urgent", bg: "#FFF0F5", text: "#F06292", dot: "#F06292" },
+  important: { label: "Important", bg: "#F3F4F6", text: "#6B7280", dot: "#9CA3AF" },
+  normal: { label: "Normal", bg: "#F9FAFB", text: "#9CA3AF", dot: "#D1D5DB" },
 };
 
 /* ─────────────────── Composant principal ─────────────────── */
@@ -397,100 +397,82 @@ export default function Retroplanning() {
   if (!authChecked) return null;
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen" style={{ background: "#F9F9FB" }}>
       <Header />
 
-      <div className="pt-20 pb-16">
-        {/* Hero */}
-        <div
-          className="px-4 py-10"
-          style={{ background: "linear-gradient(135deg, #F06292 0%, #E91E8C 100%)" }}
-        >
-          <div className="max-w-4xl mx-auto">
-            <div className="flex items-center gap-3 mb-4">
-              <Link
-                href="/dashboard/marie"
-                className="flex items-center gap-1.5 text-rose-100 hover:text-white transition-colors text-sm"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                Tableau de bord
-              </Link>
-            </div>
+      <div className="pt-20 pb-20">
+        {/* ── Header ── */}
+        <section className="max-w-4xl mx-auto px-6 pt-12 pb-8">
+          <Link
+            href="/dashboard/marie"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-gray-600 transition-colors mb-6"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            Tableau de bord
+          </Link>
+          <p className="text-sm font-medium tracking-widest uppercase mb-3" style={{ color: "#F06292", letterSpacing: "0.12em" }}>
+            Outils mariés
+          </p>
+          <h1 className="text-3xl font-semibold text-gray-900 leading-tight mb-1">Rétroplanning</h1>
+          <p className="text-base text-gray-400 mb-8">
+            {prenomMarie1 ? `Bonjour ${prenomMarie1} · ` : ""}
+            {totalTasks} tâches pour votre mariage parfait
+          </p>
 
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+          {weddingDate && daysUntil !== null && (
+            <div
+              className="inline-flex items-center gap-5 px-6 py-4 rounded-2xl"
+              style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
+            >
               <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <div
-                    className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl"
-                    style={{ background: "rgba(255,255,255,0.25)" }}
-                  >
-                    📅
-                  </div>
-                  <div>
-                    <h1 className="text-2xl font-bold text-white font-playfair">Rétroplanning</h1>
-                    <p className="text-rose-100 text-sm">
-                      {prenomMarie1 ? `Bonjour ${prenomMarie1} · ` : ""}
-                      {totalTasks} tâches pour votre mariage parfait
-                    </p>
-                  </div>
-                </div>
+                <span className="text-4xl font-bold text-gray-900 tabular-nums">{daysUntil}</span>
+                <span className="text-lg text-gray-400 ml-1.5">jours</span>
               </div>
-
-              {weddingDate && daysUntil !== null && (
-                <div
-                  className="flex items-center gap-4 px-5 py-3.5 rounded-2xl self-start sm:self-auto"
-                  style={{ background: "rgba(255,255,255,0.18)", backdropFilter: "blur(8px)" }}
-                >
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-white leading-none">{daysUntil}</div>
-                    <div className="text-xs text-rose-100 mt-0.5">jours restants</div>
-                  </div>
-                  <div className="w-px h-8 bg-white/30" />
-                  <div className="text-center">
-                    <div className="text-sm text-white font-semibold">{formatDateFr(weddingDate)}</div>
-                    <div className="text-xs text-rose-100 mt-0.5">Jour J</div>
-                  </div>
-                </div>
-              )}
+              <div className="w-px h-8 bg-gray-100" />
+              <div>
+                <p className="text-xs text-gray-400 uppercase tracking-wider mb-0.5">Jour J</p>
+                <p className="text-sm font-medium text-gray-700">{formatDateFr(weddingDate)}</p>
+              </div>
             </div>
-          </div>
-        </div>
+          )}
+        </section>
 
-        <div className="max-w-4xl mx-auto px-4 mt-6 space-y-4">
+        <div className="max-w-4xl mx-auto px-6 space-y-4">
 
           {/* Date de mariage si pas définie */}
           {!weddingDateStr && (
             <div
-              className="bg-white rounded-2xl p-6 shadow-card border-2"
-              style={{ borderColor: "#F06292" }}
+              className="rounded-3xl p-6"
+              style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
             >
               <div className="flex items-start gap-4">
                 <div
-                  className="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                  style={{ background: "#FFF0F5" }}
+                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: "#FFF0F5", color: "#F06292" }}
                 >
-                  📅
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                    <rect x="3" y="4" width="18" height="18" rx="3" /><path strokeLinecap="round" d="M16 2v4M8 2v4M3 10h18" />
+                  </svg>
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900 mb-1">Entrez votre date de mariage</h3>
-                  <p className="text-sm text-gray-500 mb-4">
-                    Toutes les échéances seront calculées automatiquement à partir de cette date.
+                  <p className="text-sm text-gray-400 mb-4">
+                    Toutes les échéances seront calculées automatiquement.
                   </p>
                   <div className="flex items-center gap-3 flex-wrap">
                     <input
                       type="date"
                       value={inputDate}
                       onChange={(e) => setInputDate(e.target.value)}
-                      className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2"
-                      style={{ "--tw-ring-color": "#F06292" } as React.CSSProperties}
+                      className="border border-gray-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:border-rose-300 bg-gray-50"
                     />
                     <button
                       onClick={applyDate}
                       disabled={!inputDate}
-                      className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity disabled:opacity-40"
-                      style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)" }}
+                      className="px-5 py-2.5 rounded-full text-sm font-semibold text-white transition-opacity disabled:opacity-40 hover:opacity-80"
+                      style={{ background: "#F06292" }}
                     >
                       Générer mon planning
                     </button>
@@ -502,84 +484,66 @@ export default function Retroplanning() {
 
           {/* Dashboard progression */}
           {weddingDateStr && (
-            <div className="bg-white rounded-2xl shadow-card overflow-hidden">
+            <div
+              className="rounded-3xl overflow-hidden"
+              style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
+            >
               <div className="p-6">
-                <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h2 className="font-semibold text-gray-900">Progression globale</h2>
-                    <p className="text-sm text-gray-400 mt-0.5">
-                      {doneTasks} tâches terminées sur {totalTasks}
-                    </p>
+                    <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400">Progression</h2>
+                    <p className="text-2xl font-bold text-gray-900 mt-1">{doneTasks} <span className="text-base font-normal text-gray-400">/ {totalTasks} tâches</span></p>
                   </div>
-                  <div className="text-right">
-                    <span
-                      className="text-4xl font-bold"
-                      style={{ color: "#F06292" }}
-                    >
-                      {globalPct}%
-                    </span>
-                  </div>
+                  <span className="text-3xl font-bold tabular-nums" style={{ color: "#F06292" }}>{globalPct}%</span>
                 </div>
 
-                {/* Progress bar */}
-                <div className="w-full bg-gray-100 rounded-full h-3 mb-6">
+                <div className="w-full bg-gray-100 rounded-full h-1.5 mb-5">
                   <div
-                    className="h-3 rounded-full transition-all duration-700"
-                    style={{
-                      width: `${globalPct}%`,
-                      background: "linear-gradient(90deg, #F06292, #E91E8C)",
-                    }}
+                    className="h-1.5 rounded-full transition-all duration-700"
+                    style={{ width: `${globalPct}%`, background: "#F06292" }}
                   />
                 </div>
 
-                {/* Stats rapides */}
                 <div className="grid grid-cols-3 gap-3">
                   {[
                     {
-                      label: "Urgent",
+                      label: "Urgent restant",
                       count: ALL_TASKS.filter((t) => t.priority === "urgent" && !doneIds.has(t.id)).length,
-                      color: "#EF4444",
-                      bg: "#FEF2F2",
+                      color: "#F06292",
+                      bg: "#FFF0F5",
                     },
                     {
-                      label: "Important",
+                      label: "Important restant",
                       count: ALL_TASKS.filter((t) => t.priority === "important" && !doneIds.has(t.id)).length,
-                      color: "#F59E0B",
-                      bg: "#FFFBEB",
+                      color: "#6B7280",
+                      bg: "#F3F4F6",
                     },
                     {
                       label: "Terminées",
                       count: doneTasks,
-                      color: "#10B981",
-                      bg: "#F0FDF4",
+                      color: "#374151",
+                      bg: "#F9FAFB",
                     },
                   ].map((s) => (
-                    <div
-                      key={s.label}
-                      className="rounded-xl p-3 text-center"
-                      style={{ background: s.bg }}
-                    >
-                      <div className="text-xl font-bold" style={{ color: s.color }}>{s.count}</div>
-                      <div className="text-xs font-medium mt-0.5" style={{ color: s.color }}>{s.label}</div>
+                    <div key={s.label} className="rounded-2xl p-3 text-center" style={{ background: s.bg }}>
+                      <div className="text-xl font-bold tabular-nums" style={{ color: s.color }}>{s.count}</div>
+                      <div className="text-xs font-medium mt-0.5 text-gray-400">{s.label}</div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Changer la date */}
-              <div
-                className="px-6 py-3 flex items-center gap-3 border-t border-gray-50"
-              >
-                <span className="text-xs text-gray-400">Date du mariage :</span>
+              <div className="px-6 py-3 flex items-center gap-3 border-t border-gray-50 bg-gray-50/50">
+                <span className="text-xs text-gray-400">Date :</span>
                 <input
                   type="date"
                   value={inputDate}
                   onChange={(e) => setInputDate(e.target.value)}
-                  className="border border-gray-100 rounded-lg px-2.5 py-1 text-xs focus:outline-none focus:border-rose-300"
+                  className="border border-gray-200 rounded-xl px-2.5 py-1.5 text-xs focus:outline-none focus:border-rose-300 bg-white"
                 />
                 <button
                   onClick={applyDate}
-                  className="text-xs font-semibold px-3 py-1 rounded-lg text-white transition-opacity hover:opacity-80"
+                  className="text-xs font-semibold px-3 py-1.5 rounded-full text-white transition-opacity hover:opacity-80"
                   style={{ background: "#F06292" }}
                 >
                   Mettre à jour
@@ -590,14 +554,13 @@ export default function Retroplanning() {
 
           {/* Filtres */}
           {weddingDateStr && (
-            <div className="bg-white rounded-2xl shadow-card p-4">
+            <div
+              className="rounded-3xl p-4"
+              style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
+            >
               <div className="flex flex-col sm:flex-row gap-3">
-                {/* Recherche */}
                 <div className="relative flex-1">
-                  <svg
-                    className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                    fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                  >
+                  <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                   <input
@@ -605,27 +568,25 @@ export default function Retroplanning() {
                     placeholder="Rechercher une tâche…"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 text-sm border border-gray-100 rounded-xl focus:outline-none focus:border-rose-200 bg-gray-50"
+                    className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-100 rounded-2xl focus:outline-none focus:border-rose-200 bg-gray-50"
                   />
                 </div>
-
-                {/* Filtre priorité */}
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex gap-2 flex-wrap items-center">
                   {[
-                    { value: "all", label: "Tout", bg: "#F9FAFB", text: "#374151" },
-                    { value: "urgent", label: "Urgent", bg: "#FEF2F2", text: "#EF4444" },
-                    { value: "important", label: "Important", bg: "#FFFBEB", text: "#F59E0B" },
-                    { value: "normal", label: "Normal", bg: "#F9FAFB", text: "#6B7280" },
+                    { value: "all", label: "Tout" },
+                    { value: "urgent", label: "Urgent" },
+                    { value: "important", label: "Important" },
+                    { value: "normal", label: "Normal" },
                   ].map((f) => (
                     <button
                       key={f.value}
                       onClick={() => setFilterPriority(f.value as Priority | "all")}
                       className="text-xs font-semibold px-3 py-1.5 rounded-full transition-all duration-150"
-                      style={{
-                        background: filterPriority === f.value ? f.text : f.bg,
-                        color: filterPriority === f.value ? "white" : f.text,
-                        boxShadow: filterPriority === f.value ? `0 2px 8px ${f.text}40` : "none",
-                      }}
+                      style={
+                        filterPriority === f.value
+                          ? { background: "#F06292", color: "white" }
+                          : { background: "#F3F4F6", color: "#6B7280" }
+                      }
                     >
                       {f.label}
                     </button>
@@ -645,61 +606,57 @@ export default function Retroplanning() {
             return (
               <div
                 key={period.id}
-                className="bg-white rounded-2xl shadow-card overflow-hidden"
+                className="rounded-3xl overflow-hidden"
+                style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
               >
                 {/* Header période */}
                 <button
                   onClick={() => togglePeriod(period.id)}
-                  className="w-full flex items-center gap-4 p-5 hover:bg-gray-50/50 transition-colors text-left"
+                  className="w-full flex items-center gap-4 p-5 hover:bg-gray-50/60 transition-colors text-left"
                 >
                   <div
-                    className="w-11 h-11 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
-                    style={{ background: `${period.color}15` }}
+                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: allDone ? "#F06292" : "#FFF0F5", color: allDone ? "white" : "#F06292" }}
                   >
-                    {period.emoji}
+                    {allDone ? (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                        <rect x="3" y="4" width="18" height="18" rx="3" /><path strokeLinecap="round" d="M16 2v4M8 2v4M3 10h18" />
+                      </svg>
+                    )}
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-semibold text-gray-900 text-sm">{period.label}</span>
                       <span className="text-xs text-gray-400">{period.sublabel}</span>
-                      {allDone && tasks.length > 0 && (
-                        <span
-                          className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                          style={{ background: "#F0FDF4", color: "#10B981" }}
-                        >
-                          ✓ Complet
-                        </span>
-                      )}
                     </div>
                     <div className="flex items-center gap-3 mt-1.5">
-                      <div className="flex-1 bg-gray-100 rounded-full h-1.5 max-w-32">
+                      <div className="flex-1 bg-gray-100 rounded-full h-1 max-w-28">
                         <div
-                          className="h-1.5 rounded-full transition-all duration-500"
-                          style={{
-                            width: `${pct}%`,
-                            background: allDone ? "#10B981" : period.color,
-                          }}
+                          className="h-1 rounded-full transition-all duration-500"
+                          style={{ width: `${pct}%`, background: "#F06292" }}
                         />
                       </div>
-                      <span className="text-xs text-gray-400 flex-shrink-0">
-                        {done}/{tasks.length} · {formatDateFr(deadline)}
-                      </span>
+                      <span className="text-xs text-gray-400 flex-shrink-0 tabular-nums">{done}/{tasks.length}</span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <span
-                      className="text-xs font-semibold px-2 py-1 rounded-lg hidden sm:inline"
+                      className="text-xs font-medium px-2.5 py-1 rounded-full hidden sm:inline"
                       style={{
-                        background: relLabel.late ? "#FEF2F2" : `${period.color}15`,
-                        color: relLabel.late ? "#EF4444" : period.color,
+                        background: relLabel.late ? "#FFF0F5" : "#F3F4F6",
+                        color: relLabel.late ? "#F06292" : "#6B7280",
                       }}
                     >
                       {relLabel.text}
                     </span>
                     <svg
-                      className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                      className={`w-4 h-4 text-gray-300 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
                       fill="none" stroke="currentColor" viewBox="0 0 24 24"
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -710,23 +667,22 @@ export default function Retroplanning() {
                 {/* Tasks list */}
                 {isOpen && (
                   <div className="border-t border-gray-50">
-                    {/* Actions groupe */}
-                    <div className="flex items-center justify-between px-5 py-2.5 bg-gray-50/50">
-                      <span className="text-xs text-gray-400">{tasks.length} tâche{tasks.length > 1 ? "s" : ""}</span>
+                    <div className="flex items-center justify-between px-5 py-2.5 bg-gray-50/40">
+                      <span className="text-xs text-gray-400">{tasks.length} tâche{tasks.length > 1 ? "s" : ""} · {formatDateFr(deadline)}</span>
                       <div className="flex gap-3">
                         <button
                           onClick={() => markAllInPeriod(period.id, true)}
-                          className="text-xs font-medium transition-colors hover:text-green-600"
-                          style={{ color: "#10B981" }}
+                          className="text-xs font-semibold transition-opacity hover:opacity-70"
+                          style={{ color: "#F06292" }}
                         >
                           Tout cocher
                         </button>
-                        <span className="text-gray-200">|</span>
+                        <span className="text-gray-200">·</span>
                         <button
                           onClick={() => markAllInPeriod(period.id, false)}
                           className="text-xs font-medium text-gray-400 hover:text-gray-600 transition-colors"
                         >
-                          Tout décocher
+                          Décocher
                         </button>
                       </div>
                     </div>
@@ -739,59 +695,38 @@ export default function Retroplanning() {
                         return (
                           <label
                             key={task.id}
-                            className="flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50/50 cursor-pointer transition-colors group"
+                            className="flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50/50 cursor-pointer transition-colors"
                           >
-                            {/* Checkbox */}
-                            <div className="flex-shrink-0 relative">
-                              <input
-                                type="checkbox"
-                                checked={isDone}
-                                onChange={() => toggleTask(task.id)}
-                                className="sr-only"
-                              />
-                              <div
-                                className="w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-200 group-hover:scale-105"
-                                style={{
-                                  borderColor: isDone ? "#F06292" : "#D1D5DB",
-                                  background: isDone ? "#F06292" : "white",
-                                }}
-                              >
-                                {isDone && (
-                                  <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                  </svg>
-                                )}
-                              </div>
+                            <div
+                              className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-all duration-200"
+                              style={{
+                                border: isDone ? "none" : "1.5px solid #D1D5DB",
+                                background: isDone ? "#F06292" : "transparent",
+                              }}
+                            >
+                              <input type="checkbox" checked={isDone} onChange={() => toggleTask(task.id)} className="sr-only" />
+                              {isDone && (
+                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                              )}
                             </div>
 
-                            {/* Contenu */}
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span
-                                  className={`text-sm transition-colors ${
-                                    isDone ? "line-through text-gray-300" : "text-gray-700"
-                                  }`}
-                                >
-                                  {task.label}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                <span className="text-xs text-gray-400">{task.category}</span>
-                              </div>
+                              <span className={`text-sm ${isDone ? "line-through text-gray-300" : "text-gray-700"}`}>
+                                {task.label}
+                              </span>
+                              <p className="text-xs text-gray-400 mt-0.5">{task.category}</p>
                             </div>
 
-                            {/* Priority badge */}
                             {!isDone && (
-                              <div
-                                className="flex-shrink-0 flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
+                              <span
+                                className="flex-shrink-0 flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
                                 style={{ background: pc.bg, color: pc.text }}
                               >
-                                <span
-                                  className="w-1.5 h-1.5 rounded-full"
-                                  style={{ background: pc.dot }}
-                                />
+                                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: pc.dot }} />
                                 {pc.label}
-                              </div>
+                              </span>
                             )}
                           </label>
                         );
@@ -804,11 +739,21 @@ export default function Retroplanning() {
           })}
 
           {!weddingDateStr && (
-            <div className="bg-white rounded-2xl shadow-card p-12 text-center">
-              <div className="text-5xl mb-4">📅</div>
+            <div
+              className="rounded-3xl p-12 text-center"
+              style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
+            >
+              <div
+                className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4"
+                style={{ background: "#FFF0F5", color: "#F06292" }}
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                  <rect x="3" y="4" width="18" height="18" rx="3" /><path strokeLinecap="round" d="M16 2v4M8 2v4M3 10h18" />
+                </svg>
+              </div>
               <h3 className="font-semibold text-gray-700 mb-2">Entrez votre date de mariage</h3>
               <p className="text-sm text-gray-400">
-                Renseignez la date ci-dessus pour générer votre rétroplanning personnalisé avec {totalTasks} tâches.
+                Renseignez la date ci-dessus pour générer votre rétroplanning avec {totalTasks} tâches.
               </p>
             </div>
           )}
@@ -819,3 +764,4 @@ export default function Retroplanning() {
     </main>
   );
 }
+

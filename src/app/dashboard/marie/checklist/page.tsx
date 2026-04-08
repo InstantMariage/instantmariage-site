@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -284,7 +285,7 @@ export default function ChecklistPage() {
 
   const progressLabel =
     progressPct === 0
-      ? "Commencez votre checklist !"
+      ? "Commencez votre checklist"
       : progressPct < 25
       ? "C'est parti, continuez !"
       : progressPct < 50
@@ -293,127 +294,118 @@ export default function ChecklistPage() {
       ? "Plus que la moitié, bravo !"
       : progressPct < 100
       ? "Presque prêt(e)s !"
-      : "Tout est prêt, félicitations ! 🎉";
+      : "Tout est prêt, félicitations !";
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen" style={{ background: "#F9F9FB" }}>
       <Header />
 
       <div className="pt-20 pb-20">
-        {/* ── Hero ── */}
-        <div
-          className="px-4 py-12"
-          style={{
-            background: "linear-gradient(135deg, #F06292 0%, #E91E8C 100%)",
-          }}
-        >
-          <div className="max-w-3xl mx-auto">
-            <p className="text-white/80 text-sm font-medium mb-1 tracking-wide uppercase">
-              Outils mariés
-            </p>
-            <h1 className="text-3xl font-bold text-white font-playfair mb-1">
-              Checklist mariage
-            </h1>
-            <p className="text-white/80 text-base mb-8">
-              {prenomMarie1 ? `Bonjour ${prenomMarie1} — ne` : "Ne"} rien oublier pour votre grand jour
-            </p>
+        {/* ── Header ── */}
+        <section className="max-w-3xl mx-auto px-6 pt-12 pb-8">
+          <Link
+            href="/dashboard/marie"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-gray-600 transition-colors mb-6"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            Tableau de bord
+          </Link>
+          <p className="text-sm font-medium tracking-widest uppercase mb-3" style={{ color: "#F06292", letterSpacing: "0.12em" }}>
+            Outils mariés
+          </p>
+          <h1 className="text-3xl font-semibold text-gray-900 leading-tight mb-1">Checklist mariage</h1>
+          <p className="text-base text-gray-400 mb-8">
+            {prenomMarie1 ? `Bonjour ${prenomMarie1} · ne` : "Ne"} rien oublier pour votre grand jour
+          </p>
 
-            {/* Progress card */}
-            <div className="bg-white/15 backdrop-blur-sm rounded-2xl p-5 border border-white/20">
-              <div className="flex items-end justify-between mb-3">
-                <div>
-                  <span className="text-4xl font-bold text-white">{progressPct}%</span>
-                  <span className="text-white/70 text-sm ml-2">complété</span>
-                </div>
-                <div className="text-right">
-                  <span className="text-white font-semibold text-lg">{doneCount}</span>
-                  <span className="text-white/70 text-sm"> / {totalItems} tâches</span>
-                </div>
+          {/* Progress */}
+          <div
+            className="rounded-3xl p-5"
+            style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <span className="text-3xl font-bold text-gray-900 tabular-nums">{progressPct}%</span>
+                <span className="text-sm text-gray-400 ml-2">complété</span>
               </div>
-              <div className="w-full bg-white/20 rounded-full h-2.5 mb-3">
-                <div
-                  className="h-2.5 rounded-full transition-all duration-700"
-                  style={{
-                    width: `${progressPct}%`,
-                    background: "white",
-                  }}
-                />
-              </div>
-              <p className="text-white/90 text-sm font-medium">{progressLabel}</p>
+              <span className="text-sm font-semibold tabular-nums" style={{ color: "#F06292" }}>
+                {doneCount} / {totalItems}
+              </span>
             </div>
+            <div className="w-full bg-gray-100 rounded-full h-1.5 mb-3">
+              <div
+                className="h-1.5 rounded-full transition-all duration-700"
+                style={{ width: `${progressPct}%`, background: "#F06292" }}
+              />
+            </div>
+            <p className="text-sm text-gray-400">{progressLabel}</p>
           </div>
-        </div>
+        </section>
 
         {/* ── Content ── */}
-        <div className="max-w-3xl mx-auto px-4 mt-6 space-y-4">
+        <div className="max-w-3xl mx-auto px-6 space-y-4">
           {categories.map((cat) => {
             const catDone = cat.items.filter((i) => doneIds.has(i.id)).length;
             const catTotal = cat.items.length;
             const catPct = catTotal === 0 ? 0 : Math.round((catDone / catTotal) * 100);
             const isOpen = openCategories.has(cat.id);
             const isAddingHere = addingTo === cat.id;
+            const allDone = catDone === catTotal;
 
             return (
               <div
                 key={cat.id}
-                className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+                className="rounded-3xl overflow-hidden"
+                style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
               >
                 {/* Category header */}
                 <button
                   onClick={() => toggleCategory(cat.id)}
                   className="w-full flex items-center gap-4 p-5 hover:bg-gray-50/60 transition-colors text-left"
                 >
-                  {/* Icon */}
                   <div
-                    className="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                    style={{ background: `${cat.color}18` }}
+                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: allDone ? "#F06292" : "#FFF0F5", color: allDone ? "white" : "#F06292" }}
                   >
-                    {cat.emoji}
+                    {allDone ? (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                    )}
                   </div>
 
-                  {/* Title + progress */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="font-semibold text-gray-900 text-base">
-                        {cat.label}
-                      </span>
+                      <span className="font-semibold text-gray-900 text-sm">{cat.label}</span>
                       <span
-                        className="text-xs font-semibold px-2.5 py-1 rounded-full ml-2 flex-shrink-0"
+                        className="text-xs font-semibold px-2 py-0.5 rounded-full ml-2 flex-shrink-0 tabular-nums"
                         style={{
-                          background: catDone === catTotal ? `${cat.color}15` : "#F3F4F6",
-                          color: catDone === catTotal ? cat.color : "#6B7280",
+                          background: allDone ? "#FFF0F5" : "#F3F4F6",
+                          color: allDone ? "#F06292" : "#6B7280",
                         }}
                       >
                         {catDone}/{catTotal}
                       </span>
                     </div>
-                    <div className="w-full bg-gray-100 rounded-full h-1.5">
+                    <div className="w-full bg-gray-100 rounded-full h-1">
                       <div
-                        className="h-1.5 rounded-full transition-all duration-500"
-                        style={{
-                          width: `${catPct}%`,
-                          background: cat.color,
-                        }}
+                        className="h-1 rounded-full transition-all duration-500"
+                        style={{ width: `${catPct}%`, background: "#F06292" }}
                       />
                     </div>
                   </div>
 
-                  {/* Chevron */}
                   <svg
-                    className="flex-shrink-0 transition-transform duration-200"
-                    style={{
-                      transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
-                      color: "#9CA3AF",
-                    }}
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
+                    className={`flex-shrink-0 w-4 h-4 text-gray-300 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                    fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"
                   >
-                    <polyline points="6 9 12 15 18 9" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
 
@@ -427,74 +419,44 @@ export default function ChecklistPage() {
                           key={item.id}
                           className={`flex items-center gap-3 px-5 py-3.5 transition-colors group ${
                             idx < cat.items.length - 1 ? "border-b border-gray-50" : ""
-                          } ${isDone ? "bg-gray-50/40" : "hover:bg-gray-50/40"}`}
+                          } hover:bg-gray-50/40`}
                         >
-                          {/* Checkbox */}
                           <button
                             onClick={() => toggleItem(item.id)}
-                            className="flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-150"
+                            className="flex-shrink-0 w-5 h-5 rounded-md flex items-center justify-center transition-all duration-150"
                             style={{
-                              borderColor: isDone ? "#F06292" : "#D1D5DB",
-                              background: isDone ? "#F06292" : "white",
+                              border: isDone ? "none" : "1.5px solid #D1D5DB",
+                              background: isDone ? "#F06292" : "transparent",
                             }}
                             aria-label={isDone ? "Décocher" : "Cocher"}
                           >
                             {isDone && (
-                              <svg
-                                width="10"
-                                height="10"
-                                viewBox="0 0 12 12"
-                                fill="none"
-                                stroke="white"
-                                strokeWidth="2.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              >
+                              <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <polyline points="2 6 5 9 10 3" />
                               </svg>
                             )}
                           </button>
 
-                          {/* Label */}
                           <span
-                            className="flex-1 text-sm leading-relaxed cursor-pointer select-none transition-colors"
-                            style={{
-                              color: isDone ? "#9CA3AF" : "#374151",
-                              textDecoration: isDone ? "line-through" : "none",
-                            }}
+                            className="flex-1 text-sm leading-relaxed cursor-pointer select-none"
+                            style={{ color: isDone ? "#9CA3AF" : "#374151", textDecoration: isDone ? "line-through" : "none" }}
                             onClick={() => toggleItem(item.id)}
                           >
                             {item.label}
                           </span>
 
-                          {/* Custom badge + delete */}
                           {item.custom && (
                             <div className="flex items-center gap-2 flex-shrink-0">
-                              <span
-                                className="text-xs px-2 py-0.5 rounded-full font-medium"
-                                style={{
-                                  background: `${cat.color}12`,
-                                  color: cat.color,
-                                }}
-                              >
+                              <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: "#FFF0F5", color: "#F06292" }}>
                                 perso
                               </span>
                               <button
                                 onClick={() => removeCustomItem(cat.id, item.id)}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 rounded-full flex items-center justify-center hover:bg-red-50"
+                                className="opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 rounded-full flex items-center justify-center hover:bg-gray-100"
                                 aria-label="Supprimer"
                               >
-                                <svg
-                                  width="12"
-                                  height="12"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="#EF4444"
-                                  strokeWidth="2.5"
-                                  strokeLinecap="round"
-                                >
-                                  <line x1="18" y1="6" x2="6" y2="18" />
-                                  <line x1="6" y1="6" x2="18" y2="18" />
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeLinecap="round">
+                                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                                 </svg>
                               </button>
                             </div>
@@ -512,28 +474,23 @@ export default function ChecklistPage() {
                             type="text"
                             placeholder="Ajouter une tâche…"
                             value={newItemText[cat.id] || ""}
-                            onChange={(e) =>
-                              setNewItemText((prev) => ({
-                                ...prev,
-                                [cat.id]: e.target.value,
-                              }))
-                            }
+                            onChange={(e) => setNewItemText((prev) => ({ ...prev, [cat.id]: e.target.value }))}
                             onKeyDown={(e) => {
                               if (e.key === "Enter") addCustomItem(cat.id);
                               if (e.key === "Escape") setAddingTo(null);
                             }}
-                            className="flex-1 text-sm px-3 py-2 rounded-xl border border-gray-200 focus:outline-none focus:border-rose-300 focus:ring-2 focus:ring-rose-100 transition-all"
+                            className="flex-1 text-sm px-3 py-2 rounded-2xl border border-gray-200 focus:outline-none focus:border-rose-300 bg-gray-50"
                           />
                           <button
                             onClick={() => addCustomItem(cat.id)}
-                            className="px-4 py-2 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                            className="px-4 py-2 rounded-full text-sm font-semibold text-white hover:opacity-80 transition-opacity"
                             style={{ background: "#F06292" }}
                           >
                             Ajouter
                           </button>
                           <button
                             onClick={() => setAddingTo(null)}
-                            className="px-3 py-2 rounded-xl text-sm font-medium text-gray-500 hover:bg-gray-100 transition-colors"
+                            className="px-3 py-2 rounded-full text-sm font-medium text-gray-400 hover:bg-gray-100 transition-colors"
                           >
                             Annuler
                           </button>
@@ -541,20 +498,11 @@ export default function ChecklistPage() {
                       ) : (
                         <button
                           onClick={() => setAddingTo(cat.id)}
-                          className="flex items-center gap-2 text-sm font-medium transition-colors hover:opacity-80"
-                          style={{ color: cat.color }}
+                          className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-70"
+                          style={{ color: "#F06292" }}
                         >
-                          <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                          >
-                            <line x1="12" y1="5" x2="12" y2="19" />
-                            <line x1="5" y1="12" x2="19" y2="12" />
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                            <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
                           </svg>
                           Ajouter un item personnalisé
                         </button>
@@ -568,24 +516,24 @@ export default function ChecklistPage() {
 
           {/* Bottom tip */}
           <div
-            className="rounded-2xl p-5 border"
-            style={{ background: "#FFF0F5", borderColor: "#FECDD3" }}
+            className="rounded-3xl p-5"
+            style={{ background: "white", boxShadow: "0 2px 20px rgba(0,0,0,0.06)" }}
           >
             <div className="flex items-start gap-3">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center text-base flex-shrink-0"
-                style={{ background: "rgba(240,98,146,0.15)" }}
+                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: "#FFF0F5", color: "#F06292" }}
               >
-                💡
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
               </div>
               <div>
                 <p className="text-sm font-semibold text-gray-800 mb-0.5">
-                  Vos données sont sauvegardées automatiquement
+                  Sauvegarde automatique
                 </p>
-                <p className="text-sm text-gray-500 leading-relaxed">
-                  Cochez les tâches au fur et à mesure — votre progression est conservée
-                  d&apos;une visite à l&apos;autre. Ajoutez vos propres items dans chaque
-                  catégorie selon vos besoins.
+                <p className="text-sm text-gray-400 leading-relaxed">
+                  Votre progression est conservée d&apos;une visite à l&apos;autre. Ajoutez vos propres items dans chaque catégorie.
                 </p>
               </div>
             </div>
