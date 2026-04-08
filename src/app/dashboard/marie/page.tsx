@@ -29,12 +29,6 @@ function formatDateShort(dateStr: string | null): string {
 
 const soonTools = [
   {
-    label: "Rétroplanning",
-    desc: "Planifiez chaque étape jusqu'au grand jour",
-    icon: "📅",
-    color: "#F0FDF4",
-  },
-  {
     label: "Budget mariage",
     desc: "Suivez et maîtrisez vos dépenses",
     icon: "💰",
@@ -240,6 +234,39 @@ export default function DashboardMarie() {
                   </svg>
                 </span>
               </a>
+
+              {/* Rétroplanning — outil actif */}
+              <Link
+                href="/dashboard/marie/retroplanning"
+                className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-xl border border-gray-100 hover:border-rose-200 hover:shadow-card-hover transition-all duration-200 group"
+                style={{ background: "#F0FDF4" }}
+              >
+                <div className="flex items-center gap-4 flex-1">
+                  <div
+                    className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
+                    style={{ background: "rgba(16,185,129,0.12)" }}
+                  >
+                    📅
+                  </div>
+                  <div>
+                    <div className="text-base font-bold text-gray-900 group-hover:text-rose-500 transition-colors">
+                      Rétroplanning
+                    </div>
+                    <div className="text-sm text-gray-500 mt-0.5 leading-relaxed">
+                      +150 tâches planifiées mois par mois jusqu&apos;au grand jour
+                    </div>
+                  </div>
+                </div>
+                <span
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-full flex-shrink-0 transition-all duration-200 group-hover:opacity-90"
+                  style={{ background: "#F06292", color: "white" }}
+                >
+                  Ouvrir
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </span>
+              </Link>
 
               {/* Outils à venir */}
               <div className="grid grid-cols-2 gap-3">
