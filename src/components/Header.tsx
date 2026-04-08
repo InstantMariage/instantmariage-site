@@ -25,31 +25,31 @@ const outils = [
   {
     label: "Liste d'invités",
     icon: "👥",
-    href: "#invites",
+    href: "/dashboard/marie",
     desc: "Gérez vos invitations",
   },
   {
     label: "Plan de table",
     icon: "🪑",
-    href: "#plan-table",
+    href: "/dashboard/marie",
     desc: "Organisez vos tables",
   },
   {
     label: "Rétroplanning",
     icon: "📅",
-    href: "#retroplanning",
+    href: "/dashboard/marie/retroplanning",
     desc: "Planifiez chaque étape",
   },
   {
     label: "Budget mariage",
     icon: "💰",
-    href: "#budget",
+    href: "/dashboard/marie/budget",
     desc: "Suivez vos dépenses",
   },
   {
     label: "Checklist",
     icon: "✅",
-    href: "#checklist",
+    href: "/dashboard/marie/checklist",
     desc: "Ne rien oublier",
   },
 ];

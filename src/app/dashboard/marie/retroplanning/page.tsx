@@ -248,7 +248,17 @@ function getRelativeLabel(deadline: Date, weddingDate: Date): { text: string; la
   const now = new Date();
   const diff = deadline.getTime() - now.getTime();
   const days = Math.round(diff / (1000 * 60 * 60 * 24));
-  if (days < 0) return { text: `En retard de ${Math.abs(days)} j`, late: true };
+  if (days < 0) {
+    // If the wedding hasn't happened yet, this is a past milestone — not truly "late"
+    const weddingInFuture = weddingDate.getTime() > now.getTime();
+    if (weddingInFuture) {
+      const absDays = Math.abs(days);
+      if (absDays < 31) return { text: `Il y a ${absDays} j`, late: false };
+      const months = Math.round(absDays / 30);
+      return { text: `Il y a ${months} mois`, late: false };
+    }
+    return { text: `En retard de ${Math.abs(days)} j`, late: true };
+  }
   if (days === 0) return { text: "Aujourd'hui !", late: false };
   if (days < 7) return { text: `Dans ${days} jour${days > 1 ? "s" : ""}`, late: false };
   if (days < 31) return { text: `Dans ${Math.round(days / 7)} sem.`, late: false };
