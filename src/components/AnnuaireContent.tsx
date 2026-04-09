@@ -539,7 +539,7 @@ export default function AnnuaireContent() {
   return (
     <>
       {/* ── Hero / Search Bar ─────────────────────────────────────────── */}
-      <section className="w-full bg-gradient-to-br from-rose-500 via-rose-400 to-pink-400 pt-28 pb-16 px-4">
+      <section className="w-full bg-gradient-to-br from-rose-500 via-rose-400 to-pink-400 pt-28 pb-8 px-4">
         <div className="max-w-5xl mx-auto text-center">
           <h1
             className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-3"
@@ -628,22 +628,11 @@ export default function AnnuaireContent() {
             </div>
           </form>
 
-          {/* Quick tags */}
-          <div className="flex flex-wrap justify-center gap-2 mt-6">
-            {["Photographe Paris", "DJ Lyon", "Traiteur PACA", "Wedding Planner Bordeaux", "Fleuriste Nantes"].map((tag) => (
-              <button
-                key={tag}
-                className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-xs px-3.5 py-1.5 rounded-full border border-white/30 transition-all"
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
         </div>
       </section>
 
       {/* ── Main content ──────────────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
 
           {/* ── Sidebar Filters ──────────────────────────────────────── */}
