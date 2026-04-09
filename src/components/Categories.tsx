@@ -48,7 +48,7 @@ const categories = [
     hoverBg: "hover:bg-green-50",
   },
   {
-    name: "Salle de réception",
+    name: "Lieu de réception",
     icon: "🏛️",
     count: "2 100",
     color: "from-yellow-50 to-amber-50",
@@ -88,7 +88,7 @@ const categories = [
     hoverBg: "hover:bg-teal-50",
   },
   {
-    name: "Wedding Cake",
+    name: "Pâtissier / Wedding cake",
     icon: "🎂",
     count: "680",
     color: "from-rose-50 to-orange-50",
@@ -104,7 +104,7 @@ const categories = [
     hoverBg: "hover:bg-amber-50",
   },
   {
-    name: "Voiture de mariée",
+    name: "Transport",
     icon: "🚗",
     count: "520",
     color: "from-gray-50 to-slate-50",
@@ -112,7 +112,7 @@ const categories = [
     hoverBg: "hover:bg-gray-50",
   },
   {
-    name: "Officiant de cérémonie",
+    name: "Officiant",
     icon: "🕊️",
     count: "280",
     color: "from-sky-50 to-blue-50",

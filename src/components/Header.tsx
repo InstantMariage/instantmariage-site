@@ -9,16 +9,22 @@ import { supabase } from "@/lib/supabase";
 const prestataires = [
   { label: "Photographe", icon: "📷", href: "#photographes" },
   { label: "Vidéaste", icon: "🎥", href: "#videaste" },
-  { label: "DJ & Musicien", icon: "🎵", href: "#dj" },
+  { label: "DJ", icon: "🎧", href: "#dj" },
+  { label: "Musicien / Groupe", icon: "🎹", href: "#musicien" },
   { label: "Traiteur", icon: "🍽️", href: "#traiteur" },
   { label: "Fleuriste", icon: "💐", href: "#fleuriste" },
   { label: "Décorateur", icon: "✨", href: "#decorateur" },
-  { label: "Coiffure & Makeup", icon: "💄", href: "#beaute" },
+  { label: "Coiffeur", icon: "✂️", href: "#coiffeur" },
+  { label: "Maquilleur", icon: "💄", href: "#maquilleur" },
+  { label: "Henna", icon: "🌿", href: "#henna" },
   { label: "Lieu de réception", icon: "🏛️", href: "#lieux" },
   { label: "Officiant", icon: "💍", href: "#officiant" },
   { label: "Wedding Planner", icon: "📋", href: "#wedding-planner" },
-  { label: "Animation enfants", icon: "🎈", href: "#animation" },
   { label: "Transport", icon: "🚗", href: "#transport" },
+  { label: "Animation", icon: "🎪", href: "#animation" },
+  { label: "Créateur de contenu", icon: "📱", href: "#contenu" },
+  { label: "Papeterie & Personnalisation", icon: "✉️", href: "#papeterie" },
+  { label: "Pâtissier / Wedding cake", icon: "🎂", href: "#patissier" },
 ];
 
 const outils = [

@@ -24,7 +24,7 @@ const metiers = [
   "Lieu de réception",
   "Officiant",
   "Wedding Planner",
-  "Wedding Cake",
+  "Pâtissier / Wedding cake",
   "Animation",
   "Transport",
   "Créateur de contenu",
