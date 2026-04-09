@@ -6,6 +6,16 @@ export const metadata: Metadata = {
   title: "Mentions légales – InstantMariage.fr",
   description:
     "Mentions légales du site InstantMariage.fr : éditeur, hébergeur, directeur de publication et informations de contact.",
+  openGraph: {
+    title: "Mentions légales – InstantMariage.fr",
+    description:
+      "Mentions légales du site InstantMariage.fr : éditeur, hébergeur, directeur de publication et informations de contact.",
+    url: "https://instantmariage.fr/mentions-legales",
+    siteName: "InstantMariage.fr",
+    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "InstantMariage.fr" }],
+    locale: "fr_FR",
+    type: "website",
+  },
 };
 
 export default function MentionsLegales() {

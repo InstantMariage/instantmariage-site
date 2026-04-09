@@ -6,6 +6,16 @@ export const metadata: Metadata = {
   title: "Politique de confidentialité – InstantMariage.fr",
   description:
     "Politique de confidentialité RGPD d'InstantMariage.fr : données collectées, finalités, droits des utilisateurs et conservation des données.",
+  openGraph: {
+    title: "Politique de confidentialité – InstantMariage.fr",
+    description:
+      "Politique de confidentialité RGPD d'InstantMariage.fr : données collectées, finalités, droits des utilisateurs et conservation des données.",
+    url: "https://instantmariage.fr/confidentialite",
+    siteName: "InstantMariage.fr",
+    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "InstantMariage.fr" }],
+    locale: "fr_FR",
+    type: "website",
+  },
 };
 
 export default function Confidentialite() {

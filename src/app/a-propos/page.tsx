@@ -6,6 +6,24 @@ export const metadata: Metadata = {
   title: "À propos – InstantMariage.fr",
   description:
     "Découvrez l'histoire d'InstantMariage.fr, notre mission et l'équipe qui connecte chaque jour des milliers de futurs mariés avec les meilleurs prestataires de France.",
+  keywords: "à propos InstantMariage, équipe mariage, plateforme mariage France, histoire mariage",
+  openGraph: {
+    title: "À propos – InstantMariage.fr",
+    description:
+      "Découvrez l'histoire d'InstantMariage.fr, notre mission et l'équipe qui connecte chaque jour des milliers de futurs mariés avec les meilleurs prestataires de France.",
+    url: "https://instantmariage.fr/a-propos",
+    siteName: "InstantMariage.fr",
+    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "À propos InstantMariage.fr" }],
+    locale: "fr_FR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "À propos – InstantMariage.fr",
+    description:
+      "Découvrez notre mission et l'équipe qui connecte des milliers de futurs mariés avec les meilleurs prestataires de France.",
+    images: ["/logo.png"],
+  },
 };
 
 const team = [
