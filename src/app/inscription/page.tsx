@@ -436,7 +436,7 @@ export default function InscriptionPage() {
                           onChange={(e) => setMPrenom(e.target.value)}
                           placeholder="Sophie"
                           required
-                          className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all"
+                          className="w-full border border-gray-300 bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all"
                         />
                       </div>
                       <div>
@@ -447,7 +447,7 @@ export default function InscriptionPage() {
                           onChange={(e) => setMNom(e.target.value)}
                           placeholder="Martin"
                           required
-                          className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all"
+                          className="w-full border border-gray-300 bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all"
                         />
                       </div>
                     </div>
@@ -459,7 +459,7 @@ export default function InscriptionPage() {
                         onChange={(e) => setMEmail(e.target.value)}
                         placeholder="vous@exemple.com"
                         required
-                        className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all"
+                        className="w-full border border-gray-300 bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all"
                       />
                     </div>
                     <div>
@@ -473,7 +473,7 @@ export default function InscriptionPage() {
                           required
                           minLength={8}
                           autoComplete="new-password"
-                          className="w-full bg-white rounded-xl px-4 py-3 pr-12 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all"
+                          className="w-full border border-gray-300 bg-white rounded-xl px-4 py-3 pr-12 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all"
                         />
                         <EyeIcon show={mShowPwd} onClick={() => setMShowPwd(!mShowPwd)} />
                       </div>
@@ -488,8 +488,8 @@ export default function InscriptionPage() {
                           placeholder="Répétez votre mot de passe"
                           required
                           autoComplete="new-password"
-                          className={`w-full bg-white rounded-xl px-4 py-3 pr-12 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
-                            !mPasswordsMatch ? "ring-2 ring-red-400 focus:ring-red-400" : "focus:ring-pink-300"
+                          className={`w-full border border-gray-300 bg-white rounded-xl px-4 py-3 pr-12 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
+                            !mPasswordsMatch ? "ring-2 ring-red-400 focus:ring-red-400" : "focus:ring-rose-400 focus:border-rose-400"
                           }`}
                         />
                         <EyeIcon show={mShowConfirmPwd} onClick={() => setMShowConfirmPwd(!mShowConfirmPwd)} />
@@ -506,7 +506,7 @@ export default function InscriptionPage() {
                         type="date"
                         value={mDate}
                         onChange={(e) => setMDate(e.target.value)}
-                        className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all"
+                        className="w-full border border-gray-300 bg-white rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all"
                       />
                     </div>
                     <CguAndSubmit cgu={cgu} setCgu={setCgu} label="Créer mon compte" loading={loading} extraDisabled={!mPasswordsMatch || mConfirmPassword === ""} />
@@ -524,7 +524,7 @@ export default function InscriptionPage() {
                         onChange={(e) => setPEntreprise(e.target.value)}
                         placeholder="Studio Photo Lumière"
                         required
-                        className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all"
+                        className="w-full border border-gray-300 bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
@@ -534,7 +534,7 @@ export default function InscriptionPage() {
                           value={pMetier}
                           onChange={(e) => setPMetier(e.target.value)}
                           required
-                          className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all appearance-none"
+                          className="w-full border border-gray-300 bg-white rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all appearance-none"
                         >
                           <option value="">Choisir…</option>
                           {metiers.map((m) => (
@@ -550,7 +550,7 @@ export default function InscriptionPage() {
                           onChange={(e) => setPVille(e.target.value)}
                           placeholder="Paris"
                           required
-                          className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all"
+                          className="w-full border border-gray-300 bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all"
                         />
                       </div>
                     </div>
@@ -562,7 +562,7 @@ export default function InscriptionPage() {
                         onChange={(e) => setPEmail(e.target.value)}
                         placeholder="contact@monentreprise.fr"
                         required
-                        className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all"
+                        className="w-full border border-gray-300 bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
@@ -577,7 +577,7 @@ export default function InscriptionPage() {
                             required
                             minLength={8}
                             autoComplete="new-password"
-                            className="w-full bg-white rounded-xl px-4 py-3 pr-12 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all"
+                            className="w-full border border-gray-300 bg-white rounded-xl px-4 py-3 pr-12 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all"
                           />
                           <EyeIcon show={pShowPwd} onClick={() => setPShowPwd(!pShowPwd)} />
                         </div>
@@ -590,7 +590,7 @@ export default function InscriptionPage() {
                           onChange={(e) => setPTel(e.target.value)}
                           placeholder="06 12 34 56 78"
                           required
-                          className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all"
+                          className="w-full border border-gray-300 bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all"
                         />
                       </div>
                     </div>
@@ -604,8 +604,8 @@ export default function InscriptionPage() {
                           placeholder="Répétez votre mot de passe"
                           required
                           autoComplete="new-password"
-                          className={`w-full bg-white rounded-xl px-4 py-3 pr-12 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
-                            !pPasswordsMatch ? "ring-2 ring-red-400 focus:ring-red-400" : "focus:ring-pink-300"
+                          className={`w-full border border-gray-300 bg-white rounded-xl px-4 py-3 pr-12 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
+                            !pPasswordsMatch ? "ring-2 ring-red-400 focus:ring-red-400" : "focus:ring-rose-400 focus:border-rose-400"
                           }`}
                         />
                         <EyeIcon show={pShowConfirmPwd} onClick={() => setPShowConfirmPwd(!pShowConfirmPwd)} />
