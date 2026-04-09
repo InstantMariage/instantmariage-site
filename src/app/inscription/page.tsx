@@ -175,7 +175,7 @@ export default function InscriptionPage() {
         <div className="max-w-md w-full text-center">
           <div className="mb-8 flex justify-center">
             <Link href="/" className="flex items-center gap-2.5">
-              <Image src="/logo.png" alt="InstantMariage logo" width={44} height={44} className="brightness-0 invert" />
+              <Image src="/logo.png" alt="InstantMariage logo" width={44} height={44} />
               <span className="text-2xl font-bold text-white" style={{ fontFamily: "var(--font-playfair), serif" }}>
                 InstantMariage.fr
               </span>
@@ -229,7 +229,7 @@ export default function InscriptionPage() {
   }
 
   return (
-    <div className="min-h-screen flex" style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)" }}>
+    <div className="min-h-screen flex bg-white">
       {/* Left panel — Desktop only: wedding photo + rose overlay */}
       <div className="hidden lg:flex lg:w-5/12 relative overflow-hidden flex-shrink-0">
         {!imgError ? (
@@ -285,16 +285,15 @@ export default function InscriptionPage() {
 
       {/* Right panel — Form */}
       <div
-        className="w-full lg:w-7/12 flex flex-col overflow-y-auto"
-        style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)" }}
+        className="w-full lg:w-7/12 flex flex-col overflow-y-auto bg-white"
       >
         <div className="flex flex-col min-h-full px-6 py-10 sm:px-10 lg:px-14">
 
           {/* Mobile logo */}
           <div className="lg:hidden mb-8 flex justify-center">
             <Link href="/" className="flex items-center gap-2.5">
-              <Image src="/logo.png" alt="InstantMariage logo" width={44} height={44} className="brightness-0 invert" />
-              <span className="text-2xl font-bold text-white" style={{ fontFamily: "var(--font-playfair), serif" }}>
+              <Image src="/logo.png" alt="InstantMariage logo" width={44} height={44} />
+              <span className="text-2xl font-bold text-gray-900" style={{ fontFamily: "var(--font-playfair), serif" }}>
                 InstantMariage.fr
               </span>
             </Link>
@@ -303,10 +302,10 @@ export default function InscriptionPage() {
           {/* Header text */}
           {!accountType && (
             <div className="text-center mb-10">
-              <h1 className="text-4xl sm:text-5xl font-bold text-white leading-tight mb-3" style={{ fontFamily: "var(--font-playfair), serif" }}>
+              <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-3" style={{ fontFamily: "var(--font-playfair), serif" }}>
                 Rejoignez InstantMariage
               </h1>
-              <p className="text-white/85 text-lg font-light">
+              <p className="text-gray-500 text-lg font-light">
                 Gratuit · Sans engagement · 12&nbsp;000+ membres
               </p>
             </div>
@@ -317,15 +316,15 @@ export default function InscriptionPage() {
               <button
                 type="button"
                 onClick={() => setAccountType(null)}
-                className="flex items-center gap-1.5 text-white/80 hover:text-white text-sm transition-colors"
+                className="flex items-center gap-1.5 text-gray-500 hover:text-gray-800 text-sm transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
                 Retour
               </button>
-              <span className="text-white/50">·</span>
-              <span className="text-white font-semibold text-sm">
+              <span className="text-gray-300">·</span>
+              <span className="text-gray-900 font-semibold text-sm">
                 {accountType === "marie" ? "Je suis marié(e)" : "Je suis prestataire"}
               </span>
             </div>
@@ -342,10 +341,7 @@ export default function InscriptionPage() {
                   onClick={() => setAccountType("marie")}
                   className="group relative flex flex-col items-center gap-4 rounded-3xl px-5 py-8 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
                   style={{
-                    background: "rgba(255,255,255,0.20)",
-                    backdropFilter: "blur(20px)",
-                    WebkitBackdropFilter: "blur(20px)",
-                    border: "1px solid rgba(255,255,255,0.40)",
+                    background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)",
                   }}
                 >
                   <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors">
@@ -370,10 +366,7 @@ export default function InscriptionPage() {
                   onClick={() => setAccountType("prestataire")}
                   className="group relative flex flex-col items-center gap-4 rounded-3xl px-5 py-8 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
                   style={{
-                    background: "rgba(255,255,255,0.20)",
-                    backdropFilter: "blur(20px)",
-                    WebkitBackdropFilter: "blur(20px)",
-                    border: "1px solid rgba(255,255,255,0.40)",
+                    background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)",
                   }}
                 >
                   <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors">
@@ -399,10 +392,9 @@ export default function InscriptionPage() {
               <div
                 className="rounded-3xl px-6 py-7 sm:px-8 sm:py-8"
                 style={{
-                  background: "rgba(255,255,255,0.18)",
-                  backdropFilter: "blur(24px)",
-                  WebkitBackdropFilter: "blur(24px)",
-                  border: "1px solid rgba(255,255,255,0.35)",
+                  background: "white",
+                  border: "1px solid #fce7f3",
+                  boxShadow: "0 4px 32px rgba(233,30,140,0.07)",
                 }}
               >
                 {/* Google */}
@@ -421,13 +413,13 @@ export default function InscriptionPage() {
                 </button>
 
                 <div className="flex items-center gap-3 mb-5">
-                  <div className="flex-1 h-px bg-white/30" />
-                  <span className="text-xs text-white/70 font-medium">ou par email</span>
-                  <div className="flex-1 h-px bg-white/30" />
+                  <div className="flex-1 h-px bg-gray-200" />
+                  <span className="text-xs text-gray-400 font-medium">ou par email</span>
+                  <div className="flex-1 h-px bg-gray-200" />
                 </div>
 
                 {error && (
-                  <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/20 border border-red-300/40 text-sm text-white">
+                  <div className="mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700">
                     {error}
                   </div>
                 )}
@@ -437,41 +429,41 @@ export default function InscriptionPage() {
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">Prénom</label>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Prénom</label>
                         <input
                           type="text"
                           value={mPrenom}
                           onChange={(e) => setMPrenom(e.target.value)}
                           placeholder="Sophie"
                           required
-                          className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/60 transition-all"
+                          className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">Nom</label>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Nom</label>
                         <input
                           type="text"
                           value={mNom}
                           onChange={(e) => setMNom(e.target.value)}
                           placeholder="Martin"
                           required
-                          className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/60 transition-all"
+                          className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">Adresse email</label>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Adresse email</label>
                       <input
                         type="email"
                         value={mEmail}
                         onChange={(e) => setMEmail(e.target.value)}
                         placeholder="vous@exemple.com"
                         required
-                        className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/60 transition-all"
+                        className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">Mot de passe</label>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Mot de passe</label>
                       <div className="relative">
                         <input
                           type={mShowPwd ? "text" : "password"}
@@ -481,13 +473,13 @@ export default function InscriptionPage() {
                           required
                           minLength={8}
                           autoComplete="new-password"
-                          className="w-full bg-white rounded-xl px-4 py-3 pr-12 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/60 transition-all"
+                          className="w-full bg-white rounded-xl px-4 py-3 pr-12 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all"
                         />
                         <EyeIcon show={mShowPwd} onClick={() => setMShowPwd(!mShowPwd)} />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">Confirmer le mot de passe</label>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Confirmer le mot de passe</label>
                       <div className="relative">
                         <input
                           type={mShowConfirmPwd ? "text" : "password"}
@@ -497,24 +489,24 @@ export default function InscriptionPage() {
                           required
                           autoComplete="new-password"
                           className={`w-full bg-white rounded-xl px-4 py-3 pr-12 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
-                            !mPasswordsMatch ? "ring-2 ring-red-400 focus:ring-red-400" : "focus:ring-white/60"
+                            !mPasswordsMatch ? "ring-2 ring-red-400 focus:ring-red-400" : "focus:ring-pink-300"
                           }`}
                         />
                         <EyeIcon show={mShowConfirmPwd} onClick={() => setMShowConfirmPwd(!mShowConfirmPwd)} />
                       </div>
                       {!mPasswordsMatch && (
-                        <p className="mt-1.5 text-xs text-white/90 font-medium">Les mots de passe ne correspondent pas</p>
+                        <p className="mt-1.5 text-xs text-red-500 font-medium">Les mots de passe ne correspondent pas</p>
                       )}
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">
-                        Date du mariage <span className="text-white/50 font-normal normal-case">(optionnel)</span>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
+                        Date du mariage <span className="text-gray-400 font-normal normal-case">(optionnel)</span>
                       </label>
                       <input
                         type="date"
                         value={mDate}
                         onChange={(e) => setMDate(e.target.value)}
-                        className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-white/60 transition-all"
+                        className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all"
                       />
                     </div>
                     <CguAndSubmit cgu={cgu} setCgu={setCgu} label="Créer mon compte" loading={loading} extraDisabled={!mPasswordsMatch || mConfirmPassword === ""} />
@@ -525,24 +517,24 @@ export default function InscriptionPage() {
                 {accountType === "prestataire" && (
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                      <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">Nom de l&apos;entreprise</label>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Nom de l&apos;entreprise</label>
                       <input
                         type="text"
                         value={pEntreprise}
                         onChange={(e) => setPEntreprise(e.target.value)}
                         placeholder="Studio Photo Lumière"
                         required
-                        className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/60 transition-all"
+                        className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">Métier</label>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Métier</label>
                         <select
                           value={pMetier}
                           onChange={(e) => setPMetier(e.target.value)}
                           required
-                          className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-white/60 transition-all appearance-none"
+                          className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all appearance-none"
                         >
                           <option value="">Choisir…</option>
                           {metiers.map((m) => (
@@ -551,31 +543,31 @@ export default function InscriptionPage() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">Ville</label>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Ville</label>
                         <input
                           type="text"
                           value={pVille}
                           onChange={(e) => setPVille(e.target.value)}
                           placeholder="Paris"
                           required
-                          className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/60 transition-all"
+                          className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">Email professionnel</label>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Email professionnel</label>
                       <input
                         type="email"
                         value={pEmail}
                         onChange={(e) => setPEmail(e.target.value)}
                         placeholder="contact@monentreprise.fr"
                         required
-                        className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/60 transition-all"
+                        className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">Mot de passe</label>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Mot de passe</label>
                         <div className="relative">
                           <input
                             type={pShowPwd ? "text" : "password"}
@@ -585,25 +577,25 @@ export default function InscriptionPage() {
                             required
                             minLength={8}
                             autoComplete="new-password"
-                            className="w-full bg-white rounded-xl px-4 py-3 pr-12 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/60 transition-all"
+                            className="w-full bg-white rounded-xl px-4 py-3 pr-12 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all"
                           />
                           <EyeIcon show={pShowPwd} onClick={() => setPShowPwd(!pShowPwd)} />
                         </div>
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">Téléphone</label>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Téléphone</label>
                         <input
                           type="tel"
                           value={pTel}
                           onChange={(e) => setPTel(e.target.value)}
                           placeholder="06 12 34 56 78"
                           required
-                          className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/60 transition-all"
+                          className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">Confirmer le mot de passe</label>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Confirmer le mot de passe</label>
                       <div className="relative">
                         <input
                           type={pShowConfirmPwd ? "text" : "password"}
@@ -613,13 +605,13 @@ export default function InscriptionPage() {
                           required
                           autoComplete="new-password"
                           className={`w-full bg-white rounded-xl px-4 py-3 pr-12 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
-                            !pPasswordsMatch ? "ring-2 ring-red-400 focus:ring-red-400" : "focus:ring-white/60"
+                            !pPasswordsMatch ? "ring-2 ring-red-400 focus:ring-red-400" : "focus:ring-pink-300"
                           }`}
                         />
                         <EyeIcon show={pShowConfirmPwd} onClick={() => setPShowConfirmPwd(!pShowConfirmPwd)} />
                       </div>
                       {!pPasswordsMatch && (
-                        <p className="mt-1.5 text-xs text-white/90 font-medium">Les mots de passe ne correspondent pas</p>
+                        <p className="mt-1.5 text-xs text-red-500 font-medium">Les mots de passe ne correspondent pas</p>
                       )}
                     </div>
                     <CguAndSubmit cgu={cgu} setCgu={setCgu} label="Créer mon profil prestataire" loading={loading} extraDisabled={!pPasswordsMatch || pConfirmPassword === ""} />
@@ -628,9 +620,9 @@ export default function InscriptionPage() {
               </div>
             )}
 
-            <p className="mt-6 text-center text-sm text-white/80">
+            <p className="mt-6 text-center text-sm text-gray-500">
               Déjà un compte ?{" "}
-              <Link href="/login" className="font-semibold text-white underline underline-offset-2 hover:text-white/90 transition-colors">
+              <Link href="/login" className="font-semibold text-pink-600 underline underline-offset-2 hover:text-pink-700 transition-colors">
                 Se connecter
               </Link>
             </p>
@@ -667,23 +659,23 @@ function CguAndSubmit({
           />
           <div
             className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-200 ${
-              cgu ? "border-white bg-white" : "border-white/50 bg-white/10 group-hover:border-white/80"
+              cgu ? "border-pink-500 bg-pink-500" : "border-gray-300 bg-white group-hover:border-pink-400"
             }`}
           >
             {cgu && (
-              <svg className="w-3 h-3" style={{ color: "#e91e8c" }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             )}
           </div>
         </div>
-        <span className="text-xs text-white/75 leading-relaxed">
+        <span className="text-xs text-gray-500 leading-relaxed">
           J&apos;accepte les{" "}
-          <Link href="/cgu" className="font-medium text-white underline underline-offset-1 hover:text-white/90">
+          <Link href="/cgu" className="font-medium text-pink-600 underline underline-offset-1 hover:text-pink-700">
             Conditions Générales d&apos;Utilisation
           </Link>{" "}
           et la{" "}
-          <Link href="/confidentialite" className="font-medium text-white underline underline-offset-1 hover:text-white/90">
+          <Link href="/confidentialite" className="font-medium text-pink-600 underline underline-offset-1 hover:text-pink-700">
             Politique de confidentialité
           </Link>{" "}
           d&apos;InstantMariage.fr
@@ -694,7 +686,7 @@ function CguAndSubmit({
         type="submit"
         disabled={!cgu || loading || extraDisabled}
         className="w-full font-bold py-3.5 rounded-xl transition-all duration-200 text-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0"
-        style={{ background: "white", color: "#e91e8c" }}
+        style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)", color: "white" }}
       >
         {loading ? "Création du compte…" : label}
       </button>
