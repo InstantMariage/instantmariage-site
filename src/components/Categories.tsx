@@ -16,12 +16,20 @@ const categories = [
     hoverBg: "hover:bg-purple-50",
   },
   {
-    name: "DJ / Animateur",
-    icon: "🎵",
-    count: "1 120",
+    name: "DJ",
+    icon: "🎧",
+    count: "780",
     color: "from-blue-50 to-indigo-50",
     border: "border-blue-100",
     hoverBg: "hover:bg-blue-50",
+  },
+  {
+    name: "Musicien / Groupe",
+    icon: "🎹",
+    count: "340",
+    color: "from-violet-50 to-purple-50",
+    border: "border-violet-100",
+    hoverBg: "hover:bg-violet-50",
   },
   {
     name: "Traiteur",
@@ -48,12 +56,28 @@ const categories = [
     hoverBg: "hover:bg-yellow-50",
   },
   {
-    name: "Coiffeur & Maquilleur",
-    icon: "💄",
-    count: "940",
+    name: "Coiffeur",
+    icon: "✂️",
+    count: "620",
     color: "from-pink-50 to-fuchsia-50",
     border: "border-pink-100",
     hoverBg: "hover:bg-pink-50",
+  },
+  {
+    name: "Maquilleur",
+    icon: "💄",
+    count: "540",
+    color: "from-fuchsia-50 to-pink-50",
+    border: "border-fuchsia-100",
+    hoverBg: "hover:bg-fuchsia-50",
+  },
+  {
+    name: "Henna",
+    icon: "🌿",
+    count: "180",
+    color: "from-emerald-50 to-teal-50",
+    border: "border-emerald-100",
+    hoverBg: "hover:bg-emerald-50",
   },
   {
     name: "Wedding Planner",
@@ -72,12 +96,12 @@ const categories = [
     hoverBg: "hover:bg-rose-50",
   },
   {
-    name: "Orchestre / Groupe",
-    icon: "🎹",
-    count: "310",
-    color: "from-violet-50 to-purple-50",
-    border: "border-violet-100",
-    hoverBg: "hover:bg-violet-50",
+    name: "Animation",
+    icon: "🎪",
+    count: "290",
+    color: "from-amber-50 to-yellow-50",
+    border: "border-amber-100",
+    hoverBg: "hover:bg-amber-50",
   },
   {
     name: "Voiture de mariée",
@@ -94,6 +118,30 @@ const categories = [
     color: "from-sky-50 to-blue-50",
     border: "border-sky-100",
     hoverBg: "hover:bg-sky-50",
+  },
+  {
+    name: "Décorateur",
+    icon: "🎨",
+    count: "410",
+    color: "from-lime-50 to-green-50",
+    border: "border-lime-100",
+    hoverBg: "hover:bg-lime-50",
+  },
+  {
+    name: "Créateur de contenu",
+    icon: "📱",
+    count: "220",
+    color: "from-cyan-50 to-sky-50",
+    border: "border-cyan-100",
+    hoverBg: "hover:bg-cyan-50",
+  },
+  {
+    name: "Papeterie & Personnalisation",
+    icon: "✉️",
+    count: "160",
+    color: "from-rose-50 to-pink-50",
+    border: "border-rose-100",
+    hoverBg: "hover:bg-rose-50",
   },
 ];
 
@@ -114,7 +162,7 @@ export default function Categories() {
           </h2>
           <div className="w-16 h-0.5 bg-gradient-to-r from-gold-300 to-gold-500 mx-auto mt-4 rounded-full" />
           <p className="text-gray-500 mt-4 text-lg max-w-xl mx-auto">
-            Choisissez parmi nos 12 catégories de professionnels du mariage,
+            Choisissez parmi nos 18 catégories de professionnels du mariage,
             tous soigneusement vérifiés.
           </p>
         </div>
