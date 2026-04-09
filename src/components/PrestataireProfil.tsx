@@ -70,16 +70,22 @@ Chaque mariage est unique et mérite une attention particulière. C'est pourquoi
 
 // ─── Construction du profil depuis un provider ────────────────────────────────
 
-function buildPrestataire(id: number) {
+function buildPrestataire(id: number): PrestatireData {
   const provider = PROVIDERS.find((p) => p.id === id);
-  if (!provider) return PRESTATAIRE_FALLBACK;
+  const fb = PRESTATAIRE_FALLBACK;
+  if (!provider) {
+    return {
+      nom: fb.nom, metier: fb.metier, ville: fb.ville, region: fb.region,
+      note: fb.note, nbAvis: fb.nbAvis, verifie: fb.verifie, prixMin: fb.prixMin,
+      telephone: fb.telephone, email: fb.email, site: fb.site, instagram: fb.instagram,
+      photo: fb.photo, couverture: fb.couverture, description: fb.description,
+      specialites: fb.specialites, experience: fb.experience, zones: fb.zones,
+      langues: fb.langues, equipements: fb.equipements, galerie: GALERIE,
+    };
+  }
 
-  const firstNameMatch = provider.nom.match(/^(\S+)/);
-  const prenom = firstNameMatch ? firstNameMatch[1] : provider.nom.split(" ")[0];
   const emailSlug = provider.nom.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 20);
-
   return {
-    ...PRESTATAIRE_FALLBACK,
     nom: provider.nom,
     metier: provider.metier,
     ville: provider.ville,
@@ -88,33 +94,46 @@ function buildPrestataire(id: number) {
     nbAvis: provider.avis,
     verifie: provider.verifie,
     prixMin: provider.prixMin,
-    photo: provider.photo,
-    couverture: COUVERTURES[provider.metier] ?? PRESTATAIRE_FALLBACK.couverture,
+    telephone: fb.telephone,
     email: `contact@${emailSlug}.fr`,
     site: `www.${emailSlug}.fr`,
     instagram: `@${emailSlug}`,
+    photo: provider.photo,
+    couverture: COUVERTURES[provider.metier] ?? fb.couverture,
     description: provider.description + `\n\nBasé(e) à ${provider.ville} en ${provider.region}, nous intervenons sur toute la région et dans toute la France sur devis. Contactez-nous pour en savoir plus sur nos disponibilités et nos formules.`,
+    specialites: fb.specialites,
+    experience: fb.experience,
+    zones: fb.zones,
+    langues: fb.langues,
+    equipements: fb.equipements,
+    galerie: GALERIE,
   };
 }
 
-function buildPrestataireFromSupabase(p: SupabasePrestataire) {
-  const emailSlug = p.nom_entreprise.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 20);
+function buildPrestataireFromSupabase(p: SupabasePrestataire): PrestatireData {
+  const photos = p.photos ?? [];
   return {
-    ...PRESTATAIRE_FALLBACK,
     nom: p.nom_entreprise,
     metier: p.categorie,
-    ville: p.ville || "",
+    ville: p.ville ?? "",
+    region: p.departement ?? "",
     note: p.note_moyenne,
     nbAvis: p.nb_avis,
     verifie: p.abonnement_actif,
-    telephone: p.telephone || PRESTATAIRE_FALLBACK.telephone,
-    email: `contact@${emailSlug}.fr`,
-    site: p.site_web || `www.${emailSlug}.fr`,
-    instagram: `@${emailSlug}`,
-    photo: p.photos?.[0] || PRESTATAIRE_FALLBACK.photo,
-    couverture: COUVERTURES[p.categorie] ?? PRESTATAIRE_FALLBACK.couverture,
-    description: (p.description || PRESTATAIRE_FALLBACK.description) +
-      (p.ville ? `\n\nBasé(e) à ${p.ville}. Contactez-nous pour en savoir plus sur nos disponibilités et nos formules.` : ""),
+    prixMin: null,
+    telephone: p.telephone ?? null,
+    email: null,
+    site: p.site_web ?? null,
+    instagram: null,
+    photo: photos[0] ?? null,
+    couverture: COUVERTURES[p.categorie] ?? null,
+    description: p.description ?? null,
+    specialites: [],
+    experience: null,
+    zones: [],
+    langues: [],
+    equipements: [],
+    galerie: photos.map((src, i) => ({ id: i + 1, src, alt: `Photo ${i + 1}`, tall: i % 3 === 0 })),
   };
 }
 
@@ -218,7 +237,29 @@ function Stars({ note, size = "sm" }: { note: number; size?: "sm" | "md" | "lg" 
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
 
-type PrestatireData = ReturnType<typeof buildPrestataire>;
+type PrestatireData = {
+  nom: string;
+  metier: string;
+  ville: string;
+  region: string;
+  note: number;
+  nbAvis: number;
+  verifie: boolean;
+  prixMin: number | null;
+  telephone: string | null;
+  email: string | null;
+  site: string | null;
+  instagram: string | null;
+  photo: string | null;
+  couverture: string | null;
+  description: string | null;
+  specialites: string[];
+  experience: number | null;
+  zones: string[];
+  langues: string[];
+  equipements: string[];
+  galerie: { id: number; src: string; alt: string; tall: boolean }[];
+};
 
 function SectionAPropos({ prestataire }: { prestataire: PrestatireData }) {
   const PRESTATAIRE = prestataire;
@@ -227,26 +268,34 @@ function SectionAPropos({ prestataire }: { prestataire: PrestatireData }) {
       {/* Description */}
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
         <h2 className="text-xl font-bold text-gray-900 mb-4">À propos</h2>
-        {PRESTATAIRE.description.split("\n\n").map((para, i) => (
-          <p key={i} className="text-gray-600 leading-relaxed mb-3 last:mb-0">
-            {para}
-          </p>
-        ))}
+        {PRESTATAIRE.description ? (
+          PRESTATAIRE.description.split("\n\n").map((para, i) => (
+            <p key={i} className="text-gray-600 leading-relaxed mb-3 last:mb-0">
+              {para}
+            </p>
+          ))
+        ) : (
+          <p className="text-gray-400 italic">Description non renseignée.</p>
+        )}
       </div>
 
       {/* Spécialités */}
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
         <h3 className="text-lg font-bold text-gray-900 mb-4">Spécialités</h3>
-        <div className="flex flex-wrap gap-2">
-          {PRESTATAIRE.specialites.map((s) => (
-            <span
-              key={s}
-              className="bg-rose-50 text-rose-600 text-sm font-medium px-3 py-1.5 rounded-full border border-rose-100"
-            >
-              {s}
-            </span>
-          ))}
-        </div>
+        {PRESTATAIRE.specialites.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {PRESTATAIRE.specialites.map((s) => (
+              <span
+                key={s}
+                className="bg-rose-50 text-rose-600 text-sm font-medium px-3 py-1.5 rounded-full border border-rose-100"
+              >
+                {s}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-400 italic text-sm">Spécialités non renseignées.</p>
+        )}
       </div>
 
       {/* Infos grid */}
@@ -260,8 +309,11 @@ function SectionAPropos({ prestataire }: { prestataire: PrestatireData }) {
           </div>
           <div>
             <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1">Expérience</p>
-            <p className="text-gray-900 font-semibold">{PRESTATAIRE.experience} ans</p>
-            <p className="text-sm text-gray-500">+200 mariages photographiés</p>
+            {PRESTATAIRE.experience !== null ? (
+              <p className="text-gray-900 font-semibold">{PRESTATAIRE.experience} ans</p>
+            ) : (
+              <p className="text-gray-400 italic text-sm">Non renseignée</p>
+            )}
           </div>
         </div>
 
@@ -275,12 +327,16 @@ function SectionAPropos({ prestataire }: { prestataire: PrestatireData }) {
           </div>
           <div>
             <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1">Zone d&apos;intervention</p>
-            <div className="space-y-0.5">
-              {PRESTATAIRE.zones.slice(0, 4).map((z) => (
-                <p key={z} className="text-sm text-gray-700">{z}</p>
-              ))}
-              <p className="text-xs text-gray-400 italic">{PRESTATAIRE.zones[5]}</p>
-            </div>
+            {PRESTATAIRE.zones.length > 0 ? (
+              <div className="space-y-0.5">
+                {PRESTATAIRE.zones.slice(0, 4).map((z) => (
+                  <p key={z} className="text-sm text-gray-700">{z}</p>
+                ))}
+                {PRESTATAIRE.zones[5] && <p className="text-xs text-gray-400 italic">{PRESTATAIRE.zones[5]}</p>}
+              </div>
+            ) : (
+              <p className="text-gray-400 italic text-sm">Non renseignée</p>
+            )}
           </div>
         </div>
 
@@ -293,11 +349,15 @@ function SectionAPropos({ prestataire }: { prestataire: PrestatireData }) {
           </div>
           <div>
             <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1">Langues parlées</p>
-            <div className="flex gap-2 flex-wrap mt-1">
-              {PRESTATAIRE.langues.map((l) => (
-                <span key={l} className="bg-gray-100 text-gray-700 text-sm px-2.5 py-1 rounded-full">{l}</span>
-              ))}
-            </div>
+            {PRESTATAIRE.langues.length > 0 ? (
+              <div className="flex gap-2 flex-wrap mt-1">
+                {PRESTATAIRE.langues.map((l) => (
+                  <span key={l} className="bg-gray-100 text-gray-700 text-sm px-2.5 py-1 rounded-full">{l}</span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-400 italic text-sm">Non renseignées</p>
+            )}
           </div>
         </div>
 
@@ -311,14 +371,18 @@ function SectionAPropos({ prestataire }: { prestataire: PrestatireData }) {
           </div>
           <div>
             <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1">Équipements</p>
-            <ul className="space-y-1">
-              {PRESTATAIRE.equipements.map((e) => (
-                <li key={e} className="text-sm text-gray-700 flex items-center gap-1.5">
-                  <span className="w-1 h-1 bg-rose-400 rounded-full flex-shrink-0" />
-                  {e}
-                </li>
-              ))}
-            </ul>
+            {PRESTATAIRE.equipements.length > 0 ? (
+              <ul className="space-y-1">
+                {PRESTATAIRE.equipements.map((e) => (
+                  <li key={e} className="text-sm text-gray-700 flex items-center gap-1.5">
+                    <span className="w-1 h-1 bg-rose-400 rounded-full flex-shrink-0" />
+                    {e}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-400 italic text-sm">Non renseignés</p>
+            )}
           </div>
         </div>
       </div>
@@ -326,7 +390,7 @@ function SectionAPropos({ prestataire }: { prestataire: PrestatireData }) {
   );
 }
 
-function SectionGalerie() {
+function SectionGalerie({ galerie }: { galerie: PrestatireData["galerie"] }) {
   const [selected, setSelected] = useState<null | number>(null);
 
   return (
@@ -334,32 +398,41 @@ function SectionGalerie() {
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-xl font-bold text-gray-900">Galerie</h2>
-          <span className="text-sm text-gray-400">{GALERIE.length} photos</span>
+          {galerie.length > 0 && <span className="text-sm text-gray-400">{galerie.length} photo{galerie.length > 1 ? "s" : ""}</span>}
         </div>
 
-        {/* Masonry grid */}
-        <div className="columns-2 sm:columns-3 gap-3 space-y-3">
-          {GALERIE.map((photo) => (
-            <div
-              key={photo.id}
-              className={`break-inside-avoid relative overflow-hidden rounded-xl cursor-pointer group ${photo.tall ? "aspect-[3/4]" : "aspect-square"}`}
-              onClick={() => setSelected(photo.id)}
-            >
-              <Image
-                src={photo.src}
-                alt={photo.alt}
-                fill
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-                sizes="(max-width: 640px) 50vw, 33vw"
-              />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-                <svg className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                </svg>
+        {galerie.length === 0 ? (
+          <div className="py-12 text-center">
+            <svg className="w-10 h-10 text-gray-200 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <p className="text-gray-400 text-sm italic">Aucune photo dans la galerie.</p>
+          </div>
+        ) : (
+          /* Masonry grid */
+          <div className="columns-2 sm:columns-3 gap-3 space-y-3">
+            {galerie.map((photo) => (
+              <div
+                key={photo.id}
+                className={`break-inside-avoid relative overflow-hidden rounded-xl cursor-pointer group ${photo.tall ? "aspect-[3/4]" : "aspect-square"}`}
+                onClick={() => setSelected(photo.id)}
+              >
+                <Image
+                  src={photo.src}
+                  alt={photo.alt}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  sizes="(max-width: 640px) 50vw, 33vw"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                  </svg>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Lightbox */}
@@ -378,7 +451,7 @@ function SectionGalerie() {
           </button>
           <div className="relative max-w-4xl max-h-[90vh] w-full h-full" onClick={(e) => e.stopPropagation()}>
             {(() => {
-              const photo = GALERIE.find((p) => p.id === selected);
+              const photo = galerie.find((p) => p.id === selected);
               return photo ? (
                 <Image
                   src={photo.src}
@@ -814,14 +887,25 @@ function SectionAvis({ prestataireName }: { prestataireName: string }) {
   );
 }
 
-function SectionTarifs() {
+function SectionTarifs({ tarifs, options }: { tarifs: typeof TARIFS; options: typeof OPTIONS }) {
+  if (tarifs.length === 0 && options.length === 0) {
+    return (
+      <div className="bg-white rounded-2xl p-12 shadow-sm border border-gray-100 text-center">
+        <svg className="w-10 h-10 text-gray-200 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
+        </svg>
+        <p className="text-gray-400 text-sm italic">Tarifs non renseignés.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Formules */}
       <div>
         <h2 className="text-xl font-bold text-gray-900 mb-4">Formules</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {TARIFS.map((t) => (
+          {tarifs.map((t) => (
             <div
               key={t.nom}
               className={`relative bg-white rounded-2xl p-5 shadow-sm border-2 flex flex-col ${
@@ -871,20 +955,22 @@ function SectionTarifs() {
       </div>
 
       {/* Options */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">Options supplémentaires</h3>
-        <div className="divide-y divide-gray-100">
-          {OPTIONS.map((o) => (
-            <div key={o.label} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
-              <span className="text-gray-700 text-sm">{o.label}</span>
-              <span className="text-gray-900 font-semibold text-sm">{o.prix}</span>
-            </div>
-          ))}
+      {options.length > 0 && (
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">Options supplémentaires</h3>
+          <div className="divide-y divide-gray-100">
+            {options.map((o) => (
+              <div key={o.label} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
+                <span className="text-gray-700 text-sm">{o.label}</span>
+                <span className="text-gray-900 font-semibold text-sm">{o.prix}</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-gray-400 mt-4 italic">
+            * Les options peuvent être ajoutées à n&apos;importe quelle formule. Devis personnalisé sur demande.
+          </p>
         </div>
-        <p className="text-xs text-gray-400 mt-4 italic">
-          * Les options peuvent être ajoutées à n&apos;importe quelle formule. Devis personnalisé sur demande.
-        </p>
-      </div>
+      )}
     </div>
   );
 }
@@ -900,8 +986,14 @@ function Sidebar({ prestataire }: { prestataire: PrestatireData }) {
       {/* Contact card */}
       <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
         <div className="flex items-center gap-3 mb-4">
-          <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-rose-100">
-            <Image src={PRESTATAIRE.photo} alt={PRESTATAIRE.nom} fill className="object-cover" sizes="48px" />
+          <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-rose-100 bg-gray-100 flex items-center justify-center">
+            {PRESTATAIRE.photo ? (
+              <Image src={PRESTATAIRE.photo} alt={PRESTATAIRE.nom} fill className="object-cover" sizes="48px" />
+            ) : (
+              <span className="text-gray-400 text-lg font-bold leading-none select-none">
+                {PRESTATAIRE.nom.charAt(0).toUpperCase()}
+              </span>
+            )}
           </div>
           <div>
             <p className="font-semibold text-gray-900 text-sm leading-tight">{PRESTATAIRE.nom}</p>
@@ -919,60 +1011,60 @@ function Sidebar({ prestataire }: { prestataire: PrestatireData }) {
         </button>
 
         <div className="mt-4 space-y-2.5 border-t border-gray-100 pt-4">
-          <a
-            href={`tel:${PRESTATAIRE.telephone}`}
-            className="flex items-center gap-3 text-sm text-gray-600 hover:text-rose-500 transition-colors group"
-          >
-            <div className="w-8 h-8 bg-gray-50 group-hover:bg-rose-50 rounded-lg flex items-center justify-center transition-colors">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-              </svg>
-            </div>
-            {PRESTATAIRE.telephone}
-          </a>
-          <a
-            href={`mailto:${PRESTATAIRE.email}`}
-            className="flex items-center gap-3 text-sm text-gray-600 hover:text-rose-500 transition-colors group"
-          >
-            <div className="w-8 h-8 bg-gray-50 group-hover:bg-rose-50 rounded-lg flex items-center justify-center transition-colors">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-            </div>
-            {PRESTATAIRE.email}
-          </a>
-          <a
-            href="#"
-            className="flex items-center gap-3 text-sm text-gray-600 hover:text-rose-500 transition-colors group"
-          >
-            <div className="w-8 h-8 bg-gray-50 group-hover:bg-rose-50 rounded-lg flex items-center justify-center transition-colors">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-              </svg>
-            </div>
-            {PRESTATAIRE.site}
-          </a>
-        </div>
-      </div>
-
-      {/* Disponibilités */}
-      <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-        <h3 className="font-bold text-gray-900 mb-4 text-sm">Disponibilités — Avril 2026</h3>
-        <div className="grid grid-cols-4 gap-2">
-          {DISPONIBILITES.map((d) => (
-            <div
-              key={d.jour}
-              className={`rounded-lg text-center py-2 text-xs font-semibold ${
-                d.dispo
-                  ? "bg-emerald-50 text-emerald-600 border border-emerald-100"
-                  : "bg-gray-100 text-gray-400 line-through"
-              }`}
+          {PRESTATAIRE.telephone ? (
+            <a
+              href={`tel:${PRESTATAIRE.telephone}`}
+              className="flex items-center gap-3 text-sm text-gray-600 hover:text-rose-500 transition-colors group"
             >
-              {d.jour} avr.
+              <div className="w-8 h-8 bg-gray-50 group-hover:bg-rose-50 rounded-lg flex items-center justify-center transition-colors">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+              </div>
+              {PRESTATAIRE.telephone}
+            </a>
+          ) : (
+            <div className="flex items-center gap-3 text-sm text-gray-300">
+              <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+              </div>
+              <span className="italic">Téléphone non renseigné</span>
             </div>
-          ))}
+          )}
+          {PRESTATAIRE.email ? (
+            <a
+              href={`mailto:${PRESTATAIRE.email}`}
+              className="flex items-center gap-3 text-sm text-gray-600 hover:text-rose-500 transition-colors group"
+            >
+              <div className="w-8 h-8 bg-gray-50 group-hover:bg-rose-50 rounded-lg flex items-center justify-center transition-colors">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              {PRESTATAIRE.email}
+            </a>
+          ) : null}
+          {PRESTATAIRE.site ? (
+            <a
+              href={PRESTATAIRE.site.startsWith("http") ? PRESTATAIRE.site : `https://${PRESTATAIRE.site}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 text-sm text-gray-600 hover:text-rose-500 transition-colors group"
+            >
+              <div className="w-8 h-8 bg-gray-50 group-hover:bg-rose-50 rounded-lg flex items-center justify-center transition-colors">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                </svg>
+              </div>
+              {PRESTATAIRE.site}
+            </a>
+          ) : null}
+          {!PRESTATAIRE.telephone && !PRESTATAIRE.email && !PRESTATAIRE.site && (
+            <p className="text-xs text-gray-300 italic text-center py-1">Coordonnées non renseignées</p>
+          )}
         </div>
-        <p className="text-xs text-gray-400 mt-3 text-center">Contactez pour d&apos;autres dates</p>
       </div>
 
       {/* Réseaux sociaux */}
@@ -1035,8 +1127,15 @@ export default function PrestataireProfil({ id }: { id?: string }) {
   const numId = id ? Number(id) : NaN;
   const isNumericId = id !== undefined && !isNaN(numId) && String(numId) === id;
 
-  const [PRESTATAIRE, setPRESTATAIRE] = useState(() =>
-    isNumericId ? buildPrestataire(numId) : PRESTATAIRE_FALLBACK
+  const [PRESTATAIRE, setPRESTATAIRE] = useState<PrestatireData>(() =>
+    isNumericId ? buildPrestataire(numId) : {
+      nom: "", metier: "", ville: "", region: "",
+      note: 0, nbAvis: 0, verifie: false, prixMin: null,
+      telephone: null, email: null, site: null, instagram: null,
+      photo: null, couverture: null, description: null,
+      specialites: [], experience: null, zones: [], langues: [], equipements: [],
+      galerie: [],
+    }
   );
 
   useEffect(() => {
@@ -1128,14 +1227,18 @@ export default function PrestataireProfil({ id }: { id?: string }) {
       <div className="relative">
         {/* Photo de couverture */}
         <div className="relative h-56 sm:h-72 md:h-96 w-full overflow-hidden">
-          <Image
-            src={PRESTATAIRE.couverture}
-            alt="Photo de couverture"
-            fill
-            className="object-cover"
-            priority
-            sizes="100vw"
-          />
+          {PRESTATAIRE.couverture ? (
+            <Image
+              src={PRESTATAIRE.couverture}
+              alt="Photo de couverture"
+              fill
+              className="object-cover"
+              priority
+              sizes="100vw"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-rose-100 via-pink-100 to-rose-200" />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
         </div>
 
@@ -1155,14 +1258,20 @@ export default function PrestataireProfil({ id }: { id?: string }) {
           <div className="relative -mt-16 sm:-mt-20 pb-0">
             <div className="flex flex-col sm:flex-row sm:items-end gap-4">
               {/* Photo de profil */}
-              <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden ring-4 ring-white shadow-lg flex-shrink-0">
-                <Image
-                  src={PRESTATAIRE.photo}
-                  alt={PRESTATAIRE.nom}
-                  fill
-                  className="object-cover"
-                  sizes="128px"
-                />
+              <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden ring-4 ring-white shadow-lg flex-shrink-0 bg-gray-100 flex items-center justify-center">
+                {PRESTATAIRE.photo ? (
+                  <Image
+                    src={PRESTATAIRE.photo}
+                    alt={PRESTATAIRE.nom}
+                    fill
+                    className="object-cover"
+                    sizes="128px"
+                  />
+                ) : (
+                  <span className="text-gray-400 text-4xl font-bold leading-none select-none">
+                    {PRESTATAIRE.nom.charAt(0).toUpperCase()}
+                  </span>
+                )}
               </div>
 
               {/* Infos principales */}
@@ -1194,9 +1303,11 @@ export default function PrestataireProfil({ id }: { id?: string }) {
                     <span className="font-bold text-gray-900">{PRESTATAIRE.note}</span>
                     <span className="text-gray-500">({PRESTATAIRE.nbAvis})</span>
                   </span>
-                  <span className="text-white/80 drop-shadow font-medium">
-                    À partir de {PRESTATAIRE.prixMin.toLocaleString("fr-FR")} €
-                  </span>
+                  {PRESTATAIRE.prixMin !== null && (
+                    <span className="text-white/80 drop-shadow font-medium">
+                      À partir de {PRESTATAIRE.prixMin.toLocaleString("fr-FR")} €
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -1257,9 +1368,9 @@ export default function PrestataireProfil({ id }: { id?: string }) {
           {/* Colonne principale */}
           <div className="flex-1 min-w-0">
             {activeTab === "apropos" && <SectionAPropos prestataire={PRESTATAIRE} />}
-            {activeTab === "galerie" && <SectionGalerie />}
+            {activeTab === "galerie" && <SectionGalerie galerie={PRESTATAIRE.galerie} />}
             {activeTab === "avis" && <SectionAvis prestataireName={PRESTATAIRE.nom} />}
-            {activeTab === "tarifs" && <SectionTarifs />}
+            {activeTab === "tarifs" && <SectionTarifs tarifs={isNumericId ? TARIFS : []} options={isNumericId ? OPTIONS : []} />}
           </div>
 
           {/* Sidebar */}
