@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PrestatairePage({ params }: Props) {
   const { id } = await params;
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gray-50 overflow-x-hidden max-w-full">
       <Header />
       <PrestataireProfil id={id} />
       <Footer />

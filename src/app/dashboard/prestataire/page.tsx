@@ -236,7 +236,7 @@ function DashboardPrestataire() {
   const planConfig = PLAN_CONFIG[plan];
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gray-50 overflow-x-hidden max-w-full">
       <Header />
 
       {showSuccess && (

@@ -71,7 +71,7 @@ export default function RootLayout({
           `}
         </Script>
       </head>
-      <body className={`${playfair.variable} ${inter.variable} font-inter antialiased`}>
+      <body className={`${playfair.variable} ${inter.variable} font-inter antialiased overflow-x-hidden max-w-full`}>
         {children}
       </body>
     </html>

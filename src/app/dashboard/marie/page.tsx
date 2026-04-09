@@ -223,7 +223,7 @@ export default function DashboardMarie() {
   ];
 
   return (
-    <main className="min-h-screen" style={{ background: "#FEF0F5" }}>
+    <main className="min-h-screen overflow-x-hidden max-w-full" style={{ background: "#FEF0F5" }}>
       <Header />
 
       <div className="pt-20 pb-20">
