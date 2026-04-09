@@ -27,6 +27,7 @@ export type Prestataire = {
   site_web: string | null
   photos: string[]
   avatar_url: string | null
+  cover_url: string | null
   prix_depart: number | null
   note_moyenne: number
   nb_avis: number

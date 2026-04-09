@@ -138,7 +138,7 @@ function buildPrestataireFromSupabase(p: SupabasePrestataire): PrestatireData {
     site: p.site_web ?? null,
     instagram: null,
     photo: avatar,
-    couverture: COUVERTURES[p.categorie] ?? null,
+    couverture: buildPhotoUrl(p.cover_url) ?? COUVERTURES[p.categorie] ?? null,
     description: p.description ?? null,
     specialites: [],
     experience: null,

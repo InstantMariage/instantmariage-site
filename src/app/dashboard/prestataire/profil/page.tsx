@@ -89,6 +89,8 @@ type ProfilForm = {
   tarifs_description: string;
   // Avatar
   avatar_url: string;
+  // Couverture
+  cover_url: string;
 };
 
 // ─── Calendar Component ───────────────────────────────────────────────────────
@@ -292,6 +294,7 @@ export default function ProfilPrestatairePage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   const [authChecked, setAuthChecked] = useState(false);
   const [prestataireId, setPrestataireId] = useState<string | null>(null);
@@ -300,8 +303,10 @@ export default function ProfilPrestatairePage() {
   const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle");
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
   const [photoSizeError, setPhotoSizeError] = useState<string | null>(null);
   const [avatarSizeError, setAvatarSizeError] = useState<string | null>(null);
+  const [coverSizeError, setCoverSizeError] = useState<string | null>(null);
 
   // Photos
   const [photos, setPhotos] = useState<string[]>([]);
@@ -328,6 +333,7 @@ export default function ProfilPrestatairePage() {
     prix_depart: "",
     tarifs_description: "",
     avatar_url: "",
+    cover_url: "",
   });
 
   // ── Auth + load ─────────────────────────────────────────────────────────────
@@ -370,6 +376,7 @@ export default function ProfilPrestatairePage() {
           prix_depart: p.prix_depart != null ? String(p.prix_depart) : "",
           tarifs_description: p.tarifs_description || "",
           avatar_url: p.avatar_url || "",
+          cover_url: p.cover_url || "",
         });
 
         // Plan
@@ -516,6 +523,52 @@ export default function ProfilPrestatairePage() {
     if (avatarInputRef.current) avatarInputRef.current.value = "";
   }
 
+  async function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setCoverSizeError(null);
+
+    if (file.size > 10 * 1024 * 1024) {
+      setCoverSizeError("Image trop lourde. Taille maximale : 10 Mo.");
+      if (coverInputRef.current) coverInputRef.current.value = "";
+      return;
+    }
+
+    setUploadingCover(true);
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { setUploadingCover(false); return; }
+
+    // Remove old cover if any
+    if (form.cover_url) {
+      const parts = form.cover_url.split("/photos/");
+      if (parts.length === 2) {
+        await supabase.storage.from("photos").remove([parts[1]]);
+      }
+    }
+
+    const ext = file.name.split(".").pop();
+    const path = `prestataires/${session.user.id}/cover-${Date.now()}.${ext}`;
+
+    const { error } = await supabase.storage
+      .from("photos")
+      .upload(path, file, { upsert: true });
+
+    if (error) {
+      console.error("Cover upload error:", error);
+      setCoverSizeError("L'upload a échoué. Veuillez réessayer.");
+    } else {
+      const { data: urlData } = supabase.storage.from("photos").getPublicUrl(path);
+      if (urlData?.publicUrl) {
+        setField("cover_url", urlData.publicUrl);
+      }
+    }
+
+    setUploadingCover(false);
+    if (coverInputRef.current) coverInputRef.current.value = "";
+  }
+
   async function handleDeletePhoto(url: string) {
     // Extract path from URL
     const parts = url.split("/photos/");
@@ -560,6 +613,7 @@ export default function ProfilPrestatairePage() {
       tarifs_description: form.tarifs_description,
       photos,
       avatar_url: form.avatar_url || null,
+      cover_url: form.cover_url || null,
       dates_reservees: reservedDates,
       updated_at: new Date().toISOString(),
     };
@@ -759,6 +813,73 @@ export default function ProfilPrestatairePage() {
                   onChange={handleAvatarUpload}
                 />
               </div>
+            </div>
+
+            {/* ── Photo de couverture ── */}
+            <div className="mb-6 pb-6 border-b border-gray-100">
+              <p className="text-xs font-semibold text-gray-600 mb-3">Photo de couverture (bannière)</p>
+
+              {/* Prévisualisation */}
+              <div className="relative w-full h-36 rounded-xl overflow-hidden bg-gradient-to-br from-rose-100 via-pink-100 to-rose-200 mb-3">
+                {form.cover_url && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={form.cover_url} alt="Couverture" className="w-full h-full object-cover" />
+                )}
+                {uploadingCover && (
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                  </div>
+                )}
+                {!form.cover_url && !uploadingCover && (
+                  <div className="absolute inset-0 flex items-center justify-center gap-2 text-rose-300">
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span className="text-sm font-medium">Aucune photo de couverture</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center gap-3 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => coverInputRef.current?.click()}
+                  disabled={uploadingCover}
+                  className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full text-white transition-all hover:opacity-90 disabled:opacity-60"
+                  style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)" }}
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  {form.cover_url ? "Changer la couverture" : "Ajouter une couverture"}
+                </button>
+                {form.cover_url && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const parts = form.cover_url.split("/photos/");
+                      if (parts.length === 2) {
+                        await supabase.storage.from("photos").remove([parts[1]]);
+                      }
+                      setField("cover_url", "");
+                    }}
+                    className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+                  >
+                    Supprimer
+                  </button>
+                )}
+                <p className="text-xs text-gray-400">JPG, PNG, WebP — max 10 Mo — Format paysage recommandé</p>
+              </div>
+              {coverSizeError && (
+                <p className="text-xs text-red-500 mt-2">{coverSizeError}</p>
+              )}
+              <input
+                ref={coverInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleCoverUpload}
+              />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
