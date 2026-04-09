@@ -301,77 +301,71 @@ function SectionAPropos({ prestataire }: { prestataire: PrestatireData }) {
       {/* Infos grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Expérience */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-start gap-4">
-          <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center flex-shrink-0">
-            <svg className="w-5 h-5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1">Expérience</p>
-            {PRESTATAIRE.experience !== null ? (
+        {PRESTATAIRE.experience !== null && (
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-start gap-4">
+            <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1">Expérience</p>
               <p className="text-gray-900 font-semibold">{PRESTATAIRE.experience} ans</p>
-            ) : (
-              <p className="text-gray-400 italic text-sm">Non renseignée</p>
-            )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Zone */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-start gap-4">
-          <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center flex-shrink-0">
-            <svg className="w-5 h-5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1">Zone d&apos;intervention</p>
-            {PRESTATAIRE.zones.length > 0 ? (
+        {PRESTATAIRE.zones.length > 0 && (
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-start gap-4">
+            <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1">Zone d&apos;intervention</p>
               <div className="space-y-0.5">
                 {PRESTATAIRE.zones.slice(0, 4).map((z) => (
                   <p key={z} className="text-sm text-gray-700">{z}</p>
                 ))}
                 {PRESTATAIRE.zones[5] && <p className="text-xs text-gray-400 italic">{PRESTATAIRE.zones[5]}</p>}
               </div>
-            ) : (
-              <p className="text-gray-400 italic text-sm">Non renseignée</p>
-            )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Langues */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-start gap-4">
-          <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center flex-shrink-0">
-            <svg className="w-5 h-5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1">Langues parlées</p>
-            {PRESTATAIRE.langues.length > 0 ? (
+        {PRESTATAIRE.langues.length > 0 && (
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-start gap-4">
+            <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1">Langues parlées</p>
               <div className="flex gap-2 flex-wrap mt-1">
                 {PRESTATAIRE.langues.map((l) => (
                   <span key={l} className="bg-gray-100 text-gray-700 text-sm px-2.5 py-1 rounded-full">{l}</span>
                 ))}
               </div>
-            ) : (
-              <p className="text-gray-400 italic text-sm">Non renseignées</p>
-            )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Équipements */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-start gap-4">
-          <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center flex-shrink-0">
-            <svg className="w-5 h-5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </div>
-          <div>
-            <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1">Équipements</p>
-            {PRESTATAIRE.equipements.length > 0 ? (
+        {PRESTATAIRE.equipements.length > 0 && (
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-start gap-4">
+            <div className="w-10 h-10 bg-rose-50 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1">Équipements</p>
               <ul className="space-y-1">
                 {PRESTATAIRE.equipements.map((e) => (
                   <li key={e} className="text-sm text-gray-700 flex items-center gap-1.5">
@@ -380,11 +374,9 @@ function SectionAPropos({ prestataire }: { prestataire: PrestatireData }) {
                   </li>
                 ))}
               </ul>
-            ) : (
-              <p className="text-gray-400 italic text-sm">Non renseignés</p>
-            )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
