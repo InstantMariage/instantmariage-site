@@ -111,10 +111,62 @@ interface DisplayProvider {
 
 // Construire la map inverse département → région une seule fois
 const DEPT_TO_REGION: Record<string, string> = {};
+const DEPT_NUM_TO_REGION: Record<string, string> = {};
 for (const [region, depts] of Object.entries(DEPARTEMENTS)) {
   for (const dept of depts) {
     DEPT_TO_REGION[dept.toLowerCase()] = region;
+    const numMatch = dept.match(/\((\w+)\)/);
+    if (numMatch) DEPT_NUM_TO_REGION[numMatch[1]] = region;
   }
+}
+
+// Map ville (normalisée) → numéro de département
+const VILLE_TO_DEPT_NUM: Record<string, string> = {
+  // Provence-Alpes-Côte d'Azur
+  "aix en provence": "13", "aix-en-provence": "13", "marseille": "13",
+  "nice": "06", "toulon": "83", "avignon": "84", "gap": "05",
+  "digne": "04", "digne-les-bains": "04",
+  // Île-de-France
+  "paris": "75", "versailles": "78", "boulogne-billancourt": "92",
+  "boulogne billancourt": "92", "saint-denis": "93", "saint denis": "93",
+  "vincennes": "94", "cergy": "95",
+  // Auvergne-Rhône-Alpes
+  "lyon": "69", "grenoble": "38", "annecy": "74", "chambéry": "73",
+  "chambery": "73", "clermont-ferrand": "63", "clermont ferrand": "63",
+  "saint-étienne": "42", "saint etienne": "42", "bourg-en-bresse": "01",
+  // Occitanie
+  "toulouse": "31", "montpellier": "34", "nîmes": "30", "nimes": "30",
+  "perpignan": "66", "carcassonne": "11",
+  // Nouvelle-Aquitaine
+  "bordeaux": "33", "bayonne": "64", "la rochelle": "17", "agen": "47",
+  // Bretagne
+  "rennes": "35", "brest": "29", "lorient": "56", "saint-brieuc": "22",
+  "saint brieuc": "22", "quimper": "29",
+  // Normandie
+  "rouen": "76", "caen": "14", "cherbourg": "50", "évreux": "27", "evreux": "27",
+  // Grand Est
+  "strasbourg": "67", "mulhouse": "68", "metz": "57", "nancy": "54", "reims": "51",
+  // Hauts-de-France
+  "lille": "59", "lens": "62", "arras": "62", "amiens": "80", "valenciennes": "59",
+  // Pays de la Loire
+  "nantes": "44", "angers": "49", "le mans": "72", "saint-nazaire": "44",
+  "saint nazaire": "44",
+  // Bourgogne-Franche-Comté
+  "dijon": "21", "besançon": "25", "besancon": "25",
+  // Centre-Val de Loire
+  "orléans": "45", "orleans": "45", "tours": "37",
+  // Corse
+  "ajaccio": "2A", "bastia": "2B",
+};
+
+function getDeptNumFromVille(ville: string): string {
+  if (!ville) return "";
+  return VILLE_TO_DEPT_NUM[ville.toLowerCase().trim()] || "";
+}
+
+function getRegionFromVille(ville: string): string {
+  const deptNum = getDeptNumFromVille(ville);
+  return deptNum ? (DEPT_NUM_TO_REGION[deptNum] || "") : "";
 }
 
 function getRegionFromDepartement(dept: string | null): string {
@@ -145,7 +197,7 @@ function prestataireToDisplay(p: Prestataire): DisplayProvider {
     nom: p.nom_entreprise,
     metier: p.categorie,
     ville: p.ville || "",
-    region: getRegionFromDepartement(p.departement),
+    region: getRegionFromDepartement(p.departement) || getRegionFromVille(p.ville || ""),
     note: p.note_moyenne,
     avis: p.nb_avis,
     verifie: p.abonnement_actif,
@@ -411,12 +463,14 @@ export default function AnnuaireContent() {
           p.metier.toLowerCase().trim() !== metier.toLowerCase().trim()) return false;
       // Département (sidebar) ou Région (barre de recherche)
       if (sideDept) {
-        // Filtrer par département spécifique : comparer avec p.departement
+        // Filtrer par département spécifique : comparer avec p.departement ou p.ville
         const deptName = sideDept.split(" (")[0].toLowerCase();
         const deptNumMatch = sideDept.match(/\((\w+)\)/);
         const deptNum = deptNumMatch ? deptNumMatch[1].toLowerCase() : "";
         const pDept = (p.departement ?? "").toLowerCase().trim();
-        if (!pDept.includes(deptName) && !(deptNum && pDept.includes(deptNum))) return false;
+        const villeDeptNum = getDeptNumFromVille(p.ville ?? "").toLowerCase();
+        if (!pDept.includes(deptName) && !(deptNum && pDept.includes(deptNum)) &&
+            !(deptNum && villeDeptNum === deptNum)) return false;
       } else {
         const region = activeRegion;
         if (region && region !== "Toute la France" && p.region !== region) return false;
