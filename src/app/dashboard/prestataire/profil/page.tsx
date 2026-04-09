@@ -295,6 +295,7 @@ export default function ProfilPrestatairePage() {
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle");
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoSizeError, setPhotoSizeError] = useState<string | null>(null);
 
   // Photos
   const [photos, setPhotos] = useState<string[]>([]);
@@ -401,6 +402,8 @@ export default function ProfilPrestatairePage() {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    setPhotoSizeError(null);
+
     const limit = PHOTO_LIMITS[plan];
     if (photos.length >= limit) {
       alert(`Votre plan ${plan.toUpperCase()} est limité à ${limit} photo${limit > 1 ? "s" : ""}. Supprimez des photos ou passez à un plan supérieur.`);
@@ -409,6 +412,13 @@ export default function ProfilPrestatairePage() {
 
     const remaining = limit - photos.length;
     const toUpload = Array.from(files).slice(0, remaining);
+
+    const oversized = toUpload.some((f) => f.size > 5 * 1024 * 1024);
+    if (oversized) {
+      setPhotoSizeError("Cette image est trop lourde. Taille maximale : 5 Mo.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
 
     setUploadingPhoto(true);
 
@@ -423,10 +433,6 @@ export default function ProfilPrestatairePage() {
 
     for (const file of toUpload) {
       if (!file.type.startsWith("image/")) continue;
-      if (file.size > 5 * 1024 * 1024) {
-        alert(`${file.name} dépasse 5 Mo. Veuillez choisir une image plus légère.`);
-        continue;
-      }
 
       const ext = file.name.split(".").pop();
       const path = `prestataires/${session.user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
@@ -835,6 +841,10 @@ export default function ProfilPrestatairePage() {
                 }}
               />
             </div>
+
+            {photoSizeError && (
+              <p className="text-sm text-red-600 font-medium mb-3">{photoSizeError}</p>
+            )}
 
             {/* Grid */}
             {photos.length === 0 ? (
