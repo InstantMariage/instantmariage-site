@@ -640,8 +640,8 @@ type AvisWithMarie = {
 
 // ─── Section avis réels ────────────────────────────────────────────────────────
 
-function SectionAvis({ prestataireName }: { prestataireName: string }) {
-  const [prestataire, setPrestataire] = useState<{ id: string; user_id: string } | null | undefined>(undefined);
+function SectionAvis({ prestataireId }: { prestataireId: string | undefined }) {
+  const [prestataire, setPrestataire] = useState<{ id: string; user_id: string; nom_entreprise: string } | null | undefined>(undefined);
   const [avis, setAvis] = useState<AvisWithMarie[]>([]);
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -667,6 +667,12 @@ function SectionAvis({ prestataireName }: { prestataireName: string }) {
   };
 
   useEffect(() => {
+    if (!prestataireId) {
+      setLoading(false);
+      setPrestataire(null);
+      return;
+    }
+
     let cancelled = false;
 
     async function load() {
@@ -674,7 +680,7 @@ function SectionAvis({ prestataireName }: { prestataireName: string }) {
 
       const [{ data: { session } }, { data: prest }] = await Promise.all([
         supabase.auth.getSession(),
-        supabase.from("prestataires").select("id, user_id").eq("nom_entreprise", prestataireName).maybeSingle(),
+        supabase.from("prestataires").select("id, user_id, nom_entreprise").eq("id", prestataireId).maybeSingle(),
       ]);
 
       if (cancelled) return;
@@ -714,11 +720,18 @@ function SectionAvis({ prestataireName }: { prestataireName: string }) {
 
     load();
     return () => { cancelled = true; };
-  }, [prestataireName]);
+  }, [prestataireId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!marie || !prestataire) return;
+    if (!prestataire) {
+      setFormError("Impossible de trouver le prestataire. Rechargez la page.");
+      return;
+    }
+    if (!marie) {
+      setFormError("Votre profil marié est introuvable. Vérifiez votre compte.");
+      return;
+    }
     setSubmitting(true);
     setFormError("");
 
@@ -755,7 +768,7 @@ function SectionAvis({ prestataireName }: { prestataireName: string }) {
           body: JSON.stringify({
             type: "new_avis",
             recipientEmail: prestUser.email,
-            recipientName: prestataireName,
+            recipientName: prestataire.nom_entreprise,
             reviewerName,
             note,
             commentaire: commentaire.trim() || null,
@@ -1602,7 +1615,7 @@ export default function PrestataireProfil({ id }: { id?: string }) {
 
                 {/* Tab content */}
                 <div className="p-7">
-                  {activeTab === "avis" && <SectionAvis prestataireName={PRESTATAIRE.nom} />}
+                  {activeTab === "avis" && <SectionAvis prestataireId={isNumericId ? undefined : id} />}
                   {activeTab === "tarifs" && <SectionTarifs tarifs={isNumericId ? TARIFS : []} options={isNumericId ? OPTIONS : []} />}
                 </div>
               </div>
