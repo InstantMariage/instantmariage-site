@@ -28,15 +28,22 @@ export async function POST(req: NextRequest) {
 
   if (!res.ok && res.status !== 204) {
     const body = await res.json().catch(() => ({}));
+    console.error("[Newsletter Brevo] Erreur API:", {
+      status: res.status,
+      statusText: res.statusText,
+      body,
+    });
     // 400 avec code "duplicate_parameter" = déjà inscrit, on traite comme succès
     if (body?.code === "duplicate_parameter") {
       return NextResponse.json({ success: true });
     }
     return NextResponse.json(
-      { error: "Une erreur est survenue. Veuillez réessayer." },
+      { error: "Une erreur est survenue. Veuillez réessayer.", debug: { status: res.status, body } },
       { status: 500 }
     );
   }
+
+  console.log("[Newsletter Brevo] Inscription OK:", { email, status: res.status });
 
   return NextResponse.json({ success: true });
 }
