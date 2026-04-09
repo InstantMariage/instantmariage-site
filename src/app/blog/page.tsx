@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import NewsletterForm from "@/components/NewsletterForm";
 
 const categories = ["Tous", "Organisation", "Inspiration", "Prestataires", "Budget", "Mode"];
 
@@ -366,14 +367,7 @@ export default function BlogPage() {
               <p className="text-sm text-white/80 mb-4">
                 Nos meilleurs articles, tendances et bons plans mariage.
               </p>
-              <input
-                type="email"
-                placeholder="votre@email.fr"
-                className="w-full px-4 py-2.5 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/60 text-sm focus:outline-none focus:ring-2 focus:ring-white/50 mb-3"
-              />
-              <button className="w-full bg-white font-semibold text-rose-500 py-2.5 rounded-xl text-sm hover:bg-rose-50 transition-colors">
-                S&apos;abonner gratuitement
-              </button>
+              <NewsletterForm variant="sidebar" />
             </div>
           </aside>
         </div>

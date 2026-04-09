@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import NewsletterForm from "@/components/NewsletterForm";
 
 const footerLinks = {
   prestataires: {
@@ -104,16 +105,7 @@ export default function Footer() {
                 Recevez chaque semaine nos meilleures idées et bons plans mariage
               </p>
             </div>
-            <div className="flex gap-2 w-full md:w-auto">
-              <input
-                type="email"
-                placeholder="votre@email.fr"
-                className="flex-1 md:w-64 px-4 py-3 rounded-xl bg-white/15 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 text-sm backdrop-blur-sm"
-              />
-              <button className="bg-white text-rose-500 hover:bg-rose-50 font-semibold px-5 py-3 rounded-xl transition-colors text-sm whitespace-nowrap">
-                S&apos;inscrire
-              </button>
-            </div>
+            <NewsletterForm variant="footer" />
           </div>
         </div>
       </div>
