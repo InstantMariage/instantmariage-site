@@ -6,44 +6,44 @@ const footerLinks = {
   prestataires: {
     title: "Prestataires",
     links: [
-      "Photographes",
-      "DJ & Animateurs",
-      "Traiteurs",
-      "Fleuristes",
-      "Salles de réception",
-      "Wedding Planners",
-      "Coiffeurs & Maquilleurs",
+      { label: "Photographes", href: "#" },
+      { label: "DJ & Animateurs", href: "#" },
+      { label: "Traiteurs", href: "#" },
+      { label: "Fleuristes", href: "#" },
+      { label: "Salles de réception", href: "#" },
+      { label: "Wedding Planners", href: "#" },
+      { label: "Coiffeurs & Maquilleurs", href: "#" },
     ],
   },
   mariees: {
     title: "Espace mariés",
     links: [
-      "Liste des invités",
-      "Plan de table",
-      "Rétroplanning",
-      "Budget mariage",
-      "Checklist mariage",
-      "Guide mariage",
+      { label: "Liste des invités", href: "https://tableau-de-bord-mariage.vercel.app" },
+      { label: "Plan de table", href: "https://tableau-de-bord-mariage.vercel.app" },
+      { label: "Rétroplanning", href: "/dashboard/marie/retroplanning" },
+      { label: "Budget mariage", href: "/dashboard/marie/budget" },
+      { label: "Checklist mariage", href: "/dashboard/marie/checklist" },
+      { label: "Guide mariage", href: "/blog" },
     ],
   },
   societe: {
     title: "InstantMariage.fr",
     links: [
-      "À propos",
-      "Comment ça marche",
-      "Tarifs prestataires",
-      "Blog & Inspirations",
-      "Presse",
-      "Recrutement",
+      { label: "À propos", href: "#" },
+      { label: "Comment ça marche", href: "#" },
+      { label: "Tarifs prestataires", href: "#" },
+      { label: "Blog & Inspirations", href: "#" },
+      { label: "Presse", href: "#" },
+      { label: "Recrutement", href: "#" },
     ],
   },
   aide: {
     title: "Aide & Contact",
     links: [
-      "Centre d'aide",
-      "Contacter le support",
-      "Signaler un problème",
-      "Devenir partenaire",
+      { label: "Centre d'aide", href: "#" },
+      { label: "Contacter le support", href: "#" },
+      { label: "Signaler un problème", href: "#" },
+      { label: "Devenir partenaire", href: "#" },
     ],
   },
 };
@@ -171,12 +171,12 @@ export default function Footer() {
                 </h4>
                 <ul className="space-y-2.5">
                   {section.links.map((link) => (
-                    <li key={link}>
+                    <li key={link.label}>
                       <Link
-                        href="#"
+                        href={link.href}
                         className="text-gray-500 hover:text-gray-900 text-sm transition-colors duration-200"
                       >
-                        {link}
+                        {link.label}
                       </Link>
                     </li>
                   ))}
