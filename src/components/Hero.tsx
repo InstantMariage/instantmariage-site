@@ -142,20 +142,8 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Quick links */}
-        <div className="flex flex-wrap justify-center gap-3 mt-8">
-          {["Photographe Paris", "DJ Lyon", "Traiteur Bordeaux", "Fleuriste Marseille", "Salle Nantes"].map((tag) => (
-            <button
-              key={tag}
-              className="bg-white/15 hover:bg-white/25 backdrop-blur-sm text-white text-sm px-4 py-2 rounded-full border border-white/30 transition-all duration-200"
-            >
-              🔍 {tag}
-            </button>
-          ))}
-        </div>
-
         {/* Stats */}
-        <div className="flex flex-wrap justify-center gap-8 mt-12 pt-8 border-t border-white/20">
+        <div className="flex flex-wrap justify-center gap-8 mt-8 pt-8 border-t border-white/20">
           {[
             { value: "100+", label: "Prestataires vérifiés" },
             { value: "500+", label: "Mariages organisés" },
