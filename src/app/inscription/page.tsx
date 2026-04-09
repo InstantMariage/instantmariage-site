@@ -527,32 +527,41 @@ export default function InscriptionPage() {
                         className="w-full border border-gray-300 bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Métier</label>
-                        <select
-                          value={pMetier}
-                          onChange={(e) => setPMetier(e.target.value)}
-                          required
-                          className="w-full border border-gray-300 bg-white rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all appearance-none"
-                        >
-                          <option value="">Choisir…</option>
-                          {metiers.map((m) => (
-                            <option key={m} value={m}>{m}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Ville</label>
-                        <input
-                          type="text"
-                          value={pVille}
-                          onChange={(e) => setPVille(e.target.value)}
-                          placeholder="Paris"
-                          required
-                          className="w-full border border-gray-300 bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all"
-                        />
-                      </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Métier</label>
+                      <select
+                        value={pMetier}
+                        onChange={(e) => setPMetier(e.target.value)}
+                        required
+                        className="w-full border border-gray-300 bg-white rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all appearance-none"
+                      >
+                        <option value="">Choisir…</option>
+                        {metiers.map((m) => (
+                          <option key={m} value={m}>{m}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Ville</label>
+                      <input
+                        type="text"
+                        value={pVille}
+                        onChange={(e) => setPVille(e.target.value)}
+                        placeholder="Paris"
+                        required
+                        className="w-full border border-gray-300 bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Téléphone</label>
+                      <input
+                        type="tel"
+                        value={pTel}
+                        onChange={(e) => setPTel(e.target.value)}
+                        placeholder="06 12 34 56 78"
+                        required
+                        className="w-full border border-gray-300 bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all"
+                      />
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Email professionnel</label>
@@ -565,33 +574,20 @@ export default function InscriptionPage() {
                         className="w-full border border-gray-300 bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Mot de passe</label>
-                        <div className="relative">
-                          <input
-                            type={pShowPwd ? "text" : "password"}
-                            value={pPassword}
-                            onChange={(e) => setPPassword(e.target.value)}
-                            placeholder="Min. 8 caractères"
-                            required
-                            minLength={8}
-                            autoComplete="new-password"
-                            className="w-full border border-gray-300 bg-white rounded-xl px-4 py-3 pr-12 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all"
-                          />
-                          <EyeIcon show={pShowPwd} onClick={() => setPShowPwd(!pShowPwd)} />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Téléphone</label>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Mot de passe</label>
+                      <div className="relative">
                         <input
-                          type="tel"
-                          value={pTel}
-                          onChange={(e) => setPTel(e.target.value)}
-                          placeholder="06 12 34 56 78"
+                          type={pShowPwd ? "text" : "password"}
+                          value={pPassword}
+                          onChange={(e) => setPPassword(e.target.value)}
+                          placeholder="Minimum 8 caractères"
                           required
-                          className="w-full border border-gray-300 bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all"
+                          minLength={8}
+                          autoComplete="new-password"
+                          className="w-full border border-gray-300 bg-white rounded-xl px-4 py-3 pr-12 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all"
                         />
+                        <EyeIcon show={pShowPwd} onClick={() => setPShowPwd(!pShowPwd)} />
                       </div>
                     </div>
                     <div>
