@@ -182,7 +182,7 @@ export default function InscriptionPage() {
 
   if (successEmail) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-6">
+      <div className="min-h-screen flex items-center justify-center px-6" style={{ background: "linear-gradient(to bottom, #fdf2f8 0%, #fff9fb 30%, #f9fafb 100%)" }}>
         <div className="max-w-md w-full text-center">
           <div className="mb-6 flex justify-center">
             <Link href="/" className="flex items-center gap-2">
@@ -288,14 +288,12 @@ export default function InscriptionPage() {
       </div>
 
       {/* Right — Form */}
-      <div className="w-full lg:w-7/12 flex flex-col justify-start px-6 py-10 sm:px-12 lg:px-16 bg-white overflow-y-auto">
+      <div className="w-full lg:w-7/12 flex flex-col justify-start px-6 py-10 sm:px-12 lg:px-16 overflow-y-auto" style={{ background: "linear-gradient(to bottom, #fdf2f8 0%, #fff9fb 20%, #ffffff 45%)" }}>
         {/* Mobile logo */}
         <div className="lg:hidden mb-8 flex justify-center">
-          <Link href="/" className="flex items-center gap-2">
-            <div style={{ mixBlendMode: "multiply" }}>
-              <Image src="/logo.png" alt="InstantMariage logo" width={36} height={36} />
-            </div>
-            <span className="text-xl font-bold" style={{ fontFamily: "var(--font-playfair), serif" }}>
+          <Link href="/" className="flex items-center gap-2.5">
+            <Image src="/logo.png" alt="InstantMariage logo" width={42} height={42} />
+            <span className="text-2xl font-bold" style={{ fontFamily: "var(--font-playfair), serif" }}>
               <span style={{ color: "#F06292" }}>Instant</span>
               <span className="text-gray-900">Mariage.fr</span>
             </span>
@@ -303,24 +301,29 @@ export default function InscriptionPage() {
         </div>
 
         <div className="max-w-lg w-full mx-auto">
-          <div className="mb-7">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2" style={{ fontFamily: "var(--font-playfair), serif" }}>
+          <div className="mb-8">
+            {/* Badge décoratif */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-4" style={{ background: "linear-gradient(135deg, #fce7f3, #fdf2f8)", color: "#c2185b" }}>
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l1.8 5.4L19 9l-5.2 3.6L15.6 18 12 14.8 8.4 18l1.8-5.4L5 9l5.2-1.6L12 2z" /></svg>
+              Gratuit &amp; sans engagement
+            </div>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2 leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
               Créer un compte
             </h1>
-            <p className="text-gray-500 text-sm">Gratuit et sans engagement</p>
+            <p className="text-gray-500 text-base">Rejoignez 12 000+ couples et prestataires</p>
           </div>
 
           {/* Step 1 — Account type */}
           <div className="mb-6">
             <p className="text-sm font-semibold text-gray-700 mb-3">Je suis…</p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-4">
               <button
                 type="button"
                 onClick={() => setAccountType("marie")}
-                className={`relative flex flex-col items-center gap-3 rounded-2xl border-2 px-4 py-5 text-sm font-medium transition-all duration-200 cursor-pointer ${
+                className={`relative flex flex-col items-center gap-3 rounded-2xl border-2 px-4 py-6 text-sm font-medium transition-all duration-200 cursor-pointer ${
                   accountType === "marie"
-                    ? "border-rose-400 bg-rose-50 text-rose-600"
-                    : "border-gray-200 bg-white text-gray-600 hover:border-rose-200 hover:bg-rose-50/50"
+                    ? "border-rose-400 bg-rose-50 text-rose-600 shadow-lg shadow-rose-200/60"
+                    : "border-gray-200 bg-white text-gray-600 hover:border-rose-300 hover:bg-rose-50/60 hover:shadow-md hover:shadow-rose-100/80 hover:-translate-y-0.5"
                 }`}
               >
                 {accountType === "marie" && (
@@ -333,20 +336,20 @@ export default function InscriptionPage() {
                     </svg>
                   </span>
                 )}
-                <span className="text-3xl">💍</span>
+                <span className="text-4xl">💍</span>
                 <div className="text-center">
-                  <p className="font-semibold text-current">Je suis un(e) marié(e)</p>
-                  <p className="text-xs text-gray-400 mt-0.5 font-normal">Outils & prestataires</p>
+                  <p className="font-semibold text-current text-sm">Je suis un(e) marié(e)</p>
+                  <p className="text-xs text-gray-400 mt-1 font-normal">Outils &amp; prestataires</p>
                 </div>
               </button>
 
               <button
                 type="button"
                 onClick={() => setAccountType("prestataire")}
-                className={`relative flex flex-col items-center gap-3 rounded-2xl border-2 px-4 py-5 text-sm font-medium transition-all duration-200 cursor-pointer ${
+                className={`relative flex flex-col items-center gap-3 rounded-2xl border-2 px-4 py-6 text-sm font-medium transition-all duration-200 cursor-pointer ${
                   accountType === "prestataire"
-                    ? "border-rose-400 bg-rose-50 text-rose-600"
-                    : "border-gray-200 bg-white text-gray-600 hover:border-rose-200 hover:bg-rose-50/50"
+                    ? "border-rose-400 bg-rose-50 text-rose-600 shadow-lg shadow-rose-200/60"
+                    : "border-gray-200 bg-white text-gray-600 hover:border-rose-300 hover:bg-rose-50/60 hover:shadow-md hover:shadow-rose-100/80 hover:-translate-y-0.5"
                 }`}
               >
                 {accountType === "prestataire" && (
@@ -359,10 +362,10 @@ export default function InscriptionPage() {
                     </svg>
                   </span>
                 )}
-                <span className="text-3xl">🏢</span>
+                <span className="text-4xl">🏢</span>
                 <div className="text-center">
-                  <p className="font-semibold text-current">Je suis un prestataire</p>
-                  <p className="text-xs text-gray-400 mt-0.5 font-normal">Profil & visibilité</p>
+                  <p className="font-semibold text-current text-sm">Je suis un prestataire</p>
+                  <p className="text-xs text-gray-400 mt-1 font-normal">Profil &amp; visibilité</p>
                 </div>
               </button>
             </div>
