@@ -413,9 +413,9 @@ export default function ProfilPrestatairePage() {
     const remaining = limit - photos.length;
     const toUpload = Array.from(files).slice(0, remaining);
 
-    const oversized = toUpload.some((f) => f.size > 5 * 1024 * 1024);
+    const oversized = toUpload.some((f) => f.size > 10 * 1024 * 1024);
     if (oversized) {
-      setPhotoSizeError("Cette image est trop lourde. Taille maximale : 5 Mo.");
+      setPhotoSizeError("Cette image est trop lourde. Taille maximale : 10 Mo.");
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
@@ -857,7 +857,7 @@ export default function ProfilPrestatairePage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <span className="text-sm font-medium">Cliquez pour ajouter vos photos</span>
-                <span className="text-xs">JPG, PNG, WebP • 5 Mo max par photo</span>
+                <span className="text-xs">JPG, PNG, WebP • 10 Mo max par photo</span>
               </button>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
