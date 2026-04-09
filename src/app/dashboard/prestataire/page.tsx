@@ -167,6 +167,7 @@ function DashboardPrestataire() {
   const [activeTab, setActiveTab] = useState<"avis" | "messages">("messages");
   const [authChecked, setAuthChecked] = useState(false);
   const [nomEntreprise, setNomEntreprise] = useState("");
+  const [prestataireId, setPrestataireId] = useState<string | null>(null);
   const [categorie, setCategorie] = useState("");
   const [ville, setVille] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
@@ -197,6 +198,7 @@ function DashboardPrestataire() {
 
       if (prestataire) {
         setNomEntreprise(prestataire.nom_entreprise || "");
+        setPrestataireId(prestataire.id);
         setCategorie(prestataire.categorie || "");
         setVille(prestataire.ville || "");
 
@@ -316,7 +318,7 @@ function DashboardPrestataire() {
                   Modifier mon profil
                 </Link>
                 <Link
-                  href={`/prestataires/${nomEntreprise.toLowerCase().replace(/\s+/g, "-")}`}
+                  href={prestataireId ? `/prestataires/${prestataireId}` : "#"}
                   className="inline-flex items-center gap-2 bg-white/20 text-white font-semibold px-5 py-2.5 rounded-full text-sm hover:bg-white/30 transition-all duration-200 shadow-sm"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
