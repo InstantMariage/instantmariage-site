@@ -174,7 +174,7 @@ export default function InscriptionPage() {
       >
         <div className="max-w-md w-full text-center">
           <div className="mb-8 flex justify-center">
-            <Link href="/" className="flex items-center gap-2.5">
+            <Link href="/" className="flex items-center gap-2.5 bg-white/90 rounded-2xl px-4 py-2">
               <Image src="/logo.png" alt="InstantMariage logo" width={44} height={44} />
               <span className="text-2xl font-bold" style={{ fontFamily: "var(--font-playfair), serif" }}>
                 <span style={{ color: "#F06292" }}>Instant</span><span className="text-gray-900">Mariage.fr</span>
@@ -253,7 +253,7 @@ export default function InscriptionPage() {
           <Link href="/" className="flex items-center gap-2.5">
             <Image src="/logo.png" alt="InstantMariage logo" width={44} height={44} className="brightness-0 invert" />
             <span className="text-2xl font-bold" style={{ fontFamily: "var(--font-playfair), serif" }}>
-              <span style={{ color: "#F06292" }}>Instant</span><span className="text-gray-900">Mariage.fr</span>
+              <span style={{ color: "white", textShadow: "0 1px 4px rgba(0,0,0,0.18)" }}>Instant</span><span style={{ color: "rgba(255,255,255,0.8)" }}>Mariage.fr</span>
             </span>
           </Link>
           <div className="text-white">
@@ -277,7 +277,7 @@ export default function InscriptionPage() {
               ))}
             </ul>
             <div className="mt-8 pt-8 border-t border-white/20">
-              <p className="text-white/70 text-sm">Rejoignez 12&nbsp;000+ couples et prestataires</p>
+              <p className="text-white/70 text-sm">Rejoignez notre communauté grandissante</p>
             </div>
           </div>
         </div>
@@ -306,7 +306,7 @@ export default function InscriptionPage() {
                 Rejoignez InstantMariage
               </h1>
               <p className="text-gray-500 text-lg font-light">
-                Gratuit · Sans engagement · 12&nbsp;000+ membres
+                Gratuit · Sans engagement · 100+ membres
               </p>
             </div>
           )}
