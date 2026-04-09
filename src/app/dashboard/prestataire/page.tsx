@@ -290,6 +290,15 @@ function DashboardPrestataire() {
                         ★ Premium
                       </span>
                     )}
+                    {plan === "gratuit" && (
+                      <Link
+                        href="/tarifs"
+                        className="text-xs font-semibold px-3 py-1 rounded-full transition-all hover:opacity-90"
+                        style={{ background: "#F06292", color: "white" }}
+                      >
+                        ⭐ Passer au Pro
+                      </Link>
+                    )}
                   </div>
                   <p className="text-rose-100 text-sm mt-0.5">
                     {[categorie, ville].filter(Boolean).join(" · ")}
