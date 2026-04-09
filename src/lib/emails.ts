@@ -2,7 +2,13 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const FROM = "InstantMariage <notifications@instantmariage.fr>";
+const FROM = "InstantMariage <contact@instantmariage.fr>";
+const UNSUBSCRIBE_EMAIL = "contact@instantmariage.fr";
+
+const unsubscribeHeaders = {
+  "List-Unsubscribe": `<mailto:${UNSUBSCRIBE_EMAIL}?subject=unsubscribe>`,
+  "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+};
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://instantmariage.fr";
 
 // ─── Base template ────────────────────────────────────────────────────────────
@@ -122,6 +128,7 @@ export async function sendNewMessageEmail({
     to: recipientEmail,
     subject: `Nouveau message de ${senderName}`,
     html: baseTemplate(content),
+    headers: unsubscribeHeaders,
   });
 }
 
@@ -176,6 +183,7 @@ export async function sendNewAvisEmail({
     to: recipientEmail,
     subject: `Nouvel avis de ${reviewerName} — ${note}/5 étoiles`,
     html: baseTemplate(content),
+    headers: unsubscribeHeaders,
   });
 }
 
@@ -241,5 +249,6 @@ export async function sendNewPrestaireAdminEmail({
     to: adminEmail,
     subject: `Nouveau prestataire : ${entreprise} (${categorie}, ${ville})`,
     html: baseTemplate(content),
+    headers: unsubscribeHeaders,
   });
 }

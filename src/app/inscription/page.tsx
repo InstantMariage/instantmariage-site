@@ -33,6 +33,7 @@ export default function InscriptionPage() {
   const [imgError, setImgError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successEmail, setSuccessEmail] = useState<string | null>(null);
 
   // Mariés form
   const [mPrenom, setMPrenom] = useState("");
@@ -146,7 +147,7 @@ export default function InscriptionPage() {
     }
 
     setLoading(false);
-    router.push(accountType === "prestataire" ? "/dashboard/prestataire" : "/dashboard/marie");
+    setSuccessEmail(email);
   };
 
   const EyeIcon = ({ show, onClick }: { show: boolean; onClick: () => void }) => (
@@ -163,6 +164,62 @@ export default function InscriptionPage() {
       )}
     </button>
   );
+
+  if (successEmail) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-6">
+        <div className="max-w-md w-full text-center">
+          <div className="mb-6 flex justify-center">
+            <Link href="/" className="flex items-center gap-2">
+              <Image src="/logo.png" alt="InstantMariage logo" width={40} height={40} />
+              <span className="text-xl font-bold" style={{ fontFamily: "var(--font-playfair), serif" }}>
+                <span style={{ color: "#F06292" }}>Instant</span>
+                <span className="text-gray-900">Mariage.fr</span>
+              </span>
+            </Link>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-8 py-10">
+            <div className="mb-5 flex justify-center">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: "linear-gradient(135deg, #fce7f3 0%, #fdf2f8 100%)" }}>
+                <svg className="w-8 h-8" style={{ color: "#F06292" }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+            </div>
+
+            <h1 className="text-2xl font-bold text-gray-900 mb-3" style={{ fontFamily: "var(--font-playfair), serif" }}>
+              Vérifiez votre boîte email !
+            </h1>
+
+            <p className="text-gray-600 text-sm leading-relaxed mb-4">
+              Un email de confirmation a été envoyé à
+            </p>
+            <p className="font-semibold text-gray-900 mb-5 break-all" style={{ color: "#F06292" }}>
+              {successEmail}
+            </p>
+
+            <p className="text-gray-600 text-sm leading-relaxed mb-6">
+              Cliquez sur le lien dans cet email pour activer votre compte.
+            </p>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-left">
+              <p className="text-amber-800 text-xs leading-relaxed">
+                <span className="font-semibold">Vous ne voyez pas l&apos;email ?</span> Pensez à vérifier votre dossier <span className="font-semibold">Spams</span> ou <span className="font-semibold">Courriers indésirables</span>.
+              </p>
+            </div>
+          </div>
+
+          <p className="mt-6 text-sm text-gray-500">
+            Déjà activé ?{" "}
+            <Link href="/login" className="font-semibold hover:underline" style={{ color: "#F06292" }}>
+              Se connecter
+            </Link>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex">
