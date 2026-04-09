@@ -125,7 +125,7 @@ function buildPrestataireFromSupabase(p: SupabasePrestataire): PrestatireData {
     email: null,
     site: p.site_web ?? null,
     instagram: null,
-    photo: photos[0] ?? null,
+    photo: p.avatar_url ?? photos[0] ?? null,
     couverture: COUVERTURES[p.categorie] ?? null,
     description: p.description ?? null,
     specialites: [],
@@ -1277,7 +1277,7 @@ export default function PrestataireProfil({ id }: { id?: string }) {
               {/* Infos principales */}
               <div className="flex-1 pb-4 sm:pb-0 min-w-0">
                 <div className="flex flex-wrap items-center gap-2 mb-1">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-lg truncate">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 sm:text-white sm:drop-shadow-lg truncate">
                     {PRESTATAIRE.nom}
                   </h1>
                   {PRESTATAIRE.verifie && (
@@ -1291,7 +1291,7 @@ export default function PrestataireProfil({ id }: { id?: string }) {
                 </div>
                 <span className="inline-block bg-white text-[#F06292] text-sm font-semibold px-3 py-1 rounded-full mb-2 shadow">{PRESTATAIRE.metier}</span>
                 <div className="flex flex-wrap items-center gap-3 text-sm">
-                  <span className="flex items-center gap-1 text-white/80 drop-shadow">
+                  <span className="flex items-center gap-1 text-gray-600 sm:text-white/90 sm:drop-shadow">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -1304,7 +1304,7 @@ export default function PrestataireProfil({ id }: { id?: string }) {
                     <span className="text-gray-500">({PRESTATAIRE.nbAvis})</span>
                   </span>
                   {PRESTATAIRE.prixMin !== null && (
-                    <span className="text-white/80 drop-shadow font-medium">
+                    <span className="text-gray-600 sm:text-white/90 sm:drop-shadow font-medium">
                       À partir de {PRESTATAIRE.prixMin.toLocaleString("fr-FR")} €
                     </span>
                   )}

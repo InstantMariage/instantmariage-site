@@ -26,6 +26,7 @@ export type Prestataire = {
   telephone: string | null
   site_web: string | null
   photos: string[]
+  avatar_url: string | null
   note_moyenne: number
   nb_avis: number
   abonnement_actif: boolean

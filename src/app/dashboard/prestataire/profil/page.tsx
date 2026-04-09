@@ -86,6 +86,8 @@ type ProfilForm = {
   numero_tva: string;
   // Tarifs
   tarifs_description: string;
+  // Avatar
+  avatar_url: string;
 };
 
 // ─── Calendar Component ───────────────────────────────────────────────────────
@@ -288,6 +290,7 @@ const inputCls =
 export default function ProfilPrestatairePage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const [authChecked, setAuthChecked] = useState(false);
   const [prestataireId, setPrestataireId] = useState<string | null>(null);
@@ -295,7 +298,9 @@ export default function ProfilPrestatairePage() {
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle");
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [photoSizeError, setPhotoSizeError] = useState<string | null>(null);
+  const [avatarSizeError, setAvatarSizeError] = useState<string | null>(null);
 
   // Photos
   const [photos, setPhotos] = useState<string[]>([]);
@@ -320,6 +325,7 @@ export default function ProfilPrestatairePage() {
     siret: "",
     numero_tva: "",
     tarifs_description: "",
+    avatar_url: "",
   });
 
   // ── Auth + load ─────────────────────────────────────────────────────────────
@@ -360,6 +366,7 @@ export default function ProfilPrestatairePage() {
           siret: p.siret || "",
           numero_tva: p.numero_tva || "",
           tarifs_description: p.tarifs_description || "",
+          avatar_url: p.avatar_url || "",
         });
 
         // Plan
@@ -460,6 +467,52 @@ export default function ProfilPrestatairePage() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
+  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setAvatarSizeError(null);
+
+    if (file.size > 5 * 1024 * 1024) {
+      setAvatarSizeError("Image trop lourde. Taille maximale : 5 Mo.");
+      if (avatarInputRef.current) avatarInputRef.current.value = "";
+      return;
+    }
+
+    setUploadingAvatar(true);
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { setUploadingAvatar(false); return; }
+
+    // Remove old avatar if any
+    if (form.avatar_url) {
+      const parts = form.avatar_url.split("/photos/");
+      if (parts.length === 2) {
+        await supabase.storage.from("photos").remove([parts[1]]);
+      }
+    }
+
+    const ext = file.name.split(".").pop();
+    const path = `prestataires/${session.user.id}/avatar-${Date.now()}.${ext}`;
+
+    const { error } = await supabase.storage
+      .from("photos")
+      .upload(path, file, { upsert: true });
+
+    if (error) {
+      console.error("Avatar upload error:", error);
+      setAvatarSizeError("L'upload a échoué. Veuillez réessayer.");
+    } else {
+      const { data: urlData } = supabase.storage.from("photos").getPublicUrl(path);
+      if (urlData?.publicUrl) {
+        setField("avatar_url", urlData.publicUrl);
+      }
+    }
+
+    setUploadingAvatar(false);
+    if (avatarInputRef.current) avatarInputRef.current.value = "";
+  }
+
   async function handleDeletePhoto(url: string) {
     // Extract path from URL
     const parts = url.split("/photos/");
@@ -502,6 +555,7 @@ export default function ProfilPrestatairePage() {
       numero_tva: form.numero_tva,
       tarifs_description: form.tarifs_description,
       photos,
+      avatar_url: form.avatar_url || null,
       dates_reservees: reservedDates,
       updated_at: new Date().toISOString(),
     };
@@ -639,6 +693,70 @@ export default function ProfilPrestatairePage() {
               </svg>
             }
           >
+            {/* ── Avatar / Logo ── */}
+            <div className="mb-6 pb-6 border-b border-gray-100">
+              <p className="text-xs font-semibold text-gray-600 mb-3">Photo de profil / Logo</p>
+              <div className="flex items-center gap-4">
+                {/* Prévisualisation */}
+                <div className="relative w-20 h-20 rounded-full overflow-hidden ring-2 ring-gray-200 bg-gray-100 flex items-center justify-center flex-shrink-0">
+                  {form.avatar_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={form.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    <svg className="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  )}
+                  {uploadingAvatar && (
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                      <div className="w-5 h-5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                    </div>
+                  )}
+                </div>
+                {/* Contrôles */}
+                <div className="flex flex-col gap-2">
+                  <button
+                    type="button"
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={uploadingAvatar}
+                    className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full text-white transition-all hover:opacity-90 disabled:opacity-60"
+                    style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)" }}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    {form.avatar_url ? "Changer la photo" : "Ajouter une photo"}
+                  </button>
+                  {form.avatar_url && (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const parts = form.avatar_url.split("/photos/");
+                        if (parts.length === 2) {
+                          await supabase.storage.from("photos").remove([parts[1]]);
+                        }
+                        setField("avatar_url", "");
+                      }}
+                      className="text-xs text-gray-400 hover:text-red-500 transition-colors text-left"
+                    >
+                      Supprimer
+                    </button>
+                  )}
+                  {avatarSizeError && (
+                    <p className="text-xs text-red-500">{avatarSizeError}</p>
+                  )}
+                  <p className="text-xs text-gray-400">JPG, PNG, WebP — max 5 Mo</p>
+                </div>
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarUpload}
+                />
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
                 <Field label="Nom de l'entreprise">
