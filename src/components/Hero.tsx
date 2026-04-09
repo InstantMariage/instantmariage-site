@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { CATEGORIES } from "@/data/categories";
 
 const regions = [
   "Toute la France",
@@ -20,21 +21,7 @@ const regions = [
   "Corse",
 ];
 
-const metiers = [
-  "Tous les métiers",
-  "Photographe",
-  "Vidéaste",
-  "DJ / Animateur",
-  "Traiteur / Restauration",
-  "Fleuriste",
-  "Salle de réception",
-  "Coiffeur & Maquilleur",
-  "Wedding Planner",
-  "Orchestre / Groupe",
-  "Voiture de mariée",
-  "Pâtissier / Wedding cake",
-  "Officiant de cérémonie",
-];
+const metiers = ["Tous les métiers", ...CATEGORIES.map((c) => c.name)];
 
 export default function Hero() {
   const [metier, setMetier] = useState("");
