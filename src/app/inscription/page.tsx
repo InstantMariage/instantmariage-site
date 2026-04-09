@@ -325,7 +325,7 @@ export default function InscriptionPage() {
               </button>
               <span className="text-gray-300">·</span>
               <span className="text-gray-900 font-semibold text-sm">
-                {accountType === "marie" ? "Je suis marié(e)" : "Je suis prestataire"}
+                {accountType === "marie" ? "Je suis futur(e) marié(e)" : "Je suis prestataire"}
               </span>
             </div>
           )}
@@ -350,8 +350,8 @@ export default function InscriptionPage() {
                     </svg>
                   </div>
                   <div className="text-center">
-                    <p className="font-bold text-white text-base leading-tight mb-1">Je suis<br />marié(e)</p>
-                    <p className="text-white/65 text-xs font-light">Outils &amp; prestataires</p>
+                    <p className="font-bold text-white text-base leading-tight mb-1">Je suis<br />futur(e) marié(e)</p>
+                    <p className="text-white/65 text-xs font-light">Organisez votre mariage</p>
                   </div>
                   <div className="absolute bottom-4 right-4 w-6 h-6 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors">
                     <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
