@@ -101,6 +101,19 @@ const IconChecklist = () => (
   </svg>
 );
 
+type FavoriPrestataire = {
+  id: string;
+  prestataire_id: string;
+  prestataires: {
+    id: string;
+    nom_entreprise: string;
+    categorie: string;
+    ville: string | null;
+    avatar_url: string | null;
+    note_moyenne: number;
+  };
+};
+
 export default function DashboardMarie() {
   const router = useRouter();
   const [doneIds, setDoneIds] = useState<Set<string>>(new Set());
@@ -109,6 +122,8 @@ export default function DashboardMarie() {
   const [prenomMarie2, setPrenomMarie2] = useState("");
   const [dateMariage, setDateMariage] = useState<string | null>(null);
   const [lieuMariage, setLieuMariage] = useState<string | null>(null);
+  const [favoris, setFavoris] = useState<FavoriPrestataire[]>([]);
+  const [favorisLoaded, setFavorisLoaded] = useState(false);
 
   const weddingDate = dateMariage ? new Date(dateMariage) : null;
   const { days } = useCountdown(weddingDate);
@@ -148,6 +163,15 @@ export default function DashboardMarie() {
           // ignore
         }
       }
+
+      // Charger les prestataires sauvegardés
+      const { data: favData } = await supabase
+        .from("favoris")
+        .select("id, prestataire_id, prestataires(id, nom_entreprise, categorie, ville, avatar_url, note_moyenne)")
+        .eq("user_id", session.user.id)
+        .order("created_at", { ascending: false });
+      if (favData) setFavoris(favData as unknown as FavoriPrestataire[]);
+      setFavorisLoaded(true);
 
       setAuthChecked(true);
     });
@@ -382,62 +406,128 @@ export default function DashboardMarie() {
             </div>
           </section>
 
-          {/* ── Prestataires + Messages ── */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          {/* ── Mes prestataires sauvegardés ── */}
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400">Mes prestataires sauvegardés</h2>
+              <Link
+                href="/annuaire"
+                className="text-xs font-semibold transition-opacity hover:opacity-70"
+                style={{ color: "#F06292" }}
+              >
+                Annuaire
+              </Link>
+            </div>
 
-            {/* Prestataires sauvegardés */}
-            <section
-              className="rounded-3xl p-5"
+            <div
+              className="rounded-3xl overflow-hidden"
               style={{ background: "white", boxShadow: "0 4px 24px rgba(240,98,146,0.08)", border: "1px solid #FECDD3" }}
             >
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400">Prestataires</h2>
-                <Link
-                  href="/prestataires"
-                  className="text-xs font-semibold transition-opacity hover:opacity-70"
-                  style={{ color: "#F06292" }}
-                >
-                  Découvrir
-                </Link>
-              </div>
-
-              <div className="flex flex-col items-center text-center py-6">
-                <div
-                  className="w-11 h-11 rounded-2xl flex items-center justify-center mb-3"
-                  style={{ background: "#FFF0F5", color: "#F06292" }}
-                >
-                  <IconHeart />
+              {!favorisLoaded ? (
+                <div className="flex items-center justify-center py-10">
+                  <div className="w-5 h-5 border-2 border-gray-200 border-t-transparent rounded-full animate-spin" style={{ borderTopColor: "#F06292" }} />
                 </div>
-                <p className="text-sm font-semibold text-gray-700 mb-1">Aucun favori</p>
-                <p className="text-xs text-gray-400 mb-4 leading-relaxed">
-                  Explorez l&apos;annuaire et sauvegardez vos coups de cœur
-                </p>
-                <Link
-                  href="/prestataires"
-                  className="text-sm font-semibold px-5 py-2 rounded-full transition-all duration-200 hover:opacity-80"
-                  style={{ background: "#F06292", color: "white" }}
-                >
-                  Parcourir l&apos;annuaire
-                </Link>
-              </div>
-            </section>
+              ) : favoris.length === 0 ? (
+                <div className="flex flex-col items-center text-center p-8">
+                  <div
+                    className="w-11 h-11 rounded-2xl flex items-center justify-center mb-3"
+                    style={{ background: "#FFF0F5", color: "#F06292" }}
+                  >
+                    <IconHeart />
+                  </div>
+                  <p className="text-sm font-semibold text-gray-700 mb-1">Aucun prestataire sauvegardé</p>
+                  <p className="text-xs text-gray-400 mb-4 leading-relaxed">
+                    Parcourez l&apos;annuaire pour trouver vos prestataires idéaux
+                  </p>
+                  <Link
+                    href="/annuaire"
+                    className="text-sm font-semibold px-5 py-2 rounded-full transition-all duration-200 hover:opacity-80"
+                    style={{ background: "#F06292", color: "white" }}
+                  >
+                    Parcourir l&apos;annuaire
+                  </Link>
+                </div>
+              ) : (
+                <>
+                  {favoris.slice(0, 4).map((fav, i) => {
+                    const p = fav.prestataires;
+                    const isLast = i === Math.min(favoris.length, 4) - 1;
+                    const initial = p.nom_entreprise.charAt(0).toUpperCase();
+                    return (
+                      <Link
+                        key={fav.id}
+                        href={`/prestataires/${p.id}`}
+                        className="flex items-center gap-4 px-5 py-4 hover:bg-rose-50/40 transition-colors duration-200 cursor-pointer group"
+                        style={{ borderBottom: isLast ? "none" : "1px solid #FEE2E2" }}
+                      >
+                        {/* Avatar */}
+                        <div
+                          className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden text-white font-bold text-sm"
+                          style={{ background: "#F06292" }}
+                        >
+                          {p.avatar_url ? (
+                            <img src={p.avatar_url.startsWith("http") ? p.avatar_url : `https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/photos/${p.avatar_url}`} alt={p.nom_entreprise} className="w-full h-full object-cover" />
+                          ) : (
+                            initial
+                          )}
+                        </div>
 
-            {/* Messages */}
-            <section
+                        {/* Infos */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-gray-900 truncate">{p.nom_entreprise}</p>
+                          <p className="text-xs text-gray-400 mt-0.5 truncate">
+                            {p.categorie}{p.ville ? ` · ${p.ville}` : ""}
+                          </p>
+                        </div>
+
+                        {/* Note */}
+                        {p.note_moyenne > 0 && (
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            <svg className="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <span className="text-xs font-semibold text-gray-600">{p.note_moyenne}</span>
+                          </div>
+                        )}
+
+                        <div className="text-gray-300 group-hover:text-gray-400 transition-colors flex-shrink-0">
+                          <IconChevronRight />
+                        </div>
+                      </Link>
+                    );
+                  })}
+                  {favoris.length > 4 && (
+                    <Link
+                      href="/annuaire"
+                      className="flex items-center justify-center gap-1.5 text-sm font-semibold py-3.5 transition-all duration-200 hover:opacity-70"
+                      style={{ borderTop: "1px solid #FEE2E2", color: "#F06292" }}
+                    >
+                      Voir les {favoris.length - 4} autres
+                      <IconChevronRight />
+                    </Link>
+                  )}
+                </>
+              )}
+            </div>
+          </section>
+
+          {/* ── Messages ── */}
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400">Messages</h2>
+              <Link
+                href="/messages"
+                className="text-xs font-semibold transition-opacity hover:opacity-70"
+                style={{ color: "#F06292" }}
+              >
+                Voir tout
+              </Link>
+            </div>
+
+            <div
               className="rounded-3xl p-5"
               style={{ background: "white", boxShadow: "0 4px 24px rgba(240,98,146,0.08)", border: "1px solid #FECDD3" }}
             >
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400">Messages</h2>
-                <Link
-                  href="/messages"
-                  className="text-xs font-semibold transition-opacity hover:opacity-70"
-                  style={{ color: "#F06292" }}
-                >
-                  Voir tout
-                </Link>
-              </div>
-
               <div className="flex flex-col items-center text-center py-6">
                 <div
                   className="w-11 h-11 rounded-2xl flex items-center justify-center mb-3"
@@ -450,8 +540,8 @@ export default function DashboardMarie() {
                   Contactez un prestataire pour démarrer une conversation
                 </p>
               </div>
-            </section>
-          </div>
+            </div>
+          </section>
 
         </div>
       </div>

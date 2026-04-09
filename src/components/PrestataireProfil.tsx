@@ -1305,8 +1305,49 @@ export default function PrestataireProfil({ id }: { id?: string }) {
 
   const [activeTab, setActiveTab] = useState<Tab>("avis");
   const [saved, setSaved] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
   const [contactLoading, setContactLoading] = useState(false);
   const [contactModal, setContactModal] = useState<"not-registered" | "not-logged" | "not-marie" | null>(null);
+
+  // Charger l'état favori depuis Supabase (UUID prestataires uniquement)
+  useEffect(() => {
+    if (isNumericId || !id) return;
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) return;
+      const { data } = await supabase
+        .from("favoris")
+        .select("id")
+        .eq("user_id", session.user.id)
+        .eq("prestataire_id", id)
+        .maybeSingle();
+      setSaved(!!data);
+    });
+  }, [id, isNumericId]);
+
+  const handleSave = async () => {
+    if (isNumericId || !id) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      setContactModal("not-logged");
+      return;
+    }
+    setSaveLoading(true);
+    if (saved) {
+      await supabase
+        .from("favoris")
+        .delete()
+        .eq("user_id", session.user.id)
+        .eq("prestataire_id", id);
+      setSaved(false);
+    } else {
+      await supabase.from("favoris").insert({
+        user_id: session.user.id,
+        prestataire_id: id,
+      });
+      setSaved(true);
+    }
+    setSaveLoading(false);
+  };
 
   const handleContacter = async () => {
     setContactLoading(true);
@@ -1507,14 +1548,19 @@ export default function PrestataireProfil({ id }: { id?: string }) {
                 Demander un devis
               </button>
               <button
-                onClick={() => setSaved(!saved)}
+                onClick={handleSave}
+                disabled={saveLoading || isNumericId}
                 aria-label={saved ? "Retirer des favoris" : "Sauvegarder"}
-                className="flex items-center gap-2 bg-white font-semibold px-6 py-3 rounded-full text-sm border-2 transition-all duration-200 hover:bg-pink-50 active:scale-95"
+                className="flex items-center gap-2 bg-white font-semibold px-6 py-3 rounded-full text-sm border-2 transition-all duration-200 hover:bg-pink-50 active:scale-95 disabled:opacity-50"
                 style={{ borderColor: "#F06292", color: "#F06292" }}
               >
-                <svg className="w-4 h-4" fill={saved ? "#F06292" : "none"} viewBox="0 0 24 24" stroke="#F06292" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
+                {saveLoading ? (
+                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <svg className="w-4 h-4" fill={saved ? "#F06292" : "none"} viewBox="0 0 24 24" stroke="#F06292" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                )}
                 {saved ? "Sauvegardé" : "Sauvegarder"}
               </button>
             </div>
