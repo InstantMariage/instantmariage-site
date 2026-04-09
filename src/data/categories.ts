@@ -152,4 +152,12 @@ export const CATEGORIES: Category[] = [
     border: "border-rose-100",
     hoverBg: "hover:bg-rose-50",
   },
+  {
+    name: "Cadeaux invités",
+    icon: "🎁",
+    count: "120",
+    color: "from-yellow-50 to-orange-50",
+    border: "border-yellow-100",
+    hoverBg: "hover:bg-yellow-50",
+  },
 ];
