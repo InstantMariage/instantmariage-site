@@ -86,18 +86,13 @@ export default function InscriptionPage() {
         ? { role: "marie", prenom: mPrenom, nom: mNom, date_mariage: mDate || null }
         : { role: "prestataire", nom_entreprise: pEntreprise, categorie: pMetier, ville: pVille, telephone: pTel };
 
-    console.log("[inscription] Tentative signUp", { email, accountType, metadata });
-
     const { data: signUpData, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: { data: metadata },
     });
 
-    console.log("[inscription] Résultat signUp", { user: signUpData?.user?.id, authError });
-
     if (authError) {
-      console.error("[inscription] Erreur auth Supabase:", authError);
       setLoading(false);
       setError(authError.message === "User already registered"
         ? "Un compte existe déjà avec cet email."
@@ -106,7 +101,6 @@ export default function InscriptionPage() {
     }
 
     if (!signUpData.user) {
-      console.error("[inscription] Pas d'utilisateur retourné par signUp");
       setLoading(false);
       setError("Erreur : aucun utilisateur créé. Vérifiez la configuration Supabase.");
       return;
@@ -120,13 +114,6 @@ export default function InscriptionPage() {
       });
       if (insertError) console.error("[inscription] Erreur insert maries:", insertError);
     } else if (accountType === "prestataire") {
-      console.log("[inscription] Insert prestataire via API route", {
-        user_id: signUpData.user.id,
-        nom_entreprise: pEntreprise,
-        categorie: pMetier,
-        ville: pVille,
-        telephone: pTel,
-      });
       const insertRes = await fetch("/api/inscription/prestataire", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -140,13 +127,11 @@ export default function InscriptionPage() {
       });
       if (!insertRes.ok) {
         const { error: insertError } = await insertRes.json();
-        console.error("[inscription] Erreur insert prestataires:", insertError);
         setLoading(false);
         setError(`Erreur création profil prestataire : ${insertError}`);
         return;
       }
 
-      // Notification admin (fire-and-forget)
       fetch("/api/emails", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -180,54 +165,61 @@ export default function InscriptionPage() {
     </button>
   );
 
+  // Success screen
   if (successEmail) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-6" style={{ background: "linear-gradient(to bottom, #fdf2f8 0%, #fff9fb 30%, #f9fafb 100%)" }}>
+      <div
+        className="min-h-screen flex items-center justify-center px-6"
+        style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)" }}
+      >
         <div className="max-w-md w-full text-center">
-          <div className="mb-6 flex justify-center">
-            <Link href="/" className="flex items-center gap-2">
-              <Image src="/logo.png" alt="InstantMariage logo" width={40} height={40} />
-              <span className="text-xl font-bold" style={{ fontFamily: "var(--font-playfair), serif" }}>
-                <span style={{ color: "#F06292" }}>Instant</span>
-                <span className="text-gray-900">Mariage.fr</span>
+          <div className="mb-8 flex justify-center">
+            <Link href="/" className="flex items-center gap-2.5">
+              <Image src="/logo.png" alt="InstantMariage logo" width={44} height={44} className="brightness-0 invert" />
+              <span className="text-2xl font-bold text-white" style={{ fontFamily: "var(--font-playfair), serif" }}>
+                InstantMariage.fr
               </span>
             </Link>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-8 py-10">
+          <div
+            className="rounded-3xl px-8 py-10"
+            style={{
+              background: "rgba(255,255,255,0.18)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+              border: "1px solid rgba(255,255,255,0.35)",
+            }}
+          >
             <div className="mb-5 flex justify-center">
-              <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: "linear-gradient(135deg, #fce7f3 0%, #fdf2f8 100%)" }}>
-                <svg className="w-8 h-8" style={{ color: "#F06292" }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
+                <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
             </div>
 
-            <h1 className="text-2xl font-bold text-gray-900 mb-3" style={{ fontFamily: "var(--font-playfair), serif" }}>
+            <h1 className="text-2xl font-bold text-white mb-3" style={{ fontFamily: "var(--font-playfair), serif" }}>
               Vérifiez votre boîte email !
             </h1>
-
-            <p className="text-gray-600 text-sm leading-relaxed mb-4">
+            <p className="text-white/80 text-sm leading-relaxed mb-2">
               Un email de confirmation a été envoyé à
             </p>
-            <p className="font-semibold text-gray-900 mb-5 break-all" style={{ color: "#F06292" }}>
-              {successEmail}
-            </p>
-
-            <p className="text-gray-600 text-sm leading-relaxed mb-6">
+            <p className="font-semibold text-white mb-5 break-all">{successEmail}</p>
+            <p className="text-white/80 text-sm leading-relaxed mb-6">
               Cliquez sur le lien dans cet email pour activer votre compte.
             </p>
-
-            <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-left">
-              <p className="text-amber-800 text-xs leading-relaxed">
-                <span className="font-semibold">Vous ne voyez pas l&apos;email ?</span> Pensez à vérifier votre dossier <span className="font-semibold">Spams</span> ou <span className="font-semibold">Courriers indésirables</span>.
+            <div className="bg-white/20 rounded-xl px-4 py-3 text-left">
+              <p className="text-white/90 text-xs leading-relaxed">
+                <span className="font-semibold">Vous ne voyez pas l&apos;email ?</span> Pensez à vérifier votre dossier{" "}
+                <span className="font-semibold">Spams</span> ou <span className="font-semibold">Courriers indésirables</span>.
               </p>
             </div>
           </div>
 
-          <p className="mt-6 text-sm text-gray-500">
+          <p className="mt-6 text-sm text-white/80">
             Déjà activé ?{" "}
-            <Link href="/login" className="font-semibold hover:underline" style={{ color: "#F06292" }}>
+            <Link href="/login" className="font-semibold text-white underline underline-offset-2">
               Se connecter
             </Link>
           </p>
@@ -237,9 +229,9 @@ export default function InscriptionPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left — Photo */}
-      <div className="hidden lg:flex lg:w-5/12 relative overflow-hidden">
+    <div className="min-h-screen flex" style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)" }}>
+      {/* Left panel — Desktop only: wedding photo + rose overlay */}
+      <div className="hidden lg:flex lg:w-5/12 relative overflow-hidden flex-shrink-0">
         {!imgError ? (
           <Image
             src={WEDDING_IMG}
@@ -250,135 +242,174 @@ export default function InscriptionPage() {
             onError={() => setImgError(true)}
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-rose-900 via-rose-700 to-rose-400" />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)" }} />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-        <div className="absolute inset-0 flex flex-col justify-between p-12">
+        {/* Rose overlay gradient */}
+        <div
+          className="absolute inset-0"
+          style={{ background: "linear-gradient(135deg, rgba(240,98,146,0.72) 0%, rgba(233,30,140,0.82) 100%)" }}
+        />
+        <div className="absolute inset-0 flex flex-col justify-between p-12 z-10">
           <Link href="/" className="flex items-center gap-2.5">
-            <div style={{ mixBlendMode: "normal" }}>
-              <Image src="/logo.png" alt="InstantMariage logo" width={44} height={44} />
-            </div>
-            <span className="text-2xl font-bold" style={{ fontFamily: "var(--font-playfair), serif" }}>
-              <span style={{ color: "#F06292" }}>Instant</span>
-              <span style={{ color: "white" }}>Mariage.fr</span>
+            <Image src="/logo.png" alt="InstantMariage logo" width={44} height={44} className="brightness-0 invert" />
+            <span className="text-2xl font-bold text-white" style={{ fontFamily: "var(--font-playfair), serif" }}>
+              InstantMariage.fr
             </span>
           </Link>
           <div className="text-white">
-            <p className="text-4xl font-bold leading-snug mb-4" style={{ fontFamily: "var(--font-playfair), serif" }}>
-              Rejoignez 12 000+ couples et prestataires
+            <p className="text-4xl font-bold leading-snug mb-6" style={{ fontFamily: "var(--font-playfair), serif" }}>
+              Le mariage de vos rêves commence ici
             </p>
-            <ul className="space-y-3 text-white/80 text-base">
+            <ul className="space-y-4">
               {[
                 "Accès gratuit à tous les outils mariés",
                 "Contactez les meilleurs prestataires",
                 "Gérez votre mariage en un seul endroit",
               ].map((item) => (
-                <li key={item} className="flex items-center gap-2.5">
-                  <span className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "#F06292" }}>
-                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <li key={item} className="flex items-center gap-3 text-white/90">
+                  <span className="w-6 h-6 rounded-full bg-white/25 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   </span>
-                  {item}
+                  <span className="text-base">{item}</span>
                 </li>
               ))}
             </ul>
+            <div className="mt-8 pt-8 border-t border-white/20">
+              <p className="text-white/70 text-sm">Rejoignez 12&nbsp;000+ couples et prestataires</p>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Right — Form */}
-      <div className="w-full lg:w-7/12 flex flex-col justify-start px-6 py-10 sm:px-12 lg:px-16 overflow-y-auto" style={{ background: "linear-gradient(to bottom, #fdf2f8 0%, #fff9fb 20%, #ffffff 45%)" }}>
-        {/* Mobile logo */}
-        <div className="lg:hidden mb-8 flex justify-center">
-          <Link href="/" className="flex items-center gap-2.5">
-            <Image src="/logo.png" alt="InstantMariage logo" width={42} height={42} />
-            <span className="text-2xl font-bold" style={{ fontFamily: "var(--font-playfair), serif" }}>
-              <span style={{ color: "#F06292" }}>Instant</span>
-              <span className="text-gray-900">Mariage.fr</span>
-            </span>
-          </Link>
-        </div>
+      {/* Right panel — Form */}
+      <div
+        className="w-full lg:w-7/12 flex flex-col overflow-y-auto"
+        style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)" }}
+      >
+        <div className="flex flex-col min-h-full px-6 py-10 sm:px-10 lg:px-14">
 
-        <div className="max-w-lg w-full mx-auto">
-          <div className="mb-8">
-            {/* Badge décoratif */}
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-4" style={{ background: "linear-gradient(135deg, #fce7f3, #fdf2f8)", color: "#c2185b" }}>
-              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l1.8 5.4L19 9l-5.2 3.6L15.6 18 12 14.8 8.4 18l1.8-5.4L5 9l5.2-1.6L12 2z" /></svg>
-              Gratuit &amp; sans engagement
-            </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2 leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
-              Créer un compte
-            </h1>
-            <p className="text-gray-500 text-base">Rejoignez 12 000+ couples et prestataires</p>
+          {/* Mobile logo */}
+          <div className="lg:hidden mb-8 flex justify-center">
+            <Link href="/" className="flex items-center gap-2.5">
+              <Image src="/logo.png" alt="InstantMariage logo" width={44} height={44} className="brightness-0 invert" />
+              <span className="text-2xl font-bold text-white" style={{ fontFamily: "var(--font-playfair), serif" }}>
+                InstantMariage.fr
+              </span>
+            </Link>
           </div>
 
-          {/* Step 1 — Account type */}
-          <div className="mb-6">
-            <p className="text-sm font-semibold text-gray-700 mb-3">Je suis…</p>
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                type="button"
-                onClick={() => setAccountType("marie")}
-                className={`relative flex flex-col items-center gap-3 rounded-2xl border-2 px-4 py-6 text-sm font-medium transition-all duration-200 cursor-pointer ${
-                  accountType === "marie"
-                    ? "border-rose-400 bg-rose-50 text-rose-600 shadow-lg shadow-rose-200/60"
-                    : "border-gray-200 bg-white text-gray-600 hover:border-rose-300 hover:bg-rose-50/60 hover:shadow-md hover:shadow-rose-100/80 hover:-translate-y-0.5"
-                }`}
-              >
-                {accountType === "marie" && (
-                  <span
-                    className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full flex items-center justify-center"
-                    style={{ background: "#F06292" }}
-                  >
-                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </span>
-                )}
-                <span className="text-4xl">💍</span>
-                <div className="text-center">
-                  <p className="font-semibold text-current text-sm">Je suis un(e) marié(e)</p>
-                  <p className="text-xs text-gray-400 mt-1 font-normal">Outils &amp; prestataires</p>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setAccountType("prestataire")}
-                className={`relative flex flex-col items-center gap-3 rounded-2xl border-2 px-4 py-6 text-sm font-medium transition-all duration-200 cursor-pointer ${
-                  accountType === "prestataire"
-                    ? "border-rose-400 bg-rose-50 text-rose-600 shadow-lg shadow-rose-200/60"
-                    : "border-gray-200 bg-white text-gray-600 hover:border-rose-300 hover:bg-rose-50/60 hover:shadow-md hover:shadow-rose-100/80 hover:-translate-y-0.5"
-                }`}
-              >
-                {accountType === "prestataire" && (
-                  <span
-                    className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full flex items-center justify-center"
-                    style={{ background: "#F06292" }}
-                  >
-                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </span>
-                )}
-                <span className="text-4xl">🏢</span>
-                <div className="text-center">
-                  <p className="font-semibold text-current text-sm">Je suis un prestataire</p>
-                  <p className="text-xs text-gray-400 mt-1 font-normal">Profil &amp; visibilité</p>
-                </div>
-              </button>
+          {/* Header text */}
+          {!accountType && (
+            <div className="text-center mb-10">
+              <h1 className="text-4xl sm:text-5xl font-bold text-white leading-tight mb-3" style={{ fontFamily: "var(--font-playfair), serif" }}>
+                Rejoignez InstantMariage
+              </h1>
+              <p className="text-white/85 text-lg font-light">
+                Gratuit · Sans engagement · 12&nbsp;000+ membres
+              </p>
             </div>
-          </div>
+          )}
 
-          {/* Social buttons */}
           {accountType && (
-            <>
-              <div className="space-y-3 mb-5">
+            <div className="mb-6 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setAccountType(null)}
+                className="flex items-center gap-1.5 text-white/80 hover:text-white text-sm transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+                Retour
+              </button>
+              <span className="text-white/50">·</span>
+              <span className="text-white font-semibold text-sm">
+                {accountType === "marie" ? "Je suis marié(e)" : "Je suis prestataire"}
+              </span>
+            </div>
+          )}
+
+          <div className="max-w-lg w-full mx-auto flex-1">
+
+            {/* Step 1 — Type selection */}
+            {!accountType && (
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                {/* Card Marié */}
+                <button
+                  type="button"
+                  onClick={() => setAccountType("marie")}
+                  className="group relative flex flex-col items-center gap-4 rounded-3xl px-5 py-8 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+                  style={{
+                    background: "rgba(255,255,255,0.20)",
+                    backdropFilter: "blur(20px)",
+                    WebkitBackdropFilter: "blur(20px)",
+                    border: "1px solid rgba(255,255,255,0.40)",
+                  }}
+                >
+                  <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                    <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                  </div>
+                  <div className="text-center">
+                    <p className="font-bold text-white text-base leading-tight mb-1">Je suis<br />marié(e)</p>
+                    <p className="text-white/65 text-xs font-light">Outils &amp; prestataires</p>
+                  </div>
+                  <div className="absolute bottom-4 right-4 w-6 h-6 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                    <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </button>
+
+                {/* Card Prestataire */}
+                <button
+                  type="button"
+                  onClick={() => setAccountType("prestataire")}
+                  className="group relative flex flex-col items-center gap-4 rounded-3xl px-5 py-8 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
+                  style={{
+                    background: "rgba(255,255,255,0.20)",
+                    backdropFilter: "blur(20px)",
+                    WebkitBackdropFilter: "blur(20px)",
+                    border: "1px solid rgba(255,255,255,0.40)",
+                  }}
+                >
+                  <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                    <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div className="text-center">
+                    <p className="font-bold text-white text-base leading-tight mb-1">Je suis<br />prestataire</p>
+                    <p className="text-white/65 text-xs font-light">Profil &amp; visibilité</p>
+                  </div>
+                  <div className="absolute bottom-4 right-4 w-6 h-6 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                    <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </button>
+              </div>
+            )}
+
+            {/* Step 2 — Form */}
+            {accountType && (
+              <div
+                className="rounded-3xl px-6 py-7 sm:px-8 sm:py-8"
+                style={{
+                  background: "rgba(255,255,255,0.18)",
+                  backdropFilter: "blur(24px)",
+                  WebkitBackdropFilter: "blur(24px)",
+                  border: "1px solid rgba(255,255,255,0.35)",
+                }}
+              >
+                {/* Google */}
                 <button
                   type="button"
                   onClick={handleGoogleSignup}
-                  className="w-full flex items-center justify-center gap-3 border border-gray-200 rounded-xl py-3 px-4 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
+                  className="w-full flex items-center justify-center gap-3 bg-white rounded-xl py-3 px-4 text-sm font-semibold text-gray-700 hover:bg-white/90 transition-all duration-200 shadow-sm mb-5"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -386,228 +417,224 @@ export default function InscriptionPage() {
                     <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
                     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                   </svg>
-                  S&apos;inscrire avec Google
+                  Continuer avec Google
                 </button>
-              </div>
 
-              <div className="flex items-center gap-3 mb-5">
-                <div className="flex-1 h-px bg-gray-200" />
-                <span className="text-xs text-gray-400 font-medium">ou par email</span>
-                <div className="flex-1 h-px bg-gray-200" />
-              </div>
-
-              {/* Erreur */}
-              {error && (
-                <div className="mb-2 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-600">
-                  {error}
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="flex-1 h-px bg-white/30" />
+                  <span className="text-xs text-white/70 font-medium">ou par email</span>
+                  <div className="flex-1 h-px bg-white/30" />
                 </div>
-              )}
 
-              {/* Mariés form */}
-              {accountType === "marie" && (
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Prénom</label>
-                      <input
-                        type="text"
-                        value={mPrenom}
-                        onChange={(e) => setMPrenom(e.target.value)}
-                        placeholder="Sophie"
-                        required
-                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent transition-all"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Nom</label>
-                      <input
-                        type="text"
-                        value={mNom}
-                        onChange={(e) => setMNom(e.target.value)}
-                        placeholder="Martin"
-                        required
-                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent transition-all"
-                      />
-                    </div>
+                {error && (
+                  <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/20 border border-red-300/40 text-sm text-white">
+                    {error}
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Adresse email</label>
-                    <input
-                      type="email"
-                      value={mEmail}
-                      onChange={(e) => setMEmail(e.target.value)}
-                      placeholder="vous@exemple.com"
-                      required
-                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent transition-all"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Mot de passe</label>
-                    <div className="relative">
-                      <input
-                        type={mShowPwd ? "text" : "password"}
-                        value={mPassword}
-                        onChange={(e) => setMPassword(e.target.value)}
-                        placeholder="Minimum 8 caractères"
-                        required
-                        minLength={8}
-                        autoComplete="new-password"
-                        className="w-full border border-gray-200 rounded-xl px-4 py-3 pr-12 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent transition-all"
-                      />
-                      <EyeIcon show={mShowPwd} onClick={() => setMShowPwd(!mShowPwd)} />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirmer le mot de passe</label>
-                    <div className="relative">
-                      <input
-                        type={mShowConfirmPwd ? "text" : "password"}
-                        value={mConfirmPassword}
-                        onChange={(e) => setMConfirmPassword(e.target.value)}
-                        placeholder="Répétez votre mot de passe"
-                        required
-                        autoComplete="new-password"
-                        className={`w-full border rounded-xl px-4 py-3 pr-12 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
-                          !mPasswordsMatch ? "border-red-400 focus:ring-red-300" : "border-gray-200 focus:ring-rose-300"
-                        }`}
-                      />
-                      <EyeIcon show={mShowConfirmPwd} onClick={() => setMShowConfirmPwd(!mShowConfirmPwd)} />
-                    </div>
-                    {!mPasswordsMatch && (
-                      <p className="mt-1.5 text-xs text-red-500">Les mots de passe ne correspondent pas</p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Date du mariage
-                      <span className="text-gray-400 font-normal ml-1">(optionnel)</span>
-                    </label>
-                    <input
-                      type="date"
-                      value={mDate}
-                      onChange={(e) => setMDate(e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent transition-all"
-                    />
-                  </div>
+                )}
 
-                  <CguAndSubmit cgu={cgu} setCgu={setCgu} label="Créer mon compte" loading={loading} extraDisabled={!mPasswordsMatch || mConfirmPassword === ""} />
-                </form>
-              )}
-
-              {/* Prestataire form */}
-              {accountType === "prestataire" && (
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Nom de l&apos;entreprise</label>
-                    <input
-                      type="text"
-                      value={pEntreprise}
-                      onChange={(e) => setPEntreprise(e.target.value)}
-                      placeholder="Studio Photo Lumière"
-                      required
-                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent transition-all"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Métier</label>
-                      <select
-                        value={pMetier}
-                        onChange={(e) => setPMetier(e.target.value)}
-                        required
-                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent transition-all bg-white appearance-none"
-                      >
-                        <option value="">Choisir…</option>
-                        {metiers.map((m) => (
-                          <option key={m} value={m}>{m}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Ville</label>
-                      <input
-                        type="text"
-                        value={pVille}
-                        onChange={(e) => setPVille(e.target.value)}
-                        placeholder="Paris"
-                        required
-                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent transition-all"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Adresse email professionnelle</label>
-                    <input
-                      type="email"
-                      value={pEmail}
-                      onChange={(e) => setPEmail(e.target.value)}
-                      placeholder="contact@monentreprise.fr"
-                      required
-                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent transition-all"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Mot de passe</label>
-                      <div className="relative">
+                {/* Mariés form */}
+                {accountType === "marie" && (
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">Prénom</label>
                         <input
-                          type={pShowPwd ? "text" : "password"}
-                          value={pPassword}
-                          onChange={(e) => setPPassword(e.target.value)}
-                          placeholder="Min. 8 caractères"
+                          type="text"
+                          value={mPrenom}
+                          onChange={(e) => setMPrenom(e.target.value)}
+                          placeholder="Sophie"
                           required
-                          minLength={8}
-                          autoComplete="new-password"
-                          className="w-full border border-gray-200 rounded-xl px-4 py-3 pr-12 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent transition-all"
+                          className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/60 transition-all"
                         />
-                        <EyeIcon show={pShowPwd} onClick={() => setPShowPwd(!pShowPwd)} />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">Nom</label>
+                        <input
+                          type="text"
+                          value={mNom}
+                          onChange={(e) => setMNom(e.target.value)}
+                          placeholder="Martin"
+                          required
+                          className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/60 transition-all"
+                        />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Téléphone</label>
+                      <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">Adresse email</label>
                       <input
-                        type="tel"
-                        value={pTel}
-                        onChange={(e) => setPTel(e.target.value)}
-                        placeholder="06 12 34 56 78"
+                        type="email"
+                        value={mEmail}
+                        onChange={(e) => setMEmail(e.target.value)}
+                        placeholder="vous@exemple.com"
                         required
-                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent transition-all"
+                        className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/60 transition-all"
                       />
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirmer le mot de passe</label>
-                    <div className="relative">
-                      <input
-                        type={pShowConfirmPwd ? "text" : "password"}
-                        value={pConfirmPassword}
-                        onChange={(e) => setPConfirmPassword(e.target.value)}
-                        placeholder="Répétez votre mot de passe"
-                        required
-                        autoComplete="new-password"
-                        className={`w-full border rounded-xl px-4 py-3 pr-12 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
-                          !pPasswordsMatch ? "border-red-400 focus:ring-red-300" : "border-gray-200 focus:ring-rose-300"
-                        }`}
-                      />
-                      <EyeIcon show={pShowConfirmPwd} onClick={() => setPShowConfirmPwd(!pShowConfirmPwd)} />
+                    <div>
+                      <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">Mot de passe</label>
+                      <div className="relative">
+                        <input
+                          type={mShowPwd ? "text" : "password"}
+                          value={mPassword}
+                          onChange={(e) => setMPassword(e.target.value)}
+                          placeholder="Minimum 8 caractères"
+                          required
+                          minLength={8}
+                          autoComplete="new-password"
+                          className="w-full bg-white rounded-xl px-4 py-3 pr-12 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/60 transition-all"
+                        />
+                        <EyeIcon show={mShowPwd} onClick={() => setMShowPwd(!mShowPwd)} />
+                      </div>
                     </div>
-                    {!pPasswordsMatch && (
-                      <p className="mt-1.5 text-xs text-red-500">Les mots de passe ne correspondent pas</p>
-                    )}
-                  </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">Confirmer le mot de passe</label>
+                      <div className="relative">
+                        <input
+                          type={mShowConfirmPwd ? "text" : "password"}
+                          value={mConfirmPassword}
+                          onChange={(e) => setMConfirmPassword(e.target.value)}
+                          placeholder="Répétez votre mot de passe"
+                          required
+                          autoComplete="new-password"
+                          className={`w-full bg-white rounded-xl px-4 py-3 pr-12 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
+                            !mPasswordsMatch ? "ring-2 ring-red-400 focus:ring-red-400" : "focus:ring-white/60"
+                          }`}
+                        />
+                        <EyeIcon show={mShowConfirmPwd} onClick={() => setMShowConfirmPwd(!mShowConfirmPwd)} />
+                      </div>
+                      {!mPasswordsMatch && (
+                        <p className="mt-1.5 text-xs text-white/90 font-medium">Les mots de passe ne correspondent pas</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">
+                        Date du mariage <span className="text-white/50 font-normal normal-case">(optionnel)</span>
+                      </label>
+                      <input
+                        type="date"
+                        value={mDate}
+                        onChange={(e) => setMDate(e.target.value)}
+                        className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-white/60 transition-all"
+                      />
+                    </div>
+                    <CguAndSubmit cgu={cgu} setCgu={setCgu} label="Créer mon compte" loading={loading} extraDisabled={!mPasswordsMatch || mConfirmPassword === ""} />
+                  </form>
+                )}
 
-                  <CguAndSubmit cgu={cgu} setCgu={setCgu} label="Créer mon profil prestataire" loading={loading} extraDisabled={!pPasswordsMatch || pConfirmPassword === ""} />
-                </form>
-              )}
-            </>
-          )}
+                {/* Prestataire form */}
+                {accountType === "prestataire" && (
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">Nom de l&apos;entreprise</label>
+                      <input
+                        type="text"
+                        value={pEntreprise}
+                        onChange={(e) => setPEntreprise(e.target.value)}
+                        placeholder="Studio Photo Lumière"
+                        required
+                        className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/60 transition-all"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">Métier</label>
+                        <select
+                          value={pMetier}
+                          onChange={(e) => setPMetier(e.target.value)}
+                          required
+                          className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-white/60 transition-all appearance-none"
+                        >
+                          <option value="">Choisir…</option>
+                          {metiers.map((m) => (
+                            <option key={m} value={m}>{m}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">Ville</label>
+                        <input
+                          type="text"
+                          value={pVille}
+                          onChange={(e) => setPVille(e.target.value)}
+                          placeholder="Paris"
+                          required
+                          className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/60 transition-all"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">Email professionnel</label>
+                      <input
+                        type="email"
+                        value={pEmail}
+                        onChange={(e) => setPEmail(e.target.value)}
+                        placeholder="contact@monentreprise.fr"
+                        required
+                        className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/60 transition-all"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">Mot de passe</label>
+                        <div className="relative">
+                          <input
+                            type={pShowPwd ? "text" : "password"}
+                            value={pPassword}
+                            onChange={(e) => setPPassword(e.target.value)}
+                            placeholder="Min. 8 caractères"
+                            required
+                            minLength={8}
+                            autoComplete="new-password"
+                            className="w-full bg-white rounded-xl px-4 py-3 pr-12 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/60 transition-all"
+                          />
+                          <EyeIcon show={pShowPwd} onClick={() => setPShowPwd(!pShowPwd)} />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">Téléphone</label>
+                        <input
+                          type="tel"
+                          value={pTel}
+                          onChange={(e) => setPTel(e.target.value)}
+                          placeholder="06 12 34 56 78"
+                          required
+                          className="w-full bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/60 transition-all"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-white/90 mb-1.5 uppercase tracking-wide">Confirmer le mot de passe</label>
+                      <div className="relative">
+                        <input
+                          type={pShowConfirmPwd ? "text" : "password"}
+                          value={pConfirmPassword}
+                          onChange={(e) => setPConfirmPassword(e.target.value)}
+                          placeholder="Répétez votre mot de passe"
+                          required
+                          autoComplete="new-password"
+                          className={`w-full bg-white rounded-xl px-4 py-3 pr-12 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all ${
+                            !pPasswordsMatch ? "ring-2 ring-red-400 focus:ring-red-400" : "focus:ring-white/60"
+                          }`}
+                        />
+                        <EyeIcon show={pShowConfirmPwd} onClick={() => setPShowConfirmPwd(!pShowConfirmPwd)} />
+                      </div>
+                      {!pPasswordsMatch && (
+                        <p className="mt-1.5 text-xs text-white/90 font-medium">Les mots de passe ne correspondent pas</p>
+                      )}
+                    </div>
+                    <CguAndSubmit cgu={cgu} setCgu={setCgu} label="Créer mon profil prestataire" loading={loading} extraDisabled={!pPasswordsMatch || pConfirmPassword === ""} />
+                  </form>
+                )}
+              </div>
+            )}
 
-          <p className="mt-5 text-center text-sm text-gray-500">
-            Déjà un compte ?{" "}
-            <Link href="/login" className="font-semibold hover:underline transition-colors" style={{ color: "#F06292" }}>
-              Se connecter
-            </Link>
-          </p>
+            <p className="mt-6 text-center text-sm text-white/80">
+              Déjà un compte ?{" "}
+              <Link href="/login" className="font-semibold text-white underline underline-offset-2 hover:text-white/90 transition-colors">
+                Se connecter
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -640,23 +667,23 @@ function CguAndSubmit({
           />
           <div
             className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-200 ${
-              cgu ? "border-rose-400 bg-rose-400" : "border-gray-300 bg-white group-hover:border-rose-300"
+              cgu ? "border-white bg-white" : "border-white/50 bg-white/10 group-hover:border-white/80"
             }`}
           >
             {cgu && (
-              <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <svg className="w-3 h-3" style={{ color: "#e91e8c" }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             )}
           </div>
         </div>
-        <span className="text-xs text-gray-500 leading-relaxed">
+        <span className="text-xs text-white/75 leading-relaxed">
           J&apos;accepte les{" "}
-          <Link href="/cgu" className="font-medium hover:underline" style={{ color: "#F06292" }}>
+          <Link href="/cgu" className="font-medium text-white underline underline-offset-1 hover:text-white/90">
             Conditions Générales d&apos;Utilisation
           </Link>{" "}
           et la{" "}
-          <Link href="/confidentialite" className="font-medium hover:underline" style={{ color: "#F06292" }}>
+          <Link href="/confidentialite" className="font-medium text-white underline underline-offset-1 hover:text-white/90">
             Politique de confidentialité
           </Link>{" "}
           d&apos;InstantMariage.fr
@@ -666,8 +693,8 @@ function CguAndSubmit({
       <button
         type="submit"
         disabled={!cgu || loading || extraDisabled}
-        className="w-full text-white font-semibold py-3.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-        style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)" }}
+        className="w-full font-bold py-3.5 rounded-xl transition-all duration-200 text-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0"
+        style={{ background: "white", color: "#e91e8c" }}
       >
         {loading ? "Création du compte…" : label}
       </button>
