@@ -107,12 +107,19 @@ export default function InscriptionPage() {
     }
 
     if (accountType === "marie") {
-      const { error: insertError } = await supabase.from("maries").insert({
-        user_id: signUpData.user.id,
-        prenom_marie1: mPrenom,
-        date_mariage: mDate || null,
+      const insertRes = await fetch("/api/inscription/marie", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: signUpData.user.id,
+          prenom_marie1: mPrenom,
+          date_mariage: mDate || null,
+        }),
       });
-      if (insertError) console.error("[inscription] Erreur insert maries:", insertError);
+      if (!insertRes.ok) {
+        const insertErr = await insertRes.json().catch(() => ({}));
+        console.error("[inscription] Erreur insert maries:", insertErr);
+      }
     } else if (accountType === "prestataire") {
       const insertRes = await fetch("/api/inscription/prestataire", {
         method: "POST",
