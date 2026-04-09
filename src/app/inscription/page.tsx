@@ -176,8 +176,8 @@ export default function InscriptionPage() {
           <div className="mb-8 flex justify-center">
             <Link href="/" className="flex items-center gap-2.5">
               <Image src="/logo.png" alt="InstantMariage logo" width={44} height={44} />
-              <span className="text-2xl font-bold text-white" style={{ fontFamily: "var(--font-playfair), serif" }}>
-                InstantMariage.fr
+              <span className="text-2xl font-bold" style={{ fontFamily: "var(--font-playfair), serif" }}>
+                <span style={{ color: "#F06292" }}>Instant</span><span className="text-gray-900">Mariage.fr</span>
               </span>
             </Link>
           </div>
@@ -252,8 +252,8 @@ export default function InscriptionPage() {
         <div className="absolute inset-0 flex flex-col justify-between p-12 z-10">
           <Link href="/" className="flex items-center gap-2.5">
             <Image src="/logo.png" alt="InstantMariage logo" width={44} height={44} className="brightness-0 invert" />
-            <span className="text-2xl font-bold text-white" style={{ fontFamily: "var(--font-playfair), serif" }}>
-              InstantMariage.fr
+            <span className="text-2xl font-bold" style={{ fontFamily: "var(--font-playfair), serif" }}>
+              <span style={{ color: "#F06292" }}>Instant</span><span className="text-gray-900">Mariage.fr</span>
             </span>
           </Link>
           <div className="text-white">
@@ -293,8 +293,8 @@ export default function InscriptionPage() {
           <div className="lg:hidden mb-8 flex justify-center">
             <Link href="/" className="flex items-center gap-2.5">
               <Image src="/logo.png" alt="InstantMariage logo" width={44} height={44} />
-              <span className="text-2xl font-bold text-gray-900" style={{ fontFamily: "var(--font-playfair), serif" }}>
-                InstantMariage.fr
+              <span className="text-2xl font-bold" style={{ fontFamily: "var(--font-playfair), serif" }}>
+                <span style={{ color: "#F06292" }}>Instant</span><span className="text-gray-900">Mariage.fr</span>
               </span>
             </Link>
           </div>
