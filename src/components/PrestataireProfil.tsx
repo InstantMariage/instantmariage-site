@@ -120,7 +120,7 @@ function buildPrestataireFromSupabase(p: SupabasePrestataire): PrestatireData {
     note: p.note_moyenne,
     nbAvis: p.nb_avis,
     verifie: p.abonnement_actif,
-    prixMin: null,
+    prixMin: p.prix_depart ?? null,
     telephone: p.telephone ?? null,
     email: null,
     site: p.site_web ?? null,

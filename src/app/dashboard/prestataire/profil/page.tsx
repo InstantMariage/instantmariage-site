@@ -85,6 +85,7 @@ type ProfilForm = {
   siret: string;
   numero_tva: string;
   // Tarifs
+  prix_depart: string;
   tarifs_description: string;
   // Avatar
   avatar_url: string;
@@ -324,6 +325,7 @@ export default function ProfilPrestatairePage() {
     youtube: "",
     siret: "",
     numero_tva: "",
+    prix_depart: "",
     tarifs_description: "",
     avatar_url: "",
   });
@@ -365,6 +367,7 @@ export default function ProfilPrestatairePage() {
           youtube: p.youtube || "",
           siret: p.siret || "",
           numero_tva: p.numero_tva || "",
+          prix_depart: p.prix_depart != null ? String(p.prix_depart) : "",
           tarifs_description: p.tarifs_description || "",
           avatar_url: p.avatar_url || "",
         });
@@ -553,6 +556,7 @@ export default function ProfilPrestatairePage() {
       youtube: form.youtube,
       siret: form.siret,
       numero_tva: form.numero_tva,
+      prix_depart: form.prix_depart !== "" ? parseInt(form.prix_depart, 10) : null,
       tarifs_description: form.tarifs_description,
       photos,
       avatar_url: form.avatar_url || null,
@@ -1166,6 +1170,36 @@ export default function ProfilPrestatairePage() {
               </svg>
             }
           >
+            <Field label="Prix de départ" optional>
+              <div className="flex flex-col gap-2">
+                <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={form.prix_depart === ""}
+                    onChange={(e) => {
+                      setField("prix_depart", e.target.checked ? "" : "0");
+                    }}
+                    className="w-4 h-4 rounded border-gray-300 text-rose-400 focus:ring-rose-300 cursor-pointer"
+                  />
+                  <span>Sur devis (pas de prix fixe)</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min={0}
+                    value={form.prix_depart === "" ? "" : form.prix_depart}
+                    onChange={(e) => setField("prix_depart", e.target.value)}
+                    placeholder="500"
+                    disabled={form.prix_depart === ""}
+                    className={`${inputCls} pr-8 disabled:opacity-50 disabled:cursor-not-allowed`}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">€</span>
+                </div>
+              </div>
+              <p className="text-xs text-gray-400 mt-1.5">
+                Cochez &quot;Sur devis&quot; ou entrez votre prix de départ en euros (ex : 500 → affiché &quot;À partir de 500 €&quot;).
+              </p>
+            </Field>
             <Field label="Description de vos formules et tarifs" optional>
               <textarea
                 value={form.tarifs_description}
