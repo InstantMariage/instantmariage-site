@@ -6,26 +6,6 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
-const prestataires = [
-  { label: "Photographe", icon: "📷", href: "#photographes" },
-  { label: "Vidéaste", icon: "🎥", href: "#videaste" },
-  { label: "DJ", icon: "🎧", href: "#dj" },
-  { label: "Musicien / Groupe", icon: "🎹", href: "#musicien" },
-  { label: "Traiteur", icon: "🍽️", href: "#traiteur" },
-  { label: "Fleuriste", icon: "💐", href: "#fleuriste" },
-  { label: "Décorateur", icon: "✨", href: "#decorateur" },
-  { label: "Coiffeur", icon: "✂️", href: "#coiffeur" },
-  { label: "Maquilleur", icon: "💄", href: "#maquilleur" },
-  { label: "Henna", icon: "🌿", href: "#henna" },
-  { label: "Lieu de réception", icon: "🏛️", href: "#lieux" },
-  { label: "Officiant", icon: "💍", href: "#officiant" },
-  { label: "Wedding Planner", icon: "📋", href: "#wedding-planner" },
-  { label: "Transport", icon: "🚗", href: "#transport" },
-  { label: "Animation", icon: "🎪", href: "#animation" },
-  { label: "Créateur de contenu", icon: "📱", href: "#contenu" },
-  { label: "Papeterie & Personnalisation", icon: "✉️", href: "#papeterie" },
-  { label: "Pâtissier / Wedding cake", icon: "🎂", href: "#patissier" },
-];
 
 const outils = [
   {
@@ -54,7 +34,7 @@ const outils = [
   },
 ];
 
-type DropdownKey = "prestataires" | "outils" | null;
+type DropdownKey = "outils" | null;
 
 export default function Header() {
   const router = useRouter();
@@ -162,70 +142,14 @@ export default function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-8 ml-16">
 
-            {/* Trouver un prestataire */}
-            <div
-              className="relative"
-              onMouseEnter={() => openDropdown("prestataires")}
-              onMouseLeave={closeDropdown}
+            {/* Annuaire prestataires */}
+            <Link
+              href="/annuaire"
+              className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors duration-200 relative group py-2"
             >
-              <button
-                className="flex items-center gap-1 text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors duration-200 relative group py-2"
-              >
-                Trouver un prestataire
-                <svg
-                  className={`w-3.5 h-3.5 transition-transform duration-200 ${activeDropdown === "prestataires" ? "rotate-180" : ""}`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2.5}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-                <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-rose-400 group-hover:w-full transition-all duration-200" />
-              </button>
-
-              {/* Dropdown prestataires */}
-              <div
-                className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[520px] bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.12)] border border-gray-100 overflow-hidden transition-all duration-200 origin-top ${
-                  activeDropdown === "prestataires"
-                    ? "opacity-100 scale-y-100 translate-y-0 pointer-events-auto"
-                    : "opacity-0 scale-y-95 -translate-y-1 pointer-events-none"
-                }`}
-                onMouseEnter={() => openDropdown("prestataires")}
-                onMouseLeave={closeDropdown}
-              >
-                <div className="px-5 pt-4 pb-2">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Catégories de prestataires
-                  </p>
-                </div>
-                <div className="grid grid-cols-3 gap-px px-4 pb-4">
-                  {prestataires.map((item) => (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-rose-50 group/item transition-colors duration-150"
-                    >
-                      <span className="text-lg leading-none">{item.icon}</span>
-                      <span className="text-sm text-gray-700 group-hover/item:text-rose-500 font-medium transition-colors">
-                        {item.label}
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-                <div className="border-t border-gray-100 px-5 py-3 bg-gray-50/60">
-                  <Link
-                    href="#prestataires"
-                    className="text-xs text-rose-500 font-semibold hover:text-rose-600 transition-colors flex items-center gap-1"
-                  >
-                    Voir tous les prestataires
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </Link>
-                </div>
-              </div>
-            </div>
+              Annuaire prestataires
+              <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-rose-400 group-hover:w-full transition-all duration-200" />
+            </Link>
 
             {/* Outils mariés */}
             <div
@@ -285,13 +209,6 @@ export default function Header() {
             </div>
 
             {/* Autres liens simples */}
-            <Link
-              href="/annuaire"
-              className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors duration-200 relative group py-2"
-            >
-              Annuaire
-              <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-rose-400 group-hover:w-full transition-all duration-200" />
-            </Link>
             {user?.role !== "marie" && (
               <Link
                 href="/tarifs"
