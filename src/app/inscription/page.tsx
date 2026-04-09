@@ -104,24 +104,29 @@ export default function InscriptionPage() {
       });
       if (insertError) console.error("[inscription] Erreur insert maries:", insertError);
     } else if (accountType === "prestataire") {
-      console.log("[inscription] Insert prestataire", {
+      console.log("[inscription] Insert prestataire via API route", {
         user_id: signUpData.user.id,
         nom_entreprise: pEntreprise,
         categorie: pMetier,
         ville: pVille,
         telephone: pTel,
       });
-      const { error: insertError } = await supabase.from("prestataires").insert({
-        user_id: signUpData.user.id,
-        nom_entreprise: pEntreprise,
-        categorie: pMetier,
-        ville: pVille,
-        telephone: pTel,
+      const insertRes = await fetch("/api/inscription/prestataire", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: signUpData.user.id,
+          nom_entreprise: pEntreprise,
+          categorie: pMetier,
+          ville: pVille,
+          telephone: pTel,
+        }),
       });
-      if (insertError) {
+      if (!insertRes.ok) {
+        const { error: insertError } = await insertRes.json();
         console.error("[inscription] Erreur insert prestataires:", insertError);
         setLoading(false);
-        setError(`Erreur création profil prestataire : ${insertError.message}`);
+        setError(`Erreur création profil prestataire : ${insertError}`);
         return;
       }
 
