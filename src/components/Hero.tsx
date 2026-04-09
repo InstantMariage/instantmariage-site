@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { CATEGORIES } from "@/data/categories";
 
 const regions = [
@@ -26,6 +27,15 @@ const metiers = ["Tous les métiers", ...CATEGORIES.map((c) => c.name)];
 export default function Hero() {
   const [metier, setMetier] = useState("");
   const [region, setRegion] = useState("");
+  const router = useRouter();
+
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (metier) params.set("metier", metier);
+    if (region) params.set("region", region);
+    const query = params.toString();
+    router.push(`/annuaire${query ? `?${query}` : ""}`);
+  };
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
@@ -122,7 +132,7 @@ export default function Hero() {
             </div>
 
             {/* Search button */}
-            <button className="bg-rose-400 hover:bg-rose-500 text-white font-semibold px-8 py-3.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow-lg flex items-center justify-center gap-2 whitespace-nowrap">
+            <button onClick={handleSearch} className="bg-rose-400 hover:bg-rose-500 text-white font-semibold px-8 py-3.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow-lg flex items-center justify-center gap-2 whitespace-nowrap">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />

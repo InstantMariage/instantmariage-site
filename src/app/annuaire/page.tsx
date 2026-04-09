@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AnnuaireContent from "@/components/AnnuaireContent";
@@ -31,7 +32,9 @@ export default function AnnuairePage() {
   return (
     <main className="min-h-screen bg-gray-50 overflow-x-hidden">
       <Header />
-      <AnnuaireContent />
+      <Suspense fallback={null}>
+        <AnnuaireContent />
+      </Suspense>
       <Footer />
     </main>
   );

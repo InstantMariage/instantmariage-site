@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { PROVIDERS } from "@/data/providers";
 import { supabase } from "@/lib/supabase";
 import type { Prestataire } from "@/lib/supabase";
@@ -334,18 +335,20 @@ function Pagination({
 const ITEMS_PER_PAGE = 12;
 
 export default function AnnuaireContent() {
+  const urlParams = useSearchParams();
+
   // Search bar state
-  const [searchMetier, setSearchMetier] = useState("");
-  const [searchRegion, setSearchRegion] = useState("");
+  const [searchMetier, setSearchMetier] = useState(urlParams.get("metier") ?? "");
+  const [searchRegion, setSearchRegion] = useState(urlParams.get("region") ?? "");
   const [searchBudgetMax, setSearchBudgetMax] = useState("");
 
   // Active filters state (applied after clicking "Rechercher")
-  const [activeMetier, setActiveMetier] = useState("");
-  const [activeRegion, setActiveRegion] = useState("");
+  const [activeMetier, setActiveMetier] = useState(urlParams.get("metier") ?? "");
+  const [activeRegion, setActiveRegion] = useState(urlParams.get("region") ?? "");
   const [activeBudgetMax, setActiveBudgetMax] = useState(10000);
 
   // Sidebar filters
-  const [sideMetier, setSideMetier] = useState("");
+  const [sideMetier, setSideMetier] = useState(urlParams.get("metier") ?? "");
   const [sideDept, setSideDept] = useState("");
   const [sideBudget, setSideBudget] = useState(10000);
   const [sideNoteMin, setSideNoteMin] = useState(0);
