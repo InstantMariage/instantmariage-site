@@ -400,39 +400,22 @@ export default function Header() {
         {mobileOpen && (
           <div className="lg:hidden border-t border-rose-100 py-4 space-y-1">
 
-            {/* Trouver un prestataire (mobile) */}
-            <div>
-              <button
-                className="w-full flex items-center justify-between px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
-                onClick={() => toggleMobileExpanded("prestataires")}
+            <Link
+              href="/annuaire"
+              className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
+              onClick={() => setMobileOpen(false)}
+            >
+              Annuaire prestataires
+            </Link>
+            {user?.role !== "marie" && (
+              <Link
+                href="/tarifs"
+                className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
+                onClick={() => setMobileOpen(false)}
               >
-                Trouver un prestataire
-                <svg
-                  className={`w-4 h-4 transition-transform duration-200 ${mobileExpanded === "prestataires" ? "rotate-180" : ""}`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              {mobileExpanded === "prestataires" && (
-                <div className="mt-1 ml-4 grid grid-cols-2 gap-1 pb-2">
-                  {prestataires.map((item) => (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm transition-colors"
-                      onClick={() => setMobileOpen(false)}
-                    >
-                      <span>{item.icon}</span>
-                      <span>{item.label}</span>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
+                Tarifs
+              </Link>
+            )}
 
             {/* Outils mariés (mobile) */}
             <div>
@@ -471,22 +454,6 @@ export default function Header() {
               )}
             </div>
 
-            <Link
-              href="/annuaire"
-              className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
-              onClick={() => setMobileOpen(false)}
-            >
-              Annuaire
-            </Link>
-            {user?.role !== "marie" && (
-              <Link
-                href="/tarifs"
-                className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
-                onClick={() => setMobileOpen(false)}
-              >
-                Tarifs
-              </Link>
-            )}
             <Link
               href="/blog"
               className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
