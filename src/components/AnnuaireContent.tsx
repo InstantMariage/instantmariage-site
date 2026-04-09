@@ -119,10 +119,14 @@ for (const [region, depts] of Object.entries(DEPARTEMENTS)) {
 
 function getRegionFromDepartement(dept: string | null): string {
   if (!dept) return "";
-  const lower = dept.toLowerCase();
-  // Correspondance exacte
+  const lower = dept.toLowerCase().trim();
+  // Si c'est directement un nom de région
+  for (const region of Object.keys(DEPARTEMENTS)) {
+    if (region.toLowerCase() === lower) return region;
+  }
+  // Correspondance exacte dans la map département→région
   if (DEPT_TO_REGION[lower]) return DEPT_TO_REGION[lower];
-  // Correspondance partielle (ex : "Rhône" dans "Rhône (69)")
+  // Correspondance partielle (ex : "Rhône" dans "Rhône (69)" ou "69" dans "Rhône (69)")
   for (const [key, region] of Object.entries(DEPT_TO_REGION)) {
     if (key.includes(lower) || lower.includes(key.split(" (")[0])) return region;
   }
@@ -401,12 +405,22 @@ export default function AnnuaireContent() {
   // Filtered + sorted results
   const filtered = useMemo(() => {
     let list = supabaseProviders.filter((p) => {
-      // Métier (sidebar takes priority)
+      // Métier (sidebar takes priority) — comparaison insensible à la casse
       const metier = sideMetier || activeMetier;
-      if (metier && metier !== "Tous les métiers" && p.metier !== metier) return false;
-      // Région
-      const region = activeRegion;
-      if (region && region !== "Toute la France" && p.region !== region) return false;
+      if (metier && metier !== "Tous les métiers" &&
+          p.metier.toLowerCase().trim() !== metier.toLowerCase().trim()) return false;
+      // Département (sidebar) ou Région (barre de recherche)
+      if (sideDept) {
+        // Filtrer par département spécifique : comparer avec p.departement
+        const deptName = sideDept.split(" (")[0].toLowerCase();
+        const deptNumMatch = sideDept.match(/\((\w+)\)/);
+        const deptNum = deptNumMatch ? deptNumMatch[1].toLowerCase() : "";
+        const pDept = (p.departement ?? "").toLowerCase().trim();
+        if (!pDept.includes(deptName) && !(deptNum && pDept.includes(deptNum))) return false;
+      } else {
+        const region = activeRegion;
+        if (region && region !== "Toute la France" && p.region !== region) return false;
+      }
       // Budget (prixMin=0 pour les vrais prestataires → toujours inclus)
       if (p.prixMin > activeBudgetMax) return false;
       // Note min
@@ -430,7 +444,7 @@ export default function AnnuaireContent() {
     }
 
     return list;
-  }, [supabaseProviders, activeMetier, activeRegion, activeBudgetMax, sideMetier, sideNoteMin, sideVerifie, sideDisponible, tri]);
+  }, [supabaseProviders, activeMetier, activeRegion, activeBudgetMax, sideMetier, sideDept, sideNoteMin, sideVerifie, sideDisponible, tri]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
   const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
