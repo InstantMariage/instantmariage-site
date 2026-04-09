@@ -68,6 +68,16 @@ Chaque mariage est unique et mérite une attention particulière. C'est pourquoi
   ],
 };
 
+// ─── Supabase Storage ─────────────────────────────────────────────────────────
+
+const SUPABASE_PHOTOS_BASE = "https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/photos/";
+
+function buildPhotoUrl(path: string | null | undefined): string | null {
+  if (!path) return null;
+  if (path.startsWith("http")) return path;
+  return SUPABASE_PHOTOS_BASE + path;
+}
+
 // ─── Construction du profil depuis un provider ────────────────────────────────
 
 function buildPrestataire(id: number): PrestatireData {
@@ -111,7 +121,9 @@ function buildPrestataire(id: number): PrestatireData {
 }
 
 function buildPrestataireFromSupabase(p: SupabasePrestataire): PrestatireData {
-  const photos = p.photos ?? [];
+  const rawPhotos = p.photos ?? [];
+  const photos = rawPhotos.map(buildPhotoUrl).filter((u): u is string => !!u);
+  const avatar = buildPhotoUrl(p.avatar_url) ?? photos[0] ?? null;
   return {
     nom: p.nom_entreprise,
     metier: p.categorie,
@@ -125,7 +137,7 @@ function buildPrestataireFromSupabase(p: SupabasePrestataire): PrestatireData {
     email: null,
     site: p.site_web ?? null,
     instagram: null,
-    photo: p.avatar_url ?? photos[0] ?? null,
+    photo: avatar,
     couverture: COUVERTURES[p.categorie] ?? null,
     description: p.description ?? null,
     specialites: [],
@@ -1235,15 +1247,15 @@ export default function PrestataireProfil({ id }: { id?: string }) {
         </div>
 
         {/* Bouton retour */}
-        <Link
-          href="/annuaire"
-          className="absolute top-4 left-4 flex items-center gap-2 bg-white/90 backdrop-blur-sm hover:bg-white text-gray-700 text-sm font-medium px-3 py-2 rounded-full shadow-sm transition-all"
+        <button
+          onClick={() => router.back()}
+          className="absolute top-4 left-4 flex items-center gap-2 bg-white/90 backdrop-blur-sm hover:bg-white text-gray-500 text-sm font-medium px-3 py-2 rounded-full shadow-sm transition-all"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
-          Annuaire
-        </Link>
+          Retour
+        </button>
 
         {/* Infos profil superposées */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
