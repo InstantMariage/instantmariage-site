@@ -798,7 +798,7 @@ export default function DemoPage() {
                   Prêts à organiser le mariage de vos rêves ?
                 </h2>
                 <p className="text-white/85 text-lg mb-10 max-w-xl mx-auto">
-                  Rejoignez des milliers de couples qui font confiance à InstantMariage pour préparer leur plus beau jour.
+                  Rejoignez des couples qui font confiance à InstantMariage pour préparer leur plus beau jour.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link

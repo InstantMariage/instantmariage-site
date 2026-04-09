@@ -5,12 +5,12 @@ import Footer from "@/components/Footer";
 export const metadata: Metadata = {
   title: "À propos – InstantMariage.fr",
   description:
-    "Découvrez l'histoire d'InstantMariage.fr, notre mission et l'équipe qui connecte chaque jour des milliers de futurs mariés avec les meilleurs prestataires de France.",
+    "Découvrez l'histoire d'InstantMariage.fr, notre mission et l'équipe qui connecte chaque jour des couples avec les meilleurs prestataires de France.",
   keywords: "à propos InstantMariage, équipe mariage, plateforme mariage France, histoire mariage",
   openGraph: {
     title: "À propos – InstantMariage.fr",
     description:
-      "Découvrez l'histoire d'InstantMariage.fr, notre mission et l'équipe qui connecte chaque jour des milliers de futurs mariés avec les meilleurs prestataires de France.",
+      "Découvrez l'histoire d'InstantMariage.fr, notre mission et l'équipe qui connecte chaque jour des couples avec les meilleurs prestataires de France.",
     url: "https://instantmariage.fr/a-propos",
     siteName: "InstantMariage.fr",
     images: [{ url: "/logo.png", width: 1200, height: 630, alt: "À propos InstantMariage.fr" }],
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "À propos – InstantMariage.fr",
     description:
-      "Découvrez notre mission et l'équipe qui connecte des milliers de futurs mariés avec les meilleurs prestataires de France.",
+      "Découvrez notre mission et l'équipe qui connecte des couples avec les meilleurs prestataires de France.",
     images: ["/logo.png"],
   },
 };
@@ -44,10 +44,10 @@ const team = [
 ];
 
 const stats = [
-  { value: "12 000+", label: "Prestataires référencés", icon: "🤝" },
-  { value: "48 000+", label: "Mariages organisés", icon: "💍" },
+  { value: "100+", label: "Prestataires référencés", icon: "🤝" },
+  { value: "500+", label: "Mariages organisés", icon: "💍" },
   { value: "13", label: "Régions couvertes", icon: "🇫🇷" },
-  { value: "4.8/5", label: "Satisfaction client", icon: "⭐" },
+  { value: "Nouveau", label: "Satisfaction client", icon: "⭐" },
 ];
 
 const values = [
@@ -160,7 +160,7 @@ export default function APropos() {
                 </p>
                 <p>
                   Aujourd&apos;hui, InstantMariage.fr connecte chaque mois des
-                  milliers de couples avec des prestataires soigneusement
+                  couples avec des prestataires soigneusement
                   sélectionnés, partout en France.
                 </p>
               </div>
@@ -214,7 +214,7 @@ export default function APropos() {
               {
                 icon: "🔍",
                 title: "Trouvez",
-                desc: "Accédez à 12 000+ prestataires vérifiés en quelques clics.",
+                desc: "Accédez à 100+ prestataires vérifiés en quelques clics.",
               },
               {
                 icon: "💬",
@@ -378,7 +378,7 @@ export default function APropos() {
             Prêt à organiser votre mariage de rêve ?
           </h2>
           <p className="text-gray-500 mb-8">
-            Rejoignez des milliers de couples qui font confiance à
+            Rejoignez des couples qui font confiance à
             InstantMariage.fr pour trouver leurs prestataires idéaux.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

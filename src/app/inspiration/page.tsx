@@ -338,7 +338,7 @@ export default function InspirationPage() {
               Trouvez les prestataires qui<br className="hidden md:block" /> réaliseront vos inspirations
             </h2>
             <p className="text-white/80 text-lg mb-8 max-w-lg mx-auto">
-              Plus de 12 000 professionnels vérifiés — photographes, fleuristes,
+              Plus de 100 professionnels vérifiés — photographes, fleuristes,
               décorateurs — prêts à donner vie à votre vision.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-3">

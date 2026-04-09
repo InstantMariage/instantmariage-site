@@ -466,7 +466,7 @@ export default function AnnuaireContent() {
             Annuaire des prestataires mariage
           </h1>
           <p className="text-white/85 text-base md:text-lg mb-10 max-w-2xl mx-auto">
-            Plus de <strong className="text-white">12 000 professionnels vérifiés</strong> partout en France
+            Plus de <strong className="text-white">100 professionnels vérifiés</strong> partout en France
           </p>
 
           {/* Search card */}
@@ -882,7 +882,7 @@ export default function AnnuaireContent() {
             Vous êtes prestataire mariage ?
           </h2>
           <p className="text-gray-600 mb-8 max-w-xl mx-auto text-sm leading-relaxed">
-            Rejoignez plus de 12 000 professionnels référencés sur InstantMariage.fr et recevez des demandes de devis qualifiées chaque semaine.
+            Rejoignez plus de 100 professionnels référencés sur InstantMariage.fr et recevez des demandes de devis qualifiées chaque semaine.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button className="bg-rose-400 hover:bg-rose-500 text-white font-semibold px-8 py-3.5 rounded-xl transition-all shadow-sm hover:shadow-md text-sm">
