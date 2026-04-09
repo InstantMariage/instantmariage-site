@@ -17,10 +17,33 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "InstantMariage.fr – Trouvez les meilleurs prestataires mariage",
+  title: "InstantMariage.fr - Trouvez les meilleurs prestataires mariage",
   description:
-    "La plateforme #1 pour trouver photographes, traiteurs, DJ et tous vos prestataires mariage en France. Devis gratuits, avis vérifiés, outils mariés.",
+    "La plateforme #1 des prestataires mariage en France",
   keywords: "mariage, prestataires mariage, photographe mariage, traiteur mariage, DJ mariage",
+  metadataBase: new URL("https://instantmariage.fr"),
+  openGraph: {
+    title: "InstantMariage.fr - Trouvez les meilleurs prestataires mariage",
+    description: "La plateforme #1 des prestataires mariage en France",
+    url: "https://instantmariage.fr",
+    siteName: "InstantMariage.fr",
+    images: [
+      {
+        url: "/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "InstantMariage.fr",
+      },
+    ],
+    locale: "fr_FR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "InstantMariage.fr - Trouvez les meilleurs prestataires mariage",
+    description: "La plateforme #1 des prestataires mariage en France",
+    images: ["/logo.png"],
+  },
 };
 
 export default function RootLayout({
