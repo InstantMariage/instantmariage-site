@@ -179,6 +179,9 @@ function getRegionFromDepartement(dept: string | null): string {
   }
   // Correspondance exacte dans la map département→région
   if (DEPT_TO_REGION[lower]) return DEPT_TO_REGION[lower];
+  // Extraire le numéro depuis le format "13 - Bouche du Rhône" ou "13"
+  const numAtStart = lower.match(/^(\d{2,3}[ab]?)\b/);
+  if (numAtStart && DEPT_NUM_TO_REGION[numAtStart[1]]) return DEPT_NUM_TO_REGION[numAtStart[1]];
   // Correspondance partielle (ex : "Rhône" dans "Rhône (69)" ou "69" dans "Rhône (69)")
   for (const [key, region] of Object.entries(DEPT_TO_REGION)) {
     if (key.includes(lower) || lower.includes(key.split(" (")[0])) return region;
