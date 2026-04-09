@@ -107,6 +107,7 @@ interface DisplayProvider {
   disponible: boolean;
   nouveau: boolean;
   description: string;
+  departement: string;
 }
 
 // Construire la map inverse département → région une seule fois
@@ -207,6 +208,7 @@ function prestataireToDisplay(p: Prestataire): DisplayProvider {
     disponible: true,
     nouveau: isRecentDate(p.created_at),
     description: p.description || "",
+    departement: p.departement || "",
   };
 }
 
@@ -226,6 +228,7 @@ function mockToDisplay(p: typeof PROVIDERS[number]): DisplayProvider {
     disponible: p.disponible,
     nouveau: p.nouveau,
     description: p.description,
+    departement: (p as any).departement || "",
   };
 }
 
