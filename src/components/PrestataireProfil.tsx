@@ -1481,23 +1481,11 @@ export default function PrestataireProfil({ id }: { id?: string }) {
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-3 sm:pb-1 flex-shrink-0">
-              <button
-                onClick={() => setSaved(!saved)}
-                aria-label={saved ? "Retirer des favoris" : "Sauvegarder"}
-                className="w-11 h-11 rounded-full border-2 flex items-center justify-center transition-all duration-200"
-                style={saved
-                  ? { backgroundColor: "#F06292", borderColor: "#F06292", color: "#fff" }
-                  : { borderColor: "#e5e7eb", color: "#9ca3af" }}
-              >
-                <svg className="w-5 h-5" fill={saved ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-              </button>
+            <div className="flex flex-wrap items-center gap-3 sm:pb-1 flex-shrink-0">
               <button
                 onClick={handleContacter}
                 disabled={contactLoading}
-                className="flex items-center gap-2 text-white font-semibold px-7 py-3 rounded-full text-sm transition-all duration-200 disabled:opacity-60 hover:opacity-90 active:scale-95"
+                className="flex items-center gap-2 text-white font-semibold px-6 py-3 rounded-full text-sm transition-all duration-200 disabled:opacity-60 hover:opacity-90 active:scale-95"
                 style={{ backgroundColor: "#F06292", boxShadow: "0 4px 14px rgba(240,98,146,0.35)" }}
               >
                 {contactLoading ? (
@@ -1508,6 +1496,26 @@ export default function PrestataireProfil({ id }: { id?: string }) {
                   </svg>
                 )}
                 Contacter
+              </button>
+              <button
+                className="flex items-center gap-2 bg-white font-semibold px-6 py-3 rounded-full text-sm border-2 transition-all duration-200 hover:bg-pink-50 active:scale-95"
+                style={{ borderColor: "#F06292", color: "#F06292" }}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Demander un devis
+              </button>
+              <button
+                onClick={() => setSaved(!saved)}
+                aria-label={saved ? "Retirer des favoris" : "Sauvegarder"}
+                className="flex items-center gap-2 bg-white font-semibold px-6 py-3 rounded-full text-sm border-2 transition-all duration-200 hover:bg-pink-50 active:scale-95"
+                style={{ borderColor: "#F06292", color: "#F06292" }}
+              >
+                <svg className="w-4 h-4" fill={saved ? "#F06292" : "none"} viewBox="0 0 24 24" stroke="#F06292" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+                {saved ? "Sauvegardé" : "Sauvegarder"}
               </button>
             </div>
           </div>
