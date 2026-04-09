@@ -413,9 +413,13 @@ export default function ProfilPrestatairePage() {
     setUploadingPhoto(true);
 
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
+    if (!session) {
+      setUploadingPhoto(false);
+      return;
+    }
 
     const newUrls: string[] = [];
+    let hasError = false;
 
     for (const file of toUpload) {
       if (!file.type.startsWith("image/")) continue;
@@ -433,11 +437,16 @@ export default function ProfilPrestatairePage() {
 
       if (error) {
         console.error("Upload error:", error);
+        hasError = true;
         continue;
       }
 
       const { data: urlData } = supabase.storage.from("photos").getPublicUrl(path);
       if (urlData?.publicUrl) newUrls.push(urlData.publicUrl);
+    }
+
+    if (hasError && newUrls.length === 0) {
+      alert("L'upload a échoué. Vérifiez votre connexion et réessayez.");
     }
 
     setPhotos((prev) => [...prev, ...newUrls]);
@@ -781,7 +790,7 @@ export default function ProfilPrestatairePage() {
                 <span className="font-semibold text-gray-700">{photos.length}</span> / {photoLimit} photo{photoLimit > 1 ? "s" : ""}
                 {" "}(plan <span className="font-semibold uppercase">{plan}</span>)
               </p>
-              {photos.length < photoLimit && (
+              {photos.length > 0 && photos.length < photoLimit && (
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
