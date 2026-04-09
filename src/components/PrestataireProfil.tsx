@@ -1295,11 +1295,11 @@ export default function PrestataireProfil({ id }: { id?: string }) {
                     <span className="font-bold text-gray-900">{PRESTATAIRE.note}</span>
                     <span className="text-gray-500">({PRESTATAIRE.nbAvis})</span>
                   </span>
-                  {PRESTATAIRE.prixMin !== null && (
-                    <span className="text-gray-600 sm:text-white/90 sm:drop-shadow font-medium">
-                      À partir de {PRESTATAIRE.prixMin.toLocaleString("fr-FR")} €
-                    </span>
-                  )}
+                  <span className="text-gray-600 sm:text-white/90 sm:drop-shadow font-medium">
+                    {PRESTATAIRE.prixMin !== null
+                      ? `À partir de ${PRESTATAIRE.prixMin.toLocaleString("fr-FR")} €`
+                      : "Prix sur demande"}
+                  </span>
                 </div>
               </div>
 

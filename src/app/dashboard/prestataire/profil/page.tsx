@@ -1170,34 +1170,20 @@ export default function ProfilPrestatairePage() {
               </svg>
             }
           >
-            <Field label="Prix de départ" optional>
-              <div className="flex flex-col gap-2">
-                <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={form.prix_depart === ""}
-                    onChange={(e) => {
-                      setField("prix_depart", e.target.checked ? "" : "0");
-                    }}
-                    className="w-4 h-4 rounded border-gray-300 text-rose-400 focus:ring-rose-300 cursor-pointer"
-                  />
-                  <span>Sur devis (pas de prix fixe)</span>
-                </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    min={0}
-                    value={form.prix_depart === "" ? "" : form.prix_depart}
-                    onChange={(e) => setField("prix_depart", e.target.value)}
-                    placeholder="500"
-                    disabled={form.prix_depart === ""}
-                    className={`${inputCls} pr-8 disabled:opacity-50 disabled:cursor-not-allowed`}
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">€</span>
-                </div>
+            <Field label="À partir de" optional>
+              <div className="relative">
+                <input
+                  type="number"
+                  min={0}
+                  value={form.prix_depart}
+                  onChange={(e) => setField("prix_depart", e.target.value)}
+                  placeholder="500"
+                  className={`${inputCls} pr-8`}
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">€</span>
               </div>
               <p className="text-xs text-gray-400 mt-1.5">
-                Cochez &quot;Sur devis&quot; ou entrez votre prix de départ en euros (ex : 500 → affiché &quot;À partir de 500 €&quot;).
+                Entrez votre prix de départ en euros (ex : 500 → affiché &quot;À partir de 500 €&quot;). Si vide, &quot;Prix sur demande&quot; sera affiché.
               </p>
             </Field>
             <Field label="Description de vos formules et tarifs" optional>
