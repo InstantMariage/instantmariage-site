@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const tools = [
   {
     icon: "👥",
@@ -126,9 +128,9 @@ export default function FreeTools() {
               <button className="bg-white text-rose-500 hover:bg-rose-50 font-bold px-8 py-3.5 rounded-full transition-all duration-200 shadow-md hover:shadow-lg text-sm">
                 Accéder gratuitement
               </button>
-              <button className="bg-white/15 hover:bg-white/25 text-white font-semibold px-8 py-3.5 rounded-full border border-white/40 transition-all duration-200 text-sm backdrop-blur-sm">
+              <Link href="/demo" className="bg-white/15 hover:bg-white/25 text-white font-semibold px-8 py-3.5 rounded-full border border-white/40 transition-all duration-200 text-sm backdrop-blur-sm">
                 Voir une démo
-              </button>
+              </Link>
             </div>
             <p className="text-white/60 text-xs mt-5">
               Aucune carte bancaire requise · Accès immédiat · Données sécurisées
