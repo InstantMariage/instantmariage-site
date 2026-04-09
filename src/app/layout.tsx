@@ -44,6 +44,9 @@ export const metadata: Metadata = {
     description: "La plateforme #1 des prestataires mariage en France",
     images: ["/logo.png"],
   },
+  verification: {
+    google: "qW9lilNNncGB3P5WZ4eybkNFySB7hIYCCl65bGGxuLk",
+  },
 };
 
 export default function RootLayout({
