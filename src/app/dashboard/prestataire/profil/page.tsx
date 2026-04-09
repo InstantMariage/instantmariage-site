@@ -1024,17 +1024,22 @@ export default function ProfilPrestatairePage() {
             )}
 
             {photos.length >= photoLimit && (
-              <div className="mt-4 flex items-center gap-2 p-3 rounded-xl bg-amber-50 border border-amber-200">
-                <svg className="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <p className="text-xs text-amber-700">
-                  Limite atteinte.{" "}
-                  <Link href="/tarifs" className="font-semibold underline">
-                    Passez à un plan supérieur
-                  </Link>{" "}
-                  pour ajouter plus de photos.
-                </p>
+              <div className="mt-4 flex items-center justify-between gap-3 p-4 rounded-2xl bg-white border border-[#F06292]">
+                <div className="flex items-center gap-3">
+                  <svg className="w-5 h-5 text-[#F06292] flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                  </svg>
+                  <p className="text-sm text-gray-700">
+                    Limite de photos atteinte.
+                  </p>
+                </div>
+                <Link
+                  href="/tarifs"
+                  className="flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium text-white"
+                  style={{ backgroundColor: "#F06292" }}
+                >
+                  Passer au Pro
+                </Link>
               </div>
             )}
           </Section>
