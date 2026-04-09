@@ -39,8 +39,10 @@ export default function InscriptionPage() {
   const [mNom, setMNom] = useState("");
   const [mEmail, setMEmail] = useState("");
   const [mPassword, setMPassword] = useState("");
+  const [mConfirmPassword, setMConfirmPassword] = useState("");
   const [mDate, setMDate] = useState("");
   const [mShowPwd, setMShowPwd] = useState(false);
+  const [mShowConfirmPwd, setMShowConfirmPwd] = useState(false);
 
   // Prestataire form
   const [pEntreprise, setPEntreprise] = useState("");
@@ -48,8 +50,13 @@ export default function InscriptionPage() {
   const [pVille, setPVille] = useState("");
   const [pEmail, setPEmail] = useState("");
   const [pPassword, setPPassword] = useState("");
+  const [pConfirmPassword, setPConfirmPassword] = useState("");
   const [pTel, setPTel] = useState("");
   const [pShowPwd, setPShowPwd] = useState(false);
+  const [pShowConfirmPwd, setPShowConfirmPwd] = useState(false);
+
+  const mPasswordsMatch = mConfirmPassword === "" || mPassword === mConfirmPassword;
+  const pPasswordsMatch = pConfirmPassword === "" || pPassword === pConfirmPassword;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -372,6 +379,25 @@ export default function InscriptionPage() {
                     </div>
                   </div>
                   <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirmer le mot de passe</label>
+                    <div className="relative">
+                      <input
+                        type={mShowConfirmPwd ? "text" : "password"}
+                        value={mConfirmPassword}
+                        onChange={(e) => setMConfirmPassword(e.target.value)}
+                        placeholder="Répétez votre mot de passe"
+                        required
+                        className={`w-full border rounded-xl px-4 py-3 pr-12 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
+                          !mPasswordsMatch ? "border-red-400 focus:ring-red-300" : "border-gray-200 focus:ring-rose-300"
+                        }`}
+                      />
+                      <EyeIcon show={mShowConfirmPwd} onClick={() => setMShowConfirmPwd(!mShowConfirmPwd)} />
+                    </div>
+                    {!mPasswordsMatch && (
+                      <p className="mt-1.5 text-xs text-red-500">Les mots de passe ne correspondent pas</p>
+                    )}
+                  </div>
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">
                       Date du mariage
                       <span className="text-gray-400 font-normal ml-1">(optionnel)</span>
@@ -384,7 +410,7 @@ export default function InscriptionPage() {
                     />
                   </div>
 
-                  <CguAndSubmit cgu={cgu} setCgu={setCgu} label="Créer mon compte" loading={loading} />
+                  <CguAndSubmit cgu={cgu} setCgu={setCgu} label="Créer mon compte" loading={loading} extraDisabled={!mPasswordsMatch || mConfirmPassword === ""} />
                 </form>
               )}
 
@@ -468,8 +494,27 @@ export default function InscriptionPage() {
                       />
                     </div>
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirmer le mot de passe</label>
+                    <div className="relative">
+                      <input
+                        type={pShowConfirmPwd ? "text" : "password"}
+                        value={pConfirmPassword}
+                        onChange={(e) => setPConfirmPassword(e.target.value)}
+                        placeholder="Répétez votre mot de passe"
+                        required
+                        className={`w-full border rounded-xl px-4 py-3 pr-12 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
+                          !pPasswordsMatch ? "border-red-400 focus:ring-red-300" : "border-gray-200 focus:ring-rose-300"
+                        }`}
+                      />
+                      <EyeIcon show={pShowConfirmPwd} onClick={() => setPShowConfirmPwd(!pShowConfirmPwd)} />
+                    </div>
+                    {!pPasswordsMatch && (
+                      <p className="mt-1.5 text-xs text-red-500">Les mots de passe ne correspondent pas</p>
+                    )}
+                  </div>
 
-                  <CguAndSubmit cgu={cgu} setCgu={setCgu} label="Créer mon profil prestataire" loading={loading} />
+                  <CguAndSubmit cgu={cgu} setCgu={setCgu} label="Créer mon profil prestataire" loading={loading} extraDisabled={!pPasswordsMatch || pConfirmPassword === ""} />
                 </form>
               )}
             </>
@@ -492,11 +537,13 @@ function CguAndSubmit({
   setCgu,
   label,
   loading,
+  extraDisabled,
 }: {
   cgu: boolean;
   setCgu: (v: boolean) => void;
   label: string;
   loading?: boolean;
+  extraDisabled?: boolean;
 }) {
   return (
     <>
@@ -536,7 +583,7 @@ function CguAndSubmit({
 
       <button
         type="submit"
-        disabled={!cgu || loading}
+        disabled={!cgu || loading || extraDisabled}
         className="w-full text-white font-semibold py-3.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)" }}
       >
