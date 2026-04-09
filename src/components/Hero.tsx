@@ -79,7 +79,7 @@ export default function Hero() {
 
         {/* Subtitle */}
         <p className="text-lg md:text-xl text-white/80 mb-10 max-w-2xl mx-auto leading-relaxed">
-          Plus de <strong className="text-white">12 000 prestataires</strong> vérifiés partout en France —
+          Plus de <strong className="text-white">100 prestataires</strong> vérifiés partout en France —
           photographes, traiteurs, DJ, fleuristes et bien plus encore.
         </p>
 
@@ -159,9 +159,8 @@ export default function Hero() {
         {/* Stats */}
         <div className="flex flex-wrap justify-center gap-8 mt-12 pt-8 border-t border-white/20">
           {[
-            { value: "12 000+", label: "Prestataires vérifiés" },
-            { value: "48 000+", label: "Mariages organisés" },
-            { value: "4.8/5", label: "Note moyenne" },
+            { value: "100+", label: "Prestataires vérifiés" },
+            { value: "500+", label: "Mariages organisés" },
           ].map((stat) => (
             <div key={stat.label} className="text-center">
               <div

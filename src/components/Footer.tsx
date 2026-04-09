@@ -188,22 +188,22 @@ export default function Footer() {
           {/* Bottom bar */}
           <div className="border-t border-gray-200 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-gray-400 text-sm">
-              © 2024 InstantMariage.fr · Tous droits réservés
+              © 2026 InstantMariage.fr · Tous droits réservés
             </p>
             <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
               {[
-                "Mentions légales",
-                "Politique de confidentialité",
-                "CGU",
-                "Cookies",
-                "Accessibilité",
+                { label: "Mentions légales", href: "/mentions-legales" },
+                { label: "Politique de confidentialité", href: "/confidentialite" },
+                { label: "CGU", href: "/cgu" },
+                { label: "Cookies", href: "#" },
+                { label: "Accessibilité", href: "#" },
               ].map((item) => (
                 <Link
-                  key={item}
-                  href="#"
+                  key={item.label}
+                  href={item.href}
                   className="text-gray-400 hover:text-gray-700 text-xs transition-colors"
                 >
-                  {item}
+                  {item.label}
                 </Link>
               ))}
             </div>
