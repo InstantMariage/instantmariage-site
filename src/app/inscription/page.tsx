@@ -378,6 +378,7 @@ export default function InscriptionPage() {
                         placeholder="Minimum 8 caractères"
                         required
                         minLength={8}
+                        autoComplete="new-password"
                         className="w-full border border-gray-200 rounded-xl px-4 py-3 pr-12 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent transition-all"
                       />
                       <EyeIcon show={mShowPwd} onClick={() => setMShowPwd(!mShowPwd)} />
@@ -392,6 +393,7 @@ export default function InscriptionPage() {
                         onChange={(e) => setMConfirmPassword(e.target.value)}
                         placeholder="Répétez votre mot de passe"
                         required
+                        autoComplete="new-password"
                         className={`w-full border rounded-xl px-4 py-3 pr-12 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
                           !mPasswordsMatch ? "border-red-400 focus:ring-red-300" : "border-gray-200 focus:ring-rose-300"
                         }`}
@@ -482,6 +484,7 @@ export default function InscriptionPage() {
                           placeholder="Min. 8 caractères"
                           required
                           minLength={8}
+                          autoComplete="new-password"
                           className="w-full border border-gray-200 rounded-xl px-4 py-3 pr-12 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent transition-all"
                         />
                         <EyeIcon show={pShowPwd} onClick={() => setPShowPwd(!pShowPwd)} />
@@ -508,6 +511,7 @@ export default function InscriptionPage() {
                         onChange={(e) => setPConfirmPassword(e.target.value)}
                         placeholder="Répétez votre mot de passe"
                         required
+                        autoComplete="new-password"
                         className={`w-full border rounded-xl px-4 py-3 pr-12 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
                           !pPasswordsMatch ? "border-red-400 focus:ring-red-300" : "border-gray-200 focus:ring-rose-300"
                         }`}
