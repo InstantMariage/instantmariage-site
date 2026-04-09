@@ -416,7 +416,6 @@ export default function AnnuaireContent() {
 
   // Données Supabase
   const [supabaseProviders, setSupabaseProviders] = useState<DisplayProvider[]>([]);
-  const [rawDebugData, setRawDebugData] = useState<{id: string; categorie: string; ville: string; departement: string | null}[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDemo, setIsDemo] = useState(false);
 
@@ -426,7 +425,6 @@ export default function AnnuaireContent() {
       .select("*")
       .then(({ data }) => {
         if (data && data.length > 0) {
-          setRawDebugData((data as Prestataire[]).map(p => ({ id: p.id, categorie: p.categorie, ville: p.ville || "", departement: p.departement })));
           setSupabaseProviders((data as Prestataire[]).map(prestataireToDisplay));
           setIsDemo(false);
         } else {
@@ -472,9 +470,13 @@ export default function AnnuaireContent() {
         const deptName = sideDept.split(" (")[0].toLowerCase();
         const deptNumMatch = sideDept.match(/\((\w+)\)/);
         const deptNum = deptNumMatch ? deptNumMatch[1].toLowerCase() : "";
-        const pDept = (p.departement ?? "").toLowerCase().trim();
+        const pDeptRaw = (p.departement ?? "").trim();
+        // Extraire le numéro depuis "13 - Bouche du Rhône" ou "13"
+        const pDeptNum = pDeptRaw.split(/\s*[-–]\s*/)[0].trim().toLowerCase();
+        const pDept = pDeptRaw.toLowerCase();
         const villeDeptNum = getDeptNumFromVille(p.ville ?? "").toLowerCase();
-        if (!pDept.includes(deptName) && !(deptNum && pDept.includes(deptNum)) &&
+        if (!(deptNum && pDeptNum === deptNum) &&
+            !pDept.includes(deptName) && !(deptNum && pDept.includes(deptNum)) &&
             !(deptNum && villeDeptNum === deptNum)) return false;
       } else {
         const region = activeRegion;
@@ -533,30 +535,6 @@ export default function AnnuaireContent() {
 
   return (
     <>
-      {/* ── DEBUG RAW SUPABASE DATA ──────────────────────────────────────── */}
-      <div style={{ background: "#1e1e1e", color: "#d4d4d4", fontFamily: "monospace", fontSize: "12px", padding: "16px", overflowX: "auto" }}>
-        <strong style={{ color: "#9cdcfe" }}>DEBUG — Données brutes Supabase ({rawDebugData.length} prestataires)</strong>
-        <table style={{ marginTop: "8px", borderCollapse: "collapse", width: "100%" }}>
-          <thead>
-            <tr>
-              {["id", "categorie", "ville", "departement"].map(h => (
-                <th key={h} style={{ border: "1px solid #444", padding: "4px 8px", color: "#ce9178", textAlign: "left" }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rawDebugData.map((row, i) => (
-              <tr key={i} style={{ background: i % 2 === 0 ? "#252526" : "#1e1e1e" }}>
-                <td style={{ border: "1px solid #444", padding: "4px 8px" }}>{row.id}</td>
-                <td style={{ border: "1px solid #444", padding: "4px 8px", color: "#4ec9b0" }}>{row.categorie}</td>
-                <td style={{ border: "1px solid #444", padding: "4px 8px", color: "#dcdcaa" }}>{row.ville}</td>
-                <td style={{ border: "1px solid #444", padding: "4px 8px", color: "#b5cea8" }}>{row.departement ?? "null"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
       {/* ── Hero / Search Bar ─────────────────────────────────────────── */}
       <section className="w-full bg-gradient-to-br from-rose-500 via-rose-400 to-pink-400 pt-28 pb-16 px-4">
         <div className="max-w-5xl mx-auto text-center">
