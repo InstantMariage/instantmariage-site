@@ -251,7 +251,7 @@ export default function InscriptionPage() {
         />
         <div className="absolute inset-0 flex flex-col justify-between p-12 z-10">
           <Link href="/" className="flex items-center gap-2.5">
-            <Image src="/logo.png" alt="InstantMariage logo" width={44} height={44} className="brightness-0 invert" />
+            <Image src="/logo.png" alt="InstantMariage logo" width={44} height={44} />
             <span className="text-2xl font-bold" style={{ fontFamily: "var(--font-playfair), serif" }}>
               <span style={{ color: "white", textShadow: "0 1px 4px rgba(0,0,0,0.18)" }}>Instant</span><span style={{ color: "rgba(255,255,255,0.8)" }}>Mariage.fr</span>
             </span>
