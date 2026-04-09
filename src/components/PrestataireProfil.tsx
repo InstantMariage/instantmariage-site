@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PROVIDERS } from "@/data/providers";
-import { supabase, type Marie } from "@/lib/supabase";
+import { supabase, type Marie, type Prestataire as SupabasePrestataire } from "@/lib/supabase";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -94,6 +94,27 @@ function buildPrestataire(id: number) {
     site: `www.${emailSlug}.fr`,
     instagram: `@${emailSlug}`,
     description: provider.description + `\n\nBasé(e) à ${provider.ville} en ${provider.region}, nous intervenons sur toute la région et dans toute la France sur devis. Contactez-nous pour en savoir plus sur nos disponibilités et nos formules.`,
+  };
+}
+
+function buildPrestataireFromSupabase(p: SupabasePrestataire) {
+  const emailSlug = p.nom_entreprise.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 20);
+  return {
+    ...PRESTATAIRE_FALLBACK,
+    nom: p.nom_entreprise,
+    metier: p.categorie,
+    ville: p.ville || "",
+    note: p.note_moyenne,
+    nbAvis: p.nb_avis,
+    verifie: p.abonnement_actif,
+    telephone: p.telephone || PRESTATAIRE_FALLBACK.telephone,
+    email: `contact@${emailSlug}.fr`,
+    site: p.site_web || `www.${emailSlug}.fr`,
+    instagram: `@${emailSlug}`,
+    photo: p.photos?.[0] || PRESTATAIRE_FALLBACK.photo,
+    couverture: COUVERTURES[p.categorie] ?? PRESTATAIRE_FALLBACK.couverture,
+    description: (p.description || PRESTATAIRE_FALLBACK.description) +
+      (p.ville ? `\n\nBasé(e) à ${p.ville}. Contactez-nous pour en savoir plus sur nos disponibilités et nos formules.` : ""),
   };
 }
 
@@ -1008,9 +1029,28 @@ function Sidebar({ prestataire }: { prestataire: PrestatireData }) {
 
 // ─── Composant principal ──────────────────────────────────────────────────────
 
-export default function PrestataireProfil({ id }: { id?: number }) {
+export default function PrestataireProfil({ id }: { id?: string }) {
   const router = useRouter();
-  const PRESTATAIRE = buildPrestataire(id ?? 1);
+
+  const numId = id ? Number(id) : NaN;
+  const isNumericId = id !== undefined && !isNaN(numId) && String(numId) === id;
+
+  const [PRESTATAIRE, setPRESTATAIRE] = useState(() =>
+    isNumericId ? buildPrestataire(numId) : PRESTATAIRE_FALLBACK
+  );
+
+  useEffect(() => {
+    if (!id || isNumericId) return;
+    supabase
+      .from("prestataires")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setPRESTATAIRE(buildPrestataireFromSupabase(data as SupabasePrestataire));
+      });
+  }, [id, isNumericId]);
+
   const [activeTab, setActiveTab] = useState<Tab>("apropos");
   const [saved, setSaved] = useState(false);
   const [contactLoading, setContactLoading] = useState(false);

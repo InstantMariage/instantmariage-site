@@ -10,14 +10,17 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const provider = PROVIDERS.find((p) => p.id === Number(id));
-  if (!provider) {
-    return { title: "Prestataire – InstantMariage" };
+  const numId = Number(id);
+  if (!isNaN(numId)) {
+    const provider = PROVIDERS.find((p) => p.id === numId);
+    if (provider) {
+      return {
+        title: `${provider.nom} – ${provider.metier} à ${provider.ville}`,
+        description: provider.description,
+      };
+    }
   }
-  return {
-    title: `${provider.nom} – ${provider.metier} à ${provider.ville}`,
-    description: provider.description,
-  };
+  return { title: "Prestataire – InstantMariage" };
 }
 
 export default async function PrestatairePage({ params }: Props) {
@@ -25,7 +28,7 @@ export default async function PrestatairePage({ params }: Props) {
   return (
     <main className="min-h-screen bg-gray-50">
       <Header />
-      <PrestataireProfil id={Number(id)} />
+      <PrestataireProfil id={id} />
       <Footer />
     </main>
   );
