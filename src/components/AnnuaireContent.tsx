@@ -385,7 +385,8 @@ export default function AnnuaireContent() {
     : [];
 
   // Apply search bar
-  function handleSearch() {
+  function handleSearch(e?: React.FormEvent) {
+    if (e) e.preventDefault();
     setActiveMetier(searchMetier);
     setActiveRegion(searchRegion);
     setActiveBudgetMax(searchBudgetMax ? parseInt(searchBudgetMax) : 10000);
@@ -470,7 +471,7 @@ export default function AnnuaireContent() {
           </p>
 
           {/* Search card */}
-          <div className="bg-white rounded-2xl shadow-2xl p-3 md:p-4">
+          <form onSubmit={handleSearch} className="bg-white rounded-2xl shadow-2xl p-3 md:p-4">
             <div className="flex flex-col md:flex-row gap-3">
               {/* Métier */}
               <div className="flex-1 relative">
@@ -535,7 +536,7 @@ export default function AnnuaireContent() {
 
               {/* Search button */}
               <button
-                onClick={handleSearch}
+                type="submit"
                 className="bg-rose-400 hover:bg-rose-500 text-white font-semibold px-8 py-3.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow-lg flex items-center justify-center gap-2 whitespace-nowrap"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -544,7 +545,7 @@ export default function AnnuaireContent() {
                 Rechercher
               </button>
             </div>
-          </div>
+          </form>
 
           {/* Quick tags */}
           <div className="flex flex-wrap justify-center gap-2 mt-6">
