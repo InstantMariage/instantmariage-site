@@ -127,7 +127,6 @@ const profileSuggestions = [
   { label: "Compléter votre description", done: true, points: 15 },
   { label: "Ajouter vos tarifs indicatifs", done: false, points: 10 },
   { label: "Relier votre compte Instagram", done: true, points: 5 },
-  { label: "Ajouter une vidéo de présentation", done: false, points: 15 },
 ];
 
 const profileCompletion = 52;
