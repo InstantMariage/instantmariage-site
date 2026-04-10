@@ -44,6 +44,7 @@ export default function ConversationPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [otherUserName, setOtherUserName] = useState("...");
   const [otherUserId, setOtherUserId] = useState<string | null>(null);
+  const [otherPrestaId, setOtherPrestaId] = useState<string | null>(null);
   const [myName, setMyName] = useState("");
   const [messages, setMessages] = useState<MessageItem[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -111,12 +112,13 @@ export default function ConversationPage() {
 
       // Nom de l'interlocuteur et de l'utilisateur courant
       const [{ data: prest }, { data: myPrest }] = await Promise.all([
-        supabase.from("prestataires").select("nom_entreprise").eq("user_id", otherId).maybeSingle(),
+        supabase.from("prestataires").select("id, nom_entreprise").eq("user_id", otherId).maybeSingle(),
         supabase.from("prestataires").select("nom_entreprise").eq("user_id", uid).maybeSingle(),
       ]);
 
       if (prest) {
         setOtherUserName(prest.nom_entreprise);
+        setOtherPrestaId(prest.id);
       } else {
         const { data: marie } = await supabase
           .from("maries")
@@ -326,7 +328,17 @@ export default function ConversationPage() {
           </div>
 
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-gray-900 text-sm truncate">{otherUserName}</p>
+            {otherPrestaId ? (
+              <Link
+                href={`/prestataires/${otherPrestaId}`}
+                className="font-semibold text-sm truncate hover:underline"
+                style={{ color: "#F06292" }}
+              >
+                {otherUserName}
+              </Link>
+            ) : (
+              <p className="font-semibold text-gray-900 text-sm truncate">{otherUserName}</p>
+            )}
           </div>
         </div>
       </div>
