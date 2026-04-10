@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { supabase } from "@/lib/supabase";
 
 const tools = [
   {
@@ -59,7 +59,6 @@ export default function FreeTools() {
   const [isMarie, setIsMarie] = useState(false);
 
   useEffect(() => {
-    const supabase = createClientComponentClient();
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsMarie(session?.user?.user_metadata?.role === "marie");
     });
