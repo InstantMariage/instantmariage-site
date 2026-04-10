@@ -441,8 +441,7 @@ function DashboardPrestataire() {
             {stats.map((stat) => {
               const locked = plan === "gratuit" || plan === "starter";
               return (
-                <div key={stat.label} className={`relative bg-white rounded-2xl p-4 sm:p-5 shadow-card overflow-hidden${locked ? " opacity-60" : ""}`}>
-                  {locked && <UpgradeBadge />}
+                <div key={stat.label} className="relative bg-white rounded-2xl p-4 sm:p-5 shadow-card overflow-hidden">
                   <div className="flex items-center justify-between mb-3">
                     <div
                       className="w-9 h-9 rounded-xl flex items-center justify-center"
@@ -451,7 +450,9 @@ function DashboardPrestataire() {
                       {stat.icon}
                     </div>
                   </div>
-                  <div className="text-2xl font-bold text-gray-800">{locked ? stat.fakeValue : "—"}</div>
+                  <div className={`text-2xl font-bold text-gray-800${locked ? " blur-md select-none" : ""}`}>
+                    {locked ? stat.fakeValue : "—"}
+                  </div>
                   <div className="text-xs text-gray-500 mt-0.5">{stat.label}</div>
                 </div>
               );
