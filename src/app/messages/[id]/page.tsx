@@ -741,7 +741,7 @@ export default function ConversationPage() {
             onKeyDown={handleKeyDown}
             placeholder="Message…"
             rows={1}
-            className="flex-1 resize-none rounded-[22px] border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent focus:bg-white transition-all"
+            className="flex-1 resize-none rounded-[22px] border border-gray-200 bg-gray-50 px-4 py-2.5 text-base text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent focus:bg-white transition-all"
             style={{ maxHeight: "120px", overflowY: "auto" }}
             onInput={(e) => {
               const el = e.currentTarget;
