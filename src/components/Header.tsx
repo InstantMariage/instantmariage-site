@@ -168,6 +168,7 @@ export default function Header() {
             </Link>
 
             {/* Outils mariés */}
+            {user?.role !== "prestataire" && (
             <div
               className="relative"
               onMouseEnter={() => openDropdown("outils")}
@@ -223,6 +224,7 @@ export default function Header() {
                 </div>
               </div>
             </div>
+            )}
 
             {/* Autres liens simples */}
             {user?.role !== "marie" && (
@@ -379,6 +381,7 @@ export default function Header() {
             )}
 
             {/* Outils mariés (mobile) */}
+            {user?.role !== "prestataire" && (
             <div>
               <button
                 className="w-full flex items-center justify-between px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
@@ -414,6 +417,7 @@ export default function Header() {
                 </div>
               )}
             </div>
+            )}
 
             <Link
               href="/blog"
