@@ -1,7 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 const tools = [
@@ -56,31 +56,14 @@ const tools = [
 ];
 
 export default function FreeTools() {
-  const router = useRouter();
-  const supabase = createClientComponentClient();
+  const [isMarie, setIsMarie] = useState(false);
 
-  async function handleToolClick(tool: typeof tools[number]) {
-    console.log("[FreeTools] handleToolClick déclenché pour :", tool.title);
-
-    const { data: { session }, error } = await supabase.auth.getSession();
-    console.log("[FreeTools] session :", session);
-    console.log("[FreeTools] error :", error);
-
-    const role = session?.user?.user_metadata?.role ?? null;
-    console.log("[FreeTools] role :", role);
-
-    if (session && role === "marie") {
-      console.log("[FreeTools] → utilisateur connecté (marie), redirection vers :", tool.href);
-      if (tool.external) {
-        window.open(tool.href, "_blank", "noopener,noreferrer");
-      } else {
-        router.push(tool.href);
-      }
-    } else {
-      console.log("[FreeTools] → pas de session ou mauvais rôle, redirection vers /inscription");
-      router.push("/inscription");
-    }
-  }
+  useEffect(() => {
+    const supabase = createClientComponentClient();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsMarie(session?.user?.user_metadata?.role === "marie");
+    });
+  }, []);
 
   return (
     <section id="outils" className="py-20 bg-white">
@@ -106,10 +89,11 @@ export default function FreeTools() {
         {/* Tools grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           {tools.map((tool) => (
-            <div
+            <Link
               key={tool.title}
-              onClick={() => handleToolClick(tool)}
-              className={`group ${tool.bg} border ${tool.border} rounded-2xl p-6 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 cursor-pointer`}
+              href={isMarie ? tool.href : "/inscription"}
+              {...(isMarie && tool.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+              className={`group ${tool.bg} border ${tool.border} rounded-2xl p-6 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 cursor-pointer block`}
             >
               <div className="flex items-start gap-5">
                 {/* Icon */}
@@ -137,7 +121,7 @@ export default function FreeTools() {
                   </ul>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 
