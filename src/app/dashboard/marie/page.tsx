@@ -21,19 +21,6 @@ function formatDateFr(dateStr: string | null): string {
   return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
 }
 
-// Aperçu des 6 premiers items (IDs identiques à la checklist complète)
-const PREVIEW_ITEMS = [
-  { id: "admin-1", label: "Réserver la mairie et déposer le dossier" },
-  { id: "admin-5", label: "Commander et envoyer les faire-part" },
-  { id: "beaute-1", label: "Choisir et commander la robe de mariée" },
-  { id: "cere-7", label: "Commander ou récupérer les alliances" },
-  { id: "recep-1", label: "Choisir le traiteur et valider le menu" },
-  { id: "voyage-1", label: "Choisir la destination du voyage de noces" },
-];
-
-// Total d'items dans la checklist complète (DEFAULT_CATEGORIES)
-const FULL_TOTAL = 66;
-
 // Clean SVG icons — Apple SF Symbols style
 const IconRing = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
@@ -87,12 +74,6 @@ const IconExternal = () => (
   </svg>
 );
 
-const IconCheck = () => (
-  <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-  </svg>
-);
-
 const IconChecklist = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
@@ -116,7 +97,6 @@ type FavoriPrestataire = {
 
 export default function DashboardMarie() {
   const router = useRouter();
-  const [doneIds, setDoneIds] = useState<Set<string>>(new Set());
   const [authChecked, setAuthChecked] = useState(false);
   const [prenomMarie1, setPrenomMarie1] = useState("");
   const [prenomMarie2, setPrenomMarie2] = useState("");
@@ -153,17 +133,6 @@ export default function DashboardMarie() {
         setDateMariage(meta?.date_mariage || null);
       }
 
-      // Lire le localStorage de la checklist complète
-      const saved = localStorage.getItem(`checklist_${session.user.id}`);
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          if (parsed.doneIds) setDoneIds(new Set(parsed.doneIds));
-        } catch {
-          // ignore
-        }
-      }
-
       // Charger les prestataires sauvegardés
       const { data: favData } = await supabase
         .from("favoris")
@@ -176,10 +145,6 @@ export default function DashboardMarie() {
       setAuthChecked(true);
     });
   }, [router]);
-
-  const done = doneIds.size;
-  const total = FULL_TOTAL;
-  const pct = Math.round((done / total) * 100);
 
   if (!authChecked) return null;
 
@@ -329,78 +294,6 @@ export default function DashboardMarie() {
                   </Link>
                 );
               })}
-            </div>
-          </section>
-
-          {/* ── Checklist aperçu ── */}
-          <section>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400">Checklist</h2>
-              <Link
-                href="/dashboard/marie/checklist"
-                className="text-xs font-semibold transition-opacity hover:opacity-70"
-                style={{ color: "#F06292" }}
-              >
-                Voir tout
-              </Link>
-            </div>
-
-            <div
-              className="rounded-3xl overflow-hidden p-5"
-              style={{ background: "white", boxShadow: "0 4px 24px rgba(240,98,146,0.08)", border: "1px solid #FECDD3" }}
-            >
-              {/* Progress */}
-              <div className="flex items-center gap-3 mb-5">
-                <div className="flex-1 bg-gray-100 rounded-full h-1.5">
-                  <div
-                    className="h-1.5 rounded-full transition-all duration-700"
-                    style={{ width: `${pct}%`, background: "#F06292" }}
-                  />
-                </div>
-                <span className="text-xs font-semibold tabular-nums" style={{ color: "#F06292" }}>
-                  {done}/{total}
-                </span>
-              </div>
-
-              <div className="space-y-1">
-                {PREVIEW_ITEMS.map((item) => {
-                  const isDone = doneIds.has(item.id);
-                  return (
-                    <div
-                      key={item.id}
-                      className="flex items-center gap-3 px-2 py-2.5 rounded-xl"
-                    >
-                      <div
-                        className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0"
-                        style={{
-                          border: isDone ? "none" : "1.5px solid #D1D5DB",
-                          background: isDone ? "#F06292" : "transparent",
-                        }}
-                      >
-                        {isDone && <IconCheck />}
-                      </div>
-                      <span
-                        className="text-sm flex-1"
-                        style={{
-                          color: isDone ? "#D1D5DB" : "#374151",
-                          textDecoration: isDone ? "line-through" : "none",
-                        }}
-                      >
-                        {item.label}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <Link
-                href="/dashboard/marie/checklist"
-                className="mt-4 flex items-center justify-center gap-1.5 text-sm font-semibold py-2.5 rounded-2xl transition-all duration-200 hover:opacity-80"
-                style={{ background: "#FFF0F5", color: "#F06292" }}
-              >
-                Ouvrir la checklist complète
-                <IconChevronRight />
-              </Link>
             </div>
           </section>
 
