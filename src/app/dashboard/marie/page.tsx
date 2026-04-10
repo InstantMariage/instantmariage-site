@@ -148,7 +148,7 @@ export default function DashboardMarie() {
         setLieuMariage(marie.lieu_mariage || null);
       } else {
         const meta = session.user.user_metadata;
-        setPrenomMarie1(meta?.prenom || session.user.email?.split("@")[0] || "");
+        setPrenomMarie1(meta?.prenom || "");
         setPrenomMarie2(meta?.prenom_marie2 || "");
         setDateMariage(meta?.date_mariage || null);
       }
@@ -242,9 +242,9 @@ export default function DashboardMarie() {
             Bonjour{prenomMarie1 ? `, ${prenomMarie1}` : ""}
           </h1>
           <p className="text-base mb-8" style={{ color: "rgba(255,255,255,0.8)" }}>
-            {prenomMarie2 ? `Votre mariage avec ${prenomMarie2}` : "Votre mariage"}
-            {dateMariage ? ` · ${formatDateFr(dateMariage)}` : ""}
-            {lieuMariage ? ` · ${lieuMariage}` : ""}
+            {dateMariage && days !== null
+              ? `Votre mariage dans ${days} jours · ${formatDateFr(dateMariage)}`
+              : "Votre mariage"}
           </p>
 
           {/* Countdown pill */}
