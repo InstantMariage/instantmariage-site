@@ -206,13 +206,23 @@ export default function ConversationPage() {
     setNewMessage("");
     setSending(true);
 
-    const { error } = await supabase.from("messages").insert({
-      conversation_id: convId,
-      expediteur_id: userId,
-      destinataire_id: otherUserId,
-      contenu: content,
-      lu: false,
-    });
+    const { data: inserted, error } = await supabase
+      .from("messages")
+      .insert({
+        conversation_id: convId,
+        expediteur_id: userId,
+        destinataire_id: otherUserId,
+        contenu: content,
+        lu: false,
+      })
+      .select("id, contenu, expediteur_id, created_at, lu")
+      .single();
+
+    if (!error && inserted) {
+      setMessages((prev) =>
+        prev.find((m) => m.id === inserted.id) ? prev : [...prev, inserted]
+      );
+    }
 
     if (!error) {
       // Mettre à jour last_message_at
