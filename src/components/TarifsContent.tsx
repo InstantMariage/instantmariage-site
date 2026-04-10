@@ -99,10 +99,6 @@ const faqItems = [
     a: "Absolument. Toutes vos données (devis, contrats, photos) sont hébergées en France sur des serveurs sécurisés, conformément au RGPD. Vos clients ne voient que ce que vous choisissez de partager.",
   },
   {
-    q: "Le plan gratuit est-il vraiment gratuit ?",
-    a: "Oui, le plan Gratuit est 100% gratuit et sans limite dans le temps. Aucune carte bancaire n'est requise. Il vous permet d'avoir un profil visible dans l'annuaire et de recevoir des demandes de contact.",
-  },
-  {
     q: "Comment fonctionne le badge « Prestataire vérifié » ?",
     a: "Le badge vérifié est attribué après vérification de votre identité et de vos activités professionnelles. Il rassure les futurs mariés sur le sérieux de votre prestation et améliore votre classement dans les résultats.",
   },
@@ -260,8 +256,8 @@ export default function TarifsContent() {
       {/* ─── PRICING CARDS ───────────────────────────────────── */}
       <section className="py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 md:gap-6 items-stretch">
-            {plans.map((plan) => {
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-6 items-stretch">
+            {plans.filter((p) => p.id !== "gratuit").map((plan) => {
               const displayPrice = annual ? plan.priceAnnual : plan.price;
               const isPro = plan.id === "pro";
               const isGold = plan.id === "premium";
