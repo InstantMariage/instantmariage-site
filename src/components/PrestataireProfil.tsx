@@ -692,14 +692,18 @@ function SectionAvis({ prestataireId }: { prestataireId: string | undefined }) {
 
       if (session) {
         const role = session.user.user_metadata?.role ?? "marie";
+        console.log("[SectionAvis] session user_id:", session.user.id);
+        console.log("[SectionAvis] user_metadata:", session.user.user_metadata);
+        console.log("[SectionAvis] role détecté:", role);
         setUserRole(role);
 
         if (role === "marie") {
-          const { data: marieData } = await supabase
+          const { data: marieData, error: marieError } = await supabase
             .from("maries")
             .select("*")
             .eq("user_id", session.user.id)
             .maybeSingle();
+          console.log("[SectionAvis] marieData:", marieData, "marieError:", marieError);
           if (cancelled) return;
           setMarie(marieData ?? null);
           if (marieData) {
@@ -717,6 +721,7 @@ function SectionAvis({ prestataireId }: { prestataireId: string | undefined }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("[SectionAvis] handleSubmit - prestataire:", prestataire, "marie:", marie);
     if (!prestataire) {
       setFormError("Impossible de trouver le prestataire. Rechargez la page.");
       return;
@@ -728,16 +733,20 @@ function SectionAvis({ prestataireId }: { prestataireId: string | undefined }) {
     setSubmitting(true);
     setFormError("");
 
-    const { error } = await supabase.from("avis").insert({
+    const insertPayload = {
       prestataire_id: prestataire.id,
       marie_id: marie.id,
       note,
       commentaire: commentaire.trim() || null,
       date_mariage_couple: dateMariage || null,
-    });
+    };
+    console.log("[SectionAvis] insert payload:", insertPayload);
+
+    const { error } = await supabase.from("avis").insert(insertPayload);
+    console.log("[SectionAvis] insert error:", error);
 
     if (error) {
-      setFormError("Une erreur est survenue. Veuillez réessayer.");
+      setFormError(`Erreur : ${error.message} (code: ${error.code})`);
       setSubmitting(false);
       return;
     }
