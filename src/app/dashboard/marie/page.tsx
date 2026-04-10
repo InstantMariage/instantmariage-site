@@ -242,9 +242,7 @@ export default function DashboardMarie() {
             Bonjour{prenomMarie1 ? `, ${prenomMarie1}` : ""}
           </h1>
           <p className="text-base mb-8" style={{ color: "rgba(255,255,255,0.8)" }}>
-            {dateMariage && days !== null
-              ? `Votre mariage dans ${days} jours · ${formatDateFr(dateMariage)}`
-              : "Votre mariage"}
+            Votre grand jour approche, profitez de chaque instant ✨
           </p>
 
           {/* Countdown pill */}
