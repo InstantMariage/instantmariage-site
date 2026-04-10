@@ -55,7 +55,7 @@ const editorialArticles = [
     category: "Inspiration",
     date: "20 février 2025",
     readTime: "6 min",
-    image: "https://images.unsplash.com/photo-1532073150508-0c1df022bdd1?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&q=80",
     featured: false,
   },
   {
