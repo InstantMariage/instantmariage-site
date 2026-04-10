@@ -71,7 +71,7 @@ export default function Hero() {
           style={{ fontFamily: "var(--font-playfair), serif" }}
         >
           Trouvez les meilleurs{" "}
-          <span className="text-rose-300">prestataires</span>{" "}
+          <span className="text-[#F06292]">prestataires</span>{" "}
           pour votre mariage
         </h1>
 
@@ -86,7 +86,7 @@ export default function Hero() {
           <div className="flex flex-col md:flex-row gap-2">
             {/* Métier select */}
             <div className="flex-1 relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-rose-400">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#F06292]">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                     d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -110,7 +110,7 @@ export default function Hero() {
 
             {/* Région select */}
             <div className="flex-1 relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-rose-400">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#F06292]">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                     d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -132,7 +132,7 @@ export default function Hero() {
             </div>
 
             {/* Search button */}
-            <button onClick={handleSearch} className="bg-rose-400 hover:bg-rose-500 text-white font-semibold px-8 py-3.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow-lg flex items-center justify-center gap-2 whitespace-nowrap">
+            <button onClick={handleSearch} className="text-white font-semibold px-8 py-3.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow-lg flex items-center justify-center gap-2 whitespace-nowrap" style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)" }}>
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />

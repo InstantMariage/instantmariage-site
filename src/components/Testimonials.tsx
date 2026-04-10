@@ -4,7 +4,7 @@ export default function Testimonials() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-14">
-          <p className="text-rose-400 text-sm font-semibold tracking-widest uppercase mb-3">
+          <p className="text-[#F06292] text-sm font-semibold tracking-widest uppercase mb-3">
             Ils nous rejoignent bientôt
           </p>
           <h2

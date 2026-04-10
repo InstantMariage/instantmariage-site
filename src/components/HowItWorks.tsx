@@ -78,7 +78,7 @@ export default function HowItWorks() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
-          <p className="text-rose-400 text-sm font-semibold tracking-widest uppercase mb-3">
+          <p className="text-[#F06292] text-sm font-semibold tracking-widest uppercase mb-3">
             Simple &amp; rapide
           </p>
           <h2
@@ -88,7 +88,7 @@ export default function HowItWorks() {
           >
             Comment ça marche
           </h2>
-          <div className="w-16 h-0.5 bg-gradient-to-r from-rose-300 to-pink-400 mx-auto mt-4 rounded-full" />
+          <div className="w-16 h-0.5 mx-auto mt-4 rounded-full" style={{ background: "linear-gradient(to right, #F06292, #e91e8c)" }} />
           <p className="text-gray-500 mt-4 text-lg max-w-lg mx-auto">
             Organisez votre mariage en toute sérénité, en trois étapes.
           </p>
@@ -111,10 +111,10 @@ export default function HowItWorks() {
             >
               {/* Icon bubble */}
               <div className="relative mb-6">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-rose-50 to-pink-50 border border-rose-100 flex items-center justify-center text-rose-400 shadow-sm">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-rose-50 to-pink-50 border border-rose-100 flex items-center justify-center text-[#F06292] shadow-sm">
                   {step.icon}
                 </div>
-                <span className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-white border-2 border-rose-200 flex items-center justify-center text-xs font-bold text-rose-400">
+                <span className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-white border-2 border-[#F06292]/40 flex items-center justify-center text-xs font-bold text-[#F06292]">
                   {i + 1}
                 </span>
               </div>

@@ -49,7 +49,7 @@ export default function FreeTools() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-14">
-          <p className="text-rose-400 text-sm font-semibold tracking-widest uppercase mb-3">
+          <p className="text-[#F06292] text-sm font-semibold tracking-widest uppercase mb-3">
             100% gratuit
           </p>
           <h2
@@ -103,7 +103,7 @@ export default function FreeTools() {
         </div>
 
         {/* CTA Banner */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-rose-400 via-rose-500 to-pink-600 rounded-3xl p-8 md:p-12 text-center shadow-lg">
+        <div className="relative overflow-hidden rounded-3xl p-8 md:p-12 text-center shadow-lg" style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)" }}>
           {/* Decorative elements */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32" />
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24" />
@@ -125,7 +125,7 @@ export default function FreeTools() {
               outils pour organiser le mariage de vos rêves.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <button className="bg-white text-rose-500 hover:bg-rose-50 font-bold px-8 py-3.5 rounded-full transition-all duration-200 shadow-md hover:shadow-lg text-sm">
+              <button className="bg-white text-[#e91e8c] hover:bg-rose-50 font-bold px-8 py-3.5 rounded-full transition-all duration-200 shadow-md hover:shadow-lg text-sm">
                 Accéder gratuitement
               </button>
               <Link href="/demo" className="bg-white/15 hover:bg-white/25 text-white font-semibold px-8 py-3.5 rounded-full border border-white/40 transition-all duration-200 text-sm backdrop-blur-sm">

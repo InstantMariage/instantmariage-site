@@ -4,7 +4,7 @@ export default function FeaturedProviders() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section header */}
         <div className="text-center mb-14">
-          <p className="text-rose-400 text-sm font-semibold tracking-widest uppercase mb-3">
+          <p className="text-[#F06292] text-sm font-semibold tracking-widest uppercase mb-3">
             Sélection du moment
           </p>
           <h2
@@ -30,7 +30,8 @@ export default function FeaturedProviders() {
           </p>
           <a
             href="/inscription"
-            className="inline-flex items-center gap-2 bg-rose-400 hover:bg-rose-500 text-white font-semibold px-8 py-3.5 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
+            className="inline-flex items-center gap-2 text-white font-semibold px-8 py-3.5 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
+            style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)" }}
           >
             S&apos;inscrire gratuitement
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
