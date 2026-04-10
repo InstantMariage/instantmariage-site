@@ -160,17 +160,6 @@ function getInitials(name: string): string {
     .join("");
 }
 
-function UpgradeBadge() {
-  return (
-    <Link
-      href="/tarifs"
-      className="absolute top-3 right-3 z-10 inline-flex items-center gap-1 px-3 py-1 rounded-full text-white text-xs font-semibold shadow-sm hover:opacity-90 transition-opacity whitespace-nowrap"
-      style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)" }}
-    >
-      ✨ Disponible avec un abonnement
-    </Link>
-  );
-}
 
 // ─── Dashboard ───────────────────────────────────────────────────────────────
 
@@ -579,7 +568,6 @@ function DashboardPrestataire() {
 
                 {/* Générateur de Devis */}
                 <div className="relative">
-                  {!planConfig.canAccessDevis && <UpgradeBadge />}
                   <a
                     href={planConfig.canAccessDevis ? "https://wedding-devis.vercel.app" : undefined}
                     target={planConfig.canAccessDevis ? "_blank" : undefined}
@@ -633,7 +621,6 @@ function DashboardPrestataire() {
 
                 {/* Gestion Administrative Pro */}
                 <div className="relative mt-3">
-                  {(plan === "gratuit" || plan === "starter") && <UpgradeBadge />}
                   <a
                     href={plan === "pro" || plan === "premium" ? "https://wedding-devis.vercel.app" : undefined}
                     target={plan === "pro" || plan === "premium" ? "_blank" : undefined}

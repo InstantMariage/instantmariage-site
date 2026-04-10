@@ -582,7 +582,7 @@ export const seoArticles: Article[] = [
     date: "5 février 2026",
     readTime: "10 min",
     image:
-      "https://images.unsplash.com/photo-1556761175-4b46a572b786?w=1200&q=80",
+      "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=1200&q=80",
     metaDescription:
       "Prestataire mariage : comment trouver des clients en 2026 ? Annuaires, réseaux sociaux, bouche-à-oreille, salons… Toutes les stratégies efficaces pour développer votre activité.",
     keywords:
