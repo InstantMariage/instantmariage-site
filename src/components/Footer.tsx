@@ -29,12 +29,10 @@ const footerLinks = {
   societe: {
     title: "InstantMariage.fr",
     links: [
-      { label: "À propos", href: "#" },
-      { label: "Comment ça marche", href: "#" },
-      { label: "Tarifs prestataires", href: "#" },
-      { label: "Blog & Inspirations", href: "#" },
-      { label: "Presse", href: "#" },
-      { label: "Recrutement", href: "#" },
+      { label: "À propos", href: "/a-propos" },
+      { label: "Comment ça marche", href: "/#comment-ca-marche" },
+      { label: "Tarifs prestataires", href: "/tarifs" },
+      { label: "Blog & Inspirations", href: "/blog" },
     ],
   },
   aide: {

@@ -26,26 +26,9 @@ export const metadata: Metadata = {
   },
 };
 
-const team = [
-  {
-    name: "Adel",
-    role: "Co-fondateur & CEO",
-    bio: "Passionné par l'univers du mariage, Adel a co-créé InstantMariage.fr en 2025 après avoir constaté le manque d'une plateforme simple et fiable pour les futurs mariés en France. Il pilote la vision, la stratégie et le développement commercial.",
-    initials: "A",
-    color: "from-rose-400 to-pink-500",
-  },
-  {
-    name: "Marina",
-    role: "Co-fondatrice & Directrice des Partenariats",
-    bio: "Experte en organisation d'événements, Marina a co-fondé InstantMariage.fr pour mettre son savoir-faire au service des couples. Elle sélectionne et accompagne chaque prestataire partenaire afin de garantir une qualité irréprochable.",
-    initials: "M",
-    color: "from-pink-500 to-rose-600",
-  },
-];
-
 const stats = [
   { value: "100+", label: "Prestataires référencés", icon: "🤝" },
-  { value: "500+", label: "Mariages organisés", icon: "💍" },
+  { value: "🚀", label: "En plein lancement", icon: "" },
   { value: "13", label: "Régions couvertes", icon: "🇫🇷" },
   { value: "Nouveau", label: "Satisfaction client", icon: "⭐" },
 ];
@@ -159,9 +142,8 @@ export default function APropos() {
                   inoubliable.
                 </p>
                 <p>
-                  Aujourd&apos;hui, InstantMariage.fr connecte chaque mois des
-                  couples avec des prestataires soigneusement
-                  sélectionnés, partout en France.
+                  InstantMariage.fr est en plein lancement et accueille ses
+                  premiers prestataires et futurs mariés.
                 </p>
               </div>
             </div>
@@ -271,63 +253,6 @@ export default function APropos() {
                   {value.description}
                 </p>
                 <div className="absolute bottom-0 left-8 right-8 h-0.5 bg-gradient-to-r from-rose-300 to-pink-400 rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── L'ÉQUIPE ── */}
-      <section className="py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <p className="text-rose-400 text-sm font-semibold uppercase tracking-widest mb-4">
-              L&apos;équipe
-            </p>
-            <h2
-              className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
-              style={{ fontFamily: "var(--font-playfair), serif" }}
-            >
-              Les personnes derrière InstantMariage
-            </h2>
-            <p className="text-gray-500 max-w-xl mx-auto">
-              Une petite équipe passionnée, unie par un seul objectif : rendre
-              votre mariage parfait.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-            {team.map((member) => (
-              <div
-                key={member.name}
-                className="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 text-center"
-              >
-                {/* Avatar */}
-                <div className={`bg-gradient-to-br ${member.color} h-48 flex items-center justify-center`}>
-                  <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                    <span
-                      className="text-white text-3xl font-bold"
-                      style={{ fontFamily: "var(--font-playfair), serif" }}
-                    >
-                      {member.initials}
-                    </span>
-                  </div>
-                </div>
-                {/* Info */}
-                <div className="p-7">
-                  <h3
-                    className="text-xl font-bold text-gray-900 mb-1"
-                    style={{ fontFamily: "var(--font-playfair), serif" }}
-                  >
-                    {member.name}
-                  </h3>
-                  <p className="text-rose-400 text-sm font-semibold mb-4">
-                    {member.role}
-                  </p>
-                  <p className="text-gray-500 text-sm leading-relaxed">
-                    {member.bio}
-                  </p>
-                </div>
               </div>
             ))}
           </div>
