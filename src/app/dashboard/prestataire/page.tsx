@@ -203,6 +203,7 @@ function DashboardPrestataire() {
   const [categorie, setCategorie] = useState("");
   const [ville, setVille] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [plan, setPlan] = useState<PlanAbonnement>("gratuit");
   const [dateRenouvellement, setDateRenouvellement] = useState<string | null>(null);
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
@@ -226,7 +227,7 @@ function DashboardPrestataire() {
       // Récupérer profil prestataire
       const { data: prestataire } = await supabase
         .from("prestataires")
-        .select("id, nom_entreprise, categorie, ville")
+        .select("id, nom_entreprise, categorie, ville, avatar_url")
         .eq("user_id", session.user.id)
         .single();
 
@@ -235,6 +236,12 @@ function DashboardPrestataire() {
         setPrestataireId(prestataire.id);
         setCategorie(prestataire.categorie || "");
         setVille(prestataire.ville || "");
+        if (prestataire.avatar_url) {
+          const url = prestataire.avatar_url.startsWith("http")
+            ? prestataire.avatar_url
+            : `https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/photos/${prestataire.avatar_url}`;
+          setAvatarUrl(url);
+        }
 
         // Récupérer l'abonnement actif
         const { data: abonnement } = await supabase
@@ -327,7 +334,7 @@ function DashboardPrestataire() {
   const planConfig = PLAN_CONFIG[plan];
 
   return (
-    <main className="min-h-screen bg-gray-50 overflow-x-hidden max-w-full">
+    <main className="min-h-screen bg-gray-50 overflow-x-hidden w-full">
       <Header />
 
       {showSuccess && (
@@ -349,28 +356,36 @@ function DashboardPrestataire() {
         </div>
       )}
 
-      <div className="pt-20 pb-16">
+      <div className="pt-16 sm:pt-20 pb-16">
         {/* Hero Header */}
         <div
-          className="px-4 py-10"
+          className="px-4 py-8 sm:py-10"
           style={{ background: "linear-gradient(135deg, #F06292 0%, #E91E8C 100%)" }}
         >
           <div className="max-w-6xl mx-auto">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex flex-col gap-4">
               <div className="flex items-center gap-4">
                 <div
-                  className="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg"
+                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-white text-xl sm:text-2xl font-bold shadow-lg flex-shrink-0 overflow-hidden"
                   style={{ background: "rgba(255,255,255,0.25)" }}
                 >
-                  {getInitials(nomEntreprise)}
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt={nomEntreprise}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    getInitials(nomEntreprise)
+                  )}
                 </div>
-                <div>
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <h1 className="text-2xl font-bold text-white font-playfair">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h1 className="text-xl sm:text-2xl font-bold text-white font-playfair truncate">
                       {nomEntreprise}
                     </h1>
                     <span
-                      className="text-xs font-semibold px-3 py-1 rounded-full"
+                      className="text-xs font-semibold px-2.5 py-0.5 rounded-full flex-shrink-0"
                       style={{
                         background: planConfig.badgeBg,
                         color: planConfig.badgeColor,
@@ -379,31 +394,31 @@ function DashboardPrestataire() {
                       {planConfig.label}
                     </span>
                     {planConfig.hasPremiumBadge && (
-                      <span className="text-xs font-semibold px-3 py-1 rounded-full" style={{ background: "#F59E0B", color: "white" }}>
+                      <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full flex-shrink-0" style={{ background: "#F59E0B", color: "white" }}>
                         ★ Premium
                       </span>
                     )}
                   </div>
-                  <p className="text-rose-100 text-sm mt-0.5">
+                  <p className="text-rose-100 text-sm mt-0.5 truncate">
                     {[categorie, ville].filter(Boolean).join(" · ")}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 self-start sm:self-auto">
+              <div className="flex items-center gap-2 flex-wrap">
                 <Link
                   href="/dashboard/prestataire/profil"
-                  className="inline-flex items-center gap-2 bg-white text-rose-500 font-semibold px-5 py-2.5 rounded-full text-sm hover:bg-rose-50 transition-all duration-200 shadow-sm"
+                  className="inline-flex items-center gap-2 bg-white text-rose-500 font-semibold px-4 py-2 rounded-full text-sm hover:bg-rose-50 transition-all duration-200 shadow-sm"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                   Modifier mon profil
                 </Link>
                 <Link
                   href={prestataireId ? `/prestataires/${prestataireId}` : "#"}
-                  className="inline-flex items-center gap-2 bg-white/20 text-white font-semibold px-5 py-2.5 rounded-full text-sm hover:bg-white/30 transition-all duration-200 shadow-sm"
+                  className="inline-flex items-center gap-2 bg-white/20 text-white font-semibold px-4 py-2 rounded-full text-sm hover:bg-white/30 transition-all duration-200 shadow-sm"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
@@ -420,18 +435,18 @@ function DashboardPrestataire() {
             className="px-4 py-4"
             style={{ background: "linear-gradient(90deg, #F06292 0%, #E91E8C 100%)" }}
           >
-            <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="text-center sm:text-left">
-                <p className="text-white font-bold text-base leading-snug">
+            <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div>
+                <p className="text-white font-bold text-sm sm:text-base leading-snug">
                   ⭐ Passez au plan Pro et boostez votre visibilité !
                 </p>
-                <p className="text-rose-100 text-sm mt-0.5">
+                <p className="text-rose-100 text-xs sm:text-sm mt-0.5">
                   Les prestataires Pro reçoivent en moyenne 3x plus de contacts
                 </p>
               </div>
               <Link
                 href="/tarifs"
-                className="flex-shrink-0 bg-white text-rose-500 font-bold text-sm px-6 py-2.5 rounded-full hover:bg-rose-50 transition-all duration-200 shadow-md whitespace-nowrap"
+                className="self-start sm:self-auto flex-shrink-0 bg-white text-rose-500 font-bold text-sm px-5 py-2 rounded-full hover:bg-rose-50 transition-all duration-200 shadow-md"
               >
                 Découvrir le plan Pro →
               </Link>
@@ -439,13 +454,13 @@ function DashboardPrestataire() {
           </div>
         )}
 
-        <div className="max-w-6xl mx-auto px-4 -mt-2">
+        <div className="max-w-6xl mx-auto px-4 mt-0">
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mt-5 sm:mt-6">
             {stats.map((stat) => {
               const locked = plan === "gratuit" || plan === "starter";
               return (
-                <div key={stat.label} className="relative bg-white rounded-2xl p-5 shadow-card overflow-hidden">
+                <div key={stat.label} className="relative bg-white rounded-2xl p-4 sm:p-5 shadow-card overflow-hidden">
                   <div className="flex items-center justify-between mb-3">
                     <div
                       className="w-9 h-9 rounded-xl flex items-center justify-center"
@@ -489,9 +504,9 @@ function DashboardPrestataire() {
             })}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mt-4 sm:mt-6">
             {/* Left column */}
-            <div className="lg:col-span-2 flex flex-col gap-6">
+            <div className="lg:col-span-2 flex flex-col gap-4 sm:gap-6">
 
               {/* Tabs: Messages / Avis */}
               <div className="bg-white rounded-2xl shadow-card overflow-hidden">
@@ -604,7 +619,7 @@ function DashboardPrestataire() {
               </div>
 
               {/* Mes Outils */}
-              <div className="bg-white rounded-2xl shadow-card p-6">
+              <div className="bg-white rounded-2xl shadow-card p-4 sm:p-6">
                 <h2 className="font-semibold text-gray-900 mb-4">Mes outils</h2>
 
                 {/* Générateur de Devis */}
@@ -616,43 +631,45 @@ function DashboardPrestataire() {
                     href={planConfig.canAccessDevis ? "https://wedding-devis.vercel.app" : undefined}
                     target={planConfig.canAccessDevis ? "_blank" : undefined}
                     rel="noopener noreferrer"
-                    className={`flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-xl border transition-all duration-200 group ${
+                    className={`flex flex-col gap-3 p-4 sm:p-5 rounded-xl border transition-all duration-200 group ${
                       planConfig.canAccessDevis
                         ? "border-gray-100 hover:border-rose-200 hover:bg-rose-50/30 cursor-pointer"
                         : "border-gray-100 cursor-default select-none opacity-60"
                     }`}
                   >
-                    <div
-                      className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 text-2xl"
-                      style={{ background: "#FFF0F5" }}
-                    >
-                      📄
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <div className="text-sm font-semibold text-gray-900">Générateur de Devis, Factures & Contrats</div>
-                        {planConfig.canAccessDevis && planConfig.devisLabel && (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">
-                            {planConfig.devisLabel}
-                          </span>
-                        )}
-                        {planConfig.canAccessDevis && !planConfig.canAccessFactures && (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">
-                            Devis uniquement
-                          </span>
-                        )}
+                    <div className="flex items-start gap-3">
+                      <div
+                        className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 text-xl"
+                        style={{ background: "#FFF0F5" }}
+                      >
+                        📄
                       </div>
-                      <div className="text-xs text-gray-500 mt-1 leading-relaxed">
-                        {planConfig.canAccessDevis
-                          ? planConfig.canAccessFactures
-                            ? "Créez vos devis professionnels, convertissez-les en factures et générez vos contrats en quelques clics"
-                            : "Créez vos devis professionnels. Passez en Pro pour accéder aux factures et contrats."
-                          : "Disponible à partir du plan Starter — créez vos devis professionnels"}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <div className="text-sm font-semibold text-gray-900">Générateur de Devis, Factures & Contrats</div>
+                          {planConfig.canAccessDevis && planConfig.devisLabel && (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">
+                              {planConfig.devisLabel}
+                            </span>
+                          )}
+                          {planConfig.canAccessDevis && !planConfig.canAccessFactures && (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">
+                              Devis uniquement
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1 leading-relaxed">
+                          {planConfig.canAccessDevis
+                            ? planConfig.canAccessFactures
+                              ? "Créez vos devis professionnels, convertissez-les en factures et générez vos contrats en quelques clics"
+                              : "Créez vos devis professionnels. Passez en Pro pour accéder aux factures et contrats."
+                            : "Disponible à partir du plan Starter — créez vos devis professionnels"}
+                        </div>
                       </div>
                     </div>
                     {planConfig.canAccessDevis && (
                       <span
-                        className="flex-shrink-0 text-xs font-semibold px-4 py-2 rounded-xl transition-all duration-200 group-hover:opacity-90 whitespace-nowrap"
+                        className="self-start text-xs font-semibold px-4 py-2 rounded-xl transition-all duration-200 group-hover:opacity-90"
                         style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)", color: "white" }}
                       >
                         Accéder à l&apos;outil →
@@ -674,34 +691,36 @@ function DashboardPrestataire() {
                     href={plan === "pro" || plan === "premium" ? "https://wedding-devis.vercel.app" : undefined}
                     target={plan === "pro" || plan === "premium" ? "_blank" : undefined}
                     rel="noopener noreferrer"
-                    className={`flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-xl border transition-all duration-200 group ${
+                    className={`flex flex-col gap-3 p-4 sm:p-5 rounded-xl border transition-all duration-200 group ${
                       plan === "pro" || plan === "premium"
                         ? "border-gray-100 hover:border-rose-200 hover:bg-rose-50/30 cursor-pointer"
                         : "border-gray-100 cursor-default select-none opacity-60"
                     }`}
                   >
-                    <div
-                      className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
-                      style={{ background: "#FFF0F5" }}
-                    >
-                      <svg className="w-6 h-6" style={{ color: "#F06292" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <div className="text-sm font-semibold text-gray-900">Gestion Administrative Pro</div>
-                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold text-white" style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)" }}>
-                          Pro
-                        </span>
+                    <div className="flex items-start gap-3">
+                      <div
+                        className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0"
+                        style={{ background: "#FFF0F5" }}
+                      >
+                        <svg className="w-6 h-6" style={{ color: "#F06292" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
                       </div>
-                      <div className="text-xs text-gray-500 mt-1 leading-relaxed">
-                        Générateur de factures, devis et contrats
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <div className="text-sm font-semibold text-gray-900">Gestion Administrative Pro</div>
+                          <span className="text-xs px-2 py-0.5 rounded-full font-semibold text-white" style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)" }}>
+                            Pro
+                          </span>
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1 leading-relaxed">
+                          Générateur de factures, devis et contrats
+                        </div>
                       </div>
                     </div>
                     {(plan === "pro" || plan === "premium") && (
                       <span
-                        className="flex-shrink-0 text-xs font-semibold px-4 py-2 rounded-xl transition-all duration-200 group-hover:opacity-90 whitespace-nowrap"
+                        className="self-start text-xs font-semibold px-4 py-2 rounded-xl transition-all duration-200 group-hover:opacity-90"
                         style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)", color: "white" }}
                       >
                         Ouvrir →
@@ -713,10 +732,10 @@ function DashboardPrestataire() {
             </div>
 
             {/* Right column */}
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-4 sm:gap-6">
 
               {/* Complétion du profil */}
-              <div className="bg-white rounded-2xl shadow-card p-6">
+              <div className="bg-white rounded-2xl shadow-card p-4 sm:p-6">
                 <div className="flex items-center justify-between mb-1">
                   <h2 className="font-semibold text-gray-900">Profil complété</h2>
                   <span className="text-sm font-bold" style={{ color: "#F06292" }}>
@@ -762,7 +781,7 @@ function DashboardPrestataire() {
 
               {/* Mon abonnement */}
               <div
-                className="rounded-2xl p-6 text-white relative overflow-hidden"
+                className="rounded-2xl p-4 sm:p-6 text-white relative overflow-hidden"
                 style={{ background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)" }}
               >
                 <div
