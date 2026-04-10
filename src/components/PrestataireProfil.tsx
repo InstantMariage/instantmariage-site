@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PROVIDERS } from "@/data/providers";
@@ -393,9 +393,201 @@ function SectionAPropos({ prestataire }: { prestataire: PrestatireData }) {
   );
 }
 
-function SectionGalerie({ galerie }: { galerie: PrestatireData["galerie"] }) {
-  const [selected, setSelected] = useState<null | number>(null);
+// ─── Galerie : carousel mobile + grille desktop + lightbox ───────────────────
 
+function GalerieCarousel({ galerie }: { galerie: PrestatireData["galerie"] }) {
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [selected, setSelected] = useState<null | number>(null);
+  const touchStartX = useRef<number | null>(null);
+  const lightboxTouchStartX = useRef<number | null>(null);
+
+  const currentLightboxIndex = selected !== null ? galerie.findIndex((p) => p.id === selected) : -1;
+
+  const lightboxNext = useCallback(() => {
+    if (currentLightboxIndex < 0) return;
+    setSelected(galerie[(currentLightboxIndex + 1) % galerie.length].id);
+  }, [currentLightboxIndex, galerie]);
+
+  const lightboxPrev = useCallback(() => {
+    if (currentLightboxIndex < 0) return;
+    setSelected(galerie[(currentLightboxIndex - 1 + galerie.length) % galerie.length].id);
+  }, [currentLightboxIndex, galerie]);
+
+  useEffect(() => {
+    if (selected === null) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") lightboxNext();
+      else if (e.key === "ArrowLeft") lightboxPrev();
+      else if (e.key === "Escape") setSelected(null);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [selected, lightboxNext, lightboxPrev]);
+
+  if (galerie.length === 0) return null;
+
+  return (
+    <>
+      {/* ── Mobile : carousel swipeable ── */}
+      <div className="sm:hidden">
+        <div
+          className="relative overflow-hidden rounded-xl aspect-[4/3]"
+          onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+          onTouchEnd={(e) => {
+            if (touchStartX.current === null) return;
+            const diff = touchStartX.current - e.changedTouches[0].clientX;
+            if (diff > 50) setCarouselIndex((i) => Math.min(i + 1, galerie.length - 1));
+            else if (diff < -50) setCarouselIndex((i) => Math.max(i - 1, 0));
+            touchStartX.current = null;
+          }}
+          onClick={() => setSelected(galerie[carouselIndex].id)}
+        >
+          <div
+            className="flex h-full transition-transform duration-300 ease-out"
+            style={{ transform: `translateX(-${carouselIndex * 100}%)` }}
+          >
+            {galerie.map((photo) => (
+              <div key={photo.id} className="min-w-full h-full relative flex-shrink-0">
+                <img src={photo.src} alt={photo.alt} className="absolute inset-0 w-full h-full object-cover" />
+              </div>
+            ))}
+          </div>
+
+          {/* Compteur */}
+          <div className="absolute top-3 right-3 bg-black/40 text-white text-xs px-2 py-1 rounded-full pointer-events-none">
+            {carouselIndex + 1} / {galerie.length}
+          </div>
+
+          {/* Flèches mobile */}
+          {carouselIndex > 0 && (
+            <button
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 hover:bg-black/60 rounded-full flex items-center justify-center text-white transition-colors"
+              onClick={(e) => { e.stopPropagation(); setCarouselIndex((i) => Math.max(i - 1, 0)); }}
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+          {carouselIndex < galerie.length - 1 && (
+            <button
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 hover:bg-black/60 rounded-full flex items-center justify-center text-white transition-colors"
+              onClick={(e) => { e.stopPropagation(); setCarouselIndex((i) => Math.min(i + 1, galerie.length - 1)); }}
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
+
+          {/* Dots */}
+          {galerie.length > 1 && (
+            <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 pointer-events-none">
+              {galerie.map((_, i) => (
+                <span
+                  key={i}
+                  className={`h-1.5 rounded-full transition-all duration-200 ${i === carouselIndex ? "bg-white w-4" : "bg-white/50 w-1.5"}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Desktop : grille masonry ── */}
+      <div className="hidden sm:block">
+        <div className="columns-2 sm:columns-3 gap-3 space-y-3">
+          {galerie.map((photo) => (
+            <div
+              key={photo.id}
+              className={`break-inside-avoid relative overflow-hidden rounded-xl cursor-pointer group ${photo.tall ? "aspect-[3/4]" : "aspect-square"}`}
+              onClick={() => setSelected(photo.id)}
+            >
+              <img
+                src={photo.src}
+                alt={photo.alt}
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                <svg className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                </svg>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Lightbox (mobile + desktop) ── */}
+      {selected !== null && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setSelected(null)}
+          onTouchStart={(e) => { lightboxTouchStartX.current = e.touches[0].clientX; }}
+          onTouchEnd={(e) => {
+            if (lightboxTouchStartX.current === null) return;
+            const diff = lightboxTouchStartX.current - e.changedTouches[0].clientX;
+            if (diff > 50) lightboxNext();
+            else if (diff < -50) lightboxPrev();
+            lightboxTouchStartX.current = null;
+          }}
+        >
+          {/* Fermer */}
+          <button
+            className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-colors"
+            onClick={(e) => { e.stopPropagation(); setSelected(null); }}
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Précédent */}
+          {galerie.length > 1 && (
+            <button
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-colors"
+              onClick={(e) => { e.stopPropagation(); lightboxPrev(); }}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+
+          {/* Suivant */}
+          {galerie.length > 1 && (
+            <button
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-colors"
+              onClick={(e) => { e.stopPropagation(); lightboxNext(); }}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
+
+          <div className="relative max-w-4xl max-h-[90vh] w-full h-full" onClick={(e) => e.stopPropagation()}>
+            {(() => {
+              const photo = galerie.find((p) => p.id === selected);
+              return photo ? (
+                <img src={photo.src} alt={photo.alt} className="absolute inset-0 w-full h-full object-contain" />
+              ) : null;
+            })()}
+          </div>
+
+          {/* Compteur */}
+          {galerie.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/60 text-sm pointer-events-none">
+              {currentLightboxIndex + 1} / {galerie.length}
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
+
+function SectionGalerie({ galerie }: { galerie: PrestatireData["galerie"] }) {
   return (
     <div>
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
@@ -412,58 +604,9 @@ function SectionGalerie({ galerie }: { galerie: PrestatireData["galerie"] }) {
             <p className="text-gray-400 text-sm italic">Aucune photo dans la galerie.</p>
           </div>
         ) : (
-          /* Masonry grid */
-          <div className="columns-2 sm:columns-3 gap-3 space-y-3">
-            {galerie.map((photo) => (
-              <div
-                key={photo.id}
-                className={`break-inside-avoid relative overflow-hidden rounded-xl cursor-pointer group ${photo.tall ? "aspect-[3/4]" : "aspect-square"}`}
-                onClick={() => setSelected(photo.id)}
-              >
-                <img
-                  src={photo.src}
-                  alt={photo.alt}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-                  <svg className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                  </svg>
-                </div>
-              </div>
-            ))}
-          </div>
+          <GalerieCarousel galerie={galerie} />
         )}
       </div>
-
-      {/* Lightbox */}
-      {selected !== null && (
-        <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
-          onClick={() => setSelected(null)}
-        >
-          <button
-            className="absolute top-4 right-4 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-colors"
-            onClick={() => setSelected(null)}
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-          <div className="relative max-w-4xl max-h-[90vh] w-full h-full" onClick={(e) => e.stopPropagation()}>
-            {(() => {
-              const photo = galerie.find((p) => p.id === selected);
-              return photo ? (
-                <img
-                  src={photo.src}
-                  alt={photo.alt}
-                  className="absolute inset-0 w-full h-full object-contain"
-                />
-              ) : null;
-            })()}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -471,7 +614,6 @@ function SectionGalerie({ galerie }: { galerie: PrestatireData["galerie"] }) {
 // ─── Section combinée À propos + Galerie ─────────────────────────────────────
 
 function SectionAProposGalerie({ prestataire }: { prestataire: PrestatireData }) {
-  const [selected, setSelected] = useState<null | number>(null);
 
   return (
     <div className="space-y-10">
@@ -565,50 +707,9 @@ function SectionAProposGalerie({ prestataire }: { prestataire: PrestatireData })
         <div>
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-xl font-bold text-gray-900">Galerie</h2>
-            <span className="text-sm text-gray-400">{prestataire.galerie.length} photos</span>
+            <span className="text-sm text-gray-400">{prestataire.galerie.length} photo{prestataire.galerie.length > 1 ? "s" : ""}</span>
           </div>
-          <div className="columns-2 sm:columns-3 gap-3 space-y-3">
-            {prestataire.galerie.map((photo) => (
-              <div
-                key={photo.id}
-                className={`break-inside-avoid relative overflow-hidden rounded-2xl cursor-pointer group ${photo.tall ? "aspect-[3/4]" : "aspect-square"}`}
-                onClick={() => setSelected(photo.id)}
-              >
-                <img
-                  src={photo.src}
-                  alt={photo.alt}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-                  <svg className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                  </svg>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Lightbox */}
-      {selected !== null && (
-        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4" onClick={() => setSelected(null)}>
-          <button
-            className="absolute top-4 right-4 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-colors"
-            onClick={() => setSelected(null)}
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-          <div className="relative max-w-4xl max-h-[90vh] w-full h-full" onClick={(e) => e.stopPropagation()}>
-            {(() => {
-              const photo = prestataire.galerie.find((p) => p.id === selected);
-              return photo ? (
-                <img src={photo.src} alt={photo.alt} className="absolute inset-0 w-full h-full object-contain" />
-              ) : null;
-            })()}
-          </div>
+          <GalerieCarousel galerie={prestataire.galerie} />
         </div>
       )}
     </div>
