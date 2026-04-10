@@ -160,25 +160,15 @@ function getInitials(name: string): string {
     .join("");
 }
 
-function LockOverlay({
-  planRequired,
-  message,
-}: {
-  planRequired: string;
-  message?: string;
-}) {
+function UpgradeBadge() {
   return (
-    <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center z-10 gap-2">
-      <div
-        className="w-10 h-10 rounded-full flex items-center justify-center"
-        style={{ background: "#FFF0F5" }}
-      >
-        <svg className="w-5 h-5" style={{ color: "#F06292" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-        </svg>
-      </div>
-      <p className="text-sm font-semibold text-gray-700">{message ?? `Réservé au plan ${planRequired}`}</p>
-    </div>
+    <Link
+      href="/tarifs"
+      className="absolute top-3 right-3 z-10 inline-flex items-center gap-1 px-3 py-1 rounded-full text-white text-xs font-semibold shadow-sm hover:opacity-90 transition-opacity whitespace-nowrap"
+      style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)" }}
+    >
+      ✨ Disponible avec un abonnement
+    </Link>
   );
 }
 
@@ -451,7 +441,8 @@ function DashboardPrestataire() {
             {stats.map((stat) => {
               const locked = plan === "gratuit" || plan === "starter";
               return (
-                <div key={stat.label} className="relative bg-white rounded-2xl p-4 sm:p-5 shadow-card overflow-hidden">
+                <div key={stat.label} className={`relative bg-white rounded-2xl p-4 sm:p-5 shadow-card overflow-hidden${locked ? " opacity-60" : ""}`}>
+                  {locked && <UpgradeBadge />}
                   <div className="flex items-center justify-between mb-3">
                     <div
                       className="w-9 h-9 rounded-xl flex items-center justify-center"
@@ -459,31 +450,9 @@ function DashboardPrestataire() {
                     >
                       {stat.icon}
                     </div>
-                    {locked && (
-                      <div
-                        className="w-6 h-6 rounded-full flex items-center justify-center"
-                        style={{ background: "#FFF0F5" }}
-                      >
-                        <svg className="w-3.5 h-3.5" style={{ color: "#F06292" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
-                      </div>
-                    )}
                   </div>
-
-                  {locked ? (
-                    <>
-                      {/* Fausses données floutées */}
-                      <div className="text-2xl font-bold text-gray-800 blur-sm select-none">{stat.fakeValue}</div>
-                      <div className="text-xs text-gray-500 mt-0.5 blur-sm select-none">{stat.label}</div>
-                      <div className="mt-3 text-xs text-gray-400 font-medium">Disponible avec le plan Pro</div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="text-2xl font-bold text-gray-300">—</div>
-                      <div className="text-xs text-gray-500 mt-0.5">{stat.label}</div>
-                    </>
-                  )}
+                  <div className="text-2xl font-bold text-gray-800">{locked ? stat.fakeValue : "—"}</div>
+                  <div className="text-xs text-gray-500 mt-0.5">{stat.label}</div>
                 </div>
               );
             })}
@@ -609,9 +578,7 @@ function DashboardPrestataire() {
 
                 {/* Générateur de Devis */}
                 <div className="relative">
-                  {!planConfig.canAccessDevis && (
-                    <LockOverlay planRequired="Starter" />
-                  )}
+                  {!planConfig.canAccessDevis && <UpgradeBadge />}
                   <a
                     href={planConfig.canAccessDevis ? "https://wedding-devis.vercel.app" : undefined}
                     target={planConfig.canAccessDevis ? "_blank" : undefined}
@@ -665,12 +632,7 @@ function DashboardPrestataire() {
 
                 {/* Gestion Administrative Pro */}
                 <div className="relative mt-3">
-                  {(plan === "gratuit" || plan === "starter") && (
-                    <LockOverlay
-                      planRequired="Pro"
-                      message="Disponible avec le plan Pro"
-                    />
-                  )}
+                  {(plan === "gratuit" || plan === "starter") && <UpgradeBadge />}
                   <a
                     href={plan === "pro" || plan === "premium" ? "https://wedding-devis.vercel.app" : undefined}
                     target={plan === "pro" || plan === "premium" ? "_blank" : undefined}
