@@ -10,6 +10,7 @@ interface ConversationItem {
   id: string;
   other_user_id: string;
   other_user_name: string;
+  other_avatar_url: string | null;
   last_message: string;
   last_message_at: string;
   last_message_is_mine: boolean;
@@ -61,14 +62,17 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
 
       let displayName = "Utilisateur";
 
+      let avatarUrl: string | null = null;
+
       const { data: prest } = await supabase
         .from("prestataires")
-        .select("nom_entreprise")
+        .select("nom_entreprise, avatar_url")
         .eq("user_id", otherId)
         .maybeSingle();
 
       if (prest) {
         displayName = prest.nom_entreprise;
+        avatarUrl = prest.avatar_url ?? null;
       } else {
         const { data: marie } = await supabase
           .from("maries")
@@ -109,6 +113,7 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
         id: conv.id,
         other_user_id: otherId,
         other_user_name: displayName,
+        other_avatar_url: avatarUrl,
         last_message: lastMsg?.contenu ?? "",
         last_message_at: lastMsg?.created_at ?? conv.created_at,
         last_message_is_mine: lastMsg?.expediteur_id === uid,
@@ -285,13 +290,23 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
                         }`}
                       >
                         {/* Avatar */}
-                        <div
-                          className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-base flex-shrink-0 select-none"
-                          style={{
-                            background: hasUnread ? "#F06292" : "#F8BBD9",
-                          }}
-                        >
-                          {conv.other_user_name.charAt(0).toUpperCase()}
+                        <div className="w-12 h-12 rounded-full flex-shrink-0 select-none overflow-hidden">
+                          {conv.other_avatar_url ? (
+                            <img
+                              src={conv.other_avatar_url}
+                              alt={conv.other_user_name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div
+                              className="w-full h-full flex items-center justify-center text-white font-bold text-base"
+                              style={{
+                                background: hasUnread ? "#F06292" : "#F8BBD9",
+                              }}
+                            >
+                              {conv.other_user_name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
                         </div>
 
                         {/* Text */}

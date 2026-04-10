@@ -122,6 +122,7 @@ export default function ConversationPage() {
   const [otherUserName, setOtherUserName] = useState("...");
   const [otherUserId, setOtherUserId] = useState<string | null>(null);
   const [otherPrestaId, setOtherPrestaId] = useState<string | null>(null);
+  const [otherAvatarUrl, setOtherAvatarUrl] = useState<string | null>(null);
   const [myName, setMyName] = useState("");
   const [messages, setMessages] = useState<MessageItem[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -197,7 +198,7 @@ export default function ConversationPage() {
       const [{ data: prest }, { data: myPrest }] = await Promise.all([
         supabase
           .from("prestataires")
-          .select("id, nom_entreprise")
+          .select("id, nom_entreprise, avatar_url")
           .eq("user_id", otherId)
           .maybeSingle(),
         supabase
@@ -210,6 +211,7 @@ export default function ConversationPage() {
       if (prest) {
         setOtherUserName(prest.nom_entreprise);
         setOtherPrestaId(prest.id);
+        setOtherAvatarUrl(prest.avatar_url ?? null);
       } else {
         const { data: marie } = await supabase
           .from("maries")
@@ -475,11 +477,21 @@ export default function ConversationPage() {
           </Link>
 
           {/* Avatar */}
-          <div
-            className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 select-none"
-            style={{ background: "#F06292" }}
-          >
-            {otherUserName.charAt(0).toUpperCase()}
+          <div className="w-9 h-9 rounded-full flex-shrink-0 select-none overflow-hidden">
+            {otherAvatarUrl ? (
+              <img
+                src={otherAvatarUrl}
+                alt={otherUserName}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div
+                className="w-full h-full flex items-center justify-center text-white font-bold text-sm"
+                style={{ background: "#F06292" }}
+              >
+                {otherUserName.charAt(0).toUpperCase()}
+              </div>
+            )}
           </div>
 
           {/* Name */}
@@ -592,17 +604,29 @@ export default function ConversationPage() {
                         isMe ? "justify-end" : "justify-start"
                       } ${isLastInRun ? "mb-3" : ""}`}
                     >
-                      {/* Other user avatar - only on first of run */}
+                      {/* Other user avatar - only on last of run */}
                       {!isMe && (
                         <div
-                          className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs font-bold select-none ${
+                          className={`w-7 h-7 rounded-full flex-shrink-0 select-none overflow-hidden ${
                             isLastInRun ? "visible" : "invisible"
                           }`}
-                          style={{ background: "#F8BBD9" }}
                         >
-                          <span style={{ color: "#F06292" }}>
-                            {otherUserName.charAt(0).toUpperCase()}
-                          </span>
+                          {otherAvatarUrl ? (
+                            <img
+                              src={otherAvatarUrl}
+                              alt={otherUserName}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div
+                              className="w-full h-full flex items-center justify-center text-xs font-bold"
+                              style={{ background: "#F8BBD9" }}
+                            >
+                              <span style={{ color: "#F06292" }}>
+                                {otherUserName.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       )}
 
