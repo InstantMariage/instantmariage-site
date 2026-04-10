@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PROVIDERS } from "@/data/providers";
@@ -421,12 +420,10 @@ function SectionGalerie({ galerie }: { galerie: PrestatireData["galerie"] }) {
                 className={`break-inside-avoid relative overflow-hidden rounded-xl cursor-pointer group ${photo.tall ? "aspect-[3/4]" : "aspect-square"}`}
                 onClick={() => setSelected(photo.id)}
               >
-                <Image
+                <img
                   src={photo.src}
                   alt={photo.alt}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  sizes="(max-width: 640px) 50vw, 33vw"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
                   <svg className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -457,12 +454,10 @@ function SectionGalerie({ galerie }: { galerie: PrestatireData["galerie"] }) {
             {(() => {
               const photo = galerie.find((p) => p.id === selected);
               return photo ? (
-                <Image
+                <img
                   src={photo.src}
                   alt={photo.alt}
-                  fill
-                  className="object-contain"
-                  sizes="100vw"
+                  className="absolute inset-0 w-full h-full object-contain"
                 />
               ) : null;
             })()}
@@ -579,12 +574,10 @@ function SectionAProposGalerie({ prestataire }: { prestataire: PrestatireData })
                 className={`break-inside-avoid relative overflow-hidden rounded-2xl cursor-pointer group ${photo.tall ? "aspect-[3/4]" : "aspect-square"}`}
                 onClick={() => setSelected(photo.id)}
               >
-                <Image
+                <img
                   src={photo.src}
                   alt={photo.alt}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  sizes="(max-width: 640px) 50vw, 33vw"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
                   <svg className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -612,7 +605,7 @@ function SectionAProposGalerie({ prestataire }: { prestataire: PrestatireData })
             {(() => {
               const photo = prestataire.galerie.find((p) => p.id === selected);
               return photo ? (
-                <Image src={photo.src} alt={photo.alt} fill className="object-contain" sizes="100vw" />
+                <img src={photo.src} alt={photo.alt} className="absolute inset-0 w-full h-full object-contain" />
               ) : null;
             })()}
           </div>
@@ -1154,7 +1147,7 @@ function Sidebar({ prestataire }: { prestataire: PrestatireData }) {
         <div className="flex items-center gap-3 mb-4">
           <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-rose-100 bg-gray-100 flex items-center justify-center">
             {PRESTATAIRE.photo ? (
-              <Image src={PRESTATAIRE.photo} alt={PRESTATAIRE.nom} fill className="object-cover" sizes="48px" />
+              <img src={PRESTATAIRE.photo} alt={PRESTATAIRE.nom} className="absolute inset-0 w-full h-full object-cover" />
             ) : (
               <span className="text-gray-400 text-lg font-bold leading-none select-none">
                 {PRESTATAIRE.nom.charAt(0).toUpperCase()}
@@ -1432,13 +1425,10 @@ export default function PrestataireProfil({ id }: { id?: string }) {
       {/* ── Cover ─────────────────────────────────────────────────────────── */}
       <div className="relative h-60 sm:h-80 md:h-[440px] w-full overflow-hidden">
         {PRESTATAIRE.couverture ? (
-          <Image
+          <img
             src={PRESTATAIRE.couverture}
             alt="Photo de couverture"
-            fill
-            className="object-cover"
-            priority
-            sizes="100vw"
+            className="absolute inset-0 w-full h-full object-cover"
           />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-rose-100 via-pink-100 to-rose-200" />
@@ -1469,12 +1459,10 @@ export default function PrestataireProfil({ id }: { id?: string }) {
               style={{ boxShadow: "0 0 0 4px #fff, 0 4px 24px rgba(0,0,0,0.15)" }}
             >
               {PRESTATAIRE.photo ? (
-                <Image
+                <img
                   src={PRESTATAIRE.photo}
                   alt={PRESTATAIRE.nom}
-                  fill
-                  className="object-cover"
-                  sizes="144px"
+                  className="absolute inset-0 w-full h-full object-cover"
                 />
               ) : (
                 <span className="text-gray-400 text-4xl sm:text-5xl font-bold leading-none select-none">
