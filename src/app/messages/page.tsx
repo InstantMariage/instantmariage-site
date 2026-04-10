@@ -32,6 +32,7 @@ function timeAgo(dateStr: string): string {
 export default function MessagesPage() {
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<"marie" | "prestataire" | null>(null);
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -118,10 +119,18 @@ export default function MessagesPage() {
   }, []);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) { router.push("/login"); return; }
-      setUserId(session.user.id);
-      loadConversations(session.user.id);
+      const uid = session.user.id;
+      setUserId(uid);
+      loadConversations(uid);
+
+      const { data: prest } = await supabase
+        .from("prestataires")
+        .select("user_id")
+        .eq("user_id", uid)
+        .maybeSingle();
+      setUserRole(prest ? "prestataire" : "marie");
     });
   }, [router, loadConversations]);
 
@@ -149,6 +158,18 @@ export default function MessagesPage() {
           {/* En-tête */}
           <div className="flex items-center justify-between mb-6">
             <div>
+              {userRole && (
+                <Link
+                  href={userRole === "prestataire" ? "/dashboard/prestataire" : "/dashboard/marie"}
+                  className="inline-flex items-center gap-1.5 text-sm font-medium mb-3 transition-colors"
+                  style={{ color: "#F06292" }}
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                  Mon espace
+                </Link>
+              )}
               <h1
                 className="text-2xl font-bold text-gray-900"
                 style={{ fontFamily: "var(--font-playfair), serif" }}
