@@ -956,12 +956,12 @@ export default function AnnuaireContent() {
             Rejoignez plus de 100 professionnels référencés sur InstantMariage.fr et recevez des demandes de devis qualifiées chaque semaine.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button className="bg-rose-400 hover:bg-rose-500 text-white font-semibold px-8 py-3.5 rounded-xl transition-all shadow-sm hover:shadow-md text-sm">
+            <Link href="/inscription" className="bg-rose-400 hover:bg-rose-500 text-white font-semibold px-8 py-3.5 rounded-xl transition-all shadow-sm hover:shadow-md text-sm">
               Inscrire mon entreprise gratuitement
-            </button>
-            <button className="border-2 border-rose-300 text-rose-500 hover:bg-rose-50 font-semibold px-8 py-3.5 rounded-xl transition-all text-sm">
+            </Link>
+            <Link href="/tarifs" className="border-2 border-rose-300 text-rose-500 hover:bg-rose-50 font-semibold px-8 py-3.5 rounded-xl transition-all text-sm">
               En savoir plus sur nos offres
-            </button>
+            </Link>
           </div>
         </div>
       </section>
