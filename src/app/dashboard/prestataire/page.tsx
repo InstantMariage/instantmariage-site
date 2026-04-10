@@ -163,11 +163,9 @@ function getInitials(name: string): string {
 function LockOverlay({
   planRequired,
   message,
-  buttonLabel = "Mettre à niveau →",
 }: {
   planRequired: string;
   message?: string;
-  buttonLabel?: string;
 }) {
   return (
     <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center z-10 gap-2">
@@ -180,13 +178,6 @@ function LockOverlay({
         </svg>
       </div>
       <p className="text-sm font-semibold text-gray-700">{message ?? `Réservé au plan ${planRequired}`}</p>
-      <Link
-        href="/tarifs"
-        className="text-xs font-semibold px-4 py-1.5 rounded-full text-white transition-all hover:opacity-90"
-        style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)" }}
-      >
-        {buttonLabel}
-      </Link>
     </div>
   );
 }
@@ -485,13 +476,7 @@ function DashboardPrestataire() {
                       {/* Fausses données floutées */}
                       <div className="text-2xl font-bold text-gray-800 blur-sm select-none">{stat.fakeValue}</div>
                       <div className="text-xs text-gray-500 mt-0.5 blur-sm select-none">{stat.label}</div>
-                      <Link
-                        href="/tarifs"
-                        className="mt-3 inline-block text-xs font-semibold px-3 py-1 rounded-full text-white transition-all hover:opacity-90"
-                        style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)" }}
-                      >
-                        Débloquer →
-                      </Link>
+                      <div className="mt-3 text-xs text-gray-400 font-medium">Disponible avec le plan Pro</div>
                     </>
                   ) : (
                     <>
@@ -684,7 +669,6 @@ function DashboardPrestataire() {
                     <LockOverlay
                       planRequired="Pro"
                       message="Disponible avec le plan Pro"
-                      buttonLabel="Passer au Pro →"
                     />
                   )}
                   <a
