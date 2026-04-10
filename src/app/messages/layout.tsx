@@ -36,6 +36,7 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
   const [userRole, setUserRole] = useState<"marie" | "prestataire" | null>(null);
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
 
   const selectedId = pathname.startsWith("/messages/")
     ? pathname.replace("/messages/", "")
@@ -158,6 +159,30 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
       supabase.removeChannel(channel);
     };
   }, [userId, loadConversations]);
+
+  // Supabase Realtime Presence — tracker les utilisateurs en ligne
+  useEffect(() => {
+    if (!userId) return;
+    const presenceChannel = supabase.channel("presence:messaging-room");
+    presenceChannel
+      .on("presence", { event: "sync" }, () => {
+        const state = presenceChannel.presenceState<{ user_id: string }>();
+        const ids = new Set(
+          Object.values(state).flatMap((presences) =>
+            presences.map((p) => p.user_id)
+          )
+        );
+        setOnlineUsers(ids);
+      })
+      .subscribe(async (status) => {
+        if (status === "SUBSCRIBED") {
+          await presenceChannel.track({ user_id: userId });
+        }
+      });
+    return () => {
+      supabase.removeChannel(presenceChannel);
+    };
+  }, [userId]);
 
   const totalUnread = conversations.reduce((n, c) => n + c.unread_count, 0);
 
@@ -289,24 +314,33 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
                             : "hover:bg-gray-50 active:bg-gray-100"
                         }`}
                       >
-                        {/* Avatar */}
-                        <div className="w-12 h-12 rounded-full flex-shrink-0 select-none overflow-hidden">
-                          {conv.other_avatar_url ? (
-                            <img
-                              src={conv.other_avatar_url}
-                              alt={conv.other_user_name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div
-                              className="w-full h-full flex items-center justify-center text-white font-bold text-base"
-                              style={{
-                                background: hasUnread ? "#F06292" : "#F8BBD9",
-                              }}
-                            >
-                              {conv.other_user_name.charAt(0).toUpperCase()}
-                            </div>
-                          )}
+                        {/* Avatar + point de présence */}
+                        <div className="relative w-12 h-12 flex-shrink-0">
+                          <div className="w-12 h-12 rounded-full select-none overflow-hidden">
+                            {conv.other_avatar_url ? (
+                              <img
+                                src={conv.other_avatar_url}
+                                alt={conv.other_user_name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div
+                                className="w-full h-full flex items-center justify-center text-white font-bold text-base"
+                                style={{
+                                  background: hasUnread ? "#F06292" : "#F8BBD9",
+                                }}
+                              >
+                                {conv.other_user_name.charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                          </div>
+                          <span
+                            className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white transition-colors ${
+                              onlineUsers.has(conv.other_user_id)
+                                ? "bg-green-400"
+                                : "bg-gray-300"
+                            }`}
+                          />
                         </div>
 
                         {/* Text */}

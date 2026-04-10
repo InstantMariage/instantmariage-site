@@ -130,6 +130,7 @@ export default function ConversationPage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
+  const [isOtherOnline, setIsOtherOnline] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -302,6 +303,30 @@ export default function ConversationPage() {
       supabase.removeChannel(channel);
     };
   }, [convId, userId]);
+
+  // Supabase Realtime Presence — détecter si l'interlocuteur est en ligne
+  useEffect(() => {
+    if (!userId || !otherUserId) return;
+    const presenceChannel = supabase.channel("presence:messaging-room");
+    presenceChannel
+      .on("presence", { event: "sync" }, () => {
+        const state = presenceChannel.presenceState<{ user_id: string }>();
+        const ids = new Set(
+          Object.values(state).flatMap((presences) =>
+            presences.map((p) => p.user_id)
+          )
+        );
+        setIsOtherOnline(ids.has(otherUserId));
+      })
+      .subscribe(async (status) => {
+        if (status === "SUBSCRIBED") {
+          await presenceChannel.track({ user_id: userId });
+        }
+      });
+    return () => {
+      supabase.removeChannel(presenceChannel);
+    };
+  }, [userId, otherUserId]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUploadError(null);
@@ -476,22 +501,29 @@ export default function ConversationPage() {
             </svg>
           </Link>
 
-          {/* Avatar */}
-          <div className="w-9 h-9 rounded-full flex-shrink-0 select-none overflow-hidden">
-            {otherAvatarUrl ? (
-              <img
-                src={otherAvatarUrl}
-                alt={otherUserName}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div
-                className="w-full h-full flex items-center justify-center text-white font-bold text-sm"
-                style={{ background: "#F06292" }}
-              >
-                {otherUserName.charAt(0).toUpperCase()}
-              </div>
-            )}
+          {/* Avatar + point de présence */}
+          <div className="relative w-9 h-9 flex-shrink-0">
+            <div className="w-9 h-9 rounded-full select-none overflow-hidden">
+              {otherAvatarUrl ? (
+                <img
+                  src={otherAvatarUrl}
+                  alt={otherUserName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div
+                  className="w-full h-full flex items-center justify-center text-white font-bold text-sm"
+                  style={{ background: "#F06292" }}
+                >
+                  {otherUserName.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
+            <span
+              className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white transition-colors ${
+                isOtherOnline ? "bg-green-400" : "bg-gray-300"
+              }`}
+            />
           </div>
 
           {/* Name */}
