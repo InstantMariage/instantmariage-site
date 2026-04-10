@@ -60,16 +60,24 @@ export default function FreeTools() {
   const supabase = createClientComponentClient();
 
   async function handleToolClick(tool: typeof tools[number]) {
-    const { data: { session } } = await supabase.auth.getSession();
+    console.log("[FreeTools] handleToolClick déclenché pour :", tool.title);
+
+    const { data: { session }, error } = await supabase.auth.getSession();
+    console.log("[FreeTools] session :", session);
+    console.log("[FreeTools] error :", error);
+
     const role = session?.user?.user_metadata?.role ?? null;
+    console.log("[FreeTools] role :", role);
 
     if (session && role === "marie") {
+      console.log("[FreeTools] → utilisateur connecté (marie), redirection vers :", tool.href);
       if (tool.external) {
         window.open(tool.href, "_blank", "noopener,noreferrer");
       } else {
         router.push(tool.href);
       }
     } else {
+      console.log("[FreeTools] → pas de session ou mauvais rôle, redirection vers /inscription");
       router.push("/inscription");
     }
   }
