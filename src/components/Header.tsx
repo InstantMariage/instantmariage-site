@@ -301,9 +301,30 @@ export default function Header() {
             )}
           </div>
 
-          {/* Mobile menu button */}
+          {/* Mobile: icône messages + bouton menu */}
+          <div className="lg:hidden flex items-center gap-1">
+            {user && (
+              <Link
+                href="/messages"
+                className="relative p-2 rounded-full hover:bg-rose-50 text-gray-500 hover:text-rose-400 transition-colors md:hidden"
+                title="Messages"
+                onClick={() => setMobileOpen(false)}
+              >
+                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                </svg>
+                {unreadCount > 0 && (
+                  <span
+                    className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full text-white text-xs font-bold flex items-center justify-center"
+                    style={{ background: "#F06292" }}
+                  >
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </Link>
+            )}
           <button
-            className="lg:hidden p-2 rounded-lg text-gray-600 hover:text-rose-500 hover:bg-rose-50"
+            className="p-2 rounded-lg text-gray-600 hover:text-rose-500 hover:bg-rose-50"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Menu"
           >
@@ -317,6 +338,7 @@ export default function Header() {
               </svg>
             )}
           </button>
+          </div>
         </div>
 
         {/* Mobile Menu */}
