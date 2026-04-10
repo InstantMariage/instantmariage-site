@@ -5,10 +5,11 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import NewsletterForm from "@/components/NewsletterForm";
+import { seoArticles } from "@/app/blog/articles-data";
 
 const categories = ["Tous", "Organisation", "Inspiration", "Prestataires", "Budget", "Mode"];
 
-const articles = [
+const editorialArticles = [
   {
     id: 1,
     slug: "choisir-photographe-mariage",
@@ -83,11 +84,26 @@ const articles = [
   },
 ];
 
+// Merge SEO articles (shown first) with editorial articles
+const seoMapped = seoArticles.map((a, i) => ({
+  id: 100 + i,
+  slug: a.slug,
+  title: a.title,
+  excerpt: a.excerpt,
+  category: a.category,
+  date: a.date,
+  readTime: a.readTime,
+  image: a.image,
+  featured: false,
+}));
+
+const articles = [...seoMapped, ...editorialArticles];
+
 const popularArticles = [
-  { title: "10 questions à poser à votre traiteur", readTime: "4 min", id: 10 },
-  { title: "Checklist mariage : les 120 choses à faire", readTime: "6 min", id: 11 },
-  { title: "DJ vs groupe de musique : que choisir ?", readTime: "5 min", id: 12 },
-  { title: "Fleurs de mariage selon la saison", readTime: "4 min", id: 13 },
+  { title: "Comment organiser son mariage : le guide complet 2026", readTime: "15 min", slug: "comment-organiser-son-mariage-guide-2026" },
+  { title: "Checklist mariage : les 100 choses à ne pas oublier", readTime: "10 min", slug: "checklist-mariage-100-choses-a-ne-pas-oublier" },
+  { title: "Budget mariage : combien coûte un mariage en France ?", readTime: "12 min", slug: "budget-mariage-combien-coute-mariage-france-2026" },
+  { title: "Comment bien choisir son photographe de mariage", readTime: "8 min", slug: "comment-choisir-photographe-mariage" },
 ];
 
 const categoryColors: Record<string, string> = {
@@ -291,8 +307,8 @@ export default function BlogPage() {
               <div className="space-y-4">
                 {popularArticles.map((a, i) => (
                   <Link
-                    key={a.id}
-                    href="#"
+                    key={a.slug}
+                    href={`/blog/${a.slug}`}
                     className="flex items-start gap-3 group"
                   >
                     <span
