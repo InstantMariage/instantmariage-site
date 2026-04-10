@@ -371,15 +371,6 @@ function DashboardPrestataire() {
                         ★ Premium
                       </span>
                     )}
-                    {plan === "gratuit" && (
-                      <Link
-                        href="/tarifs"
-                        className="text-xs font-semibold px-3 py-1 rounded-full transition-all hover:opacity-90"
-                        style={{ background: "#F06292", color: "white" }}
-                      >
-                        ⭐ Passer au Pro
-                      </Link>
-                    )}
                   </div>
                   <p className="text-rose-100 text-sm mt-0.5">
                     {[categorie, ville].filter(Boolean).join(" · ")}
@@ -411,24 +402,62 @@ function DashboardPrestataire() {
           </div>
         </div>
 
+        {/* Banner Pro — visible uniquement pour les plans gratuit et starter */}
+        {(plan === "gratuit" || plan === "starter") && (
+          <div
+            className="px-4 py-4"
+            style={{ background: "linear-gradient(90deg, #F06292 0%, #E91E8C 100%)" }}
+          >
+            <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-center sm:text-left">
+                <p className="text-white font-bold text-base leading-snug">
+                  ⭐ Passez au plan Pro et boostez votre visibilité !
+                </p>
+                <p className="text-rose-100 text-sm mt-0.5">
+                  Accédez aux statistiques, plus de photos et un meilleur référencement
+                </p>
+              </div>
+              <Link
+                href="/tarifs"
+                className="flex-shrink-0 bg-white text-rose-500 font-bold text-sm px-6 py-2.5 rounded-full hover:bg-rose-50 transition-all duration-200 shadow-md whitespace-nowrap"
+              >
+                Découvrir le plan Pro →
+              </Link>
+            </div>
+          </div>
+        )}
+
         <div className="max-w-6xl mx-auto px-4 -mt-2">
           {/* Stats Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-            {stats.map((stat) => (
-              <div key={stat.label} className="bg-white rounded-2xl p-5 shadow-card">
-                <div className="flex items-center justify-between mb-3">
-                  <div
-                    className="w-9 h-9 rounded-xl flex items-center justify-center"
-                    style={{ background: "#FFF0F5", color: "#F06292" }}
-                  >
-                    {stat.icon}
+            {stats.map((stat) => {
+              const locked = plan === "gratuit" || plan === "starter";
+              return (
+                <div key={stat.label} className="relative bg-white rounded-2xl p-5 shadow-card overflow-hidden">
+                  {/* Contenu de la carte (toujours rendu pour le fond visible sous le flou) */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center"
+                      style={{ background: "#FFF0F5", color: "#F06292" }}
+                    >
+                      {stat.icon}
+                    </div>
                   </div>
+                  <div className="text-2xl font-bold text-gray-300">—</div>
+                  <div className="text-xs text-gray-500 mt-0.5">{stat.label}</div>
+
+                  {/* Overlay cadenas pour plans sans accès */}
+                  {locked && (
+                    <div className="absolute inset-0 backdrop-blur-sm bg-white/70 rounded-2xl flex flex-col items-center justify-center gap-1.5">
+                      <span className="text-2xl">🔒</span>
+                      <p className="text-xs font-semibold text-gray-600 text-center px-2 leading-tight">
+                        Disponible avec<br />le plan Pro
+                      </p>
+                    </div>
+                  )}
                 </div>
-                <div className="text-2xl font-bold text-gray-300">—</div>
-                <div className="text-xs text-gray-500 mt-0.5">{stat.label}</div>
-                <div className="text-xs text-gray-400 mt-1">Données à venir</div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
