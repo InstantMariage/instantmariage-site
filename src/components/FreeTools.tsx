@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 const tools = [
   {
@@ -10,6 +14,8 @@ const tools = [
     color: "from-rose-400 to-pink-500",
     bg: "bg-rose-50",
     border: "border-rose-100",
+    href: "https://tableau-de-bord-mariage.vercel.app",
+    external: true,
   },
   {
     icon: "🪑",
@@ -20,6 +26,8 @@ const tools = [
     color: "from-violet-400 to-purple-500",
     bg: "bg-violet-50",
     border: "border-violet-100",
+    href: "https://tableau-de-bord-mariage.vercel.app",
+    external: true,
   },
   {
     icon: "📅",
@@ -30,6 +38,8 @@ const tools = [
     color: "from-amber-400 to-orange-500",
     bg: "bg-amber-50",
     border: "border-amber-100",
+    href: "/dashboard/marie/retroplanning",
+    external: false,
   },
   {
     icon: "💰",
@@ -40,10 +50,30 @@ const tools = [
     color: "from-emerald-400 to-teal-500",
     bg: "bg-emerald-50",
     border: "border-emerald-100",
+    href: "/dashboard/marie/budget",
+    external: false,
   },
 ];
 
 export default function FreeTools() {
+  const router = useRouter();
+  const supabase = createClientComponentClient();
+
+  async function handleToolClick(tool: typeof tools[number]) {
+    const { data: { session } } = await supabase.auth.getSession();
+    const role = session?.user?.user_metadata?.role ?? null;
+
+    if (session && role === "marie") {
+      if (tool.external) {
+        window.open(tool.href, "_blank", "noopener,noreferrer");
+      } else {
+        router.push(tool.href);
+      }
+    } else {
+      router.push("/inscription");
+    }
+  }
+
   return (
     <section id="outils" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -70,6 +100,7 @@ export default function FreeTools() {
           {tools.map((tool) => (
             <div
               key={tool.title}
+              onClick={() => handleToolClick(tool)}
               className={`group ${tool.bg} border ${tool.border} rounded-2xl p-6 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 cursor-pointer`}
             >
               <div className="flex items-start gap-5">
@@ -125,9 +156,9 @@ export default function FreeTools() {
               outils pour organiser le mariage de vos rêves.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <button className="bg-white text-[#e91e8c] hover:bg-rose-50 font-bold px-8 py-3.5 rounded-full transition-all duration-200 shadow-md hover:shadow-lg text-sm">
+              <Link href="/inscription" className="bg-white text-[#e91e8c] hover:bg-rose-50 font-bold px-8 py-3.5 rounded-full transition-all duration-200 shadow-md hover:shadow-lg text-sm">
                 Accéder gratuitement
-              </button>
+              </Link>
               <Link href="/demo" className="bg-white/15 hover:bg-white/25 text-white font-semibold px-8 py-3.5 rounded-full border border-white/40 transition-all duration-200 text-sm backdrop-blur-sm">
                 Voir une démo
               </Link>
