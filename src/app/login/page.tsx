@@ -122,27 +122,32 @@ export default function LoginPage() {
         <div className="max-w-md w-full mx-auto">
           {/* Header */}
           <div className="mb-8">
-            {/* Cœurs décoratifs */}
-            <div className="flex items-center gap-1.5 mb-3">
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="#F06292">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-              </svg>
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="#fbb6ce">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-              </svg>
-              <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="#fce7f3">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-              </svg>
-            </div>
-            <h1
-              className="text-3xl font-bold text-gray-900 mb-2"
-              style={{ fontFamily: "var(--font-playfair), serif" }}
+            <div
+              className="rounded-2xl px-6 py-5"
+              style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)", boxShadow: "0 4px 18px 0 rgba(233,30,140,0.22)" }}
             >
-              Bon retour parmi nous ✨
-            </h1>
-            <p className="text-gray-500 text-sm leading-relaxed">
-              Retrouvez votre espace et continuez à préparer le plus beau jour de votre vie.
-            </p>
+              {/* Cœurs décoratifs */}
+              <div className="flex items-center gap-1.5 mb-3">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                </svg>
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="rgba(255,255,255,0.6)">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                </svg>
+                <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="rgba(255,255,255,0.35)">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                </svg>
+              </div>
+              <h1
+                className="text-3xl font-bold text-white mb-2"
+                style={{ fontFamily: "var(--font-playfair), serif" }}
+              >
+                Bon retour parmi nous ✨
+              </h1>
+              <p className="text-white/80 text-sm leading-relaxed">
+                Retrouvez votre espace et continuez à préparer le plus beau jour de votre vie.
+              </p>
+            </div>
           </div>
 
           {/* Google button */}
