@@ -6,12 +6,16 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 Mo
+
 interface MessageItem {
   id: string;
   contenu: string;
   expediteur_id: string;
   created_at: string;
   lu: boolean;
+  attachment_url?: string | null;
+  attachment_name?: string | null;
 }
 
 function formatTime(dateStr: string): string {
@@ -36,6 +40,75 @@ function formatDate(dateStr: string): string {
   });
 }
 
+function isImage(url: string): boolean {
+  return /\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i.test(url);
+}
+
+function isPdf(name: string): boolean {
+  return name.toLowerCase().endsWith(".pdf");
+}
+
+function FileIcon({ filename }: { filename: string }) {
+  if (isPdf(filename)) {
+    return (
+      <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6z"/>
+        <path d="M8 13h8v1.5H8V13zm0 3h5v1.5H8V16z"/>
+      </svg>
+    );
+  }
+  return (
+    <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6z"/>
+    </svg>
+  );
+}
+
+function AttachmentDisplay({
+  url,
+  name,
+  isMe,
+}: {
+  url: string;
+  name: string | null | undefined;
+  isMe: boolean;
+}) {
+  const filename = name || url.split("/").pop() || "fichier";
+
+  if (isImage(url)) {
+    return (
+      <a href={url} target="_blank" rel="noopener noreferrer" className="block mt-1">
+        <img
+          src={url}
+          alt={filename}
+          className="max-w-full rounded-xl"
+          style={{ maxHeight: 220, objectFit: "cover" }}
+        />
+      </a>
+    );
+  }
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      download={filename}
+      className={`flex items-center gap-2 mt-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+        isMe
+          ? "bg-white/20 hover:bg-white/30 text-white"
+          : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+      }`}
+    >
+      <FileIcon filename={filename} />
+      <span className="truncate max-w-[160px]">{filename}</span>
+      <svg className="w-4 h-4 flex-shrink-0 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+      </svg>
+    </a>
+  );
+}
+
 export default function ConversationPage() {
   const router = useRouter();
   const params = useParams();
@@ -52,6 +125,11 @@ export default function ConversationPage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
+  // Pièce jointe
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -63,7 +141,7 @@ export default function ConversationPage() {
     async (uid: string, otherId: string) => {
       const { data, error } = await supabase
         .from("messages")
-        .select("id, contenu, expediteur_id, destinataire_id, created_at, lu")
+        .select("id, contenu, expediteur_id, destinataire_id, created_at, lu, attachment_url, attachment_name")
         .eq("conversation_id", convId)
         .order("created_at", { ascending: true });
 
@@ -202,11 +280,63 @@ export default function ConversationPage() {
     return () => { supabase.removeChannel(channel); };
   }, [convId, userId]);
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUploadError(null);
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > MAX_FILE_SIZE) {
+      setUploadError("Fichier trop volumineux (max 10 Mo).");
+      e.target.value = "";
+      return;
+    }
+
+    setPendingFile(file);
+    e.target.value = "";
+  };
+
+  const removePendingFile = () => {
+    setPendingFile(null);
+    setUploadError(null);
+  };
+
   const handleSend = async () => {
-    if (!newMessage.trim() || !userId || !otherUserId || sending) return;
+    const hasText = newMessage.trim().length > 0;
+    const hasFile = pendingFile !== null;
+    if ((!hasText && !hasFile) || !userId || !otherUserId || sending) return;
+
     const content = newMessage.trim();
     setNewMessage("");
     setSending(true);
+    setUploadError(null);
+
+    let attachmentUrl: string | null = null;
+    let attachmentName: string | null = null;
+
+    // Upload du fichier si présent
+    if (pendingFile) {
+      const ext = pendingFile.name.split(".").pop();
+      const path = `${convId}/${Date.now()}-${pendingFile.name.replace(/[^a-zA-Z0-9.\-_]/g, "_")}`;
+
+      const { error: uploadErr } = await supabase.storage
+        .from("messages-attachments")
+        .upload(path, pendingFile, { upsert: false });
+
+      if (uploadErr) {
+        setUploadError("Erreur lors de l'envoi du fichier.");
+        setSending(false);
+        setNewMessage(content);
+        return;
+      }
+
+      const { data: publicData } = supabase.storage
+        .from("messages-attachments")
+        .getPublicUrl(path);
+
+      attachmentUrl = publicData.publicUrl;
+      attachmentName = pendingFile.name;
+      setPendingFile(null);
+    }
 
     const { data: inserted, error } = await supabase
       .from("messages")
@@ -214,10 +344,12 @@ export default function ConversationPage() {
         conversation_id: convId,
         expediteur_id: userId,
         destinataire_id: otherUserId,
-        contenu: content,
+        contenu: content || (attachmentName ? `📎 ${attachmentName}` : ""),
         lu: false,
+        attachment_url: attachmentUrl,
+        attachment_name: attachmentName,
       })
-      .select("id, contenu, expediteur_id, created_at, lu")
+      .select("id, contenu, expediteur_id, created_at, lu, attachment_url, attachment_name")
       .single();
 
     if (!error && inserted) {
@@ -250,7 +382,7 @@ export default function ConversationPage() {
               recipientEmail: recipientUser.email,
               recipientName: otherUserName,
               senderName: myName || "Un utilisateur",
-              messagePreview: content,
+              messagePreview: content || `[Pièce jointe : ${attachmentName}]`,
               conversationId: convId,
             }),
           }).catch(() => {});
@@ -300,6 +432,8 @@ export default function ConversationPage() {
       </div>
     );
   }
+
+  const canSend = (newMessage.trim().length > 0 || pendingFile !== null) && !sending;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -403,6 +537,13 @@ export default function ConversationPage() {
                       !isMe &&
                       (!prevMsg || prevMsg.expediteur_id !== msg.expediteur_id);
 
+                    const hasAttachment = !!msg.attachment_url;
+                    const textContent = hasAttachment && !msg.contenu.trim()
+                      ? null
+                      : msg.contenu.startsWith("📎 ") && hasAttachment
+                      ? null
+                      : msg.contenu;
+
                     return (
                       <div
                         key={msg.id}
@@ -429,7 +570,14 @@ export default function ConversationPage() {
                             }`}
                             style={isMe ? { background: "#F06292" } : undefined}
                           >
-                            {msg.contenu}
+                            {textContent && <p>{textContent}</p>}
+                            {hasAttachment && (
+                              <AttachmentDisplay
+                                url={msg.attachment_url!}
+                                name={msg.attachment_name}
+                                isMe={isMe}
+                              />
+                            )}
                           </div>
                           <span className="text-xs text-gray-300 mt-0.5 px-1">
                             {formatTime(msg.created_at)}
@@ -452,8 +600,62 @@ export default function ConversationPage() {
       </main>
 
       {/* Zone de saisie */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-3 z-40">
-        <div className="max-w-2xl mx-auto flex items-end gap-2">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-40">
+        {/* Aperçu fichier sélectionné */}
+        {pendingFile && (
+          <div className="max-w-2xl mx-auto px-4 pt-2.5">
+            <div className="flex items-center gap-2 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2">
+              <FileIcon filename={pendingFile.name} />
+              <span className="text-sm text-gray-700 truncate flex-1">{pendingFile.name}</span>
+              <span className="text-xs text-gray-400 flex-shrink-0">
+                {(pendingFile.size / 1024 / 1024).toFixed(1)} Mo
+              </span>
+              <button
+                onClick={removePendingFile}
+                className="flex-shrink-0 text-gray-400 hover:text-rose-400 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Erreur upload */}
+        {uploadError && (
+          <div className="max-w-2xl mx-auto px-4 pt-2">
+            <p className="text-xs text-red-500">{uploadError}</p>
+          </div>
+        )}
+
+        <div className="max-w-2xl mx-auto px-4 py-3 flex items-end gap-2">
+          {/* Input fichier caché */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar"
+            className="hidden"
+            onChange={handleFileSelect}
+          />
+
+          {/* Bouton trombone */}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={sending}
+            className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-gray-400 hover:text-rose-400 hover:bg-rose-50 transition-all disabled:opacity-40"
+            title="Joindre un fichier"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+              />
+            </svg>
+          </button>
+
           <textarea
             ref={textareaRef}
             value={newMessage}
@@ -476,7 +678,7 @@ export default function ConversationPage() {
           />
           <button
             onClick={handleSend}
-            disabled={!newMessage.trim() || sending}
+            disabled={!canSend}
             className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 text-white transition-all duration-200 disabled:opacity-40"
             style={{ background: "#F06292" }}
           >
