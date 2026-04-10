@@ -86,16 +86,32 @@ export default function Header() {
   // Realtime : badge non-lu
   useEffect(() => {
     if (!user) return;
+    const uid = user.id;
     const channel = supabase
-      .channel("header-unread")
+      .channel(`header-unread-${uid}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "messages" },
-        () => loadUnreadCount(user.id)
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `destinataire_id=eq.${uid}`,
+        },
+        () => loadUnreadCount(uid)
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+          filter: `destinataire_id=eq.${uid}`,
+        },
+        () => loadUnreadCount(uid)
       )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [user]);
+  }, [user?.id]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
