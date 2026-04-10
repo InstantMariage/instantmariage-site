@@ -128,6 +128,26 @@ const profileSuggestions = [
 
 const profileCompletion = 52;
 
+type ConversationItem = {
+  id: string;
+  other_name: string;
+  last_message: string;
+  last_message_at: string;
+  last_message_is_mine: boolean;
+  unread_count: number;
+};
+
+function timeAgo(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
+  if (diff < 60) return "à l'instant";
+  if (diff < 3600) return `il y a ${Math.floor(diff / 60)} min`;
+  if (diff < 86400) return `il y a ${Math.floor(diff / 3600)} h`;
+  if (diff < 604800) return `il y a ${Math.floor(diff / 86400)} j`;
+  return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+}
+
 function getInitials(name: string): string {
   return name
     .split(/\s+/)
@@ -173,6 +193,8 @@ function DashboardPrestataire() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [plan, setPlan] = useState<PlanAbonnement>("gratuit");
   const [dateRenouvellement, setDateRenouvellement] = useState<string | null>(null);
+  const [conversations, setConversations] = useState<ConversationItem[]>([]);
+  const [convsLoaded, setConvsLoaded] = useState(false);
 
   useEffect(() => {
     if (searchParams.get("success") === "true") {
@@ -226,6 +248,63 @@ function DashboardPrestataire() {
         setCategorie(meta?.categorie || "");
         setVille(meta?.ville || "");
       }
+
+      // Charger les conversations
+      const uid = session.user.id;
+      const { data: convs } = await supabase
+        .from("conversations")
+        .select("*")
+        .or(`participant1_id.eq.${uid},participant2_id.eq.${uid}`)
+        .order("last_message_at", { ascending: false })
+        .limit(5);
+
+      if (convs && convs.length > 0) {
+        const items: ConversationItem[] = [];
+        for (const conv of convs) {
+          const otherId = conv.participant1_id === uid ? conv.participant2_id : conv.participant1_id;
+          let displayName = "Utilisateur";
+          const { data: marie } = await supabase
+            .from("maries")
+            .select("prenom_marie1, prenom_marie2")
+            .eq("user_id", otherId)
+            .maybeSingle();
+          if (marie) {
+            displayName = marie.prenom_marie2
+              ? `${marie.prenom_marie1} & ${marie.prenom_marie2}`
+              : marie.prenom_marie1;
+          } else {
+            const { data: prest } = await supabase
+              .from("prestataires")
+              .select("nom_entreprise")
+              .eq("user_id", otherId)
+              .maybeSingle();
+            if (prest) displayName = prest.nom_entreprise;
+          }
+          const { data: lastMsg } = await supabase
+            .from("messages")
+            .select("contenu, created_at, expediteur_id")
+            .eq("conversation_id", conv.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          const { count } = await supabase
+            .from("messages")
+            .select("*", { count: "exact", head: true })
+            .eq("conversation_id", conv.id)
+            .eq("destinataire_id", uid)
+            .eq("lu", false);
+          items.push({
+            id: conv.id,
+            other_name: displayName,
+            last_message: lastMsg?.contenu ?? "",
+            last_message_at: lastMsg?.created_at ?? conv.created_at,
+            last_message_is_mine: lastMsg?.expediteur_id === uid,
+            unread_count: count ?? 0,
+          });
+        }
+        setConversations(items);
+      }
+      setConvsLoaded(true);
 
       setAuthChecked(true);
     });
@@ -378,15 +457,79 @@ function DashboardPrestataire() {
                 </div>
 
                 {activeTab === "messages" && (
-                  <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
-                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: "#FFF0F5" }}>
-                      <svg className="w-7 h-7" style={{ color: "#F06292" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <p className="font-semibold text-gray-700 mb-1">Pas encore de messages</p>
-                    <p className="text-sm text-gray-400">Vos échanges avec les futurs mariés apparaîtront ici</p>
-                  </div>
+                  <>
+                    {!convsLoaded ? (
+                      <div className="flex items-center justify-center py-12">
+                        <div className="w-6 h-6 border-2 border-gray-200 border-t-transparent rounded-full animate-spin" style={{ borderTopColor: "#F06292" }} />
+                      </div>
+                    ) : conversations.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
+                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: "#FFF0F5" }}>
+                          <svg className="w-7 h-7" style={{ color: "#F06292" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <p className="font-semibold text-gray-700 mb-1">Pas encore de messages</p>
+                        <p className="text-sm text-gray-400">Vos échanges avec les futurs mariés apparaîtront ici</p>
+                      </div>
+                    ) : (
+                      <div>
+                        {conversations.map((conv, i) => {
+                          const isLast = i === conversations.length - 1;
+                          return (
+                            <Link
+                              key={conv.id}
+                              href={`/messages/${conv.id}`}
+                              className="flex items-center gap-3 px-5 py-4 hover:bg-rose-50/40 transition-colors duration-200 group"
+                              style={{ borderBottom: isLast ? "none" : "1px solid #FEE2E2" }}
+                            >
+                              <div
+                                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold text-sm"
+                                style={{ background: conv.unread_count > 0 ? "#F06292" : "#FBBDD9" }}
+                              >
+                                {conv.other_name.charAt(0).toUpperCase()}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between mb-0.5">
+                                  <span className={`text-sm truncate ${conv.unread_count > 0 ? "font-bold text-gray-900" : "font-semibold text-gray-700"}`}>
+                                    {conv.other_name}
+                                  </span>
+                                  <span className="text-xs text-gray-400 flex-shrink-0 ml-2">{timeAgo(conv.last_message_at)}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <p className={`text-xs truncate flex-1 ${conv.unread_count > 0 ? "text-gray-700 font-medium" : "text-gray-400"}`}>
+                                    {conv.last_message_is_mine && <span className="text-gray-400">Vous : </span>}
+                                    {conv.last_message || "Conversation démarrée"}
+                                  </p>
+                                  {conv.unread_count > 0 && (
+                                    <span
+                                      className="flex-shrink-0 w-5 h-5 rounded-full text-white text-xs font-bold flex items-center justify-center"
+                                      style={{ background: "#F06292" }}
+                                    >
+                                      {conv.unread_count > 9 ? "9+" : conv.unread_count}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <svg className="w-4 h-4 text-gray-300 group-hover:text-rose-300 flex-shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                              </svg>
+                            </Link>
+                          );
+                        })}
+                        <Link
+                          href="/messages"
+                          className="flex items-center justify-center gap-1.5 text-sm font-semibold py-3.5 transition-all hover:opacity-70"
+                          style={{ borderTop: "1px solid #FEE2E2", color: "#F06292" }}
+                        >
+                          Voir tous les messages
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                          </svg>
+                        </Link>
+                      </div>
+                    )}
+                  </>
                 )}
 
                 {activeTab === "avis" && (

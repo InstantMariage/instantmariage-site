@@ -95,6 +95,26 @@ type FavoriPrestataire = {
   };
 };
 
+type ConversationItem = {
+  id: string;
+  other_name: string;
+  last_message: string;
+  last_message_at: string;
+  last_message_is_mine: boolean;
+  unread_count: number;
+};
+
+function timeAgo(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
+  if (diff < 60) return "à l'instant";
+  if (diff < 3600) return `il y a ${Math.floor(diff / 60)} min`;
+  if (diff < 86400) return `il y a ${Math.floor(diff / 3600)} h`;
+  if (diff < 604800) return `il y a ${Math.floor(diff / 86400)} j`;
+  return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+}
+
 export default function DashboardMarie() {
   const router = useRouter();
   const [authChecked, setAuthChecked] = useState(false);
@@ -104,6 +124,8 @@ export default function DashboardMarie() {
   const [lieuMariage, setLieuMariage] = useState<string | null>(null);
   const [favoris, setFavoris] = useState<FavoriPrestataire[]>([]);
   const [favorisLoaded, setFavorisLoaded] = useState(false);
+  const [conversations, setConversations] = useState<ConversationItem[]>([]);
+  const [convsLoaded, setConvsLoaded] = useState(false);
 
   const weddingDate = dateMariage ? new Date(dateMariage) : null;
   const { days } = useCountdown(weddingDate);
@@ -141,6 +163,61 @@ export default function DashboardMarie() {
         .order("created_at", { ascending: false });
       if (favData) setFavoris(favData as unknown as FavoriPrestataire[]);
       setFavorisLoaded(true);
+
+      // Charger les conversations
+      const uid = session.user.id;
+      const { data: convs } = await supabase
+        .from("conversations")
+        .select("*")
+        .or(`participant1_id.eq.${uid},participant2_id.eq.${uid}`)
+        .order("last_message_at", { ascending: false })
+        .limit(3);
+
+      if (convs && convs.length > 0) {
+        const items: ConversationItem[] = [];
+        for (const conv of convs) {
+          const otherId = conv.participant1_id === uid ? conv.participant2_id : conv.participant1_id;
+          let displayName = "Utilisateur";
+          const { data: prest } = await supabase
+            .from("prestataires")
+            .select("nom_entreprise")
+            .eq("user_id", otherId)
+            .maybeSingle();
+          if (prest) {
+            displayName = prest.nom_entreprise;
+          } else {
+            const { data: m } = await supabase
+              .from("maries")
+              .select("prenom_marie1, prenom_marie2")
+              .eq("user_id", otherId)
+              .maybeSingle();
+            if (m) displayName = m.prenom_marie2 ? `${m.prenom_marie1} & ${m.prenom_marie2}` : m.prenom_marie1;
+          }
+          const { data: lastMsg } = await supabase
+            .from("messages")
+            .select("contenu, created_at, expediteur_id")
+            .eq("conversation_id", conv.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          const { count } = await supabase
+            .from("messages")
+            .select("*", { count: "exact", head: true })
+            .eq("conversation_id", conv.id)
+            .eq("destinataire_id", uid)
+            .eq("lu", false);
+          items.push({
+            id: conv.id,
+            other_name: displayName,
+            last_message: lastMsg?.contenu ?? "",
+            last_message_at: lastMsg?.created_at ?? conv.created_at,
+            last_message_is_mine: lastMsg?.expediteur_id === uid,
+            unread_count: count ?? 0,
+          });
+        }
+        setConversations(items);
+      }
+      setConvsLoaded(true);
 
       setAuthChecked(true);
     });
@@ -416,21 +493,73 @@ export default function DashboardMarie() {
             </div>
 
             <div
-              className="rounded-3xl p-5"
+              className="rounded-3xl overflow-hidden"
               style={{ background: "white", boxShadow: "0 4px 24px rgba(240,98,146,0.08)", border: "1px solid #FECDD3" }}
             >
-              <div className="flex flex-col items-center text-center py-6">
-                <div
-                  className="w-11 h-11 rounded-2xl flex items-center justify-center mb-3"
-                  style={{ background: "#FFF0F5", color: "#F06292" }}
-                >
-                  <IconMail />
+              {!convsLoaded ? (
+                <div className="flex items-center justify-center py-10">
+                  <div className="w-5 h-5 border-2 border-gray-200 border-t-transparent rounded-full animate-spin" style={{ borderTopColor: "#F06292" }} />
                 </div>
-                <p className="text-sm font-semibold text-gray-700 mb-1">Aucun message</p>
-                <p className="text-xs text-gray-400 leading-relaxed">
-                  Contactez un prestataire pour démarrer une conversation
-                </p>
-              </div>
+              ) : conversations.length === 0 ? (
+                <div className="flex flex-col items-center text-center p-8">
+                  <div
+                    className="w-11 h-11 rounded-2xl flex items-center justify-center mb-3"
+                    style={{ background: "#FFF0F5", color: "#F06292" }}
+                  >
+                    <IconMail />
+                  </div>
+                  <p className="text-sm font-semibold text-gray-700 mb-1">Aucun message</p>
+                  <p className="text-xs text-gray-400 leading-relaxed">
+                    Contactez un prestataire pour démarrer une conversation
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {conversations.map((conv, i) => {
+                    const isLast = i === conversations.length - 1;
+                    return (
+                      <Link
+                        key={conv.id}
+                        href={`/messages/${conv.id}`}
+                        className="flex items-center gap-3 px-5 py-4 hover:bg-rose-50/40 transition-colors duration-200 group"
+                        style={{ borderBottom: isLast ? "none" : "1px solid #FEE2E2" }}
+                      >
+                        <div
+                          className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold text-sm"
+                          style={{ background: conv.unread_count > 0 ? "#F06292" : "#FBBDD9" }}
+                        >
+                          {conv.other_name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-0.5">
+                            <span className={`text-sm truncate ${conv.unread_count > 0 ? "font-bold text-gray-900" : "font-semibold text-gray-700"}`}>
+                              {conv.other_name}
+                            </span>
+                            <span className="text-xs text-gray-400 flex-shrink-0 ml-2">{timeAgo(conv.last_message_at)}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <p className={`text-xs truncate flex-1 ${conv.unread_count > 0 ? "text-gray-700 font-medium" : "text-gray-400"}`}>
+                              {conv.last_message_is_mine && <span className="text-gray-400">Vous : </span>}
+                              {conv.last_message || "Conversation démarrée"}
+                            </p>
+                            {conv.unread_count > 0 && (
+                              <span
+                                className="flex-shrink-0 w-5 h-5 rounded-full text-white text-xs font-bold flex items-center justify-center"
+                                style={{ background: "#F06292" }}
+                              >
+                                {conv.unread_count > 9 ? "9+" : conv.unread_count}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-gray-300 group-hover:text-gray-400 transition-colors flex-shrink-0">
+                          <IconChevronRight />
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </>
+              )}
             </div>
           </section>
 
