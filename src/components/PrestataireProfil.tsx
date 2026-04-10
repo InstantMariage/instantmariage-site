@@ -1248,7 +1248,6 @@ function SectionTarifs({ tarifs, options }: { tarifs: typeof TARIFS; options: ty
 
 function Sidebar({ prestataire }: { prestataire: PrestatireData }) {
   const PRESTATAIRE = prestataire;
-  const [saved, setSaved] = useState(false);
 
   return (
     <div className="space-y-4">
@@ -1269,16 +1268,6 @@ function Sidebar({ prestataire }: { prestataire: PrestatireData }) {
             <p className="text-xs text-gray-400">{PRESTATAIRE.metier}</p>
           </div>
         </div>
-        <button className="w-full bg-rose-400 hover:bg-rose-500 text-white font-semibold py-3 rounded-full text-sm transition-all duration-200 shadow-sm hover:shadow-md mb-3">
-          Demander un devis
-        </button>
-        <button
-          className="w-full border-2 border-rose-200 text-rose-500 hover:bg-rose-50 font-semibold py-2.5 rounded-full text-sm transition-all duration-200"
-          onClick={() => setSaved(!saved)}
-        >
-          {saved ? "✓ Sauvegardé" : "Sauvegarder"}
-        </button>
-
         <div className="mt-4 space-y-2.5 border-t border-gray-100 pt-4">
           {PRESTATAIRE.telephone ? (
             <a
@@ -1336,8 +1325,8 @@ function Sidebar({ prestataire }: { prestataire: PrestatireData }) {
         </div>
       </div>
 
-      {/* Réseaux sociaux */}
-      <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+      {/* Réseaux sociaux — visible uniquement pour les plans payants */}
+      {PRESTATAIRE.verifie && <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
         <h3 className="font-bold text-gray-900 mb-3 text-sm">Réseaux sociaux</h3>
         <div className="flex gap-3">
           <a
@@ -1368,7 +1357,7 @@ function Sidebar({ prestataire }: { prestataire: PrestatireData }) {
           </svg>
           Partager ce profil
         </a>
-      </div>
+      </div>}
 
       {/* Badge vérifié */}
       <div className="bg-gradient-to-br from-rose-50 to-pink-50 rounded-2xl p-4 border border-rose-100">
