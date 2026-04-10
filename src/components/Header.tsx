@@ -156,7 +156,7 @@ export default function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-5 ml-16">
+          <nav className="hidden lg:flex items-center gap-2 ml-16">
 
             {/* Annuaire prestataires */}
             <Link
