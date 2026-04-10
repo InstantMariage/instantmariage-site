@@ -18,17 +18,18 @@ export async function POST(req: NextRequest) {
       auth: { persistSession: false },
     });
 
-    const { user_id, prenom_marie1, date_mariage } = await req.json();
+    const { user_id, prenom_marie1, prenom_marie2, date_mariage } = await req.json();
 
     if (!user_id || !prenom_marie1) {
       return NextResponse.json({ error: "Champs obligatoires manquants" }, { status: 400 });
     }
 
-    const { data, error } = await supabaseAdmin.from("maries").insert({
+    const { data, error } = await supabaseAdmin.from("maries").upsert({
       user_id,
       prenom_marie1,
+      prenom_marie2: prenom_marie2 || null,
       date_mariage: date_mariage || null,
-    }).select();
+    }, { onConflict: "user_id" }).select();
 
     if (error) {
       console.error("[api/inscription/marie] Erreur insert:", {

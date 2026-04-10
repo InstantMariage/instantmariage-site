@@ -43,6 +43,7 @@ export default function InscriptionPage() {
 
   // Mariés form
   const [mPrenom, setMPrenom] = useState("");
+  const [mPrenom2, setMPrenom2] = useState("");
   const [mNom, setMNom] = useState("");
   const [mEmail, setMEmail] = useState("");
   const [mPassword, setMPassword] = useState("");
@@ -113,6 +114,7 @@ export default function InscriptionPage() {
         body: JSON.stringify({
           user_id: signUpData.user.id,
           prenom_marie1: mPrenom,
+          prenom_marie2: mPrenom2 || null,
           date_mariage: mDate || null,
         }),
       });
@@ -436,7 +438,7 @@ export default function InscriptionPage() {
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Prénom</label>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Votre prénom</label>
                         <input
                           type="text"
                           value={mPrenom}
@@ -447,16 +449,26 @@ export default function InscriptionPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Nom</label>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Prénom conjoint(e)</label>
                         <input
                           type="text"
-                          value={mNom}
-                          onChange={(e) => setMNom(e.target.value)}
-                          placeholder="Martin"
-                          required
+                          value={mPrenom2}
+                          onChange={(e) => setMPrenom2(e.target.value)}
+                          placeholder="Thomas"
                           className="w-full border border-gray-300 bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all"
                         />
                       </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Nom</label>
+                      <input
+                        type="text"
+                        value={mNom}
+                        onChange={(e) => setMNom(e.target.value)}
+                        placeholder="Martin"
+                        required
+                        className="w-full border border-gray-300 bg-white rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all"
+                      />
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Adresse email</label>
