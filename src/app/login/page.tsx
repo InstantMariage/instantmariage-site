@@ -56,20 +56,22 @@ export default function LoginPage() {
             onError={() => setImgError(true)}
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-rose-900 via-rose-700 to-rose-400" />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)" }} />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
-        <div className="absolute inset-0 flex flex-col justify-between p-12">
+        {/* Rose overlay gradient */}
+        <div
+          className="absolute inset-0"
+          style={{ background: "linear-gradient(135deg, rgba(240,98,146,0.72) 0%, rgba(233,30,140,0.82) 100%)" }}
+        />
+        <div className="absolute inset-0 flex flex-col justify-between p-12 z-10">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div style={{ mixBlendMode: "normal" }}>
-              <Image src="/logo.png" alt="InstantMariage logo" width={44} height={44} />
-            </div>
+            <Image src="/logo.png" alt="InstantMariage logo" width={44} height={44} />
             <span
               className="text-2xl font-bold"
               style={{ fontFamily: "var(--font-playfair), serif" }}
             >
-              <span style={{ color: "#F06292" }}>Instant</span>
-              <span className="text-white">Mariage.fr</span>
+              <span style={{ color: "white", textShadow: "0 1px 4px rgba(0,0,0,0.18)" }}>Instant</span>
+              <span style={{ color: "rgba(255,255,255,0.85)" }}>Mariage.fr</span>
             </span>
           </Link>
           <div className="text-white">
@@ -101,8 +103,8 @@ export default function LoginPage() {
         className="w-full lg:w-1/2 flex flex-col justify-center px-6 py-12 sm:px-12 lg:px-16"
         style={{ background: "linear-gradient(to bottom, #fdf2f8 0%, #fff9fb 25%, #ffffff 55%)" }}
       >
-        {/* Mobile logo */}
-        <div className="lg:hidden mb-10 flex justify-center">
+        {/* Logo — visible sur tous les écrans (mobile + desktop côté formulaire) */}
+        <div className="mb-10 flex justify-center lg:justify-start">
           <Link href="/" className="flex items-center gap-2.5">
             <div style={{ mixBlendMode: "multiply" }}>
               <Image src="/logo.png" alt="InstantMariage logo" width={42} height={42} />
