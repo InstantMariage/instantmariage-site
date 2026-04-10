@@ -190,47 +190,37 @@ export default function TarifsContent() {
     <div className="pt-20 md:pt-24">
 
       {/* ─── HERO HEADER ─────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-rose-50 via-white to-pink-50 py-20 md:py-28">
+      <section
+        className="relative overflow-hidden py-20 md:py-28"
+        style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)" }}
+      >
         {/* decorative blobs */}
         <div
-          className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-20 blur-3xl pointer-events-none"
-          style={{ background: "radial-gradient(circle, #F06292, transparent)" }}
+          className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-10 blur-3xl pointer-events-none"
+          style={{ background: "radial-gradient(circle, #fff, transparent)" }}
         />
         <div
-          className="absolute -bottom-32 -left-32 w-80 h-80 rounded-full opacity-15 blur-3xl pointer-events-none"
-          style={{ background: "radial-gradient(circle, #F48FB1, transparent)" }}
+          className="absolute -bottom-32 -left-32 w-80 h-80 rounded-full opacity-10 blur-3xl pointer-events-none"
+          style={{ background: "radial-gradient(circle, #fff, transparent)" }}
         />
 
         <div className="relative max-w-3xl mx-auto px-4 text-center">
-          <span
-            className="inline-block text-sm font-semibold tracking-widest uppercase mb-4 px-4 py-1.5 rounded-full"
-            style={{ color: "#F06292", background: "rgba(240,98,146,0.1)" }}
-          >
+          <span className="inline-block bg-white/20 text-white text-sm font-semibold tracking-widest uppercase mb-4 px-4 py-1.5 rounded-full">
             Tarifs prestataires
           </span>
           <h1
-            className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-5"
+            className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-5"
             style={{ fontFamily: "var(--font-playfair), serif" }}
           >
-            Choisissez votre{" "}
-            <span
-              style={{
-                background: "linear-gradient(135deg, #F06292, #E91E63)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              formule
-            </span>
+            Choisissez votre formule
           </h1>
-          <p className="text-gray-500 text-lg md:text-xl max-w-xl mx-auto mb-10 leading-relaxed">
+          <p className="text-rose-100 text-lg md:text-xl max-w-xl mx-auto mb-10 leading-relaxed">
             Développez votre activité mariage. Commencez gratuitement,
             évoluez à votre rythme.
           </p>
 
           {/* Toggle mensuel / annuel */}
-          <div className="inline-flex items-center gap-4 bg-white rounded-full px-2 py-2 shadow-md border border-gray-100">
+          <div className="inline-flex items-center gap-4 bg-white rounded-full px-2 py-2 shadow-lg">
             <button
               onClick={() => setAnnual(false)}
               className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
@@ -442,14 +432,14 @@ export default function TarifsContent() {
                           : isGold
                           ? "text-white hover:opacity-90"
                           : plan.price === 0
-                          ? "border-2 border-gray-200 text-gray-600 hover:border-rose-300 hover:text-rose-500"
+                          ? "border-2 border-gray-200 text-gray-600 hover:border-rose-300 hover:text-[#F06292]"
                           : "text-white hover:opacity-90"
                       }`}
                       style={
                         isGold
                           ? { background: "linear-gradient(135deg, #C9A96E, #A67C52)" }
                           : !isPro && plan.price > 0
-                          ? { background: "#F06292" }
+                          ? { background: "linear-gradient(135deg, #F06292, #e91e8c)" }
                           : {}
                       }
                     >
@@ -499,7 +489,7 @@ export default function TarifsContent() {
                   >
                     <span className="text-2xl leading-none mt-0.5">{tool.icon}</span>
                     <div>
-                      <p className="text-sm font-semibold text-gray-800 group-hover:text-rose-500 transition-colors">
+                      <p className="text-sm font-semibold text-gray-800 group-hover:text-[#F06292] transition-colors">
                         {tool.label}
                       </p>
                       <p className="text-xs text-gray-400 mt-0.5">{tool.desc}</p>
@@ -547,8 +537,9 @@ export default function TarifsContent() {
                 >
                   <span
                     className={`text-sm md:text-base font-semibold transition-colors duration-200 ${
-                      openFaq === i ? "text-rose-500" : "text-gray-800 group-hover:text-rose-500"
+                      openFaq === i ? "" : "text-gray-800 group-hover:text-[#F06292]"
                     }`}
+                    style={openFaq === i ? { color: "#F06292" } : {}}
                   >
                     {item.q}
                   </span>
@@ -556,7 +547,7 @@ export default function TarifsContent() {
                     className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ${
                       openFaq === i
                         ? "text-white"
-                        : "bg-gray-100 text-gray-400 group-hover:bg-rose-50 group-hover:text-rose-400"
+                        : "bg-gray-100 text-gray-400 group-hover:bg-rose-50 group-hover:text-[#F06292]"
                     }`}
                     style={openFaq === i ? { background: "#F06292" } : {}}
                   >
