@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import PushNotifications from "@/components/PushNotifications";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -22,6 +23,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  themeColor: "#F06292",
 };
 
 export const metadata: Metadata = {
@@ -55,6 +57,15 @@ export const metadata: Metadata = {
   verification: {
     google: "qW9lilNNncGB3P5WZ4eybkNFySB7hIYCCl65bGGxuLk",
   },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "InstantMariage",
+  },
+  icons: {
+    apple: "/icon-192.png",
+  },
 };
 
 export default function RootLayout({
@@ -79,6 +90,7 @@ export default function RootLayout({
         </Script>
       </head>
       <body className={`${playfair.variable} ${inter.variable} font-inter antialiased overflow-x-hidden max-w-full`}>
+        <PushNotifications />
         {children}
       </body>
     </html>
