@@ -160,7 +160,15 @@ function getInitials(name: string): string {
     .join("");
 }
 
-function LockOverlay({ planRequired }: { planRequired: string }) {
+function LockOverlay({
+  planRequired,
+  message,
+  buttonLabel = "Mettre à niveau →",
+}: {
+  planRequired: string;
+  message?: string;
+  buttonLabel?: string;
+}) {
   return (
     <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center z-10 gap-2">
       <div
@@ -171,13 +179,13 @@ function LockOverlay({ planRequired }: { planRequired: string }) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
         </svg>
       </div>
-      <p className="text-sm font-semibold text-gray-700">Réservé au plan {planRequired}</p>
+      <p className="text-sm font-semibold text-gray-700">{message ?? `Réservé au plan ${planRequired}`}</p>
       <Link
         href="/tarifs"
         className="text-xs font-semibold px-4 py-1.5 rounded-full text-white transition-all hover:opacity-90"
         style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)" }}
       >
-        Mettre à niveau →
+        {buttonLabel}
       </Link>
     </div>
   );
@@ -648,6 +656,55 @@ function DashboardPrestataire() {
                         style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)", color: "white" }}
                       >
                         Accéder à l&apos;outil →
+                      </span>
+                    )}
+                  </a>
+                </div>
+
+                {/* Gestion Administrative Pro */}
+                <div className="relative mt-3">
+                  {(plan === "gratuit" || plan === "starter") && (
+                    <LockOverlay
+                      planRequired="Pro"
+                      message="Disponible avec le plan Pro"
+                      buttonLabel="Passer au Pro →"
+                    />
+                  )}
+                  <a
+                    href={plan === "pro" || plan === "premium" ? "https://wedding-devis.vercel.app" : undefined}
+                    target={plan === "pro" || plan === "premium" ? "_blank" : undefined}
+                    rel="noopener noreferrer"
+                    className={`flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-xl border transition-all duration-200 group ${
+                      plan === "pro" || plan === "premium"
+                        ? "border-gray-100 hover:border-rose-200 hover:bg-rose-50/30 cursor-pointer"
+                        : "border-gray-100 cursor-default select-none opacity-60"
+                    }`}
+                  >
+                    <div
+                      className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+                      style={{ background: "#FFF0F5" }}
+                    >
+                      <svg className="w-6 h-6" style={{ color: "#F06292" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <div className="text-sm font-semibold text-gray-900">Gestion Administrative Pro</div>
+                        <span className="text-xs px-2 py-0.5 rounded-full font-semibold text-white" style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)" }}>
+                          Pro
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1 leading-relaxed">
+                        Générateur de factures, devis et contrats
+                      </div>
+                    </div>
+                    {(plan === "pro" || plan === "premium") && (
+                      <span
+                        className="flex-shrink-0 text-xs font-semibold px-4 py-2 rounded-xl transition-all duration-200 group-hover:opacity-90 whitespace-nowrap"
+                        style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)", color: "white" }}
+                      >
+                        Ouvrir →
                       </span>
                     )}
                   </a>
