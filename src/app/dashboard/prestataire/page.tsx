@@ -565,61 +565,8 @@ function DashboardPrestataire() {
               <div className="bg-white rounded-2xl shadow-card p-4 sm:p-6">
                 <h2 className="font-semibold text-gray-900 mb-4">Mes outils</h2>
 
-                {/* Générateur de Devis */}
-                <div className="relative">
-                  <a
-                    href={planConfig.canAccessDevis ? "https://wedding-devis.vercel.app" : undefined}
-                    target={planConfig.canAccessDevis ? "_blank" : undefined}
-                    rel="noopener noreferrer"
-                    className={`flex flex-col gap-3 p-4 sm:p-5 rounded-xl border transition-all duration-200 group ${
-                      planConfig.canAccessDevis
-                        ? "border-gray-100 hover:border-rose-200 hover:bg-rose-50/30 cursor-pointer"
-                        : "border-gray-100 cursor-default select-none opacity-60"
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div
-                        className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 text-xl"
-                        style={{ background: "#FFF0F5" }}
-                      >
-                        📄
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <div className="text-sm font-semibold text-gray-900">Générateur de Devis, Factures & Contrats</div>
-                          {planConfig.canAccessDevis && planConfig.devisLabel && (
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">
-                              {planConfig.devisLabel}
-                            </span>
-                          )}
-                          {planConfig.canAccessDevis && !planConfig.canAccessFactures && (
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">
-                              Devis uniquement
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1 leading-relaxed">
-                          {planConfig.canAccessDevis
-                            ? planConfig.canAccessFactures
-                              ? "Créez vos devis professionnels, convertissez-les en factures et générez vos contrats en quelques clics"
-                              : "Créez vos devis professionnels. Passez en Pro pour accéder aux factures et contrats."
-                            : "Disponible à partir du plan Starter — créez vos devis professionnels"}
-                        </div>
-                      </div>
-                    </div>
-                    {planConfig.canAccessDevis && (
-                      <span
-                        className="self-start text-xs font-semibold px-4 py-2 rounded-xl transition-all duration-200 group-hover:opacity-90"
-                        style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)", color: "white" }}
-                      >
-                        Accéder à l&apos;outil →
-                      </span>
-                    )}
-                  </a>
-                </div>
-
                 {/* Gestion Administrative Pro */}
-                <div className="relative mt-3">
+                <div className="relative">
                   <a
                     href={plan === "pro" || plan === "premium" ? "https://wedding-devis.vercel.app" : undefined}
                     target={plan === "pro" || plan === "premium" ? "_blank" : undefined}
@@ -642,9 +589,14 @@ function DashboardPrestataire() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <div className="text-sm font-semibold text-gray-900">Gestion Administrative Pro</div>
-                          <span className="text-xs px-2 py-0.5 rounded-full font-semibold text-white" style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)" }}>
-                            Pro
-                          </span>
+                          <a
+                            href="/tarifs"
+                            className="text-xs px-2 py-0.5 rounded-full font-semibold text-white hover:opacity-80 transition-opacity"
+                            style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)" }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Abonnement pro
+                          </a>
                         </div>
                         <div className="text-xs text-gray-500 mt-1 leading-relaxed">
                           Générateur de factures, devis et contrats
