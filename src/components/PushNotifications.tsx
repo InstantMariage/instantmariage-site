@@ -67,14 +67,23 @@ export default function PushNotifications() {
       .catch((err) => console.error("[SW] Registration failed:", err));
   }, []);
 
-  // 2. Demande la permission notifications (après 4 s pour ne pas interrompre l'arrivée)
+  // 2. Demande la permission notifications :
+  //    - uniquement en mode PWA standalone (iOS/Android)
+  //    - uniquement si l'utilisateur est connecté
+  //    - uniquement si la permission n'a pas encore été décidée
   useEffect(() => {
     if (!("Notification" in window)) return;
     if (Notification.permission !== "default") return;
+    if (!window.matchMedia("(display-mode: standalone)").matches) return;
 
-    const timer = setTimeout(() => {
-      Notification.requestPermission();
-    }, 4000);
+    let timer: ReturnType<typeof setTimeout>;
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) return;
+      timer = setTimeout(() => {
+        Notification.requestPermission();
+      }, 4000);
+    });
 
     return () => clearTimeout(timer);
   }, []);

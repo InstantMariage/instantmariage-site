@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import NotificationButton from "@/components/NotificationButton";
 import { supabase } from "@/lib/supabase";
 import type { PlanAbonnement } from "@/lib/supabase";
 
@@ -424,6 +425,11 @@ function DashboardPrestataire() {
         )}
 
         <div className="max-w-6xl mx-auto px-4 mt-0">
+          {/* ── Notifications PWA ── */}
+          <div className="mt-4">
+            <NotificationButton />
+          </div>
+
           {/* Stats Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mt-5 sm:mt-6">
             {stats.map((stat) => {
