@@ -132,7 +132,7 @@ export default function ConversationPage() {
   const [notFound, setNotFound] = useState(false);
   const [runtimeError, setRuntimeError] = useState<string | null>(null);
 
-  const [isOtherOnline, setIsOtherOnline] = useState(false);
+  const isOtherOnline = false; // Presence désactivée (Realtime supprimé)
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -285,63 +285,14 @@ export default function ConversationPage() {
     }
   }, [messages, scrollToBottom]);
 
-  // Realtime
+  // Polling toutes les 3 secondes pour les nouveaux messages
   useEffect(() => {
-    if (!userId) return;
-    const channel = supabase
-      .channel(`conv-${convId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `conversation_id=eq.${convId}`,
-        },
-        async (payload) => {
-          const msg = payload.new as MessageItem;
-          setMessages((prev) => {
-            if (prev.find((m) => m.id === msg.id)) return prev;
-            return [...prev, msg];
-          });
-          if (msg.expediteur_id !== userId) {
-            await supabase
-              .from("messages")
-              .update({ lu: true })
-              .eq("id", msg.id);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [convId, userId]);
-
-  // Supabase Realtime Presence — détecter si l'interlocuteur est en ligne
-  useEffect(() => {
-    if (!userId || !otherUserId) return;
-    const presenceChannel = supabase.channel("presence:messaging-room");
-    presenceChannel
-      .on("presence", { event: "sync" }, () => {
-        const state = presenceChannel.presenceState<{ user_id: string }>();
-        const ids = new Set(
-          Object.values(state).flatMap((presences) =>
-            presences.map((p) => p.user_id)
-          )
-        );
-        setIsOtherOnline(ids.has(otherUserId));
-      })
-      .subscribe(async (status) => {
-        if (status === "SUBSCRIBED") {
-          await presenceChannel.track({ user_id: userId });
-        }
-      });
-    return () => {
-      supabase.removeChannel(presenceChannel);
-    };
-  }, [userId, otherUserId]);
+    if (!userId || loading) return;
+    const interval = setInterval(() => {
+      loadMessages(userId).catch(() => {});
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [userId, loading, loadMessages]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUploadError(null);
