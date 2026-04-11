@@ -13,8 +13,10 @@ interface MessageItem {
   expediteur_id: string;
   created_at: string;
   lu: boolean;
+  lu_at?: string | null;
   attachment_url?: string | null;
   attachment_name?: string | null;
+  pending?: boolean;
 }
 
 function formatTime(dateStr: string): string {
@@ -113,6 +115,36 @@ function AttachmentDisplay({
   );
 }
 
+// Coches style WhatsApp : ✓ envoyé | ✓✓ gris reçu | ✓✓ rose lu
+function MessageTick({ msg }: { msg: MessageItem }) {
+  if (msg.pending) {
+    // Envoi en cours → simple coche grise
+    return (
+      <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" viewBox="0 0 16 11" fill="none">
+        <path d="M1.5 5.5L5.5 9.5L14.5 1.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+
+  if (msg.lu_at) {
+    // Lu → double coche rose
+    return (
+      <svg className="w-[18px] h-3.5 flex-shrink-0" viewBox="0 0 20 11" fill="none">
+        <path d="M1.5 5.5L5.5 9.5L14.5 1.5" stroke="#F06292" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M6.5 5.5L10.5 9.5L19.5 1.5" stroke="#F06292" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+
+  // En DB mais non lu → double coche grise
+  return (
+    <svg className="w-[18px] h-3.5 flex-shrink-0 text-gray-400" viewBox="0 0 20 11" fill="none">
+      <path d="M1.5 5.5L5.5 9.5L14.5 1.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M6.5 5.5L10.5 9.5L19.5 1.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export default function ConversationPage() {
   const router = useRouter();
   const params = useParams();
@@ -146,7 +178,7 @@ export default function ConversationPage() {
       const { data, error } = await supabase
         .from("messages")
         .select(
-          "id, contenu, expediteur_id, destinataire_id, created_at, lu, attachment_url, attachment_name"
+          "id, contenu, expediteur_id, destinataire_id, created_at, lu, lu_at, attachment_url, attachment_name"
         )
         .eq("conversation_id", convId)
         .order("created_at", { ascending: true });
@@ -159,7 +191,10 @@ export default function ConversationPage() {
         .map((m) => m.id);
 
       if (unreadIds.length > 0) {
-        await supabase.from("messages").update({ lu: true }).in("id", unreadIds);
+        await supabase
+          .from("messages")
+          .update({ lu: true, lu_at: new Date().toISOString() })
+          .in("id", unreadIds);
       }
     },
     [convId]
@@ -292,9 +327,28 @@ export default function ConversationPage() {
           if (msg.expediteur_id !== userId) {
             await supabase
               .from("messages")
-              .update({ lu: true })
+              .update({ lu: true, lu_at: new Date().toISOString() })
               .eq("id", msg.id);
           }
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${convId}`,
+        },
+        (payload) => {
+          const updated = payload.new as MessageItem;
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === updated.id
+                ? { ...m, lu: updated.lu, lu_at: updated.lu_at }
+                : m
+            )
+          );
         }
       )
       .subscribe();
@@ -351,6 +405,9 @@ export default function ConversationPage() {
     setSending(true);
     setUploadError(null);
 
+    const tempId = `pending-${Date.now()}`;
+    const now = new Date().toISOString();
+
     let attachmentUrl: string | null = null;
     let attachmentName: string | null = null;
 
@@ -380,6 +437,20 @@ export default function ConversationPage() {
       setPendingFile(null);
     }
 
+    // Ajout optimiste immédiat → affiche ✓ (envoyé, pending)
+    const optimisticMsg: MessageItem = {
+      id: tempId,
+      contenu: content || (attachmentName ? `📎 ${attachmentName}` : ""),
+      expediteur_id: userId,
+      created_at: now,
+      lu: false,
+      lu_at: null,
+      attachment_url: attachmentUrl,
+      attachment_name: attachmentName,
+      pending: true,
+    };
+    setMessages((prev) => [...prev, optimisticMsg]);
+
     const { data: inserted, error } = await supabase
       .from("messages")
       .insert({
@@ -392,14 +463,18 @@ export default function ConversationPage() {
         attachment_name: attachmentName,
       })
       .select(
-        "id, contenu, expediteur_id, created_at, lu, attachment_url, attachment_name"
+        "id, contenu, expediteur_id, created_at, lu, lu_at, attachment_url, attachment_name"
       )
       .single();
 
     if (!error && inserted) {
+      // Remplace le message optimiste par le vrai (pending → ✓✓ gris)
       setMessages((prev) =>
-        prev.find((m) => m.id === inserted.id) ? prev : [...prev, inserted]
+        prev.map((m) => (m.id === tempId ? { ...inserted, pending: false } : m))
       );
+    } else if (error) {
+      // En cas d'erreur, retire le message optimiste
+      setMessages((prev) => prev.filter((m) => m.id !== tempId));
     }
 
     if (!error) {
@@ -688,16 +763,7 @@ export default function ConversationPage() {
                         {isLastInRun && (
                           <span className="text-[11px] text-gray-400 mt-1 px-1 flex items-center gap-1">
                             {formatTime(msg.created_at)}
-                            {isMe && (
-                              <span
-                                className="font-medium"
-                                style={{
-                                  color: msg.lu ? "#F06292" : "#9CA3AF",
-                                }}
-                              >
-                                {msg.lu ? "✓✓" : "✓"}
-                              </span>
-                            )}
+                            {isMe && <MessageTick msg={msg} />}
                           </span>
                         )}
                       </div>
