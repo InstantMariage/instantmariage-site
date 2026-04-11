@@ -127,11 +127,11 @@ function MessageTick({ msg }: { msg: MessageItem }) {
   }
 
   if (msg.lu_at) {
-    // Lu → double coche rose
+    // Lu → double coche bleue
     return (
       <svg className="w-[18px] h-3.5 flex-shrink-0" viewBox="0 0 20 11" fill="none">
-        <path d="M1.5 5.5L5.5 9.5L14.5 1.5" stroke="#F06292" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M6.5 5.5L10.5 9.5L19.5 1.5" stroke="#F06292" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M1.5 5.5L5.5 9.5L14.5 1.5" stroke="#0EA5E9" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M6.5 5.5L10.5 9.5L19.5 1.5" stroke="#0EA5E9" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     );
   }
