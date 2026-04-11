@@ -427,7 +427,7 @@ function DashboardPrestataire() {
           {/* Stats Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mt-5 sm:mt-6">
             {stats.map((stat) => {
-              const locked = plan === "gratuit" || plan === "starter";
+              const locked = plan === "gratuit";
               return (
                 <div key={stat.label} className="relative bg-white rounded-2xl p-4 sm:p-5 shadow-card overflow-hidden">
                   <div className="flex items-center justify-between mb-3">
@@ -568,11 +568,11 @@ function DashboardPrestataire() {
                 {/* Gestion Administrative Pro */}
                 <div className="relative">
                   <a
-                    href={plan === "pro" || plan === "premium" ? "https://wedding-devis.vercel.app" : undefined}
-                    target={plan === "pro" || plan === "premium" ? "_blank" : undefined}
+                    href={plan !== "gratuit" ? "https://wedding-devis.vercel.app" : undefined}
+                    target={plan !== "gratuit" ? "_blank" : undefined}
                     rel="noopener noreferrer"
                     className={`flex flex-col gap-3 p-4 sm:p-5 rounded-xl border transition-all duration-200 group ${
-                      plan === "pro" || plan === "premium"
+                      plan !== "gratuit"
                         ? "border-gray-100 hover:border-rose-200 hover:bg-rose-50/30 cursor-pointer"
                         : "border-gray-100 cursor-default select-none opacity-60"
                     }`}
@@ -589,21 +589,23 @@ function DashboardPrestataire() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <div className="text-sm font-semibold text-gray-900">Gestion Administrative Pro</div>
-                          <a
-                            href="/tarifs"
-                            className="text-xs px-2 py-0.5 rounded-full font-semibold text-white hover:opacity-80 transition-opacity"
-                            style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)" }}
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            Abonnement pro
-                          </a>
+                          {plan === "gratuit" && (
+                            <a
+                              href="/tarifs"
+                              className="text-xs px-2 py-0.5 rounded-full font-semibold text-white hover:opacity-80 transition-opacity"
+                              style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)" }}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              Abonnement pro
+                            </a>
+                          )}
                         </div>
                         <div className="text-xs text-gray-500 mt-1 leading-relaxed">
                           Générateur de factures, devis et contrats
                         </div>
                       </div>
                     </div>
-                    {(plan === "pro" || plan === "premium") && (
+                    {plan !== "gratuit" && (
                       <span
                         className="self-start text-xs font-semibold px-4 py-2 rounded-xl transition-all duration-200 group-hover:opacity-90"
                         style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)", color: "white" }}
