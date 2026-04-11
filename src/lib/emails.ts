@@ -200,7 +200,7 @@ export async function sendContactEmail({
   subject: string;
   message: string;
 }) {
-  const adminEmail = process.env.ADMIN_EMAIL ?? "adel.bendj@icloud.com";
+  const adminEmail = process.env.ADMIN_EMAIL ?? "contact@instantmariage.fr";
 
   const content = `
     <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#F06292;letter-spacing:0.5px;text-transform:uppercase;">Formulaire de contact</p>
@@ -266,7 +266,7 @@ export async function sendNewPrestaireAdminEmail({
   email: string;
   userId: string;
 }) {
-  const adminEmail = process.env.ADMIN_EMAIL ?? "admin@instantmariage.fr";
+  const adminEmail = process.env.ADMIN_EMAIL ?? "contact@instantmariage.fr";
 
   const content = `
     <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#F06292;letter-spacing:0.5px;text-transform:uppercase;">Nouvelle inscription</p>
