@@ -161,6 +161,7 @@ export default function ConversationPage() {
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [runtimeError, setRuntimeError] = useState<string | null>(null);
 
   const [isOtherOnline, setIsOtherOnline] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
@@ -183,7 +184,7 @@ export default function ConversationPage() {
         .eq("conversation_id", convId)
         .order("created_at", { ascending: true });
 
-      if (error) return;
+      if (error) throw new Error(`loadMessages: ${error.message} (code: ${error.code})`);
       setMessages(data ?? []);
 
       const unreadIds = (data ?? [])
@@ -202,93 +203,103 @@ export default function ConversationPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!session) {
-        router.push("/login");
-        return;
-      }
-      const uid = session.user.id;
-      setUserId(uid);
+      try {
+        if (!session) {
+          router.push("/login");
+          return;
+        }
+        const uid = session.user.id;
+        setUserId(uid);
 
-      const { data: conv, error } = await supabase
-        .from("conversations")
-        .select("*")
-        .eq("id", convId)
-        .maybeSingle();
-
-      if (error || !conv) {
-        setNotFound(true);
-        setLoading(false);
-        return;
-      }
-
-      if (conv.participant1_id !== uid && conv.participant2_id !== uid) {
-        setNotFound(true);
-        setLoading(false);
-        return;
-      }
-
-      const otherId =
-        conv.participant1_id === uid ? conv.participant2_id : conv.participant1_id;
-      setOtherUserId(otherId);
-
-      const [{ data: prest }, { data: myPrest }] = await Promise.all([
-        supabase
-          .from("prestataires")
-          .select("id, nom_entreprise, avatar_url")
-          .eq("user_id", otherId)
-          .maybeSingle(),
-        supabase
-          .from("prestataires")
-          .select("nom_entreprise")
-          .eq("user_id", uid)
-          .maybeSingle(),
-      ]);
-
-      if (prest) {
-        setOtherUserName(prest.nom_entreprise);
-        setOtherPrestaId(prest.id);
-        setOtherAvatarUrl(prest.avatar_url ?? null);
-      } else {
-        const { data: marie } = await supabase
-          .from("maries")
-          .select("prenom_marie1, prenom_marie2")
-          .eq("user_id", otherId)
+        const { data: conv, error } = await supabase
+          .from("conversations")
+          .select("*")
+          .eq("id", convId)
           .maybeSingle();
 
-        if (marie) {
-          setOtherUserName(
-            marie.prenom_marie2
-              ? `${marie.prenom_marie1} & ${marie.prenom_marie2}`
-              : marie.prenom_marie1
-          );
+        if (error || !conv) {
+          setNotFound(true);
+          setLoading(false);
+          return;
+        }
+
+        if (conv.participant1_id !== uid && conv.participant2_id !== uid) {
+          setNotFound(true);
+          setLoading(false);
+          return;
+        }
+
+        const otherId =
+          conv.participant1_id === uid ? conv.participant2_id : conv.participant1_id;
+        setOtherUserId(otherId);
+
+        const [{ data: prest }, { data: myPrest }] = await Promise.all([
+          supabase
+            .from("prestataires")
+            .select("id, nom_entreprise, avatar_url")
+            .eq("user_id", otherId)
+            .maybeSingle(),
+          supabase
+            .from("prestataires")
+            .select("nom_entreprise")
+            .eq("user_id", uid)
+            .maybeSingle(),
+        ]);
+
+        if (prest) {
+          setOtherUserName(prest.nom_entreprise);
+          setOtherPrestaId(prest.id);
+          setOtherAvatarUrl(prest.avatar_url ?? null);
         } else {
-          const { data: u } = await supabase
-            .from("users")
-            .select("email")
-            .eq("id", otherId)
+          const { data: marie } = await supabase
+            .from("maries")
+            .select("prenom_marie1, prenom_marie2")
+            .eq("user_id", otherId)
             .maybeSingle();
-          if (u) setOtherUserName(u.email.split("@")[0]);
-        }
-      }
 
-      if (myPrest) {
-        setMyName(myPrest.nom_entreprise);
-      } else {
-        const { data: myMarie } = await supabase
-          .from("maries")
-          .select("prenom_marie1, prenom_marie2")
-          .eq("user_id", uid)
-          .maybeSingle();
-        if (myMarie) {
-          setMyName(
-            myMarie.prenom_marie2
-              ? `${myMarie.prenom_marie1} & ${myMarie.prenom_marie2}`
-              : myMarie.prenom_marie1
-          );
+          if (marie) {
+            setOtherUserName(
+              marie.prenom_marie2
+                ? `${marie.prenom_marie1} & ${marie.prenom_marie2}`
+                : marie.prenom_marie1
+            );
+          } else {
+            const { data: u } = await supabase
+              .from("users")
+              .select("email")
+              .eq("id", otherId)
+              .maybeSingle();
+            if (u) setOtherUserName(u.email.split("@")[0]);
+          }
         }
-      }
 
-      await loadMessages(uid);
+        if (myPrest) {
+          setMyName(myPrest.nom_entreprise);
+        } else {
+          const { data: myMarie } = await supabase
+            .from("maries")
+            .select("prenom_marie1, prenom_marie2")
+            .eq("user_id", uid)
+            .maybeSingle();
+          if (myMarie) {
+            setMyName(
+              myMarie.prenom_marie2
+                ? `${myMarie.prenom_marie1} & ${myMarie.prenom_marie2}`
+                : myMarie.prenom_marie1
+            );
+          }
+        }
+
+        await loadMessages(uid);
+        setLoading(false);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        setRuntimeError(msg);
+        setLoading(false);
+      }
+    }).catch((err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      setRuntimeError(msg);
       setLoading(false);
     });
   }, [convId, router, loadMessages]);
@@ -535,6 +546,24 @@ export default function ConversationPage() {
 
   const canSend =
     (newMessage.trim().length > 0 || pendingFile !== null) && !sending;
+
+  if (runtimeError) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center text-center px-6 gap-4">
+        <p className="text-red-600 font-semibold text-sm">Erreur au chargement de la conversation</p>
+        <pre className="text-xs text-left bg-red-50 border border-red-200 rounded-xl px-4 py-3 max-w-full overflow-auto whitespace-pre-wrap text-red-700">
+          {runtimeError}
+        </pre>
+        <Link
+          href="/messages"
+          className="text-sm font-semibold"
+          style={{ color: "#F06292" }}
+        >
+          ← Retour aux messages
+        </Link>
+      </div>
+    );
+  }
 
   if (notFound) {
     return (
