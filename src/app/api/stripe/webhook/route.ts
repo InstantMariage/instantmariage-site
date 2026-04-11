@@ -79,7 +79,11 @@ export async function POST(req: NextRequest) {
       const priceId = subscription.items.data[0]?.price.id ?? "";
       const plan = PRICE_TO_PLAN[priceId] ?? "starter";
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const dateFin = new Date((subscription as any).current_period_end * 1000).toISOString();
+      const periodEnd = (subscription as any).current_period_end;
+      console.log(`[webhook] current_period_end brut:`, periodEnd, typeof periodEnd);
+      const dateFin = (periodEnd != null && Number.isFinite(Number(periodEnd)))
+        ? new Date(Number(periodEnd) * 1000).toISOString()
+        : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // fallback +30j
       const prix = (subscription.items.data[0]?.price.unit_amount ?? 0) / 100;
 
       console.log(`[webhook] Plan détecté: ${plan} (priceId: ${priceId}), dateFin: ${dateFin}, prix: ${prix}`);
