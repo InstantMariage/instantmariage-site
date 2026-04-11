@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import NotificationButton from "@/components/NotificationButton";
 import { supabase } from "@/lib/supabase";
 
 function useCountdown(targetDate: Date | null) {
@@ -312,9 +311,6 @@ export default function DashboardMarie() {
         </section>
 
         <div className="max-w-3xl mx-auto px-6 space-y-5 pt-4">
-
-          {/* ── Notifications PWA ── */}
-          <NotificationButton />
 
           {/* ── Outils ── */}
           <section>

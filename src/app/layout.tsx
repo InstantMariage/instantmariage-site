@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
-import PushNotifications from "@/components/PushNotifications";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -90,7 +89,6 @@ export default function RootLayout({
         </Script>
       </head>
       <body className={`${playfair.variable} ${inter.variable} font-inter antialiased overflow-x-hidden max-w-full`}>
-        <PushNotifications />
         {children}
       </body>
     </html>
