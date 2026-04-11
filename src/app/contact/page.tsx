@@ -40,6 +40,8 @@ export default function Contact() {
     message: "",
   });
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const handleChange = (
@@ -50,9 +52,23 @@ export default function Contact() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSent(true);
+    setSending(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/emails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "contact", ...form }),
+      });
+      if (!res.ok) throw new Error("Erreur serveur");
+      setSent(true);
+    } catch {
+      setError("Une erreur est survenue. Veuillez réessayer ou nous écrire directement à contact@instantmariage.fr.");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -244,14 +260,31 @@ export default function Contact() {
                         />
                       </div>
 
+                      {error && (
+                        <p className="text-red-500 text-sm text-center">{error}</p>
+                      )}
+
                       <button
                         type="submit"
-                        className="w-full bg-rose-400 hover:bg-rose-500 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-200 shadow-sm hover:shadow-lg flex items-center justify-center gap-2 text-sm"
+                        disabled={sending}
+                        className="w-full bg-rose-400 hover:bg-rose-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-4 px-8 rounded-xl transition-all duration-200 shadow-sm hover:shadow-lg flex items-center justify-center gap-2 text-sm"
                       >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                        </svg>
-                        Envoyer le message
+                        {sending ? (
+                          <>
+                            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                            </svg>
+                            Envoi en cours…
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                            </svg>
+                            Envoyer le message
+                          </>
+                        )}
                       </button>
                     </form>
                   </>

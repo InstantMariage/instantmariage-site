@@ -3,6 +3,7 @@ import {
   sendNewMessageEmail,
   sendNewAvisEmail,
   sendNewPrestaireAdminEmail,
+  sendContactEmail,
 } from "@/lib/emails";
 
 export async function POST(req: NextRequest) {
@@ -23,6 +24,9 @@ export async function POST(req: NextRequest) {
     } else if (type === "new_prestataire") {
       const { entreprise, categorie, ville, email, userId } = body;
       await sendNewPrestaireAdminEmail({ entreprise, categorie, ville, email, userId });
+    } else if (type === "contact") {
+      const { name, email, subject, message } = body;
+      await sendContactEmail({ name, email, subject, message });
     } else {
       return NextResponse.json({ error: "Unknown email type" }, { status: 400 });
     }

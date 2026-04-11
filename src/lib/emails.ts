@@ -187,7 +187,71 @@ export async function sendNewAvisEmail({
   });
 }
 
-// ─── Email 3 : Nouveau prestataire (admin) ────────────────────────────────────
+// ─── Email 3 : Contact form (admin) ──────────────────────────────────────────
+
+export async function sendContactEmail({
+  name,
+  email,
+  subject,
+  message,
+}: {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}) {
+  const adminEmail = process.env.ADMIN_EMAIL ?? "adel.bendj@icloud.com";
+
+  const content = `
+    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#F06292;letter-spacing:0.5px;text-transform:uppercase;">Formulaire de contact</p>
+    <h1 style="margin:0 0 24px;font-size:26px;font-weight:700;color:#1a1a1a;line-height:1.25;">
+      Nouveau message de ${name}
+    </h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#555555;line-height:1.65;">
+      Un visiteur vous a contacté via le formulaire de contact du site.
+    </p>
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#fafafa;border-radius:12px;padding:24px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;width:100px;">Nom</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:600;color:#1a1a1a;">${name}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Email</td>
+              <td style="padding:6px 0;font-size:14px;color:#333333;"><a href="mailto:${email}" style="color:#F06292;text-decoration:none;">${email}</a></td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Sujet</td>
+              <td style="padding:6px 0;font-size:14px;color:#333333;">${subject}</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#fafafa;border-left:3px solid #F06292;border-radius:0 8px 8px 0;padding:16px 20px;">
+          <p style="margin:0;font-size:14px;color:#444444;line-height:1.7;">${message.replace(/\n/g, "<br/>")}</p>
+        </td>
+      </tr>
+    </table>
+    ${ctaButton(`Répondre à ${name}`, `mailto:${email}`)}
+  `;
+
+  return resend.emails.send({
+    from: FROM,
+    to: adminEmail,
+    replyTo: email,
+    subject: `[Contact] ${subject} — ${name}`,
+    html: baseTemplate(content),
+  });
+}
+
+// ─── Email 4 : Nouveau prestataire (admin) ────────────────────────────────────
 
 export async function sendNewPrestaireAdminEmail({
   entreprise,
