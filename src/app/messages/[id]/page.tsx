@@ -133,6 +133,7 @@ export default function ConversationPage() {
   const [runtimeError, setRuntimeError] = useState<string | null>(null);
 
   const isOtherOnline = false; // Presence désactivée (Realtime supprimé)
+  const [showSecurityBanner, setShowSecurityBanner] = useState(true);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -545,6 +546,28 @@ export default function ConversationPage() {
           </div>
         </div>
       </div>
+
+      {/* ── Security banner ── */}
+      {showSecurityBanner && (
+        <div className="flex-shrink-0 flex items-start gap-2.5 px-4 py-2.5 text-xs text-amber-800 border-b border-amber-100" style={{ background: "#FFFBEB" }}>
+          <span className="flex-shrink-0 mt-0.5">🔒</span>
+          <p className="flex-1 leading-relaxed">
+            Pour votre sécurité : ne payez jamais un prestataire sans avoir signé un contrat au préalable. En cas de comportement suspect,{" "}
+            <Link href="/contact" className="underline font-medium hover:text-amber-900 transition-colors">
+              signalez-le nous
+            </Link>
+            .
+          </p>
+          <button
+            type="button"
+            onClick={() => setShowSecurityBanner(false)}
+            className="flex-shrink-0 mt-0.5 text-amber-500 hover:text-amber-700 transition-colors"
+            aria-label="Fermer"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* ── Messages area ── */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
