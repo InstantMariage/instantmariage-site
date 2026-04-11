@@ -16,68 +16,112 @@ const PRICE_TO_PLAN: Record<string, PlanAbonnement> = {
 
 // Client Supabase avec service_role (bypass RLS pour les écritures du webhook)
 function getSupabaseAdmin() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    throw new Error(`Variables Supabase manquantes: URL=${!!url} KEY=${!!key}`);
+  }
+  return createClient(url, key);
 }
 
 export async function POST(req: NextRequest) {
+  console.log("[webhook] Requête reçue");
+
+  // ── Vérification de la signature ──────────────────────────────────────────
   const body = await req.text();
   const sig = req.headers.get("stripe-signature");
 
   if (!sig) {
+    console.error("[webhook] Signature manquante");
     return NextResponse.json({ error: "Signature manquante" }, { status: 400 });
+  }
+
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    console.error("[webhook] STRIPE_WEBHOOK_SECRET non défini");
+    return NextResponse.json({ error: "Config manquante" }, { status: 500 });
   }
 
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET!
-    );
+    event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
+    console.log(`[webhook] Événement validé: ${event.type} (id: ${event.id})`);
   } catch (err) {
-    console.error("Stripe webhook signature invalide:", err);
+    console.error("[webhook] Signature invalide:", err);
     return NextResponse.json({ error: "Signature invalide" }, { status: 400 });
   }
 
-  const supabase = getSupabaseAdmin();
+  // ── Traitement des événements ─────────────────────────────────────────────
+  try {
+    const supabase = getSupabaseAdmin();
 
-  // ─── Paiement réussi ─────────────────────────────────────────────────────
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object as Stripe.Checkout.Session;
-    const prestataireId = session.metadata?.prestataire_id;
-    const subscriptionId = session.subscription as string;
-    const customerId = session.customer as string;
+    // ─── Paiement réussi ───────────────────────────────────────────────────
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object as Stripe.Checkout.Session;
+      console.log("[webhook] checkout.session.completed — session id:", session.id);
+      console.log("[webhook] metadata:", JSON.stringify(session.metadata));
 
-    if (!prestataireId || !subscriptionId) {
-      console.warn("Webhook checkout.session.completed: prestataire_id ou subscriptionId manquant");
-      return NextResponse.json({ received: true });
-    }
+      const prestataireId = session.metadata?.prestataire_id;
+      const subscriptionId = session.subscription as string;
+      const customerId = session.customer as string;
 
-    // Récupérer les détails de l'abonnement Stripe (plan, date fin)
-    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-    const priceId = subscription.items.data[0]?.price.id ?? "";
-    const plan = PRICE_TO_PLAN[priceId] ?? "starter";
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const dateFin = new Date((subscription as any).current_period_end * 1000).toISOString();
-    const prix = (subscription.items.data[0]?.price.unit_amount ?? 0) / 100;
+      if (!prestataireId) {
+        console.warn("[webhook] prestataire_id manquant dans les métadonnées");
+        return NextResponse.json({ received: true });
+      }
+      if (!subscriptionId) {
+        console.warn("[webhook] subscriptionId manquant (paiement one-shot ?)");
+        return NextResponse.json({ received: true });
+      }
 
-    // Chercher l'abonnement existant pour ce prestataire
-    const { data: existing } = await supabase
-      .from("abonnements")
-      .select("id")
-      .eq("prestataire_id", prestataireId)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single();
+      console.log(`[webhook] Récupération abonnement Stripe: ${subscriptionId}`);
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+      const priceId = subscription.items.data[0]?.price.id ?? "";
+      const plan = PRICE_TO_PLAN[priceId] ?? "starter";
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const dateFin = new Date((subscription as any).current_period_end * 1000).toISOString();
+      const prix = (subscription.items.data[0]?.price.unit_amount ?? 0) / 100;
 
-    if (existing) {
-      // Mettre à jour la ligne existante
-      const { error } = await supabase
+      console.log(`[webhook] Plan détecté: ${plan} (priceId: ${priceId}), dateFin: ${dateFin}, prix: ${prix}`);
+
+      // Chercher l'abonnement existant pour ce prestataire
+      const { data: existing, error: selectError } = await supabase
         .from("abonnements")
-        .update({
+        .select("id")
+        .eq("prestataire_id", prestataireId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (selectError && selectError.code !== "PGRST116") {
+        // PGRST116 = no rows found (normal pour un nouveau prestataire)
+        console.error("[webhook] Erreur SELECT abonnement:", selectError);
+      }
+
+      if (existing) {
+        console.log(`[webhook] Mise à jour abonnement existant id: ${existing.id}`);
+        const { error } = await supabase
+          .from("abonnements")
+          .update({
+            plan,
+            statut: "actif",
+            stripe_subscription_id: subscriptionId,
+            stripe_customer_id: customerId,
+            date_debut: new Date().toISOString(),
+            date_fin: dateFin,
+            prix,
+          })
+          .eq("id", existing.id);
+
+        if (error) {
+          console.error("[webhook] Erreur UPDATE abonnement:", JSON.stringify(error));
+        } else {
+          console.log("[webhook] Abonnement mis à jour avec succès");
+        }
+      } else {
+        console.log(`[webhook] Insertion nouvel abonnement pour prestataire: ${prestataireId}`);
+        const { error } = await supabase.from("abonnements").insert({
+          prestataire_id: prestataireId,
           plan,
           statut: "actif",
           stripe_subscription_id: subscriptionId,
@@ -85,64 +129,79 @@ export async function POST(req: NextRequest) {
           date_debut: new Date().toISOString(),
           date_fin: dateFin,
           prix,
+        });
+
+        if (error) {
+          console.error("[webhook] Erreur INSERT abonnement:", JSON.stringify(error));
+        } else {
+          console.log("[webhook] Nouvel abonnement inséré avec succès");
+        }
+      }
+
+      // Activer le flag abonnement_actif sur le prestataire
+      const { error: updatePrestErr } = await supabase
+        .from("prestataires")
+        .update({ abonnement_actif: true })
+        .eq("id", prestataireId);
+
+      if (updatePrestErr) {
+        console.error("[webhook] Erreur UPDATE prestataires.abonnement_actif:", JSON.stringify(updatePrestErr));
+      } else {
+        console.log(`[webhook] prestataire ${prestataireId} — abonnement_actif=true`);
+      }
+    }
+
+    // ─── Abonnement annulé ─────────────────────────────────────────────────
+    if (event.type === "customer.subscription.deleted") {
+      const subscription = event.data.object as Stripe.Subscription;
+      console.log("[webhook] customer.subscription.deleted — sub id:", subscription.id);
+      console.log("[webhook] metadata:", JSON.stringify(subscription.metadata));
+
+      const prestataireId = subscription.metadata?.prestataire_id;
+      const subscriptionId = subscription.id;
+
+      if (!prestataireId) {
+        console.warn("[webhook] prestataire_id manquant dans les métadonnées de l'abonnement");
+        return NextResponse.json({ received: true });
+      }
+
+      const { error } = await supabase
+        .from("abonnements")
+        .update({
+          plan: "gratuit",
+          statut: "inactif",
+          date_fin: new Date().toISOString(),
+          prix: 0,
+          stripe_subscription_id: null,
         })
-        .eq("id", existing.id);
+        .eq("stripe_subscription_id", subscriptionId);
 
-      if (error) console.error("Erreur update abonnement:", error);
-    } else {
-      // Insérer un nouvel enregistrement
-      const { error } = await supabase.from("abonnements").insert({
-        prestataire_id: prestataireId,
-        plan,
-        statut: "actif",
-        stripe_subscription_id: subscriptionId,
-        stripe_customer_id: customerId,
-        date_debut: new Date().toISOString(),
-        date_fin: dateFin,
-        prix,
-      });
+      if (error) {
+        console.error("[webhook] Erreur UPDATE abonnement (annulation):", JSON.stringify(error));
+      } else {
+        console.log("[webhook] Abonnement annulé — passage à gratuit/inactif");
+      }
 
-      if (error) console.error("Erreur insert abonnement:", error);
+      const { error: updatePrestErr } = await supabase
+        .from("prestataires")
+        .update({ abonnement_actif: false })
+        .eq("id", prestataireId);
+
+      if (updatePrestErr) {
+        console.error("[webhook] Erreur UPDATE prestataires.abonnement_actif (annulation):", JSON.stringify(updatePrestErr));
+      } else {
+        console.log(`[webhook] prestataire ${prestataireId} — abonnement_actif=false`);
+      }
     }
 
-    // Activer le flag abonnement_actif sur le prestataire
-    await supabase
-      .from("prestataires")
-      .update({ abonnement_actif: true })
-      .eq("id", prestataireId);
+    console.log(`[webhook] Événement ${event.type} traité avec succès`);
+    return NextResponse.json({ received: true });
+
+  } catch (err) {
+    console.error("[webhook] Erreur non capturée:", err);
+    return NextResponse.json(
+      { error: "Erreur interne du webhook", details: err instanceof Error ? err.message : String(err) },
+      { status: 500 }
+    );
   }
-
-  // ─── Abonnement annulé ───────────────────────────────────────────────────
-  if (event.type === "customer.subscription.deleted") {
-    const subscription = event.data.object as Stripe.Subscription;
-    const prestataireId = subscription.metadata?.prestataire_id;
-    const subscriptionId = subscription.id;
-
-    if (!prestataireId) {
-      console.warn("Webhook subscription.deleted: prestataire_id manquant dans les métadonnées");
-      return NextResponse.json({ received: true });
-    }
-
-    // Repasser au plan gratuit
-    const { error } = await supabase
-      .from("abonnements")
-      .update({
-        plan: "gratuit",
-        statut: "inactif",
-        date_fin: new Date().toISOString(),
-        prix: 0,
-        stripe_subscription_id: null,
-      })
-      .eq("stripe_subscription_id", subscriptionId);
-
-    if (error) console.error("Erreur update abonnement (annulation):", error);
-
-    // Désactiver le flag abonnement_actif
-    await supabase
-      .from("prestataires")
-      .update({ abonnement_actif: false })
-      .eq("id", prestataireId);
-  }
-
-  return NextResponse.json({ received: true });
 }
