@@ -6,13 +6,13 @@ const footerLinks = {
   prestataires: {
     title: "Prestataires",
     links: [
-      { label: "Photographes", href: "#" },
-      { label: "DJ & Animateurs", href: "#" },
-      { label: "Traiteurs", href: "#" },
-      { label: "Fleuristes", href: "#" },
-      { label: "Salles de réception", href: "#" },
-      { label: "Wedding Planners", href: "#" },
-      { label: "Coiffeurs & Maquilleurs", href: "#" },
+      { label: "Photographes", href: "/annuaire?metier=Photographe" },
+      { label: "DJ & Animateurs", href: "/annuaire?metier=DJ" },
+      { label: "Traiteurs", href: "/annuaire?metier=Traiteur" },
+      { label: "Fleuristes", href: "/annuaire?metier=Fleuriste" },
+      { label: "Salles de réception", href: "/annuaire?metier=Lieu de réception" },
+      { label: "Wedding Planners", href: "/annuaire?metier=Wedding Planner" },
+      { label: "Coiffeurs & Maquilleurs", href: "/annuaire?metier=Coiffeur" },
     ],
   },
   mariees: {
@@ -38,10 +38,10 @@ const footerLinks = {
   aide: {
     title: "Aide & Contact",
     links: [
-      { label: "Centre d'aide", href: "#" },
-      { label: "Contacter le support", href: "#" },
-      { label: "Signaler un problème", href: "#" },
-      { label: "Devenir partenaire", href: "#" },
+      { label: "Centre d'aide", href: "/contact" },
+      { label: "Contacter le support", href: "/contact" },
+      { label: "Signaler un problème", href: "/contact" },
+      { label: "Devenir partenaire", href: "/contact" },
     ],
   },
 };
