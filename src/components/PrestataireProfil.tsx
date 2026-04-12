@@ -86,7 +86,7 @@ function buildPrestataire(id: number): PrestatireData {
   if (!provider) {
     return {
       nom: fb.nom, metier: fb.metier, ville: fb.ville, region: fb.region,
-      note: fb.note, nbAvis: fb.nbAvis, verifie: fb.verifie, prixMin: fb.prixMin,
+      note: fb.note, nbAvis: fb.nbAvis, verifie: fb.verifie, plan: null, prixMin: fb.prixMin,
       telephone: fb.telephone, email: fb.email, site: fb.site, instagram: fb.instagram,
       photo: fb.photo, couverture: fb.couverture, description: fb.description,
       specialites: fb.specialites, experience: fb.experience, zones: fb.zones,
@@ -103,6 +103,7 @@ function buildPrestataire(id: number): PrestatireData {
     note: provider.note,
     nbAvis: provider.avis,
     verifie: provider.verifie,
+    plan: null,
     prixMin: provider.prixMin,
     telephone: fb.telephone,
     email: `contact@${emailSlug}.fr`,
@@ -120,10 +121,16 @@ function buildPrestataire(id: number): PrestatireData {
   };
 }
 
-function buildPrestataireFromSupabase(p: SupabasePrestataire): PrestatireData {
+function buildPrestataireFromSupabase(
+  p: SupabasePrestataire & { abonnements?: { plan: string; statut: string }[] }
+): PrestatireData {
   const rawPhotos = p.photos ?? [];
   const photos = rawPhotos.map(buildPhotoUrl).filter((u): u is string => !!u);
   const avatar = buildPhotoUrl(p.avatar_url) ?? photos[0] ?? null;
+  const activeAbo = p.abonnements?.find((a) => a.statut === "actif") ?? p.abonnements?.[0] ?? null;
+  const rawPlan = activeAbo?.plan ?? null;
+  const plan: "pro" | "premium" | null =
+    rawPlan === "pro" ? "pro" : rawPlan === "premium" ? "premium" : null;
   return {
     nom: p.nom_entreprise,
     metier: p.categorie,
@@ -132,6 +139,7 @@ function buildPrestataireFromSupabase(p: SupabasePrestataire): PrestatireData {
     note: p.note_moyenne,
     nbAvis: p.nb_avis,
     verifie: p.verifie,
+    plan,
     prixMin: p.prix_depart ?? null,
     telephone: p.telephone ?? null,
     email: null,
@@ -257,6 +265,7 @@ type PrestatireData = {
   note: number;
   nbAvis: number;
   verifie: boolean;
+  plan: "pro" | "premium" | null;
   prixMin: number | null;
   telephone: string | null;
   email: string | null;
@@ -1500,7 +1509,7 @@ export default function PrestataireProfil({ id }: { id?: string }) {
   const [PRESTATAIRE, setPRESTATAIRE] = useState<PrestatireData>(() =>
     isNumericId ? buildPrestataire(numId) : {
       nom: "", metier: "", ville: "", region: "",
-      note: 0, nbAvis: 0, verifie: false, prixMin: null,
+      note: 0, nbAvis: 0, verifie: false, plan: null, prixMin: null,
       telephone: null, email: null, site: null, instagram: null,
       photo: null, couverture: null, description: null,
       specialites: [], experience: null, zones: [], langues: [], equipements: [],
@@ -1512,12 +1521,12 @@ export default function PrestataireProfil({ id }: { id?: string }) {
     if (!id || isNumericId) return;
     supabase
       .from("prestataires")
-      .select("*")
+      .select("*, abonnements(plan, statut)")
       .eq("id", id)
       .maybeSingle()
       .then(({ data }) => {
         if (data) {
-          setPRESTATAIRE(buildPrestataireFromSupabase(data as SupabasePrestataire));
+          setPRESTATAIRE(buildPrestataireFromSupabase(data as SupabasePrestataire & { abonnements?: { plan: string; statut: string }[] }));
           // Enregistrer la vue (fire-and-forget)
           supabase.from("profile_views").insert({ prestataire_id: id });
         }
@@ -1781,6 +1790,22 @@ export default function PrestataireProfil({ id }: { id?: string }) {
                       <circle cx="12" cy="12" r="12" fill="#1D9BF0"/>
                       <path d="M7 12.5l3.5 3.5 6.5-7" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
+                  </span>
+                )}
+                {PRESTATAIRE.plan === "pro" && (
+                  <span
+                    className="flex-shrink-0 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm"
+                    style={{ backgroundColor: "#F06292" }}
+                  >
+                    PRO
+                  </span>
+                )}
+                {PRESTATAIRE.plan === "premium" && (
+                  <span
+                    className="flex-shrink-0 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm"
+                    style={{ background: "linear-gradient(135deg, #C9A96E, #A67C52)" }}
+                  >
+                    PREMIUM
                   </span>
                 )}
               </div>

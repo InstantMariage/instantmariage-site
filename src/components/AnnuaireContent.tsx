@@ -291,12 +291,12 @@ function ProviderCard({ provider }: { provider: DisplayProvider }) {
         {/* Badge plan abonnement top-right */}
         {provider.plan === "pro" && (
           <span className="absolute top-3 right-3 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-md" style={{ backgroundColor: "#F06292" }}>
-            Pro
+            PRO
           </span>
         )}
         {provider.plan === "premium" && (
           <span className="absolute top-3 right-3 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-md" style={{ background: "linear-gradient(135deg, #C9A96E, #A67C52)" }}>
-            Premium
+            PREMIUM
           </span>
         )}
       </div>
