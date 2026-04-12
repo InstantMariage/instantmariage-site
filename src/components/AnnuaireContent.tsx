@@ -279,22 +279,6 @@ function ProviderCard({ provider }: { provider: DisplayProvider }) {
               </svg>
             </span>
           )}
-          {provider.nouveau && (
-            <span className="inline-flex items-center bg-emerald-500 text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm">
-              Nouveau
-            </span>
-          )}
-        </div>
-        {/* Disponibilité */}
-        <div className="absolute top-3 right-3">
-          <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full backdrop-blur-sm shadow-sm ${
-            provider.disponible
-              ? "bg-white/95 text-emerald-600"
-              : "bg-white/95 text-gray-400"
-          }`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${provider.disponible ? "bg-emerald-500" : "bg-gray-300"}`} />
-            {provider.disponible ? "Disponible" : "Complet"}
-          </span>
         </div>
       </div>
 
@@ -799,14 +783,14 @@ export default function AnnuaireContent() {
                   {/* Vérifié */}
                   <div className="flex items-center justify-between">
                     <label className="text-sm text-gray-700 font-medium flex items-center gap-2 cursor-pointer">
-                      <svg className="w-4 h-4 text-rose-400" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-4 h-4" style={{color:"#1D9BF0"}} fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                       </svg>
                       Badge vérifié uniquement
                     </label>
                     <button
                       onClick={() => { setSideVerifie(!sideVerifie); setCurrentPage(1); }}
-                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${sideVerifie ? "bg-rose-400" : "bg-gray-200"}`}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${sideVerifie ? "bg-[#1D9BF0]" : "bg-gray-200"}`}
                     >
                       <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200 ${sideVerifie ? "translate-x-4" : "translate-x-0.5"}`} />
                     </button>
