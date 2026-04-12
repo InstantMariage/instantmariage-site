@@ -83,6 +83,14 @@ type PrestataireWithAbo = Prestataire & {
   abonnements?: { plan: string; statut: string }[];
 };
 
+function planPriority(p: PrestataireWithAbo): number {
+  const activeAbo = p.abonnements?.find((a) => a.statut === "actif") ?? p.abonnements?.[0];
+  const plan = activeAbo?.plan;
+  if (plan === "premium") return 2;
+  if (plan === "pro" || plan === "starter" || plan === "essentiel") return 1;
+  return 0;
+}
+
 async function fetchPrestataires(
   categorie: string,
   departementCode: string,
@@ -93,19 +101,22 @@ async function fetchPrestataires(
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  const from = (page - 1) * PER_PAGE;
-  const to = from + PER_PAGE - 1;
-
-  const { data, error, count } = await supabase
+  const { data, error } = await supabase
     .from("prestataires")
-    .select("*, abonnements(plan, statut)", { count: "exact" })
+    .select("*, abonnements(plan, statut)")
     .eq("categorie", categorie)
-    .ilike("departement", `%${departementCode}%`)
-    .order("note_moyenne", { ascending: false })
-    .range(from, to);
+    .ilike("departement", `%${departementCode}%`);
 
   if (error || !data) return { data: [], total: 0 };
-  return { data: data as PrestataireWithAbo[], total: count ?? 0 };
+
+  const sorted = (data as PrestataireWithAbo[]).sort((a, b) => {
+    const planDiff = planPriority(b) - planPriority(a);
+    if (planDiff !== 0) return planDiff;
+    return (b.note_moyenne ?? 0) - (a.note_moyenne ?? 0);
+  });
+
+  const from = (page - 1) * PER_PAGE;
+  return { data: sorted.slice(from, from + PER_PAGE), total: sorted.length };
 }
 
 // ─── Carte prestataire ─────────────────────────────────────────────────────────
