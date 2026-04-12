@@ -136,6 +136,7 @@ function DashboardPrestataire() {
   const [activeTab, setActiveTab] = useState<"avis" | "messages">("messages");
   const [authChecked, setAuthChecked] = useState(false);
   const [nomEntreprise, setNomEntreprise] = useState("");
+  const [verifie, setVerifie] = useState(false);
   const [prestataireId, setPrestataireId] = useState<string | null>(null);
   const [categorie, setCategorie] = useState("");
   const [ville, setVille] = useState("");
@@ -172,12 +173,13 @@ function DashboardPrestataire() {
       // Récupérer profil prestataire
       const { data: prestataire } = await supabase
         .from("prestataires")
-        .select("id, nom_entreprise, categorie, ville, avatar_url, photos, description, telephone, site_web, note_moyenne, nb_avis")
+        .select("id, nom_entreprise, categorie, ville, avatar_url, photos, description, telephone, site_web, note_moyenne, nb_avis, verifie")
         .eq("user_id", session.user.id)
         .single();
 
       if (prestataire) {
         setNomEntreprise(prestataire.nom_entreprise || "");
+        setVerifie(prestataire.verifie ?? false);
         setPrestataireId(prestataire.id);
         setCategorie(prestataire.categorie || "");
         setVille(prestataire.ville || "");
@@ -363,8 +365,16 @@ function DashboardPrestataire() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h1 className="text-xl sm:text-2xl font-bold text-white font-playfair truncate">
+                    <h1 className="text-xl sm:text-2xl font-bold text-white font-playfair truncate flex items-center gap-2">
                       {nomEntreprise}
+                      {verifie && (
+                        <span title="Prestataire vérifié par InstantMariage" className="flex-shrink-0">
+                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="12" r="12" fill="#1D9BF0"/>
+                            <path d="M7 12.5l3.5 3.5 6.5-7" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </span>
+                      )}
                     </h1>
                     <span
                       className="text-xs font-semibold px-2.5 py-0.5 rounded-full flex-shrink-0"

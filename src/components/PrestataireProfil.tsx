@@ -130,7 +130,7 @@ function buildPrestataireFromSupabase(p: SupabasePrestataire): PrestatireData {
     region: p.departement ?? "",
     note: p.note_moyenne,
     nbAvis: p.nb_avis,
-    verifie: p.abonnement_actif,
+    verifie: p.verifie,
     prixMin: p.prix_depart ?? null,
     telephone: p.telephone ?? null,
     email: null,
@@ -1754,14 +1754,11 @@ export default function PrestataireProfil({ id }: { id?: string }) {
                   {PRESTATAIRE.nom}
                 </h1>
                 {PRESTATAIRE.verifie && (
-                  <span
-                    className="flex items-center gap-1 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm flex-shrink-0"
-                    style={{ backgroundColor: "#F06292" }}
-                  >
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  <span title="Prestataire vérifié par InstantMariage" className="flex-shrink-0">
+                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="12" fill="#1D9BF0"/>
+                      <path d="M7 12.5l3.5 3.5 6.5-7" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
-                    Vérifié
                   </span>
                 )}
               </div>

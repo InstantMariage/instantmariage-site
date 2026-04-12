@@ -32,6 +32,7 @@ export type Prestataire = {
   note_moyenne: number
   nb_avis: number
   abonnement_actif: boolean
+  verifie: boolean
   created_at: string
   updated_at: string
 }
