@@ -155,6 +155,9 @@ export default function AbonnementPage() {
   const [cancelLoading, setCancelLoading] = useState(false);
   const [cancelSuccess, setCancelSuccess] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
+  const [reactivateLoading, setReactivateLoading] = useState(false);
+  const [reactivateSuccess, setReactivateSuccess] = useState(false);
+  const [reactivateError, setReactivateError] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -225,6 +228,34 @@ export default function AbonnementPage() {
     });
   }, [router]);
 
+  async function handleReactivateSubscription() {
+    if (!prestataireId) return;
+    setReactivateLoading(true);
+    setReactivateError(null);
+
+    try {
+      const res = await fetch("/api/stripe/reactivate-subscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prestataireId }),
+      });
+
+      if (!res.ok) {
+        const { error } = await res.json();
+        setReactivateError(error ?? "Une erreur est survenue");
+        return;
+      }
+
+      setReactivateSuccess(true);
+      setCancelAtPeriodEnd(false);
+      setCancelSuccess(false);
+    } catch {
+      setReactivateError("Une erreur réseau est survenue");
+    } finally {
+      setReactivateLoading(false);
+    }
+  }
+
   async function handleCancelSubscription() {
     if (!prestataireId) return;
     setCancelLoading(true);
@@ -285,6 +316,28 @@ export default function AbonnementPage() {
                 Votre abonnement sera résilié à la fin de la période en cours. Vous conservez tous vos accès jusqu&apos;à cette date.
               </p>
             </div>
+          </div>
+        )}
+
+        {/* Succès réactivation */}
+        {reactivateSuccess && (
+          <div className="mb-6 flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl p-4 text-green-800">
+            <span className="mt-0.5 flex-shrink-0 bg-green-100 rounded-full p-0.5">
+              <IconCheck />
+            </span>
+            <div>
+              <p className="font-semibold text-sm">Abonnement réactivé</p>
+              <p className="text-sm mt-0.5">
+                La résiliation a été annulée. Votre abonnement se renouvellera normalement à la prochaine échéance.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Erreur réactivation */}
+        {reactivateError && (
+          <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+            {reactivateError}
           </div>
         )}
 
@@ -410,6 +463,28 @@ export default function AbonnementPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                   Annuler mon abonnement
+                </button>
+              )}
+
+              {abonnement && abonnement.statut === "actif" && cancelAtPeriodEnd && (
+                <button
+                  onClick={handleReactivateSubscription}
+                  disabled={reactivateLoading}
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-white hover:bg-green-50 text-green-700 border border-green-300 font-medium px-5 py-3 rounded-xl transition-colors text-sm disabled:opacity-50"
+                >
+                  {reactivateLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-green-300 border-t-green-600 rounded-full animate-spin" />
+                      En cours…
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      Annuler la résiliation
+                    </>
+                  )}
                 </button>
               )}
             </section>
