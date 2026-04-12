@@ -65,14 +65,14 @@ const PLAN_CONFIG: Record<PlanAbonnement, PlanConfig> = {
     upgradeHref: "/tarifs",
   },
   premium: {
-    label: "PREMIUM",
+    label: "Premium",
     badgeColor: "white",
-    badgeBg: "#F59E0B",
+    badgeBg: "linear-gradient(135deg, #C9A96E, #A67C52)",
     features: ["Tout Pro inclus", "Badge Premium", "Profil en avant-première", "Support dédié"],
     canAccessDevis: true,
     canAccessFactures: true,
     canAccessContrats: true,
-    hasPremiumBadge: true,
+    hasPremiumBadge: false,
     devisLabel: "Illimité",
     upgradeLabel: null,
     upgradeHref: null,
@@ -385,11 +385,6 @@ function DashboardPrestataire() {
                     >
                       {planConfig.label}
                     </span>
-                    {planConfig.hasPremiumBadge && (
-                      <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full flex-shrink-0" style={{ background: "#F59E0B", color: "white" }}>
-                        ★ Premium
-                      </span>
-                    )}
                   </div>
                   <p className="text-rose-100 text-sm mt-0.5 truncate">
                     {[categorie, ville].filter(Boolean).join(" · ")}
@@ -783,7 +778,7 @@ function DashboardPrestataire() {
                   {plan === "premium" && (
                     <div
                       className="text-center py-2.5 rounded-xl text-sm font-semibold"
-                      style={{ background: "rgba(245,158,11,0.2)", color: "#F59E0B" }}
+                      style={{ background: "rgba(201,169,110,0.18)", color: "#A67C52" }}
                     >
                       ★ Vous êtes Premium !
                     </div>

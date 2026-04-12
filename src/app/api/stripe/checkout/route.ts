@@ -47,7 +47,12 @@ export async function POST(req: NextRequest) {
         );
         const itemId = subscription.items.data[0]?.id;
 
-        if (itemId) {
+        // Ne faire l'upgrade que si l'abonnement est réellement actif dans Stripe.
+        // Si l'abonnement est annulé/expiré en base mais pas dans Stripe (désync),
+        // on laisse tomber pour créer une nouvelle session Checkout.
+        const isLive = subscription.status === "active" || subscription.status === "trialing";
+
+        if (itemId && isLive) {
           const updated = await stripe.subscriptions.update(existing.stripe_subscription_id, {
             items: [{ id: itemId, price: priceId }],
             proration_behavior: "create_prorations",

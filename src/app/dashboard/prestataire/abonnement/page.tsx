@@ -86,7 +86,7 @@ const PLAN_CONFIG: Record<PlanAbonnement, {
   },
   premium: {
     label: "Premium",
-    badgeBg: "#F59E0B",
+    badgeBg: "linear-gradient(135deg, #C9A96E, #A67C52)",
     badgeColor: "white",
     prix: 39.90,
     features: ["Tout Pro inclus", "Badge Premium", "Profil en avant-première", "Support dédié"],
