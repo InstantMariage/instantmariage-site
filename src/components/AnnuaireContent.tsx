@@ -108,6 +108,7 @@ interface DisplayProvider {
   nouveau: boolean;
   description: string;
   departement: string;
+  plan: string | null;
 }
 
 // Construire la map inverse département → région une seule fois
@@ -195,7 +196,9 @@ function isRecentDate(dateStr: string): boolean {
   return (now.getTime() - d.getTime()) < 30 * 24 * 60 * 60 * 1000;
 }
 
-function prestataireToDisplay(p: Prestataire): DisplayProvider {
+function prestataireToDisplay(p: Prestataire & { abonnements?: { plan: string; statut: string }[] }): DisplayProvider {
+  const activeAbo = p.abonnements?.find((a) => a.statut === "actif") ?? p.abonnements?.[0] ?? null;
+  const plan = activeAbo?.plan ?? null;
   return {
     id: p.id,
     nom: p.nom_entreprise,
@@ -212,6 +215,7 @@ function prestataireToDisplay(p: Prestataire): DisplayProvider {
     nouveau: isRecentDate(p.created_at),
     description: p.description || "",
     departement: p.departement || "",
+    plan: plan && plan !== "gratuit" && plan !== "starter" ? plan : null,
   };
 }
 
@@ -232,6 +236,7 @@ function mockToDisplay(p: typeof PROVIDERS[number]): DisplayProvider {
     nouveau: p.nouveau,
     description: p.description,
     departement: (p as any).departement || "",
+    plan: null,
   };
 }
 
@@ -280,6 +285,17 @@ function ProviderCard({ provider }: { provider: DisplayProvider }) {
             </span>
           )}
         </div>
+        {/* Badge plan abonnement top-right */}
+        {provider.plan === "pro" && (
+          <span className="absolute top-3 right-3 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-md" style={{ backgroundColor: "#F06292" }}>
+            Pro
+          </span>
+        )}
+        {provider.plan === "premium" && (
+          <span className="absolute top-3 right-3 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-md" style={{ background: "linear-gradient(135deg, #C9A96E, #A67C52)" }}>
+            Premium
+          </span>
+        )}
       </div>
 
       {/* Content */}
@@ -417,10 +433,10 @@ export default function AnnuaireContent() {
   useEffect(() => {
     supabase
       .from("prestataires")
-      .select("*")
+      .select("*, abonnements(plan, statut)")
       .then(({ data }) => {
         if (data && data.length > 0) {
-          setSupabaseProviders((data as Prestataire[]).map(prestataireToDisplay));
+          setSupabaseProviders((data as (Prestataire & { abonnements?: { plan: string; statut: string }[] })[]).map(prestataireToDisplay));
           setIsDemo(false);
         } else {
           setSupabaseProviders(PROVIDERS.map(mockToDisplay));
