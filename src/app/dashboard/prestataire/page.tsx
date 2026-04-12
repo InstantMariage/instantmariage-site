@@ -153,6 +153,10 @@ function DashboardPrestataire() {
   const [noteStats, setNoteStats] = useState<{ note: number; nb: number } | null>(null);
   const [profileCompletion, setProfileCompletion] = useState(0);
   const [profileSuggestions, setProfileSuggestions] = useState<Array<{ label: string; done: boolean; points: number }>>([]);
+  const [codeParrainage, setCodeParrainage] = useState<string | null>(null);
+  const [nbFilleuls, setNbFilleuls] = useState(0);
+  const [moisGagnes, setMoisGagnes] = useState(0);
+  const [copiedCode, setCopiedCode] = useState(false);
 
   useEffect(() => {
     if (searchParams.get("success") === "true") {
@@ -174,7 +178,7 @@ function DashboardPrestataire() {
       // Récupérer profil prestataire
       const { data: prestataire } = await supabase
         .from("prestataires")
-        .select("id, nom_entreprise, categorie, ville, avatar_url, photos, description, telephone, site_web, note_moyenne, nb_avis, verifie")
+        .select("id, nom_entreprise, categorie, ville, avatar_url, photos, description, telephone, site_web, note_moyenne, nb_avis, verifie, code_parrainage")
         .eq("user_id", session.user.id)
         .single();
 
@@ -202,17 +206,25 @@ function DashboardPrestataire() {
         setProfileCompletion(suggItems.reduce((s, i) => s + (i.done ? i.points : 0), 0));
         setProfileSuggestions(suggItems);
 
-        // Stats en parallèle : vues du profil, contacts, note/avis
-        const [{ count: views }, { count: contacts }, { data: avisData }] = await Promise.all([
+        // Stats en parallèle : vues du profil, contacts, note/avis, parrainages
+        const [{ count: views }, { count: contacts }, { data: avisData }, { data: parrainagesData }] = await Promise.all([
           supabase.from("profile_views").select("*", { count: "exact", head: true }).eq("prestataire_id", prestataire.id),
           supabase.from("conversations").select("*", { count: "exact", head: true }).or(`participant1_id.eq.${uid},participant2_id.eq.${uid}`),
           supabase.from("avis").select("note").eq("prestataire_id", prestataire.id),
+          supabase.from("parrainages").select("mois_offerts").eq("parrain_id", prestataire.id).eq("statut", "valide"),
         ]);
         setProfileViews(views ?? 0);
         setNbContacts(contacts ?? 0);
         const nb = avisData?.length ?? 0;
         const note = nb > 0 ? avisData!.reduce((s: number, a: { note: number }) => s + a.note, 0) / nb : 0;
         setNoteStats({ note, nb });
+
+        // Stats parrainage
+        if (prestataire.code_parrainage) setCodeParrainage(prestataire.code_parrainage);
+        if (parrainagesData) {
+          setNbFilleuls(parrainagesData.length);
+          setMoisGagnes(parrainagesData.reduce((s: number, p: { mois_offerts: number }) => s + p.mois_offerts, 0));
+        }
 
         // Récupérer l'abonnement actif
         const { data: abonnement } = await supabase
@@ -781,6 +793,90 @@ function DashboardPrestataire() {
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* Parrainage */}
+              <div className="bg-white rounded-2xl shadow-card p-4 sm:p-6">
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div
+                    className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: "#FFF0F5", color: "#F06292" }}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+                    </svg>
+                  </div>
+                  <h2 className="font-semibold text-gray-900">Parrainage</h2>
+                </div>
+
+                <p className="text-xs text-gray-500 mb-3 leading-relaxed">
+                  Parrainez un prestataire et gagnez <span className="font-semibold text-gray-700">1 mois gratuit</span> dès son inscription.
+                </p>
+
+                {/* Compteurs */}
+                <div className="grid grid-cols-2 gap-2 mb-4">
+                  <div className="rounded-xl p-3 text-center" style={{ background: "#FFF0F5" }}>
+                    <div className="text-2xl font-bold" style={{ color: "#F06292" }}>{nbFilleuls}</div>
+                    <div className="text-xs text-gray-500 mt-0.5">filleul{nbFilleuls > 1 ? "s" : ""}</div>
+                  </div>
+                  <div className="rounded-xl p-3 text-center" style={{ background: "#FFF0F5" }}>
+                    <div className="text-2xl font-bold" style={{ color: "#F06292" }}>{moisGagnes}</div>
+                    <div className="text-xs text-gray-500 mt-0.5">mois gagné{moisGagnes > 1 ? "s" : ""}</div>
+                  </div>
+                </div>
+
+                {/* Code + bouton copier */}
+                {codeParrainage && (
+                  <div>
+                    <p className="text-xs text-gray-400 mb-1.5">Votre code parrainage</p>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="flex-1 rounded-xl px-3 py-2.5 text-center font-mono font-bold tracking-widest text-base"
+                        style={{ background: "#F3F4F6", color: "#1F2937" }}
+                      >
+                        {codeParrainage}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const url = `https://instantmariage.fr/inscription?ref=${codeParrainage}`;
+                          try {
+                            await navigator.clipboard.writeText(url);
+                          } catch {
+                            // Fallback for browsers without clipboard API
+                            const ta = document.createElement("textarea");
+                            ta.value = url;
+                            document.body.appendChild(ta);
+                            ta.select();
+                            document.execCommand("copy");
+                            document.body.removeChild(ta);
+                          }
+                          setCopiedCode(true);
+                          setTimeout(() => setCopiedCode(false), 2000);
+                        }}
+                        className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200"
+                        style={{
+                          background: copiedCode ? "#F0FDF4" : "#FFF0F5",
+                          color: copiedCode ? "#16A34A" : "#F06292",
+                        }}
+                        title="Copier le lien de parrainage"
+                      >
+                        {copiedCode ? (
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        ) : (
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                    <p className="text-xs mt-2" style={{ color: copiedCode ? "#16A34A" : "#9CA3AF" }}>
+                      {copiedCode ? "Lien copié !" : "Cliquez pour copier votre lien"}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

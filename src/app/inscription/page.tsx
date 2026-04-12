@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -62,6 +62,15 @@ export default function InscriptionPage() {
   const [pTel, setPTel] = useState("");
   const [pShowPwd, setPShowPwd] = useState(false);
   const [pShowConfirmPwd, setPShowConfirmPwd] = useState(false);
+
+  const [refCode, setRefCode] = useState<string | null>(null);
+
+  // Lire le code parrainage depuis l'URL (?ref=CODE)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get("ref");
+    if (ref) setRefCode(ref.toUpperCase().trim());
+  }, []);
 
   const mPasswordsMatch = mConfirmPassword === "" || mPassword === mConfirmPassword;
   const pPasswordsMatch = pConfirmPassword === "" || pPassword === pConfirmPassword;
@@ -132,6 +141,7 @@ export default function InscriptionPage() {
           categorie: pMetier,
           ville: pVille,
           telephone: pTel,
+          ref_code: refCode ?? undefined,
         }),
       });
       if (!insertRes.ok) {
@@ -406,6 +416,21 @@ export default function InscriptionPage() {
                   boxShadow: "0 4px 32px rgba(233,30,140,0.07)",
                 }}
               >
+                {/* Bandeau parrainage */}
+                {accountType === "prestataire" && refCode && (
+                  <div
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl mb-5 text-sm font-medium"
+                    style={{ background: "#FFF0F5", border: "1px solid #FBBDD9", color: "#BE185D" }}
+                  >
+                    <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+                    </svg>
+                    <span>
+                      Vous avez été parrainé ! Code <strong>{refCode}</strong> appliqué.
+                    </span>
+                  </div>
+                )}
+
                 {/* Google */}
                 <button
                   type="button"
