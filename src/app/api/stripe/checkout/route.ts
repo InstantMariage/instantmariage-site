@@ -42,20 +42,38 @@ export async function POST(req: NextRequest) {
       if (existing?.stripe_subscription_id) {
         // ── Upgrade/downgrade : modifier l'abonnement existant ───────────────
         const subscription = await stripe.subscriptions.retrieve(
-          existing.stripe_subscription_id
+          existing.stripe_subscription_id,
+          { expand: ["latest_invoice.payment_intent"] }
         );
         const itemId = subscription.items.data[0]?.id;
 
         if (itemId) {
-          await stripe.subscriptions.update(existing.stripe_subscription_id, {
+          const updated = await stripe.subscriptions.update(existing.stripe_subscription_id, {
             items: [{ id: itemId, price: priceId }],
             proration_behavior: "create_prorations",
+            payment_behavior: "pending_if_incomplete",
             metadata: { prestataire_id: prestataireId },
+            expand: ["latest_invoice.payment_intent"],
           });
 
-          // Le webhook customer.subscription.updated mettra à jour la BDD.
-          // On redirige vers le dashboard directement.
           const origin = req.headers.get("origin") ?? "http://localhost:3000";
+
+          // Si la facture proratisée nécessite une authentification 3DS
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const invoice = (updated as any).latest_invoice;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const paymentIntent = invoice?.payment_intent as any;
+          if (
+            paymentIntent?.status === "requires_action" ||
+            paymentIntent?.status === "requires_payment_method"
+          ) {
+            // Rediriger vers une page de confirmation de paiement
+            return NextResponse.json({
+              url: `${origin}/paiement/confirmer?payment_intent_client_secret=${paymentIntent.client_secret}&redirect_url=/dashboard/prestataire`,
+            });
+          }
+
+          // Le webhook customer.subscription.updated mettra à jour la BDD.
           return NextResponse.json({
             url: `${origin}/dashboard/prestataire?success=true`,
           });

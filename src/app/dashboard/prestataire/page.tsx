@@ -143,6 +143,7 @@ function DashboardPrestataire() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [plan, setPlan] = useState<PlanAbonnement>("gratuit");
   const [dateRenouvellement, setDateRenouvellement] = useState<string | null>(null);
+  const [cancelAtPeriodEnd, setCancelAtPeriodEnd] = useState(false);
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [convsLoaded, setConvsLoaded] = useState(false);
   const [profileViews, setProfileViews] = useState<number | null>(null);
@@ -213,7 +214,7 @@ function DashboardPrestataire() {
         // Récupérer l'abonnement actif
         const { data: abonnement } = await supabase
           .from("abonnements")
-          .select("plan, statut, date_fin")
+          .select("plan, statut, date_fin, stripe_subscription_id")
           .eq("prestataire_id", prestataire.id)
           .order("created_at", { ascending: false })
           .limit(1)
@@ -226,6 +227,21 @@ function DashboardPrestataire() {
             setDateRenouvellement(
               d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })
             );
+          }
+
+          // Vérifier si l'abonnement est en cours d'annulation
+          if (abonnement.stripe_subscription_id) {
+            try {
+              const res = await fetch(
+                `/api/stripe/subscription-status?subscriptionId=${abonnement.stripe_subscription_id}`
+              );
+              if (res.ok) {
+                const { cancel_at_period_end } = await res.json();
+                setCancelAtPeriodEnd(cancel_at_period_end ?? false);
+              }
+            } catch {
+              // silencieux si l'API est indisponible
+            }
           }
         }
       } else {
@@ -733,7 +749,12 @@ function DashboardPrestataire() {
                     ))}
                   </div>
 
-                  {dateRenouvellement && plan !== "gratuit" && (
+                  {cancelAtPeriodEnd && dateRenouvellement && plan !== "gratuit" && (
+                    <div className="text-xs mb-4 px-2.5 py-1.5 rounded-lg" style={{ background: "rgba(251,146,60,0.15)", color: "#FB923C" }}>
+                      Actif jusqu&apos;au <span className="font-semibold">{dateRenouvellement}</span>
+                    </div>
+                  )}
+                  {!cancelAtPeriodEnd && dateRenouvellement && plan !== "gratuit" && (
                     <div className="text-xs text-gray-400 mb-4">
                       Renouvellement le <span className="text-white font-medium">{dateRenouvellement}</span>
                     </div>
