@@ -8,18 +8,13 @@ import {
 } from "@/lib/emails";
 
 export async function POST(req: NextRequest) {
-  console.log("[emails] POST received");
-
   if (!process.env.RESEND_API_KEY) {
     console.error("[emails] RESEND_API_KEY is missing — email service not configured");
     return NextResponse.json({ error: "Email service not configured" }, { status: 503 });
   }
 
-  console.log("[emails] RESEND_API_KEY présente (longueur:", process.env.RESEND_API_KEY.length, ")");
-
   const body = await req.json();
   const { type } = body;
-  console.log("[emails] type:", type, "| body keys:", Object.keys(body));
 
   try {
     if (type === "new_message") {
@@ -33,7 +28,6 @@ export async function POST(req: NextRequest) {
       await sendNewPrestaireAdminEmail({ entreprise, categorie, ville, email, userId });
     } else if (type === "contact") {
       const { name, email, subject, message } = body;
-      console.log("[emails] contact — name:", name, "| email:", email, "| subject:", subject);
       await sendContactEmail({ name, email, subject, message });
     } else if (type === "signalement") {
       const { prestaireId, prestataireName, motif, description, userId } = body;
@@ -42,7 +36,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unknown email type" }, { status: 400 });
     }
 
-    console.log("[emails] envoi réussi pour type:", type);
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("[emails] send error (type=" + type + "):", err);

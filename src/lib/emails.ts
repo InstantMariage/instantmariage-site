@@ -242,8 +242,6 @@ export async function sendContactEmail({
     ${ctaButton(`Répondre à ${name}`, `mailto:${email}`)}
   `;
 
-  console.log("[sendContactEmail] from:", FROM, "| to:", adminEmail, "| replyTo:", email);
-
   const result = await resend.emails.send({
     from: FROM,
     to: adminEmail,
@@ -251,8 +249,6 @@ export async function sendContactEmail({
     subject: `[Contact] ${subject} — ${name}`,
     html: baseTemplate(content),
   });
-
-  console.log("[sendContactEmail] résultat Resend:", JSON.stringify(result));
 
   if (result.error) {
     console.error("[sendContactEmail] erreur Resend:", result.error);

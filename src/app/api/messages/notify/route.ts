@@ -87,7 +87,6 @@ export async function POST(req: NextRequest) {
       conversationId,
     });
 
-    console.log(`[messages/notify] Email envoyé à ${recipientEmail} pour conv ${conversationId}`);
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("[messages/notify] Erreur envoi email:", err);

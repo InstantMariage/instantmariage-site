@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import Image from "next/image";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
@@ -495,12 +496,14 @@ export default function ConversationPage() {
 
           {/* Avatar + point de présence */}
           <div className="relative w-9 h-9 flex-shrink-0">
-            <div className="w-9 h-9 rounded-full select-none overflow-hidden">
+            <div className="relative w-9 h-9 rounded-full select-none overflow-hidden">
               {otherAvatarUrl ? (
-                <img
+                <Image
                   src={otherAvatarUrl}
                   alt={otherUserName}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="36px"
                 />
               ) : (
                 <div
@@ -653,15 +656,17 @@ export default function ConversationPage() {
                       {/* Other user avatar - only on last of run */}
                       {!isMe && (
                         <div
-                          className={`w-7 h-7 rounded-full flex-shrink-0 select-none overflow-hidden ${
+                          className={`relative w-7 h-7 rounded-full flex-shrink-0 select-none overflow-hidden ${
                             isLastInRun ? "visible" : "invisible"
                           }`}
                         >
                           {otherAvatarUrl ? (
-                            <img
+                            <Image
                               src={otherAvatarUrl}
                               alt={otherUserName}
-                              className="w-full h-full object-cover"
+                              fill
+                              className="object-cover"
+                              sizes="28px"
                             />
                           ) : (
                             <div

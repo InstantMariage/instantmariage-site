@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -210,10 +211,13 @@ export default async function ArticlePage({
         <div
           className="relative h-72 md:h-96 lg:h-[480px] overflow-hidden"
         >
-          <img
+          <Image
             src={article.image}
             alt={article.title}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            priority
+            sizes="100vw"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
@@ -398,11 +402,13 @@ export default async function ArticlePage({
               <div className="space-y-4">
                 {otherArticles.map((a) => (
                   <Link key={a.slug} href={`/blog/${a.slug}`} className="flex gap-3 group">
-                    <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
-                      <img
+                    <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
+                      <Image
                         src={a.image}
                         alt={a.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        sizes="64px"
                       />
                     </div>
                     <div className="flex-1 min-w-0">

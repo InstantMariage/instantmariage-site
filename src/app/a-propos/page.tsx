@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -62,10 +63,13 @@ export default function APropos() {
       {/* ── HERO ── */}
       <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden pt-20">
         <div className="absolute inset-0 z-0">
-          <img
+          <Image
             src="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=1920&q=80"
             alt="Mariage élégant"
-            className="w-full h-full object-cover object-center"
+            fill
+            className="object-cover object-center"
+            priority
+            sizes="100vw"
           />
           <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-rose-900/40" />
         </div>
@@ -149,11 +153,13 @@ export default function APropos() {
             </div>
 
             <div className="relative">
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl">
-                <img
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl h-[480px]">
+                <Image
                   src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&q=80"
                   alt="Couple heureux le jour de leur mariage"
-                  className="w-full h-[480px] object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
               </div>

@@ -41,7 +41,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.message, code: error.code, details: error.details }, { status: 500 });
     }
 
-    console.log("[api/inscription/marie] Insert réussi:", data);
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("[api/inscription/marie] Exception:", err);

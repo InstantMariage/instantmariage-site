@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
@@ -758,8 +759,7 @@ export default function ProfilPrestatairePage() {
                 {/* Prévisualisation */}
                 <div className="relative w-20 h-20 rounded-full overflow-hidden ring-2 ring-gray-200 bg-gray-100 flex items-center justify-center flex-shrink-0">
                   {form.avatar_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={form.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                    <Image src={form.avatar_url} alt="Avatar" fill className="object-cover" sizes="80px" />
                   ) : (
                     <svg className="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -822,8 +822,7 @@ export default function ProfilPrestatairePage() {
               {/* Prévisualisation */}
               <div className="relative w-full h-36 rounded-xl overflow-hidden bg-gradient-to-br from-rose-100 via-pink-100 to-rose-200 mb-3">
                 {form.cover_url && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={form.cover_url} alt="Couverture" className="w-full h-full object-cover" />
+                  <Image src={form.cover_url} alt="Couverture" fill className="object-cover" sizes="(max-width: 768px) 100vw, 600px" />
                 )}
                 {uploadingCover && (
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
@@ -1106,11 +1105,12 @@ export default function ProfilPrestatairePage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {photos.map((url, i) => (
                   <div key={url} className="relative group aspect-square rounded-xl overflow-hidden bg-gray-100">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    <Image
                       src={url}
                       alt={`Photo ${i + 1}`}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 50vw, 33vw"
                     />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
                       <button

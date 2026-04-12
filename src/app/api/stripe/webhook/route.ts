@@ -30,8 +30,6 @@ function getSupabaseAdmin() {
 }
 
 export async function POST(req: NextRequest) {
-  console.log("[webhook] Requête reçue");
-
   // ── Vérification de la signature ──────────────────────────────────────────
   const body = await req.text();
   const sig = req.headers.get("stripe-signature");
@@ -50,7 +48,6 @@ export async function POST(req: NextRequest) {
   let event: Stripe.Event;
   try {
     event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
-    console.log(`[webhook] Événement validé: ${event.type} (id: ${event.id})`);
   } catch (err) {
     console.error("[webhook] Signature invalide:", err);
     return NextResponse.json({ error: "Signature invalide" }, { status: 400 });
@@ -63,35 +60,26 @@ export async function POST(req: NextRequest) {
     // ─── Paiement réussi ───────────────────────────────────────────────────
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
-      console.log("[webhook] checkout.session.completed — session id:", session.id);
-      console.log("[webhook] metadata:", JSON.stringify(session.metadata));
-
       const prestataireId = session.metadata?.prestataire_id;
       const subscriptionId = session.subscription as string;
       const customerId = session.customer as string;
 
       if (!prestataireId) {
-        console.warn("[webhook] prestataire_id manquant dans les métadonnées");
         return NextResponse.json({ received: true });
       }
       if (!subscriptionId) {
-        console.warn("[webhook] subscriptionId manquant (paiement one-shot ?)");
         return NextResponse.json({ received: true });
       }
 
-      console.log(`[webhook] Récupération abonnement Stripe: ${subscriptionId}`);
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
       const priceId = subscription.items.data[0]?.price.id ?? "";
       const plan = PRICE_TO_PLAN[priceId] ?? "starter";
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const periodEnd = (subscription as any).current_period_end;
-      console.log(`[webhook] current_period_end brut:`, periodEnd, typeof periodEnd);
       const dateFin = (periodEnd != null && Number.isFinite(Number(periodEnd)))
         ? new Date(Number(periodEnd) * 1000).toISOString()
         : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // fallback +30j
       const prix = (subscription.items.data[0]?.price.unit_amount ?? 0) / 100;
-
-      console.log(`[webhook] Plan détecté: ${plan} (priceId: ${priceId}), dateFin: ${dateFin}, prix: ${prix}`);
 
       // Chercher l'abonnement existant pour ce prestataire
       const { data: existing, error: selectError } = await supabase
@@ -112,15 +100,12 @@ export async function POST(req: NextRequest) {
       if (oldSubId && oldSubId !== subscriptionId) {
         try {
           await stripe.subscriptions.cancel(oldSubId);
-          console.log(`[webhook] Ancien abonnement Stripe annulé: ${oldSubId}`);
-        } catch (e) {
+        } catch {
           // S'il est déjà annulé ou introuvable, on continue sans bloquer
-          console.warn(`[webhook] Impossible d'annuler l'ancien abonnement ${oldSubId}:`, (e as Error).message);
         }
       }
 
       if (existing) {
-        console.log(`[webhook] Mise à jour abonnement existant id: ${existing.id}`);
         const { error } = await supabase
           .from("abonnements")
           .update({
@@ -136,11 +121,8 @@ export async function POST(req: NextRequest) {
 
         if (error) {
           console.error("[webhook] Erreur UPDATE abonnement:", JSON.stringify(error));
-        } else {
-          console.log("[webhook] Abonnement mis à jour avec succès");
         }
       } else {
-        console.log(`[webhook] Insertion nouvel abonnement pour prestataire: ${prestataireId}`);
         const { error } = await supabase.from("abonnements").insert({
           prestataire_id: prestataireId,
           plan,
@@ -154,8 +136,6 @@ export async function POST(req: NextRequest) {
 
         if (error) {
           console.error("[webhook] Erreur INSERT abonnement:", JSON.stringify(error));
-        } else {
-          console.log("[webhook] Nouvel abonnement inséré avec succès");
         }
       }
 
@@ -168,8 +148,6 @@ export async function POST(req: NextRequest) {
 
       if (updatePrestErr) {
         console.error("[webhook] Erreur UPDATE prestataires.abonnement_actif/verifie:", JSON.stringify(updatePrestErr));
-      } else {
-        console.log(`[webhook] prestataire ${prestataireId} — abonnement_actif=true, verifie=${verifie}`);
       }
     }
 
@@ -186,8 +164,6 @@ export async function POST(req: NextRequest) {
         : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
       const prix = (subscription.items.data[0]?.price.unit_amount ?? 0) / 100;
 
-      console.log(`[webhook] subscription.updated — plan: ${plan}, prix: ${prix}, cancel_at_period_end: ${subscription.cancel_at_period_end}`);
-
       // On met à jour par stripe_subscription_id, sans dépendre de la présence
       // de prestataire_id dans les métadonnées (robustesse si metadata absente).
       const { data: updatedAbo, error } = await supabase
@@ -199,24 +175,15 @@ export async function POST(req: NextRequest) {
 
       if (error) {
         console.error("[webhook] Erreur UPDATE abonnement (upgrade):", JSON.stringify(error));
-      } else {
-        console.log("[webhook] Plan mis à jour en base");
+      } else if (updatedAbo?.prestataire_id) {
+        const verifie = planGrantsVerifie(plan);
+        const { error: verifieErr } = await supabase
+          .from("prestataires")
+          .update({ verifie })
+          .eq("id", updatedAbo.prestataire_id);
 
-        // Mettre à jour le badge vérifié selon le nouveau plan
-        if (updatedAbo?.prestataire_id) {
-          const verifie = planGrantsVerifie(plan);
-          const { error: verifieErr } = await supabase
-            .from("prestataires")
-            .update({ verifie })
-            .eq("id", updatedAbo.prestataire_id);
-
-          if (verifieErr) {
-            console.error("[webhook] Erreur UPDATE prestataires.verifie (upgrade):", JSON.stringify(verifieErr));
-          } else {
-            console.log(`[webhook] prestataire ${updatedAbo.prestataire_id} — verifie=${verifie} (plan: ${plan})`);
-          }
-        } else {
-          console.warn("[webhook] subscription.updated — prestataire_id introuvable, verifie non mis à jour");
+        if (verifieErr) {
+          console.error("[webhook] Erreur UPDATE prestataires.verifie (upgrade):", JSON.stringify(verifieErr));
         }
       }
     }
@@ -224,14 +191,10 @@ export async function POST(req: NextRequest) {
     // ─── Abonnement annulé ─────────────────────────────────────────────────
     if (event.type === "customer.subscription.deleted") {
       const subscription = event.data.object as Stripe.Subscription;
-      console.log("[webhook] customer.subscription.deleted — sub id:", subscription.id);
-      console.log("[webhook] metadata:", JSON.stringify(subscription.metadata));
-
       const prestataireId = subscription.metadata?.prestataire_id;
       const subscriptionId = subscription.id;
 
       if (!prestataireId) {
-        console.warn("[webhook] prestataire_id manquant dans les métadonnées de l'abonnement");
         return NextResponse.json({ received: true });
       }
 
@@ -248,8 +211,6 @@ export async function POST(req: NextRequest) {
 
       if (error) {
         console.error("[webhook] Erreur UPDATE abonnement (annulation):", JSON.stringify(error));
-      } else {
-        console.log("[webhook] Abonnement annulé — passage à gratuit/inactif");
       }
 
       const { error: updatePrestErr } = await supabase
@@ -259,12 +220,9 @@ export async function POST(req: NextRequest) {
 
       if (updatePrestErr) {
         console.error("[webhook] Erreur UPDATE prestataires.abonnement_actif/verifie (annulation):", JSON.stringify(updatePrestErr));
-      } else {
-        console.log(`[webhook] prestataire ${prestataireId} — abonnement_actif=false, verifie=false`);
       }
     }
 
-    console.log(`[webhook] Événement ${event.type} traité avec succès`);
     return NextResponse.json({ received: true });
 
   } catch (err) {

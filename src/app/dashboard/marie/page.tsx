@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
@@ -452,11 +453,11 @@ export default function DashboardMarie() {
                       >
                         {/* Avatar */}
                         <div
-                          className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden text-white font-bold text-sm"
+                          className="relative w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden text-white font-bold text-sm"
                           style={{ background: "#F06292" }}
                         >
                           {p.avatar_url ? (
-                            <img src={p.avatar_url.startsWith("http") ? p.avatar_url : `https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/photos/${p.avatar_url}`} alt={p.nom_entreprise} className="w-full h-full object-cover" />
+                            <Image src={p.avatar_url.startsWith("http") ? p.avatar_url : `https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/photos/${p.avatar_url}`} alt={p.nom_entreprise} fill className="object-cover" sizes="44px" />
                           ) : (
                             initial
                           )}

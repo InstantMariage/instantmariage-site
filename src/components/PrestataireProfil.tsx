@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PROVIDERS } from "@/data/providers";
@@ -448,7 +449,7 @@ function GalerieCarousel({ galerie }: { galerie: PrestatireData["galerie"] }) {
           >
             {galerie.map((photo) => (
               <div key={photo.id} className="min-w-full h-full relative flex-shrink-0">
-                <img src={photo.src} alt={photo.alt} className="absolute inset-0 w-full h-full object-cover" />
+                <Image src={photo.src} alt={photo.alt} fill className="object-cover" sizes="100vw" />
               </div>
             ))}
           </div>
@@ -503,10 +504,12 @@ function GalerieCarousel({ galerie }: { galerie: PrestatireData["galerie"] }) {
               className={`break-inside-avoid relative overflow-hidden rounded-xl cursor-pointer group ${photo.tall ? "aspect-[3/4]" : "aspect-square"}`}
               onClick={() => setSelected(photo.id)}
             >
-              <img
+              <Image
                 src={photo.src}
                 alt={photo.alt}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                fill
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                sizes="(max-width: 768px) 50vw, 33vw"
               />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
                 <svg className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -570,7 +573,7 @@ function GalerieCarousel({ galerie }: { galerie: PrestatireData["galerie"] }) {
             {(() => {
               const photo = galerie.find((p) => p.id === selected);
               return photo ? (
-                <img src={photo.src} alt={photo.alt} className="absolute inset-0 w-full h-full object-contain" />
+                <Image src={photo.src} alt={photo.alt} fill className="object-contain" sizes="90vw" />
               ) : null;
             })()}
           </div>
@@ -806,18 +809,14 @@ function SectionAvis({ prestataireId }: { prestataireId: string | undefined }) {
 
       if (session) {
         const role = session.user.user_metadata?.role ?? "marie";
-        console.log("[SectionAvis] session user_id:", session.user.id);
-        console.log("[SectionAvis] user_metadata:", session.user.user_metadata);
-        console.log("[SectionAvis] role détecté:", role);
         setUserRole(role);
 
         if (role === "marie") {
-          const { data: marieData, error: marieError } = await supabase
+          const { data: marieData } = await supabase
             .from("maries")
             .select("*")
             .eq("user_id", session.user.id)
             .maybeSingle();
-          console.log("[SectionAvis] marieData:", marieData, "marieError:", marieError);
           if (cancelled) return;
           setMarie(marieData ?? null);
           if (marieData) {
@@ -835,7 +834,6 @@ function SectionAvis({ prestataireId }: { prestataireId: string | undefined }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("[SectionAvis] handleSubmit - prestataire:", prestataire, "marie:", marie);
     if (!prestataire) {
       setFormError("Impossible de trouver le prestataire. Rechargez la page.");
       return;
@@ -854,10 +852,7 @@ function SectionAvis({ prestataireId }: { prestataireId: string | undefined }) {
       commentaire: commentaire.trim() || null,
       date_mariage_couple: dateMariage || null,
     };
-    console.log("[SectionAvis] insert payload:", insertPayload);
-
     const { error } = await supabase.from("avis").insert(insertPayload);
-    console.log("[SectionAvis] insert error:", error);
 
     if (error) {
       setFormError(`Erreur : ${error.message} (code: ${error.code})`);
@@ -1373,7 +1368,7 @@ function Sidebar({ prestataire }: { prestataire: PrestatireData }) {
         <div className="flex items-center gap-3 mb-4">
           <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-rose-100 bg-gray-100 flex items-center justify-center">
             {PRESTATAIRE.photo ? (
-              <img src={PRESTATAIRE.photo} alt={PRESTATAIRE.nom} className="absolute inset-0 w-full h-full object-cover" />
+              <Image src={PRESTATAIRE.photo} alt={PRESTATAIRE.nom} fill className="object-cover" sizes="48px" />
             ) : (
               <span className="text-gray-400 text-lg font-bold leading-none select-none">
                 {PRESTATAIRE.nom.charAt(0).toUpperCase()}
@@ -1723,10 +1718,13 @@ export default function PrestataireProfil({ id }: { id?: string }) {
       {/* ── Cover ─────────────────────────────────────────────────────────── */}
       <div className="relative h-60 sm:h-80 md:h-[440px] w-full overflow-hidden">
         {PRESTATAIRE.couverture ? (
-          <img
+          <Image
             src={PRESTATAIRE.couverture}
             alt="Photo de couverture"
-            className="absolute inset-0 w-full h-full object-cover"
+            fill
+            className="object-cover"
+            priority
+            sizes="100vw"
           />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-rose-100 via-pink-100 to-rose-200" />
@@ -1757,10 +1755,12 @@ export default function PrestataireProfil({ id }: { id?: string }) {
               style={{ boxShadow: "0 0 0 4px #fff, 0 4px 24px rgba(0,0,0,0.15)" }}
             >
               {PRESTATAIRE.photo ? (
-                <img
+                <Image
                   src={PRESTATAIRE.photo}
                   alt={PRESTATAIRE.nom}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 640px) 112px, 144px"
                 />
               ) : (
                 <span className="text-gray-400 text-4xl sm:text-5xl font-bold leading-none select-none">

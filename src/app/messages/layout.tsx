@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
@@ -316,12 +317,14 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
                       >
                         {/* Avatar + point de présence */}
                         <div className="relative w-12 h-12 flex-shrink-0">
-                          <div className="w-12 h-12 rounded-full select-none overflow-hidden">
+                          <div className="relative w-12 h-12 rounded-full select-none overflow-hidden">
                             {conv.other_avatar_url ? (
-                              <img
+                              <Image
                                 src={conv.other_avatar_url}
                                 alt={conv.other_user_name}
-                                className="w-full h-full object-cover"
+                                fill
+                                className="object-cover"
+                                sizes="48px"
                               />
                             ) : (
                               <div

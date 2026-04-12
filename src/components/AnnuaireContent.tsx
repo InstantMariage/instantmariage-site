@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { PROVIDERS } from "@/data/providers";
@@ -268,10 +269,12 @@ function ProviderCard({ provider }: { provider: DisplayProvider }) {
     <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md border border-gray-100 transition-all duration-300 group flex flex-col">
       {/* Image */}
       <div className="relative h-48 overflow-hidden">
-        <img
+        <Image
           src={provider.photo}
           alt={provider.nom}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          fill
+          className="object-cover group-hover:scale-105 transition-transform duration-500"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           onError={(e) => { e.currentTarget.src = FALLBACK_IMAGES[provider.metier] ?? DEFAULT_FALLBACK; e.currentTarget.onerror = null; }}
         />
         {/* Badges top */}

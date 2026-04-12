@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
@@ -18,6 +19,9 @@ import {
 } from "@/data/seo-local";
 import type { Prestataire } from "@/lib/supabase";
 
+// ─── ISR : revalidation toutes les heures ─────────────────────────────────────
+export const revalidate = 3600;
+
 // ─── Génération statique ───────────────────────────────────────────────────────
 
 export async function generateStaticParams() {
@@ -34,6 +38,7 @@ export async function generateStaticParams() {
 
 interface Props {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ page?: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -72,29 +77,35 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 // ─── Fetch prestataires ────────────────────────────────────────────────────────
 
+const PER_PAGE = 24;
+
 type PrestataireWithAbo = Prestataire & {
   abonnements?: { plan: string; statut: string }[];
 };
 
 async function fetchPrestataires(
   categorie: string,
-  departementCode: string
-): Promise<PrestataireWithAbo[]> {
+  departementCode: string,
+  page: number
+): Promise<{ data: PrestataireWithAbo[]; total: number }> {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  const { data, error } = await supabase
+  const from = (page - 1) * PER_PAGE;
+  const to = from + PER_PAGE - 1;
+
+  const { data, error, count } = await supabase
     .from("prestataires")
-    .select("*, abonnements(plan, statut)")
+    .select("*, abonnements(plan, statut)", { count: "exact" })
     .eq("categorie", categorie)
     .ilike("departement", `%${departementCode}%`)
     .order("note_moyenne", { ascending: false })
-    .limit(36);
+    .range(from, to);
 
-  if (error || !data) return [];
-  return data as PrestataireWithAbo[];
+  if (error || !data) return { data: [], total: 0 };
+  return { data: data as PrestataireWithAbo[], total: count ?? 0 };
 }
 
 // ─── Carte prestataire ─────────────────────────────────────────────────────────
@@ -113,11 +124,12 @@ function ProviderCard({ p }: { p: PrestataireWithAbo }) {
       className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md border border-gray-100 transition-all duration-300 group flex flex-col"
     >
       <div className="relative h-48 overflow-hidden">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={photo}
           alt={`${p.nom_entreprise} – ${p.categorie} à ${p.ville}`}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          fill
+          className="object-cover group-hover:scale-105 transition-transform duration-500"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
         <div className="absolute top-3 left-3 flex flex-col gap-1.5">
           {p.verifie && (
@@ -170,13 +182,17 @@ function ProviderCard({ p }: { p: PrestataireWithAbo }) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default async function AnnuaireDepartementPage({ params }: Props) {
+export default async function AnnuaireDepartementPage({ params, searchParams }: Props) {
   const { slug } = await params;
+  const { page: pageParam } = await searchParams;
+  const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
+
   const { metier, departement } = parseSlugDepartement(slug);
 
   if (!metier || !departement) notFound();
 
-  const prestataires = await fetchPrestataires(metier.categorie, departement.code);
+  const { data: prestataires, total } = await fetchPrestataires(metier.categorie, departement.code, page);
+  const totalPages = Math.ceil(total / PER_PAGE);
 
   const villesDuDept = getVillesByDepartement(departement.code);
   const region = getRegionByNom(departement.region);
@@ -206,12 +222,21 @@ export default async function AnnuaireDepartementPage({ params }: Props) {
     })),
   };
 
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Accueil", item: "https://instantmariage.fr" },
+      { "@type": "ListItem", position: 2, name: "Annuaire", item: "https://instantmariage.fr/annuaire" },
+      ...(region ? [{ "@type": "ListItem", position: 3, name: departement.region, item: `https://instantmariage.fr/annuaire/region/${buildSlugRegion(metier.slug, region.slug)}` }] : []),
+      { "@type": "ListItem", position: region ? 4 : 3, name: `${metier.nom} – ${departement.nom}`, item: `https://instantmariage.fr/annuaire/departement/${slug}` },
+    ],
+  };
+
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
       <main className="min-h-screen bg-gray-50 overflow-x-hidden">
         <Header />
 
@@ -246,7 +271,7 @@ export default async function AnnuaireDepartementPage({ params }: Props) {
                 </h1>
                 <p className="text-gray-500 mt-1">
                   Département {departement.code} · {departement.region}
-                  {prestataires.length > 0 && ` · ${prestataires.length} prestataire${prestataires.length > 1 ? "s" : ""}`}
+                  {total > 0 && ` · ${total} prestataire${total > 1 ? "s" : ""}`}
                 </p>
               </div>
             </div>
@@ -300,7 +325,7 @@ export default async function AnnuaireDepartementPage({ params }: Props) {
           {prestataires.length > 0 ? (
             <>
               <h2 className="text-xl font-semibold text-gray-800 mb-6">
-                {prestataires.length} {metier.nomPluriel} dans le {departement.nom} ({departement.code})
+                {total} {metier.nomPluriel} dans le {departement.nom} ({departement.code})
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {prestataires.map((p) => (
@@ -332,6 +357,41 @@ export default async function AnnuaireDepartementPage({ params }: Props) {
                 </Link>
               </div>
             </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <nav className="flex items-center justify-center gap-2 mt-10" aria-label="Pagination">
+              {page > 1 && (
+                <Link
+                  href={`/annuaire/departement/${slug}?page=${page - 1}`}
+                  className="flex items-center gap-1 px-4 py-2 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  ← Précédent
+                </Link>
+              )}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <Link
+                  key={p}
+                  href={`/annuaire/departement/${slug}?page=${p}`}
+                  className={`w-10 h-10 flex items-center justify-center rounded-xl text-sm font-medium transition-colors ${
+                    p === page
+                      ? "bg-rose-600 text-white"
+                      : "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  {p}
+                </Link>
+              ))}
+              {page < totalPages && (
+                <Link
+                  href={`/annuaire/departement/${slug}?page=${page + 1}`}
+                  className="flex items-center gap-1 px-4 py-2 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Suivant →
+                </Link>
+              )}
+            </nav>
           )}
         </section>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
@@ -350,15 +351,11 @@ function DashboardPrestataire() {
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-4">
                 <div
-                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-white text-xl sm:text-2xl font-bold shadow-lg flex-shrink-0 overflow-hidden"
+                  className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-white text-xl sm:text-2xl font-bold shadow-lg flex-shrink-0 overflow-hidden"
                   style={{ background: "rgba(255,255,255,0.25)" }}
                 >
                   {avatarUrl ? (
-                    <img
-                      src={avatarUrl}
-                      alt={nomEntreprise}
-                      className="w-full h-full object-cover"
-                    />
+                    <Image src={avatarUrl} alt={nomEntreprise} fill className="object-cover" sizes="64px" />
                   ) : (
                     getInitials(nomEntreprise)
                   )}

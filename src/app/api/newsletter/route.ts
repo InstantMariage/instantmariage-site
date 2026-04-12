@@ -43,7 +43,5 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  console.log("[Newsletter Brevo] Inscription OK:", { email, status: res.status });
-
   return NextResponse.json({ success: true });
 }

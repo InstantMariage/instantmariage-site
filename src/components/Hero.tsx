@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CATEGORIES } from "@/data/categories";
@@ -41,10 +42,13 @@ export default function Hero() {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
       {/* Background image with overlay */}
       <div className="absolute inset-0 z-0">
-        <img
+        <Image
           src="https://images.unsplash.com/photo-1519741497674-611481863552?w=1920&q=80"
-          alt="Mariage élégant"
-          className="w-full h-full object-cover object-center"
+          alt="Couple lors de leur mariage"
+          fill
+          className="object-cover object-center"
+          priority
+          sizes="100vw"
         />
         <div className="absolute inset-0 bg-gradient-to-br from-black/65 via-black/40 to-rose-900/30" />
         {/* Decorative gold dots */}
