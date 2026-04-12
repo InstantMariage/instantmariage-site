@@ -276,24 +276,6 @@ export default function DashboardMarie() {
       iconBg: "#FFF0F5",
       iconColor: "#F06292",
     },
-    {
-      href: "/dashboard/marie/profil",
-      external: false,
-      icon: <IconUser />,
-      label: "Mon profil",
-      desc: "Prénom, email, date & lieu de mariage",
-      iconBg: "#FFF7ED",
-      iconColor: "#EA580C",
-    },
-    {
-      href: "/dashboard/parametres",
-      external: false,
-      icon: <IconSettings />,
-      label: "Paramètres du compte",
-      desc: "Email, mot de passe, suppression du compte",
-      iconBg: "#F0FDF4",
-      iconColor: "#16A34A",
-    },
   ];
 
   return (
@@ -304,11 +286,19 @@ export default function DashboardMarie() {
 
         {/* ── Hero ── */}
         <section
-          className="max-w-3xl mx-auto px-6 pt-12 pb-10 mb-2 rounded-b-3xl"
+          className="max-w-3xl mx-auto px-6 pt-12 pb-10 mb-2 rounded-b-3xl relative"
           style={{
             background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)",
           }}
         >
+          <Link
+            href="/dashboard/parametres"
+            className="absolute top-4 right-6 w-9 h-9 flex items-center justify-center rounded-full transition-colors duration-200 hover:bg-white/20"
+            style={{ color: "rgba(255,255,255,0.85)" }}
+            title="Paramètres du compte"
+          >
+            <IconSettings />
+          </Link>
           <p className="text-sm font-medium tracking-widest uppercase mb-3" style={{ color: "rgba(255,255,255,0.75)", letterSpacing: "0.12em" }}>
             Mon espace
           </p>
