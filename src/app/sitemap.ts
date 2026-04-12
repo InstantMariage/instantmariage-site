@@ -1,5 +1,13 @@
 import { MetadataRoute } from "next";
-import { METIERS_SEO, VILLES_SEO, buildSlug } from "@/data/seo-local";
+import {
+  METIERS_SEO,
+  VILLES_SEO,
+  DEPARTEMENTS_SEO,
+  REGIONS_SEO,
+  buildSlug,
+  buildSlugDepartement,
+  buildSlugRegion,
+} from "@/data/seo-local";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://instantmariage.fr";
@@ -20,15 +28,41 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/confidentialite", priority: 0.3, changeFrequency: "yearly" as const },
   ];
 
-  // Pages SEO locales : [metier]-mariage-[ville]
-  const localPages: MetadataRoute.Sitemap = [];
+  // Pages SEO villes : [metier]-mariage-[ville] — 100 × 9 = 900 pages
+  const villePages: MetadataRoute.Sitemap = [];
   for (const metier of METIERS_SEO) {
     for (const ville of VILLES_SEO) {
-      localPages.push({
+      villePages.push({
         url: `${baseUrl}/annuaire/${buildSlug(metier.slug, ville.slug)}`,
         lastModified: new Date(),
         changeFrequency: "weekly",
         priority: 0.8,
+      });
+    }
+  }
+
+  // Pages SEO départements : [metier]-mariage-[departement] — 96 × 9 = 864 pages
+  const departementPages: MetadataRoute.Sitemap = [];
+  for (const metier of METIERS_SEO) {
+    for (const departement of DEPARTEMENTS_SEO) {
+      departementPages.push({
+        url: `${baseUrl}/annuaire/departement/${buildSlugDepartement(metier.slug, departement.slug)}`,
+        lastModified: new Date(),
+        changeFrequency: "weekly",
+        priority: 0.75,
+      });
+    }
+  }
+
+  // Pages SEO régions : [metier]-mariage-[region] — 13 × 9 = 117 pages
+  const regionPages: MetadataRoute.Sitemap = [];
+  for (const metier of METIERS_SEO) {
+    for (const region of REGIONS_SEO) {
+      regionPages.push({
+        url: `${baseUrl}/annuaire/region/${buildSlugRegion(metier.slug, region.slug)}`,
+        lastModified: new Date(),
+        changeFrequency: "weekly",
+        priority: 0.85,
       });
     }
   }
@@ -40,6 +74,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency,
       priority,
     })),
-    ...localPages,
+    ...regionPages,    // Régions en premier (priorité haute)
+    ...departementPages,
+    ...villePages,
   ];
 }

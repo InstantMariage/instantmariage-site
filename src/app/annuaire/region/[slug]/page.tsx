@@ -5,16 +5,16 @@ import { createClient } from "@supabase/supabase-js";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import {
-  parseSlug,
+  parseSlugRegion,
+  buildSlugRegion,
   buildSlug,
   buildSlugDepartement,
-  buildSlugRegion,
   METIERS_SEO,
-  VILLES_SEO,
+  REGIONS_SEO,
   FALLBACK_IMAGES,
   DEFAULT_FALLBACK,
-  getDepartementByCode,
-  getRegionByNom,
+  getVillesByRegion,
+  getDepartementsByRegion,
 } from "@/data/seo-local";
 import type { Prestataire } from "@/lib/supabase";
 
@@ -23,14 +23,14 @@ import type { Prestataire } from "@/lib/supabase";
 export async function generateStaticParams() {
   const params: { slug: string }[] = [];
   for (const metier of METIERS_SEO) {
-    for (const ville of VILLES_SEO) {
-      params.push({ slug: buildSlug(metier.slug, ville.slug) });
+    for (const region of REGIONS_SEO) {
+      params.push({ slug: buildSlugRegion(metier.slug, region.slug) });
     }
   }
   return params;
 }
 
-// ─── Metadata dynamique ────────────────────────────────────────────────────────
+// ─── Metadata ─────────────────────────────────────────────────────────────────
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -38,23 +38,23 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const { metier, ville } = parseSlug(slug);
+  const { metier, region } = parseSlugRegion(slug);
 
-  if (!metier || !ville) {
+  if (!metier || !region) {
     return { title: "Page introuvable – InstantMariage" };
   }
 
-  const title = `${metier.nom} mariage ${ville.nom} – Les meilleurs ${metier.nomPluriel} | InstantMariage.fr`;
-  const description = `Trouvez les meilleurs ${metier.nomPluriel} pour votre mariage à ${ville.nom} (${ville.departement}). Comparez les tarifs, consultez les avis et contactez directement les professionnels près de chez vous.`;
+  const title = `${metier.nom} mariage ${region.nom} – Les meilleurs ${metier.nomPluriel} | InstantMariage.fr`;
+  const description = `Trouvez les meilleurs ${metier.nomPluriel} pour votre mariage en ${region.nom}. Comparez les prestataires par département et par ville, consultez les avis et contactez les professionnels.`;
 
   return {
     title,
     description,
-    keywords: `${metier.nom.toLowerCase()} mariage ${ville.nom}, ${metier.nomPluriel} mariage ${ville.nom}, prestataire mariage ${ville.nom}`,
+    keywords: `${metier.nom.toLowerCase()} mariage ${region.nom}, ${metier.nomPluriel} ${region.nom}, prestataire mariage ${region.nom}`,
     openGraph: {
       title,
       description,
-      url: `https://instantmariage.fr/annuaire/${slug}`,
+      url: `https://instantmariage.fr/annuaire/region/${slug}`,
       siteName: "InstantMariage.fr",
       locale: "fr_FR",
       type: "website",
@@ -65,12 +65,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
     },
     alternates: {
-      canonical: `https://instantmariage.fr/annuaire/${slug}`,
+      canonical: `https://instantmariage.fr/annuaire/region/${slug}`,
     },
   };
 }
 
-// ─── Fetch prestataires (server-side) ─────────────────────────────────────────
+// ─── Fetch prestataires ────────────────────────────────────────────────────────
 
 type PrestataireWithAbo = Prestataire & {
   abonnements?: { plan: string; statut: string }[];
@@ -78,8 +78,7 @@ type PrestataireWithAbo = Prestataire & {
 
 async function fetchPrestataires(
   categorie: string,
-  ville: string,
-  departement: string
+  regionNom: string
 ): Promise<PrestataireWithAbo[]> {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -90,15 +89,15 @@ async function fetchPrestataires(
     .from("prestataires")
     .select("*, abonnements(plan, statut)")
     .eq("categorie", categorie)
-    .or(`ville.ilike.%${ville}%,departement.ilike.%${departement}%`)
+    .ilike("region", `%${regionNom}%`)
     .order("note_moyenne", { ascending: false })
-    .limit(24);
+    .limit(48);
 
   if (error || !data) return [];
   return data as PrestataireWithAbo[];
 }
 
-// ─── Composant carte prestataire ──────────────────────────────────────────────
+// ─── Carte prestataire ─────────────────────────────────────────────────────────
 
 function ProviderCard({ p }: { p: PrestataireWithAbo }) {
   const activeAbo = p.abonnements?.find((a) => a.statut === "actif") ?? p.abonnements?.[0];
@@ -171,27 +170,24 @@ function ProviderCard({ p }: { p: PrestataireWithAbo }) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default async function AnnuaireLocalPage({ params }: Props) {
+export default async function AnnuaireRegionPage({ params }: Props) {
   const { slug } = await params;
-  const { metier, ville } = parseSlug(slug);
+  const { metier, region } = parseSlugRegion(slug);
 
-  if (!metier || !ville) notFound();
+  if (!metier || !region) notFound();
 
-  const prestataires = await fetchPrestataires(metier.categorie, ville.nom, ville.departement);
+  const prestataires = await fetchPrestataires(metier.categorie, region.nom);
 
-  // Autres villes pour le même métier (liens internes)
-  const autresVilles = VILLES_SEO.filter((v) => v.slug !== ville.slug);
-  // Autres métiers pour la même ville (liens internes)
+  const villesDeLaRegion = getVillesByRegion(region.nom).slice(0, 16);
+  const departementsDeLaRegion = getDepartementsByRegion(region.nom);
   const autresMetiers = METIERS_SEO.filter((m) => m.slug !== metier.slug);
-  // Département et région
-  const departement = getDepartementByCode(ville.departement);
-  const region = getRegionByNom(ville.region);
+  const autresRegions = REGIONS_SEO.filter((r) => r.slug !== region.slug);
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: `${metier.nom} mariage ${ville.nom}`,
-    description: `Liste des ${metier.nomPluriel} pour mariage à ${ville.nom}`,
+    name: `${metier.nom} mariage ${region.nom}`,
+    description: `Liste des ${metier.nomPluriel} pour mariage en ${region.nom}`,
     numberOfItems: prestataires.length,
     itemListElement: prestataires.map((p, i) => ({
       "@type": "ListItem",
@@ -221,41 +217,85 @@ export default async function AnnuaireLocalPage({ params }: Props) {
         <section className="bg-gradient-to-br from-rose-50 via-white to-pink-50 border-b border-gray-100 py-12">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             {/* Breadcrumb */}
-            <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
+            <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6 flex-wrap">
               <Link href="/" className="hover:text-rose-600 transition-colors">Accueil</Link>
               <span>/</span>
               <Link href="/annuaire" className="hover:text-rose-600 transition-colors">Annuaire</Link>
               <span>/</span>
-              <span className="text-gray-800 font-medium">{metier.nom} à {ville.nom}</span>
+              <span className="text-gray-800 font-medium">{metier.nom} – {region.nom}</span>
             </nav>
 
             <div className="flex items-center gap-4 mb-4">
               <span className="text-5xl">{metier.icon}</span>
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 font-serif">
-                  {metier.nom} mariage {ville.nom}
+                  {metier.nom} mariage {region.nom}
                 </h1>
                 <p className="text-gray-500 mt-1">
-                  {prestataires.length > 0
-                    ? `${prestataires.length} prestataire${prestataires.length > 1 ? "s" : ""} disponible${prestataires.length > 1 ? "s" : ""} — ${ville.region}`
-                    : `${ville.region}`}
+                  {departementsDeLaRegion.length} département{departementsDeLaRegion.length > 1 ? "s" : ""}
+                  {prestataires.length > 0 && ` · ${prestataires.length} prestataire${prestataires.length > 1 ? "s" : ""}`}
                 </p>
               </div>
             </div>
 
             <p className="text-gray-600 text-lg max-w-2xl">
-              Trouvez les meilleurs {metier.nomPluriel} pour votre mariage à {ville.nom}.
-              Comparez les tarifs, consultez les avis et contactez directement les professionnels.
+              Trouvez les meilleurs {metier.nomPluriel} pour votre mariage en {region.nom}.
+              Explorez par département ou par ville pour trouver le prestataire idéal.
             </p>
           </div>
         </section>
+
+        {/* Navigation départements */}
+        {departementsDeLaRegion.length > 0 && (
+          <section className="bg-white border-b border-gray-100 py-8">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6">
+              <h2 className="text-base font-semibold text-gray-700 mb-4">
+                {metier.icon} Par département en {region.nom}
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+                {departementsDeLaRegion.map((d) => (
+                  <Link
+                    key={d.slug}
+                    href={`/annuaire/departement/${buildSlugDepartement(metier.slug, d.slug)}`}
+                    className="flex items-center gap-2 p-3 bg-gray-50 hover:bg-rose-50 border border-gray-100 hover:border-rose-200 rounded-xl transition-all group"
+                  >
+                    <span className="text-xs font-bold text-gray-400 group-hover:text-rose-400 w-6 shrink-0">{d.code}</span>
+                    <span className="text-sm font-medium text-gray-700 group-hover:text-rose-700 leading-tight">{d.nom}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Navigation villes */}
+        {villesDeLaRegion.length > 0 && (
+          <section className="bg-white border-b border-gray-100 py-6">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6">
+              <p className="text-sm font-medium text-gray-500 mb-3">
+                Villes principales de {region.nom} :
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {villesDeLaRegion.map((v) => (
+                  <Link
+                    key={v.slug}
+                    href={`/annuaire/${buildSlug(metier.slug, v.slug)}`}
+                    className="text-sm px-3 py-1.5 rounded-full bg-rose-50 border border-rose-100 text-rose-700 hover:bg-rose-100 transition-colors font-medium"
+                  >
+                    {metier.nom} à {v.nom}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Grille prestataires */}
         <section className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
           {prestataires.length > 0 ? (
             <>
               <h2 className="text-xl font-semibold text-gray-800 mb-6">
-                {prestataires.length} {metier.nomPluriel} à {ville.nom}
+                {prestataires.length} {metier.nomPluriel} en {region.nom}
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {prestataires.map((p) => (
@@ -267,10 +307,10 @@ export default async function AnnuaireLocalPage({ params }: Props) {
             <div className="text-center py-16 bg-white rounded-2xl border border-gray-100 shadow-sm">
               <span className="text-5xl mb-4 block">{metier.icon}</span>
               <h2 className="text-xl font-semibold text-gray-800 mb-2">
-                Aucun {metier.nom.toLowerCase()} inscrit à {ville.nom} pour l&apos;instant
+                Aucun {metier.nom.toLowerCase()} inscrit en {region.nom} pour l&apos;instant
               </h2>
               <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                Soyez le premier ou consultez notre annuaire national pour trouver un prestataire près de {ville.nom}.
+                Soyez le premier ou consultez notre annuaire national.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Link
@@ -290,86 +330,51 @@ export default async function AnnuaireLocalPage({ params }: Props) {
           )}
         </section>
 
-        {/* Maillage interne — autres villes pour ce métier */}
+        {/* Autres métiers dans cette région */}
         <section className="bg-white border-t border-gray-100 py-12">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">
-              {metier.icon} {metier.nom} mariage dans d&apos;autres villes
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {autresVilles.map((v) => (
-                <Link
-                  key={v.slug}
-                  href={`/annuaire/${buildSlug(metier.slug, v.slug)}`}
-                  className="text-sm px-3 py-1.5 rounded-full border border-rose-100 text-rose-700 hover:bg-rose-50 transition-colors"
-                >
-                  {metier.nom} mariage {v.nom}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Maillage interne — autres métiers dans cette ville */}
-        <section className="bg-gray-50 border-t border-gray-100 py-12">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">
-              Autres prestataires mariage à {ville.nom}
+              Autres prestataires mariage en {region.nom}
             </h2>
             <div className="flex flex-wrap gap-2">
               {autresMetiers.map((m) => (
                 <Link
                   key={m.slug}
-                  href={`/annuaire/${buildSlug(m.slug, ville.slug)}`}
-                  className="text-sm px-3 py-1.5 rounded-full border border-gray-200 text-gray-700 hover:bg-white transition-colors"
+                  href={`/annuaire/region/${buildSlugRegion(m.slug, region.slug)}`}
+                  className="text-sm px-3 py-1.5 rounded-full border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
                 >
-                  {m.icon} {m.nom} à {ville.nom}
+                  {m.icon} {m.nom} en {region.nom}
                 </Link>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Maillage interne — département & région */}
-        {(departement || region) && (
-          <section className="bg-white border-t border-gray-100 py-8">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6">
-              <h2 className="text-base font-semibold text-gray-700 mb-3">
-                Élargir la recherche
-              </h2>
-              <div className="flex flex-wrap gap-2">
-                {departement && (
-                  <Link
-                    href={`/annuaire/departement/${buildSlugDepartement(metier.slug, departement.slug)}`}
-                    className="inline-flex items-center gap-2 text-sm px-4 py-2 rounded-full border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors"
-                  >
-                    <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    </svg>
-                    {metier.nom} dans le {departement.nom} ({departement.code})
-                  </Link>
-                )}
-                {region && (
-                  <Link
-                    href={`/annuaire/region/${buildSlugRegion(metier.slug, region.slug)}`}
-                    className="inline-flex items-center gap-2 text-sm px-4 py-2 rounded-full border border-rose-100 text-rose-700 hover:bg-rose-50 transition-colors"
-                  >
-                    <svg className="w-3.5 h-3.5 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
-                    </svg>
-                    {metier.nom} en {ville.region}
-                  </Link>
-                )}
-              </div>
+        {/* Autres régions */}
+        <section className="bg-gray-50 border-t border-gray-100 py-12">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">
+              {metier.icon} {metier.nom} mariage dans d&apos;autres régions
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {autresRegions.map((r) => (
+                <Link
+                  key={r.slug}
+                  href={`/annuaire/region/${buildSlugRegion(metier.slug, r.slug)}`}
+                  className="text-sm px-3 py-1.5 rounded-full border border-rose-100 text-rose-700 hover:bg-rose-50 transition-colors"
+                >
+                  {metier.nom} en {r.nom}
+                </Link>
+              ))}
             </div>
-          </section>
-        )}
+          </div>
+        </section>
 
-        {/* CTA inscription */}
+        {/* CTA */}
         <section className="bg-gradient-to-r from-rose-600 to-pink-600 py-14">
           <div className="max-w-2xl mx-auto text-center px-4">
             <h2 className="text-2xl font-bold text-white mb-3">
-              Vous êtes {metier.nom.toLowerCase()} à {ville.nom} ?
+              Vous êtes {metier.nom.toLowerCase()} en {region.nom} ?
             </h2>
             <p className="text-rose-100 mb-6">
               Rejoignez InstantMariage et soyez visible par des milliers de mariés chaque mois.
