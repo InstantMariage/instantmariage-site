@@ -131,6 +131,7 @@ export default function TarifsContent() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [prestataireId, setPrestataireId] = useState<string | null>(null);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -140,12 +141,27 @@ export default function TarifsContent() {
         router.replace("/dashboard/marie");
         return;
       }
-      const { data } = await supabase
+      const { data: prestataire } = await supabase
         .from("prestataires")
         .select("id")
         .eq("user_id", session.user.id)
         .single();
-      if (data) setPrestataireId(data.id);
+      if (!prestataire) return;
+      setPrestataireId(prestataire.id);
+
+      // Vérifier si un abonnement payant actif existe déjà
+      const { data: abo } = await supabase
+        .from("abonnements")
+        .select("stripe_subscription_id, statut, plan")
+        .eq("prestataire_id", prestataire.id)
+        .eq("statut", "actif")
+        .not("stripe_subscription_id", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+      if (abo?.stripe_subscription_id && abo.plan !== "gratuit") {
+        setHasActiveSubscription(true);
+      }
     });
   }, [router]);
 
@@ -155,7 +171,6 @@ export default function TarifsContent() {
       return;
     }
 
-    // Vérifier que l'utilisateur est connecté avant de payer
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       router.push("/login?redirect=/tarifs");
@@ -163,6 +178,30 @@ export default function TarifsContent() {
     }
 
     setLoadingPlan(plan.id);
+
+    // Abonnement actif → Customer Portal (upgrade/downgrade/annulation/carte)
+    if (hasActiveSubscription && prestataireId) {
+      try {
+        const res = await fetch("/api/stripe/portal", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prestataireId }),
+        });
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          alert("Une erreur est survenue. Veuillez réessayer.");
+          setLoadingPlan(null);
+        }
+      } catch {
+        alert("Une erreur est survenue. Veuillez réessayer.");
+        setLoadingPlan(null);
+      }
+      return;
+    }
+
+    // Pas d'abonnement → Checkout Stripe (premier abonnement)
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",

@@ -158,6 +158,7 @@ export default function AbonnementPage() {
   const [reactivateLoading, setReactivateLoading] = useState(false);
   const [reactivateSuccess, setReactivateSuccess] = useState(false);
   const [reactivateError, setReactivateError] = useState<string | null>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -227,6 +228,27 @@ export default function AbonnementPage() {
       }
     });
   }, [router]);
+
+  async function handleOpenPortal() {
+    if (!prestataireId) return;
+    setPortalLoading(true);
+    try {
+      const res = await fetch("/api/stripe/portal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prestataireId }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        console.error("[portal] Erreur:", data.error);
+        setPortalLoading(false);
+      }
+    } catch {
+      setPortalLoading(false);
+    }
+  }
 
   async function handleReactivateSubscription() {
     if (!prestataireId) return;
@@ -444,15 +466,37 @@ export default function AbonnementPage() {
 
             {/* ── Actions ──────────────────────────────────────────────── */}
             <section className="flex flex-col sm:flex-row gap-3">
-              <Link
-                href="/tarifs"
-                className="flex-1 inline-flex items-center justify-center gap-2 bg-rose-500 hover:bg-rose-600 text-white font-semibold px-5 py-3 rounded-xl transition-colors text-sm"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
-                Changer de plan
-              </Link>
+              {abonnement?.stripe_subscription_id ? (
+                <button
+                  onClick={handleOpenPortal}
+                  disabled={portalLoading}
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-rose-500 hover:bg-rose-600 text-white font-semibold px-5 py-3 rounded-xl transition-colors text-sm disabled:opacity-50"
+                >
+                  {portalLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                      Chargement…
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                      </svg>
+                      Changer de plan
+                    </>
+                  )}
+                </button>
+              ) : (
+                <Link
+                  href="/tarifs"
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-rose-500 hover:bg-rose-600 text-white font-semibold px-5 py-3 rounded-xl transition-colors text-sm"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                  Choisir un plan
+                </Link>
+              )}
 
               {abonnement && abonnement.statut === "actif" && !cancelAtPeriodEnd && abonnement.plan !== "gratuit" && (
                 <button
