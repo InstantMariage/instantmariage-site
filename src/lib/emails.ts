@@ -262,6 +262,71 @@ export async function sendContactEmail({
   return result;
 }
 
+// ─── Email 5 : Signalement prestataire (admin) ───────────────────────────────
+
+export async function sendSignalementEmail({
+  prestaireId,
+  prestataireName,
+  motif,
+  description,
+  userId,
+}: {
+  prestaireId: string;
+  prestataireName: string;
+  motif: string;
+  description: string;
+  userId: string | null;
+}) {
+  const adminEmail = process.env.ADMIN_EMAIL ?? "contact@instantmariage.fr";
+
+  const content = `
+    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#E53935;letter-spacing:0.5px;text-transform:uppercase;">Signalement reçu</p>
+    <h1 style="margin:0 0 24px;font-size:26px;font-weight:700;color:#1a1a1a;line-height:1.25;">
+      Un prestataire a été signalé
+    </h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#555555;line-height:1.65;">
+      Un utilisateur a soumis un signalement sur la fiche prestataire suivante.
+    </p>
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#fafafa;border-radius:12px;padding:24px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;width:140px;">Prestataire</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:600;color:#1a1a1a;">${prestataireName}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Motif</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:600;color:#E53935;">${motif}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Signalé par</td>
+              <td style="padding:6px 0;font-size:12px;font-family:monospace;color:#888888;">${userId ?? "Anonyme"}</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#fff5f5;border-left:3px solid #E53935;border-radius:0 8px 8px 0;padding:16px 20px;">
+          <p style="margin:0;font-size:14px;color:#444444;line-height:1.7;">${description.replace(/\n/g, "<br/>")}</p>
+        </td>
+      </tr>
+    </table>
+    ${ctaButton("Voir la fiche prestataire", `${SITE_URL}/prestataires/${prestaireId}`)}
+  `;
+
+  return resend.emails.send({
+    from: FROM,
+    to: adminEmail,
+    subject: `[Signalement] ${motif} — ${prestataireName}`,
+    html: baseTemplate(content),
+  });
+}
+
 // ─── Email 4 : Nouveau prestataire (admin) ────────────────────────────────────
 
 export async function sendNewPrestaireAdminEmail({

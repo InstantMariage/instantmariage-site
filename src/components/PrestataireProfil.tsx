@@ -1418,6 +1418,11 @@ export default function PrestataireProfil({ id }: { id?: string }) {
   const [contactLoading, setContactLoading] = useState(false);
   const [contactModal, setContactModal] = useState<"not-registered" | "not-logged" | "not-marie" | null>(null);
   const [showShareMenu, setShowShareMenu] = useState(false);
+  const [showSignalModal, setShowSignalModal] = useState(false);
+  const [signalMotif, setSignalMotif] = useState("");
+  const [signalDescription, setSignalDescription] = useState("");
+  const [signalLoading, setSignalLoading] = useState(false);
+  const [signalSent, setSignalSent] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
 
   const shareMenuRef = useRef<HTMLDivElement>(null);
@@ -1488,6 +1493,25 @@ export default function PrestataireProfil({ id }: { id?: string }) {
       setSaved(true);
     }
     setSaveLoading(false);
+  };
+
+  const handleSignalement = async () => {
+    if (!signalMotif || !signalDescription.trim()) return;
+    setSignalLoading(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    await fetch("/api/signalements", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prestataire_id: id,
+        prestataire_nom: PRESTATAIRE.nom,
+        user_id: session?.user.id ?? null,
+        motif: signalMotif,
+        description: signalDescription,
+      }),
+    });
+    setSignalLoading(false);
+    setSignalSent(true);
   };
 
   const handleContacter = async () => {
@@ -1735,6 +1759,16 @@ export default function PrestataireProfil({ id }: { id?: string }) {
                 )}
                 {saved ? "Sauvegardé" : "Sauvegarder"}
               </button>
+              <button
+                onClick={() => { setShowSignalModal(true); setSignalSent(false); setSignalMotif(""); setSignalDescription(""); }}
+                className="flex items-center gap-1.5 text-gray-400 hover:text-red-500 text-xs font-medium transition-colors py-2 px-1"
+                title="Signaler ce prestataire"
+              >
+                <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6H13l-1-1H5a2 2 0 00-2 2zm0 0h16" />
+                </svg>
+                Signaler
+              </button>
             </div>
           </div>
         </div>
@@ -1885,6 +1919,102 @@ export default function PrestataireProfil({ id }: { id?: string }) {
                     className="text-sm text-gray-400 hover:text-gray-600 py-2"
                   >
                     Fermer
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal signalement */}
+      {showSignalModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.4)" }}
+          onClick={() => setShowSignalModal(false)}
+        >
+          <div
+            className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {signalSent ? (
+              <div className="text-center">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-green-50">
+                  <svg className="w-7 h-7 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="font-bold text-gray-900 text-lg mb-2">Signalement envoyé</h3>
+                <p className="text-sm text-gray-500 mb-6">
+                  Merci pour votre signalement. Notre équipe l&apos;examinera dans les plus brefs délais.
+                </p>
+                <button
+                  onClick={() => setShowSignalModal(false)}
+                  className="w-full text-white text-sm font-semibold px-6 py-3 rounded-full transition-all hover:opacity-90"
+                  style={{ background: "#F06292" }}
+                >
+                  Fermer
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "#FFF0F5" }}>
+                    <svg className="w-5 h-5" style={{ color: "#F06292" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6H13l-1-1H5a2 2 0 00-2 2zm0 0h16" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 text-base leading-tight">Signaler ce prestataire</h3>
+                    <p className="text-xs text-gray-400 mt-0.5">Votre signalement sera examiné par notre équipe.</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Motif du signalement</label>
+                    <select
+                      value={signalMotif}
+                      onChange={(e) => setSignalMotif(e.target.value)}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300 bg-white"
+                    >
+                      <option value="">Sélectionner un motif…</option>
+                      <option value="Arnaque / Fraude">Arnaque / Fraude</option>
+                      <option value="Fausses photos">Fausses photos</option>
+                      <option value="Comportement inapproprié">Comportement inapproprié</option>
+                      <option value="Faux avis">Faux avis</option>
+                      <option value="Autre">Autre</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Description</label>
+                    <textarea
+                      value={signalDescription}
+                      onChange={(e) => setSignalDescription(e.target.value)}
+                      placeholder="Décrivez le problème en quelques mots…"
+                      rows={4}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300 resize-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2 mt-6">
+                  <button
+                    onClick={handleSignalement}
+                    disabled={signalLoading || !signalMotif || !signalDescription.trim()}
+                    className="w-full text-white text-sm font-semibold px-6 py-3 rounded-full transition-all hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+                    style={{ background: "#F06292" }}
+                  >
+                    {signalLoading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+                    Envoyer le signalement
+                  </button>
+                  <button
+                    onClick={() => setShowSignalModal(false)}
+                    className="text-sm text-gray-400 hover:text-gray-600 py-2"
+                  >
+                    Annuler
                   </button>
                 </div>
               </>

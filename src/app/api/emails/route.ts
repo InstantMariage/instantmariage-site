@@ -4,6 +4,7 @@ import {
   sendNewAvisEmail,
   sendNewPrestaireAdminEmail,
   sendContactEmail,
+  sendSignalementEmail,
 } from "@/lib/emails";
 
 export async function POST(req: NextRequest) {
@@ -34,6 +35,9 @@ export async function POST(req: NextRequest) {
       const { name, email, subject, message } = body;
       console.log("[emails] contact — name:", name, "| email:", email, "| subject:", subject);
       await sendContactEmail({ name, email, subject, message });
+    } else if (type === "signalement") {
+      const { prestaireId, prestataireName, motif, description, userId } = body;
+      await sendSignalementEmail({ prestaireId, prestataireName, motif, description, userId });
     } else {
       return NextResponse.json({ error: "Unknown email type" }, { status: 400 });
     }
