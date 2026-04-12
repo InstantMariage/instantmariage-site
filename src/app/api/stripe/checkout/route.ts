@@ -52,7 +52,6 @@ export async function POST(req: NextRequest) {
             items: [{ id: itemId, price: priceId }],
             proration_behavior: "create_prorations",
             payment_behavior: "pending_if_incomplete",
-            metadata: { prestataire_id: prestataireId },
             expand: ["latest_invoice.payment_intent"],
           });
 
