@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+import { createClient } from "@supabase/supabase-js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-03-31.basil",
@@ -11,6 +12,13 @@ const ALLOWED_PRICE_IDS = new Set([
   "price_1TJbmfKKBs85XtqBN57D6Z5U", // Premium 39,90€/mois
 ]);
 
+function getSupabaseAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error("Variables Supabase manquantes");
+  return createClient(url, key);
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { priceId, prestataireId } = await req.json();
@@ -19,6 +27,43 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Price ID invalide" }, { status: 400 });
     }
 
+    // ── Vérifier si le prestataire a déjà un abonnement Stripe actif ──────────
+    if (prestataireId) {
+      const supabase = getSupabaseAdmin();
+      const { data: existing } = await supabase
+        .from("abonnements")
+        .select("stripe_subscription_id, stripe_customer_id")
+        .eq("prestataire_id", prestataireId)
+        .eq("statut", "actif")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (existing?.stripe_subscription_id) {
+        // ── Upgrade/downgrade : modifier l'abonnement existant ───────────────
+        const subscription = await stripe.subscriptions.retrieve(
+          existing.stripe_subscription_id
+        );
+        const itemId = subscription.items.data[0]?.id;
+
+        if (itemId) {
+          await stripe.subscriptions.update(existing.stripe_subscription_id, {
+            items: [{ id: itemId, price: priceId }],
+            proration_behavior: "create_prorations",
+            metadata: { prestataire_id: prestataireId },
+          });
+
+          // Le webhook customer.subscription.updated mettra à jour la BDD.
+          // On redirige vers le dashboard directement.
+          const origin = req.headers.get("origin") ?? "http://localhost:3000";
+          return NextResponse.json({
+            url: `${origin}/dashboard/prestataire?success=true`,
+          });
+        }
+      }
+    }
+
+    // ── Nouvel abonnement : créer une session Checkout ────────────────────────
     const origin = req.headers.get("origin") ?? "http://localhost:3000";
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -29,7 +74,6 @@ export async function POST(req: NextRequest) {
       cancel_url: `${origin}/tarifs`,
     };
 
-    // Attacher le prestataire_id aux métadonnées si disponible
     if (prestataireId) {
       sessionParams.metadata = { prestataire_id: prestataireId };
       sessionParams.subscription_data = {
@@ -38,10 +82,12 @@ export async function POST(req: NextRequest) {
     }
 
     const session = await stripe.checkout.sessions.create(sessionParams);
-
     return NextResponse.json({ url: session.url });
   } catch (error) {
     console.error("Stripe checkout error:", error);
-    return NextResponse.json({ error: "Erreur lors de la création de la session" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Erreur lors de la création de la session" },
+      { status: 500 }
+    );
   }
 }

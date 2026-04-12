@@ -155,6 +155,36 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // ─── Upgrade / downgrade (plan modifié sans nouvelle session) ─────────
+    if (event.type === "customer.subscription.updated") {
+      const subscription = event.data.object as Stripe.Subscription;
+      const prestataireId = subscription.metadata?.prestataire_id;
+
+      if (prestataireId) {
+        const priceId = subscription.items.data[0]?.price.id ?? "";
+        const plan = PRICE_TO_PLAN[priceId] ?? "starter";
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const periodEnd = (subscription as any).current_period_end;
+        const dateFin = periodEnd != null && Number.isFinite(Number(periodEnd))
+          ? new Date(Number(periodEnd) * 1000).toISOString()
+          : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+        const prix = (subscription.items.data[0]?.price.unit_amount ?? 0) / 100;
+
+        console.log(`[webhook] subscription.updated — plan: ${plan}, prix: ${prix}`);
+
+        const { error } = await supabase
+          .from("abonnements")
+          .update({ plan, date_fin: dateFin, prix })
+          .eq("stripe_subscription_id", subscription.id);
+
+        if (error) {
+          console.error("[webhook] Erreur UPDATE abonnement (upgrade):", JSON.stringify(error));
+        } else {
+          console.log("[webhook] Plan mis à jour en base");
+        }
+      }
+    }
+
     // ─── Abonnement annulé ─────────────────────────────────────────────────
     if (event.type === "customer.subscription.deleted") {
       const subscription = event.data.object as Stripe.Subscription;
