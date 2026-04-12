@@ -14,6 +14,11 @@ const PRICE_TO_PLAN: Record<string, PlanAbonnement> = {
   "price_1TJbmfKKBs85XtqBN57D6Z5U": "premium",
 };
 
+// Plans payants → badge vérifié automatique
+function planGrantsVerifie(plan: PlanAbonnement): boolean {
+  return plan === "pro" || plan === "premium";
+}
+
 // Client Supabase avec service_role (bypass RLS pour les écritures du webhook)
 function getSupabaseAdmin() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -142,16 +147,17 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // Activer le flag abonnement_actif sur le prestataire
+      // Activer le flag abonnement_actif + badge vérifié selon le plan
+      const verifie = planGrantsVerifie(plan);
       const { error: updatePrestErr } = await supabase
         .from("prestataires")
-        .update({ abonnement_actif: true })
+        .update({ abonnement_actif: true, verifie })
         .eq("id", prestataireId);
 
       if (updatePrestErr) {
-        console.error("[webhook] Erreur UPDATE prestataires.abonnement_actif:", JSON.stringify(updatePrestErr));
+        console.error("[webhook] Erreur UPDATE prestataires.abonnement_actif/verifie:", JSON.stringify(updatePrestErr));
       } else {
-        console.log(`[webhook] prestataire ${prestataireId} — abonnement_actif=true`);
+        console.log(`[webhook] prestataire ${prestataireId} — abonnement_actif=true, verifie=${verifie}`);
       }
     }
 
@@ -172,15 +178,34 @@ export async function POST(req: NextRequest) {
 
       // On met à jour par stripe_subscription_id, sans dépendre de la présence
       // de prestataire_id dans les métadonnées (robustesse si metadata absente).
-      const { error } = await supabase
+      const { data: updatedAbo, error } = await supabase
         .from("abonnements")
         .update({ plan, statut: "actif", date_fin: dateFin, prix })
-        .eq("stripe_subscription_id", subscription.id);
+        .eq("stripe_subscription_id", subscription.id)
+        .select("prestataire_id")
+        .single();
 
       if (error) {
         console.error("[webhook] Erreur UPDATE abonnement (upgrade):", JSON.stringify(error));
       } else {
         console.log("[webhook] Plan mis à jour en base");
+
+        // Mettre à jour le badge vérifié selon le nouveau plan
+        if (updatedAbo?.prestataire_id) {
+          const verifie = planGrantsVerifie(plan);
+          const { error: verifieErr } = await supabase
+            .from("prestataires")
+            .update({ verifie })
+            .eq("id", updatedAbo.prestataire_id);
+
+          if (verifieErr) {
+            console.error("[webhook] Erreur UPDATE prestataires.verifie (upgrade):", JSON.stringify(verifieErr));
+          } else {
+            console.log(`[webhook] prestataire ${updatedAbo.prestataire_id} — verifie=${verifie} (plan: ${plan})`);
+          }
+        } else {
+          console.warn("[webhook] subscription.updated — prestataire_id introuvable, verifie non mis à jour");
+        }
       }
     }
 
@@ -217,13 +242,13 @@ export async function POST(req: NextRequest) {
 
       const { error: updatePrestErr } = await supabase
         .from("prestataires")
-        .update({ abonnement_actif: false })
+        .update({ abonnement_actif: false, verifie: false })
         .eq("id", prestataireId);
 
       if (updatePrestErr) {
-        console.error("[webhook] Erreur UPDATE prestataires.abonnement_actif (annulation):", JSON.stringify(updatePrestErr));
+        console.error("[webhook] Erreur UPDATE prestataires.abonnement_actif/verifie (annulation):", JSON.stringify(updatePrestErr));
       } else {
-        console.log(`[webhook] prestataire ${prestataireId} — abonnement_actif=false`);
+        console.log(`[webhook] prestataire ${prestataireId} — abonnement_actif=false, verifie=false`);
       }
     }
 
