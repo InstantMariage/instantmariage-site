@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
       // Chercher l'abonnement existant pour ce prestataire
       const { data: existing, error: selectError } = await supabase
         .from("abonnements")
-        .select("id")
+        .select("id, stripe_subscription_id")
         .eq("prestataire_id", prestataireId)
         .order("created_at", { ascending: false })
         .limit(1)
@@ -105,6 +105,18 @@ export async function POST(req: NextRequest) {
       if (selectError && selectError.code !== "PGRST116") {
         // PGRST116 = no rows found (normal pour un nouveau prestataire)
         console.error("[webhook] Erreur SELECT abonnement:", selectError);
+      }
+
+      // Annuler l'ancien abonnement Stripe si différent du nouveau
+      const oldSubId = existing?.stripe_subscription_id;
+      if (oldSubId && oldSubId !== subscriptionId) {
+        try {
+          await stripe.subscriptions.cancel(oldSubId);
+          console.log(`[webhook] Ancien abonnement Stripe annulé: ${oldSubId}`);
+        } catch (e) {
+          // S'il est déjà annulé ou introuvable, on continue sans bloquer
+          console.warn(`[webhook] Impossible d'annuler l'ancien abonnement ${oldSubId}:`, (e as Error).message);
+        }
       }
 
       if (existing) {
