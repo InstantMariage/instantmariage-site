@@ -82,6 +82,13 @@ const IconChecklist = () => (
   </svg>
 );
 
+const IconUser = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+    <circle cx="12" cy="8" r="4" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4 20c0-4 3.58-7 8-7s8 3 8 7" />
+  </svg>
+);
+
 type FavoriPrestataire = {
   id: string;
   prestataire_id: string;
@@ -261,6 +268,15 @@ export default function DashboardMarie() {
       desc: "66 étapes pour ne rien oublier",
       iconBg: "#FFF0F5",
       iconColor: "#F06292",
+    },
+    {
+      href: "/dashboard/marie/profil",
+      external: false,
+      icon: <IconUser />,
+      label: "Mon profil",
+      desc: "Prénom, email, date & lieu de mariage",
+      iconBg: "#FFF7ED",
+      iconColor: "#EA580C",
     },
   ];
 
