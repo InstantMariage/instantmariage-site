@@ -392,28 +392,16 @@ export default function ConversationPage() {
         .update({ last_message_at: new Date().toISOString() })
         .eq("id", convId);
 
-      try {
-        const { data: recipientUser } = await supabase
-          .from("users")
-          .select("email")
-          .eq("id", otherUserId)
-          .maybeSingle();
-
-        if (recipientUser?.email) {
-          fetch("/api/emails", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              type: "new_message",
-              recipientEmail: recipientUser.email,
-              recipientName: otherUserName,
-              senderName: myName || "Un utilisateur",
-              messagePreview: content || `[Pièce jointe : ${attachmentName}]`,
-              conversationId: convId,
-            }),
-          }).catch(() => {});
-        }
-      } catch {}
+      fetch("/api/messages/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recipientId: otherUserId,
+          senderName: myName || "Un utilisateur",
+          messagePreview: content || `[Pièce jointe : ${attachmentName}]`,
+          conversationId: convId,
+        }),
+      }).catch(() => {});
     }
 
     setSending(false);

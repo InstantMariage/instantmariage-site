@@ -242,13 +242,24 @@ export async function sendContactEmail({
     ${ctaButton(`Répondre à ${name}`, `mailto:${email}`)}
   `;
 
-  return resend.emails.send({
+  console.log("[sendContactEmail] from:", FROM, "| to:", adminEmail, "| replyTo:", email);
+
+  const result = await resend.emails.send({
     from: FROM,
     to: adminEmail,
     replyTo: email,
     subject: `[Contact] ${subject} — ${name}`,
     html: baseTemplate(content),
   });
+
+  console.log("[sendContactEmail] résultat Resend:", JSON.stringify(result));
+
+  if (result.error) {
+    console.error("[sendContactEmail] erreur Resend:", result.error);
+    throw new Error(`Resend error: ${result.error.message}`);
+  }
+
+  return result;
 }
 
 // ─── Email 4 : Nouveau prestataire (admin) ────────────────────────────────────
