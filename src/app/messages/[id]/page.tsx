@@ -133,6 +133,7 @@ export default function ConversationPage() {
   const [runtimeError, setRuntimeError] = useState<string | null>(null);
 
   const isOtherOnline = false; // Presence désactivée (Realtime supprimé)
+  const [isMarie, setIsMarie] = useState(false);
   const [showSecurityBanner, setShowSecurityBanner] = useState(true);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -252,6 +253,7 @@ export default function ConversationPage() {
             .eq("user_id", uid)
             .maybeSingle();
           if (myMarie) {
+            setIsMarie(true);
             setMyName(
               myMarie.prenom_marie2
                 ? `${myMarie.prenom_marie1} & ${myMarie.prenom_marie2}`
@@ -535,8 +537,8 @@ export default function ConversationPage() {
         </div>
       </div>
 
-      {/* ── Security banner ── */}
-      {showSecurityBanner && (
+      {/* ── Security banner (mariés uniquement) ── */}
+      {isMarie && showSecurityBanner && (
         <div className="flex-shrink-0 flex items-start gap-2.5 px-4 py-2.5 text-xs text-amber-800 border-b border-amber-100" style={{ background: "#FFFBEB" }}>
           <span className="flex-shrink-0 mt-0.5">🔒</span>
           <p className="flex-1 leading-relaxed">
