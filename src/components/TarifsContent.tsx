@@ -312,8 +312,9 @@ export default function TarifsContent() {
                   style={
                     isPro
                       ? {
-                          background: "linear-gradient(145deg, #F8BBD0 0%, #F06292 40%, #E91E63 75%, #C2185B 100%)",
-                          border: "none",
+                          background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)",
+                          border: "2.5px solid #111",
+                          boxShadow: "0 0 0 1px #111, 0 20px 60px rgba(0,0,0,0.18)",
                         }
                       : isGold
                       ? {
