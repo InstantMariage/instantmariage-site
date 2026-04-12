@@ -725,6 +725,8 @@ type AvisWithMarie = {
   date_mariage_couple: string | null
   created_at: string
   marie_id: string
+  reponse_prestataire: string | null
+  reponse_at: string | null
   maries: {
     prenom_marie1: string
     prenom_marie2: string | null
@@ -742,6 +744,13 @@ function SectionAvis({ prestataireId }: { prestataireId: string | undefined }) {
   const [marie, setMarie] = useState<Marie | null>(null);
   const [alreadyReviewed, setAlreadyReviewed] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
+
+  // Réponse prestataire
+  const [replyingToId, setReplyingToId] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
+  const [replySubmitting, setReplySubmitting] = useState(false);
+  const [replyError, setReplyError] = useState("");
 
   // Form
   const [note, setNote] = useState(5);
@@ -785,6 +794,10 @@ function SectionAvis({ prestataireId }: { prestataireId: string | undefined }) {
       if (!prest) {
         setLoading(false);
         return;
+      }
+
+      if (session && prest.user_id === session.user.id) {
+        setIsOwner(true);
       }
 
       const reviews = await fetchAvis(prest.id);
@@ -886,6 +899,31 @@ function SectionAvis({ prestataireId }: { prestataireId: string | undefined }) {
     setAlreadyReviewed(true);
     setFormSuccess(true);
     setSubmitting(false);
+  };
+
+  const handleReplySubmit = async (avisId: string) => {
+    if (!replyText.trim()) return;
+    setReplySubmitting(true);
+    setReplyError("");
+
+    const { error } = await supabase
+      .from("avis")
+      .update({ reponse_prestataire: replyText.trim(), reponse_at: new Date().toISOString() })
+      .eq("id", avisId);
+
+    if (error) {
+      setReplyError("Erreur lors de la publication. Réessayez.");
+      setReplySubmitting(false);
+      return;
+    }
+
+    if (prestataire) {
+      const reviews = await fetchAvis(prestataire.id);
+      setAvis(reviews);
+    }
+    setReplyingToId(null);
+    setReplyText("");
+    setReplySubmitting(false);
   };
 
   const noteMoyenne =
@@ -1147,6 +1185,85 @@ function SectionAvis({ prestataireId }: { prestataireId: string | undefined }) {
               </div>
               {a.commentaire && (
                 <p className="text-gray-500 text-sm leading-relaxed mt-1">{a.commentaire}</p>
+              )}
+
+              {/* ── Réponse existante ── */}
+              {a.reponse_prestataire && (
+                <div className="mt-4 pl-4 border-l-2" style={{ borderColor: "#F06292" }}>
+                  <p className="text-xs font-semibold mb-1" style={{ color: "#F06292" }}>Réponse du prestataire</p>
+                  <p className="text-sm text-gray-600 leading-relaxed">{a.reponse_prestataire}</p>
+                  {a.reponse_at && (
+                    <p className="text-xs text-gray-300 mt-1">{formatDate(a.reponse_at)}</p>
+                  )}
+                </div>
+              )}
+
+              {/* ── Bouton Répondre (propriétaire uniquement) ── */}
+              {isOwner && !a.reponse_prestataire && replyingToId !== a.id && (
+                <div className="mt-4">
+                  <button
+                    type="button"
+                    onClick={() => { setReplyingToId(a.id); setReplyText(""); setReplyError(""); }}
+                    className="text-xs font-medium transition-opacity hover:opacity-70"
+                    style={{ color: "#F06292" }}
+                  >
+                    Répondre
+                  </button>
+                </div>
+              )}
+
+              {/* ── Formulaire de réponse ── */}
+              {isOwner && replyingToId === a.id && (
+                <div className="mt-4 pl-4 border-l-2" style={{ borderColor: "#F06292" }}>
+                  <p className="text-xs font-semibold mb-2" style={{ color: "#F06292" }}>Votre réponse</p>
+                  <textarea
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    rows={3}
+                    placeholder="Rédigez votre réponse publique…"
+                    className="w-full border-0 border-b border-gray-200 bg-transparent px-0 py-2 text-sm text-gray-700 resize-none focus:outline-none focus:border-gray-400 transition-colors placeholder:text-gray-300"
+                    autoFocus
+                  />
+                  {replyError && (
+                    <p className="text-xs text-red-400 mt-1">{replyError}</p>
+                  )}
+                  <div className="flex items-center gap-3 mt-3">
+                    <button
+                      type="button"
+                      disabled={replySubmitting || !replyText.trim()}
+                      onClick={() => handleReplySubmit(a.id)}
+                      className="inline-flex items-center gap-1.5 text-white text-xs font-medium px-4 py-2 rounded-full transition-opacity disabled:opacity-40 hover:opacity-90"
+                      style={{ backgroundColor: "#F06292" }}
+                    >
+                      {replySubmitting ? (
+                        <>
+                          <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Publication…
+                        </>
+                      ) : "Publier"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setReplyingToId(null); setReplyText(""); setReplyError(""); }}
+                      className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Modifier la réponse existante ── */}
+              {isOwner && a.reponse_prestataire && replyingToId !== a.id && (
+                <div className="mt-2">
+                  <button
+                    type="button"
+                    onClick={() => { setReplyingToId(a.id); setReplyText(a.reponse_prestataire ?? ""); setReplyError(""); }}
+                    className="text-xs text-gray-300 hover:text-gray-400 transition-colors"
+                  >
+                    Modifier la réponse
+                  </button>
+                </div>
               )}
             </div>
           ))}

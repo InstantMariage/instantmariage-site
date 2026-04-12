@@ -91,5 +91,6 @@ export type Avis = {
   commentaire: string | null
   date_mariage_couple: string | null
   reponse_prestataire: string | null
+  reponse_at: string | null
   created_at: string
 }
