@@ -391,6 +391,16 @@ function DashboardPrestataire() {
                   Voir mon profil
                 </Link>
                 <Link
+                  href="/dashboard/prestataire/abonnement"
+                  className="inline-flex items-center gap-2 bg-white/20 text-white font-semibold px-4 py-2 rounded-full text-sm hover:bg-white/30 transition-all duration-200 shadow-sm"
+                >
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <rect x="2" y="5" width="20" height="14" rx="2" strokeWidth={1.5} />
+                    <path strokeLinecap="round" strokeWidth={1.5} d="M2 10h20" />
+                  </svg>
+                  Mon abonnement
+                </Link>
+                <Link
                   href="/dashboard/parametres"
                   className="inline-flex items-center gap-2 bg-white/20 text-white font-semibold px-4 py-2 rounded-full text-sm hover:bg-white/30 transition-all duration-200 shadow-sm"
                 >
