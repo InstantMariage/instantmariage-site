@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 
@@ -38,6 +38,7 @@ type DropdownKey = "outils" | null;
 
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState<DropdownKey>(null);
   const [activeDropdown, setActiveDropdown] = useState<DropdownKey>(null);
@@ -468,7 +469,11 @@ export default function Header() {
                   </Link>
                   <Link
                     href={`/dashboard/${user.role}`}
-                    className="text-center border-2 border-rose-400 text-rose-400 hover:bg-rose-400 hover:text-white font-semibold px-5 py-2.5 rounded-full transition-all duration-200 text-sm"
+                    className={`text-center border-2 font-semibold px-5 py-2.5 rounded-full transition-all duration-200 text-sm ${
+                      pathname.startsWith("/dashboard")
+                        ? "border-rose-400 bg-rose-400 text-white"
+                        : "border-gray-200 text-gray-700 hover:border-rose-400 hover:text-rose-400"
+                    }`}
                     onClick={() => setMobileOpen(false)}
                   >
                     Mon espace

@@ -1524,9 +1524,14 @@ export default function PrestataireProfil({ id }: { id?: string }) {
       .select("*, abonnements(plan, statut)")
       .eq("id", id)
       .maybeSingle()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        console.log("[PrestataireProfil] raw Supabase response:", JSON.stringify({ data, error }, null, 2));
+        console.log("[PrestataireProfil] abonnements:", data?.abonnements);
+        console.log("[PrestataireProfil] verifie:", data?.verifie);
         if (data) {
-          setPRESTATAIRE(buildPrestataireFromSupabase(data as SupabasePrestataire & { abonnements?: { plan: string; statut: string }[] }));
+          const built = buildPrestataireFromSupabase(data as SupabasePrestataire & { abonnements?: { plan: string; statut: string }[] });
+          console.log("[PrestataireProfil] built.plan:", built.plan, "built.verifie:", built.verifie);
+          setPRESTATAIRE(built);
           // Enregistrer la vue (fire-and-forget)
           supabase.from("profile_views").insert({ prestataire_id: id });
         }
