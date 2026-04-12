@@ -1404,7 +1404,11 @@ export default function PrestataireProfil({ id }: { id?: string }) {
       .eq("id", id)
       .maybeSingle()
       .then(({ data }) => {
-        if (data) setPRESTATAIRE(buildPrestataireFromSupabase(data as SupabasePrestataire));
+        if (data) {
+          setPRESTATAIRE(buildPrestataireFromSupabase(data as SupabasePrestataire));
+          // Enregistrer la vue (fire-and-forget)
+          supabase.from("profile_views").insert({ prestataire_id: id });
+        }
       });
   }, [id, isNumericId]);
 

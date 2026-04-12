@@ -81,55 +81,23 @@ const PLAN_CONFIG: Record<PlanAbonnement, PlanConfig> = {
 
 // ─── Composants ─────────────────────────────────────────────────────────────
 
-const stats = [
-  {
-    label: "Vues du profil",
-    fakeValue: "247",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-      </svg>
-    ),
-  },
-  {
-    label: "Contacts reçus",
-    fakeValue: "18",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-      </svg>
-    ),
-  },
-  {
-    label: "Devis envoyés",
-    fakeValue: "12",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-    ),
-  },
-  {
-    label: "Note moyenne",
-    fakeValue: "4.8/5",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-      </svg>
-    ),
-  },
-];
-
-const profileSuggestions = [
-  { label: "Ajouter 3 photos supplémentaires", done: false, points: 10 },
-  { label: "Renseigner votre zone de déplacement", done: false, points: 5 },
-  { label: "Compléter votre description", done: true, points: 15 },
-  { label: "Ajouter vos tarifs indicatifs", done: false, points: 10 },
-  { label: "Relier votre compte Instagram", done: true, points: 5 },
-];
-
-const profileCompletion = 52;
+// icônes réutilisées dans la grille de stats
+const IconEye = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+  </svg>
+);
+const IconMail = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+  </svg>
+);
+const IconStar = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+  </svg>
+);
 
 type ConversationItem = {
   id: string;
@@ -177,6 +145,11 @@ function DashboardPrestataire() {
   const [dateRenouvellement, setDateRenouvellement] = useState<string | null>(null);
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [convsLoaded, setConvsLoaded] = useState(false);
+  const [profileViews, setProfileViews] = useState<number | null>(null);
+  const [nbContacts, setNbContacts] = useState<number | null>(null);
+  const [noteStats, setNoteStats] = useState<{ note: number; nb: number } | null>(null);
+  const [profileCompletion, setProfileCompletion] = useState(0);
+  const [profileSuggestions, setProfileSuggestions] = useState<Array<{ label: string; done: boolean; points: number }>>([]);
 
   useEffect(() => {
     if (searchParams.get("success") === "true") {
@@ -193,10 +166,12 @@ function DashboardPrestataire() {
         return;
       }
 
+      const uid = session.user.id;
+
       // Récupérer profil prestataire
       const { data: prestataire } = await supabase
         .from("prestataires")
-        .select("id, nom_entreprise, categorie, ville, avatar_url")
+        .select("id, nom_entreprise, categorie, ville, avatar_url, photos, description, telephone, site_web, note_moyenne, nb_avis")
         .eq("user_id", session.user.id)
         .single();
 
@@ -211,6 +186,29 @@ function DashboardPrestataire() {
             : `https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/photos/${prestataire.avatar_url}`;
           setAvatarUrl(url);
         }
+
+        // Complétion du profil (calcul dynamique)
+        const suggItems = [
+          { label: "Ajouter une photo de profil", done: !!(prestataire.avatar_url || prestataire.photos?.length > 0), points: 25 },
+          { label: "Compléter votre description", done: !!(prestataire.description?.trim()), points: 25 },
+          { label: "Renseigner votre ville", done: !!prestataire.ville, points: 15 },
+          { label: "Ajouter votre téléphone", done: !!prestataire.telephone, points: 20 },
+          { label: "Renseigner votre site web", done: !!prestataire.site_web, points: 15 },
+        ];
+        setProfileCompletion(suggItems.reduce((s, i) => s + (i.done ? i.points : 0), 0));
+        setProfileSuggestions(suggItems);
+
+        // Stats en parallèle : vues du profil, contacts, note/avis
+        const [{ count: views }, { count: contacts }, { data: avisData }] = await Promise.all([
+          supabase.from("profile_views").select("*", { count: "exact", head: true }).eq("prestataire_id", prestataire.id),
+          supabase.from("conversations").select("*", { count: "exact", head: true }).or(`participant1_id.eq.${uid},participant2_id.eq.${uid}`),
+          supabase.from("avis").select("note").eq("prestataire_id", prestataire.id),
+        ]);
+        setProfileViews(views ?? 0);
+        setNbContacts(contacts ?? 0);
+        const nb = avisData?.length ?? 0;
+        const note = nb > 0 ? avisData!.reduce((s: number, a: { note: number }) => s + a.note, 0) / nb : 0;
+        setNoteStats({ note, nb });
 
         // Récupérer l'abonnement actif
         const { data: abonnement } = await supabase
@@ -238,7 +236,6 @@ function DashboardPrestataire() {
       }
 
       // Charger les conversations
-      const uid = session.user.id;
       const { data: convs } = await supabase
         .from("conversations")
         .select("*")
@@ -436,25 +433,45 @@ function DashboardPrestataire() {
         <div className="max-w-6xl mx-auto px-4 mt-0">
           {/* Stats Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mt-5 sm:mt-6">
-            {stats.map((stat) => {
-              const locked = plan === "gratuit";
-              return (
-                <div key={stat.label} className="relative bg-white rounded-2xl p-4 sm:p-5 shadow-card overflow-hidden">
-                  <div className="flex items-center justify-between mb-3">
-                    <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center"
-                      style={{ background: "#FFF0F5", color: "#F06292" }}
-                    >
-                      {stat.icon}
-                    </div>
+            {[
+              {
+                label: "Vues du profil",
+                value: profileViews !== null ? String(profileViews) : "—",
+                icon: <IconEye />,
+              },
+              {
+                label: "Contacts reçus",
+                value: nbContacts !== null ? String(nbContacts) : "—",
+                icon: <IconMail />,
+              },
+              {
+                label: "Avis reçus",
+                value: noteStats !== null ? String(noteStats.nb) : "—",
+                icon: <IconStar />,
+              },
+              {
+                label: "Note moyenne",
+                value: noteStats !== null
+                  ? noteStats.nb > 0 ? `${noteStats.note.toFixed(1)}/5` : "—"
+                  : "—",
+                icon: <IconStar />,
+              },
+            ].map((stat) => (
+              <div key={stat.label} className="relative bg-white rounded-2xl p-4 sm:p-5 shadow-card overflow-hidden">
+                <div className="flex items-center justify-between mb-3">
+                  <div
+                    className="w-9 h-9 rounded-xl flex items-center justify-center"
+                    style={{ background: "#FFF0F5", color: "#F06292" }}
+                  >
+                    {stat.icon}
                   </div>
-                  <div className={`text-2xl font-bold text-gray-800${locked ? " blur-md select-none" : ""}`}>
-                    {locked ? stat.fakeValue : "—"}
-                  </div>
-                  <div className="text-xs text-gray-500 mt-0.5">{stat.label}</div>
                 </div>
-              );
-            })}
+                <div className="text-2xl font-bold text-gray-800">
+                  {stat.value}
+                </div>
+                <div className="text-xs text-gray-500 mt-0.5">{stat.label}</div>
+              </div>
+            ))}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mt-4 sm:mt-6">
