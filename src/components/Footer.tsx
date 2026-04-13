@@ -28,6 +28,7 @@ const footerLinks = {
   aide: {
     title: "Aide & Contact",
     links: [
+      { label: "FAQ – Questions fréquentes", href: "/faq" },
       { label: "Centre d'aide", href: "/contact" },
       { label: "Contacter le support", href: "/contact" },
       { label: "Signaler un problème", href: "/contact" },
