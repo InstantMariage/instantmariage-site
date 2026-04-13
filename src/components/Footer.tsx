@@ -2,20 +2,9 @@ import Link from "next/link";
 import Image from "next/image";
 import NewsletterForm from "@/components/NewsletterForm";
 import { CookieReopenButton } from "@/components/CookieBanner";
+import { CATEGORIES } from "@/data/categories";
 
 const footerLinks = {
-  prestataires: {
-    title: "Prestataires",
-    links: [
-      { label: "Photographes", href: "/annuaire?metier=Photographe" },
-      { label: "DJ & Animateurs", href: "/annuaire?metier=DJ" },
-      { label: "Traiteurs", href: "/annuaire?metier=Traiteur" },
-      { label: "Fleuristes", href: "/annuaire?metier=Fleuriste" },
-      { label: "Salles de réception", href: "/annuaire?metier=Lieu de réception" },
-      { label: "Wedding Planners", href: "/annuaire?metier=Wedding Planner" },
-      { label: "Coiffeurs & Maquilleurs", href: "/annuaire?metier=Coiffeur" },
-    ],
-  },
   mariees: {
     title: "Espace mariés",
     links: [
@@ -112,7 +101,7 @@ export default function Footer() {
       {/* Main footer — fond blanc, texte noir */}
       <div className="bg-white text-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-8 gap-10">
             {/* Brand column */}
             <div className="lg:col-span-2">
               {/* Logo */}
@@ -162,7 +151,26 @@ export default function Footer() {
               </div>
             </div>
 
-            {/* Links columns */}
+            {/* Prestataires — 2 columns, driven by CATEGORIES */}
+            <div className="lg:col-span-2">
+              <h4 className="text-gray-900 font-semibold text-sm mb-4 tracking-wide">
+                Prestataires
+              </h4>
+              <ul className="grid grid-cols-2 gap-x-4 gap-y-2.5">
+                {CATEGORIES.map((cat) => (
+                  <li key={cat.name}>
+                    <Link
+                      href={`/annuaire?metier=${cat.name}`}
+                      className="text-gray-500 hover:text-gray-900 text-sm transition-colors duration-200"
+                    >
+                      {cat.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Other link columns */}
             {Object.entries(footerLinks).map(([key, section]) => (
               <div key={key}>
                 <h4 className="text-gray-900 font-semibold text-sm mb-4 tracking-wide">
