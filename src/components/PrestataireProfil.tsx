@@ -1759,7 +1759,7 @@ export default function PrestataireProfil({ id }: { id?: string }) {
       </div>
 
       {/* ── Barre de profil ───────────────────────────────────────────────── */}
-      <div className="bg-white border-b border-gray-100 shadow-sm">
+      <div className="relative z-10 bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-6 -mt-16 sm:-mt-20 pb-6">
 
