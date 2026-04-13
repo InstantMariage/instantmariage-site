@@ -12,8 +12,6 @@ import {
   buildSlugRegion,
   METIERS_SEO,
   DEPARTEMENTS_SEO,
-  FALLBACK_IMAGES,
-  DEFAULT_FALLBACK,
   getVillesByDepartement,
   getRegionByNom,
 } from "@/data/seo-local";
@@ -121,10 +119,14 @@ async function fetchPrestataires(
 
 // ─── Carte prestataire ─────────────────────────────────────────────────────────
 
+function getInitials(name: string): string {
+  return name.split(/\s+/).filter(Boolean).map(w => w[0].toUpperCase()).slice(0, 2).join("");
+}
+
 function ProviderCard({ p }: { p: PrestataireWithAbo }) {
   const activeAbo = p.abonnements?.find((a) => a.statut === "actif") ?? p.abonnements?.[0];
   const isPro = activeAbo?.plan === "pro" || activeAbo?.plan === "premium";
-  const photo = p.photos?.[0] || FALLBACK_IMAGES[p.categorie] || DEFAULT_FALLBACK;
+  const photo = p.cover_url || p.photos?.[0] || null;
   const prixLabel = p.prix_depart != null
     ? `À partir de ${p.prix_depart.toLocaleString("fr-FR")} €`
     : "Sur devis";
@@ -135,13 +137,24 @@ function ProviderCard({ p }: { p: PrestataireWithAbo }) {
       className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md border border-gray-100 transition-all duration-300 group flex flex-col"
     >
       <div className="relative h-48 overflow-hidden">
-        <Image
-          src={photo}
-          alt={`${p.nom_entreprise} – ${p.categorie} à ${p.ville}`}
-          fill
-          className="object-cover group-hover:scale-105 transition-transform duration-500"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-        />
+        {photo ? (
+          <Image
+            src={photo}
+            alt={`${p.nom_entreprise} – ${p.categorie} à ${p.ville}`}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          />
+        ) : (
+          <div
+            className="absolute inset-0 flex items-center justify-center group-hover:scale-105 transition-transform duration-500"
+            style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)" }}
+          >
+            <span className="text-white text-4xl font-bold tracking-wide select-none">
+              {getInitials(p.nom_entreprise)}
+            </span>
+          </div>
+        )}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5">
           {p.verifie && (
             <span className="inline-flex items-center gap-1 bg-emerald-500 text-white text-xs font-medium px-2 py-0.5 rounded-full">

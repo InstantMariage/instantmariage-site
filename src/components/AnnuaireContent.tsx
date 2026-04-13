@@ -69,33 +69,11 @@ const DEPARTEMENTS: Record<string, string[]> = {
 };
 
 
-// ─── Fallback images par métier ───────────────────────────────────────────────
+// ─── Initiales pour placeholder sans photo ───────────────────────────────────
 
-const FALLBACK_IMAGES: Record<string, string> = {
-  "Photographe": "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=500&q=80",
-  "Vidéaste": "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500&q=80",
-  "Lieu de réception": "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=500&q=80",
-  "DJ": "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=500&q=80",
-  "Musicien / Groupe": "https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=500&q=80",
-  "Fleuriste": "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=500&q=80",
-  "Décorateur": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&q=80",
-  "Wedding Planner": "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=500&q=80",
-  "Traiteur": "https://images.unsplash.com/photo-1555244162-803834f70033?w=500&q=80",
-  "Coiffeur": "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500&q=80",
-  "Maquilleur": "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=500&q=80",
-  "Henna": "https://images.unsplash.com/photo-1519741497674-611481863552?w=500&q=80",
-  "Officiant": "https://images.unsplash.com/photo-1523438885200-e635ba2c371e?w=500&q=80",
-  "Transport": "https://images.unsplash.com/photo-1549317661-bd32c8ce0729?w=500&q=80",
-  "Animation": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=500&q=80",
-  "Créateur de contenu": "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&q=80",
-  "Papeterie & Personnalisation": "https://images.unsplash.com/photo-1456735190827-d1262f71b8a3?w=500&q=80",
-  "Pâtissier / Wedding cake": "https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=500&q=80",
-  "Robes de mariée": "https://images.unsplash.com/photo-1594552072238-b8a33785b6cd?w=500&q=80",
-  "Costumes & Smokings": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=500&q=80",
-  "Tenues invités": "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=500&q=80",
-};
-
-const DEFAULT_FALLBACK = "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=500&q=80";
+function getInitials(name: string): string {
+  return name.split(/\s+/).filter(Boolean).map(w => w[0].toUpperCase()).slice(0, 2).join("");
+}
 
 // ─── Type unifié pour l'affichage ─────────────────────────────────────────────
 
@@ -110,7 +88,7 @@ interface DisplayProvider {
   verifie: boolean;
   prixMin: number;
   prixLabel: string;
-  photo: string;
+  photo: string | null;
   disponible: boolean;
   nouveau: boolean;
   description: string;
@@ -217,7 +195,7 @@ function prestataireToDisplay(p: Prestataire & { abonnements?: { plan: string; s
     verifie: p.verifie ?? false,
     prixMin: p.prix_depart ?? 0,
     prixLabel: p.prix_depart != null ? `À partir de ${p.prix_depart.toLocaleString("fr-FR")} €` : "Sur devis",
-    photo: p.cover_url || p.photos?.[0] || FALLBACK_IMAGES[p.categorie] || DEFAULT_FALLBACK,
+    photo: p.cover_url || p.photos?.[0] || null,
     disponible: true,
     nouveau: isRecentDate(p.created_at),
     description: p.description || "",
@@ -275,14 +253,24 @@ function ProviderCard({ provider }: { provider: DisplayProvider }) {
     <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md border border-gray-100 transition-all duration-300 group flex flex-col">
       {/* Image */}
       <div className="relative h-48 overflow-hidden">
-        <Image
-          src={provider.photo}
-          alt={provider.nom}
-          fill
-          className="object-cover group-hover:scale-105 transition-transform duration-500"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          onError={(e) => { e.currentTarget.src = FALLBACK_IMAGES[provider.metier] ?? DEFAULT_FALLBACK; e.currentTarget.onerror = null; }}
-        />
+        {provider.photo ? (
+          <Image
+            src={provider.photo}
+            alt={provider.nom}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          />
+        ) : (
+          <div
+            className="absolute inset-0 flex items-center justify-center group-hover:scale-105 transition-transform duration-500"
+            style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)" }}
+          >
+            <span className="text-white text-4xl font-bold tracking-wide select-none">
+              {getInitials(provider.nom)}
+            </span>
+          </div>
+        )}
         {/* Badges top */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5">
           {provider.verifie && (

@@ -361,22 +361,3 @@ export function getRegionByNom(nom: string): RegionSEO | undefined {
   return REGIONS_SEO.find((r) => r.nom === nom);
 }
 
-// ─── Fallback images par métier ───────────────────────────────────────────────
-
-export const FALLBACK_IMAGES: Record<string, string> = {
-  Photographe: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=500&q=80",
-  Vidéaste: "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=500&q=80",
-  "Lieu de réception": "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=500&q=80",
-  DJ: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=500&q=80",
-  Fleuriste: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=500&q=80",
-  "Wedding Planner": "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=500&q=80",
-  Traiteur: "https://images.unsplash.com/photo-1555244162-803834f70033?w=500&q=80",
-  Coiffeur: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500&q=80",
-  Maquilleur: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=500&q=80",
-  "Robes de mariée": "https://images.unsplash.com/photo-1594552072238-b8a33785b6cd?w=500&q=80",
-  "Costumes & Smokings": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&q=80",
-  "Tenues invités": "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=500&q=80",
-};
-
-export const DEFAULT_FALLBACK =
-  "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=500&q=80";
