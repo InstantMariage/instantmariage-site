@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   description:
     "Découvrez nos formules pour les prestataires mariage : Starter, Pro et Premium. Gérez vos devis, factures et visibilité en ligne.",
   keywords: "tarifs prestataire mariage, abonnement photographe mariage, forfait wedding planner, visibilité mariage",
+  alternates: { canonical: "/tarifs" },
   openGraph: {
     title: "Tarifs – InstantMariage.fr",
     description:

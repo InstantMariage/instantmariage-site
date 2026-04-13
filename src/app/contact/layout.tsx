@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   description:
     "Contactez l'équipe InstantMariage.fr pour toute question sur notre plateforme, un problème avec un prestataire ou pour devenir partenaire.",
   keywords: "contact mariage, support InstantMariage, aide prestataire mariage",
+  alternates: { canonical: "/contact" },
   openGraph: {
     title: "Contact – InstantMariage.fr",
     description:

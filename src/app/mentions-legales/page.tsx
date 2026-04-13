@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Mentions légales – InstantMariage.fr",
   description:
     "Mentions légales du site InstantMariage.fr : éditeur, hébergeur, directeur de publication et informations de contact.",
+  alternates: { canonical: "/mentions-legales" },
   openGraph: {
     title: "Mentions légales – InstantMariage.fr",
     description:

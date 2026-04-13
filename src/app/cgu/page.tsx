@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Conditions Générales d'Utilisation – InstantMariage.fr",
   description:
     "Conditions Générales d'Utilisation de la marketplace InstantMariage.fr : règles d'accès, rôles des utilisateurs, abonnements prestataires et responsabilités.",
+  alternates: { canonical: "/cgu" },
   openGraph: {
     title: "Conditions Générales d'Utilisation – InstantMariage.fr",
     description:

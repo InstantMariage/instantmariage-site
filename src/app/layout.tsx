@@ -30,6 +30,7 @@ export const metadata: Metadata = {
     "La plateforme #1 des prestataires mariage en France",
   keywords: "mariage, prestataires mariage, photographe mariage, traiteur mariage, DJ mariage",
   metadataBase: new URL("https://instantmariage.fr"),
+  alternates: { canonical: "/" },
   openGraph: {
     title: "InstantMariage.fr - Trouvez les meilleurs prestataires mariage",
     description: "La plateforme #1 des prestataires mariage en France",

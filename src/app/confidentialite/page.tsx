@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Politique de confidentialité – InstantMariage.fr",
   description:
     "Politique de confidentialité RGPD d'InstantMariage.fr : données collectées, finalités, droits des utilisateurs et conservation des données.",
+  alternates: { canonical: "/confidentialite" },
   openGraph: {
     title: "Politique de confidentialité – InstantMariage.fr",
     description:

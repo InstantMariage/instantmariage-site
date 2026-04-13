@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   description:
     "Découvrez l'histoire d'InstantMariage.fr, notre mission et l'équipe qui connecte chaque jour des couples avec les meilleurs prestataires de France.",
   keywords: "à propos InstantMariage, équipe mariage, plateforme mariage France, histoire mariage",
+  alternates: { canonical: "/a-propos" },
   openGraph: {
     title: "À propos – InstantMariage.fr",
     description:

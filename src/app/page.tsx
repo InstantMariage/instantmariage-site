@@ -14,6 +14,7 @@ export const metadata: Metadata = {
     "Comparez et contactez facilement photographes, traiteurs, DJ, wedding planners et tous vos prestataires mariage en France. Devis gratuit, avis vérifiés.",
   keywords:
     "prestataires mariage, photographe mariage, traiteur mariage, DJ mariage, wedding planner, organisation mariage France",
+  alternates: { canonical: "/" },
   openGraph: {
     title: "InstantMariage.fr – Trouvez les meilleurs prestataires mariage en France",
     description:

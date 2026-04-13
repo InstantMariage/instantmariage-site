@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   description:
     "Tous nos conseils pour organiser votre mariage : choisir votre photographe, les tendances déco 2025, budget, inspiration et guides pratiques pour futurs mariés.",
   keywords: "blog mariage, conseils mariage, organisation mariage, tendances mariage 2025, inspiration mariage",
+  alternates: { canonical: "/blog" },
   openGraph: {
     title: "Blog mariage – Conseils, tendances et inspiration – InstantMariage.fr",
     description:

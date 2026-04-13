@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   description:
     "Trouvez les meilleurs photographes, traiteurs, DJ, fleuristes et tous vos prestataires mariage en France. Filtrez par région, budget et métier.",
   keywords: "annuaire prestataires mariage, photographe mariage, traiteur mariage, DJ mariage, fleuriste mariage",
+  alternates: { canonical: "/annuaire" },
   openGraph: {
     title: "Annuaire des prestataires mariage – InstantMariage.fr",
     description:

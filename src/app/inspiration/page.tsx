@@ -1,6 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+
+export const metadata: Metadata = {
+  title: "Inspiration mariage – Bientôt disponible – InstantMariage.fr",
+  description:
+    "La galerie d'inspiration mariage d'InstantMariage.fr arrive très prochainement. Découvrez dès maintenant notre annuaire de prestataires mariage.",
+  robots: { index: false, follow: false },
+};
 
 export default function InspirationPage() {
   return (
