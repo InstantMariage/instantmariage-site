@@ -92,6 +92,7 @@ type ProfilForm = {
   avatar_url: string;
   // Couverture
   cover_url: string;
+  cover_position: number;
 };
 
 // ─── Calendar Component ───────────────────────────────────────────────────────
@@ -335,6 +336,7 @@ export default function ProfilPrestatairePage() {
     tarifs_description: "",
     avatar_url: "",
     cover_url: "",
+    cover_position: 50,
   });
 
   // ── Auth + load ─────────────────────────────────────────────────────────────
@@ -378,6 +380,7 @@ export default function ProfilPrestatairePage() {
           tarifs_description: p.tarifs_description || "",
           avatar_url: p.avatar_url || "",
           cover_url: p.cover_url || "",
+          cover_position: p.cover_position ?? 50,
         });
 
         // Plan
@@ -615,6 +618,7 @@ export default function ProfilPrestatairePage() {
       photos,
       avatar_url: form.avatar_url || null,
       cover_url: form.cover_url || null,
+      cover_position: form.cover_position,
       dates_reservees: reservedDates,
       updated_at: new Date().toISOString(),
     };
@@ -822,7 +826,14 @@ export default function ProfilPrestatairePage() {
               {/* Prévisualisation */}
               <div className="relative w-full h-36 rounded-xl overflow-hidden bg-gradient-to-br from-rose-100 via-pink-100 to-rose-200 mb-3">
                 {form.cover_url && (
-                  <Image src={form.cover_url} alt="Couverture" fill className="object-cover" sizes="(max-width: 768px) 100vw, 600px" />
+                  <Image
+                    src={form.cover_url}
+                    alt="Couverture"
+                    fill
+                    className="object-cover"
+                    style={{ objectPosition: `center ${form.cover_position}%` }}
+                    sizes="(max-width: 768px) 100vw, 600px"
+                  />
                 )}
                 {uploadingCover && (
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
@@ -838,6 +849,40 @@ export default function ProfilPrestatairePage() {
                   </div>
                 )}
               </div>
+
+              {/* Contrôle de position verticale */}
+              {form.cover_url && (
+                <div className="mb-3">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-medium text-gray-500">Position verticale</span>
+                    <div className="flex gap-1">
+                      {([["Haut", 0], ["Centre", 50], ["Bas", 100]] as [string, number][]).map(([label, val]) => (
+                        <button
+                          key={label}
+                          type="button"
+                          onClick={() => setField("cover_position", val)}
+                          className={`text-xs px-2.5 py-1 rounded-full border transition-all ${
+                            form.cover_position === val
+                              ? "border-rose-400 bg-rose-50 text-rose-600 font-semibold"
+                              : "border-gray-200 text-gray-400 hover:border-rose-300 hover:text-rose-500"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={form.cover_position}
+                    onChange={(e) => setField("cover_position", Number(e.target.value))}
+                    className="w-full h-1.5 rounded-full appearance-none cursor-pointer accent-rose-500"
+                    style={{ background: `linear-gradient(to right, #F06292 ${form.cover_position}%, #e5e7eb ${form.cover_position}%)` }}
+                  />
+                </div>
+              )}
 
               <div className="flex items-center gap-3 flex-wrap">
                 <button
@@ -861,6 +906,7 @@ export default function ProfilPrestatairePage() {
                         await supabase.storage.from("photos").remove([parts[1]]);
                       }
                       setField("cover_url", "");
+                      setField("cover_position", 50);
                     }}
                     className="text-xs text-gray-400 hover:text-red-500 transition-colors"
                   >

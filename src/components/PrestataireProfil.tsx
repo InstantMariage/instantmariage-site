@@ -88,7 +88,7 @@ function buildPrestataire(id: number): PrestatireData {
       nom: fb.nom, metier: fb.metier, ville: fb.ville, region: fb.region,
       note: fb.note, nbAvis: fb.nbAvis, verifie: fb.verifie, plan: null, prixMin: fb.prixMin,
       telephone: fb.telephone, email: fb.email, site: fb.site, instagram: fb.instagram,
-      photo: fb.photo, couverture: fb.couverture, description: fb.description,
+      photo: fb.photo, couverture: fb.couverture, coverPosition: 50, description: fb.description,
       specialites: fb.specialites, experience: fb.experience, zones: fb.zones,
       langues: fb.langues, equipements: fb.equipements, galerie: GALERIE,
     };
@@ -111,6 +111,7 @@ function buildPrestataire(id: number): PrestatireData {
     instagram: `@${emailSlug}`,
     photo: provider.photo,
     couverture: COUVERTURES[provider.metier] ?? fb.couverture,
+    coverPosition: 50,
     description: provider.description + `\n\nBasé(e) à ${provider.ville} en ${provider.region}, nous intervenons sur toute la région et dans toute la France sur devis. Contactez-nous pour en savoir plus sur nos disponibilités et nos formules.`,
     specialites: fb.specialites,
     experience: fb.experience,
@@ -147,6 +148,7 @@ function buildPrestataireFromSupabase(
     instagram: null,
     photo: avatar,
     couverture: buildPhotoUrl(p.cover_url) ?? COUVERTURES[p.categorie] ?? null,
+    coverPosition: p.cover_position ?? 50,
     description: p.description ?? null,
     specialites: [],
     experience: null,
@@ -273,6 +275,7 @@ type PrestatireData = {
   instagram: string | null;
   photo: string | null;
   couverture: string | null;
+  coverPosition: number;
   description: string | null;
   specialites: string[];
   experience: number | null;
@@ -1511,7 +1514,7 @@ export default function PrestataireProfil({ id }: { id?: string }) {
       nom: "", metier: "", ville: "", region: "",
       note: 0, nbAvis: 0, verifie: false, plan: null, prixMin: null,
       telephone: null, email: null, site: null, instagram: null,
-      photo: null, couverture: null, description: null,
+      photo: null, couverture: null, coverPosition: 50, description: null,
       specialites: [], experience: null, zones: [], langues: [], equipements: [],
       galerie: [],
     }
@@ -1737,6 +1740,7 @@ export default function PrestataireProfil({ id }: { id?: string }) {
             alt="Photo de couverture"
             fill
             className="object-cover"
+            style={{ objectPosition: `center ${PRESTATAIRE.coverPosition}%` }}
             priority
             sizes="100vw"
           />
