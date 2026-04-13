@@ -160,4 +160,28 @@ export const CATEGORIES: Category[] = [
     border: "border-yellow-100",
     hoverBg: "hover:bg-yellow-50",
   },
+  {
+    name: "Robes de mariée",
+    icon: "",
+    count: "0",
+    color: "from-pink-50 to-rose-50",
+    border: "border-pink-100",
+    hoverBg: "hover:bg-pink-50",
+  },
+  {
+    name: "Costumes & Smokings",
+    icon: "",
+    count: "0",
+    color: "from-slate-50 to-gray-50",
+    border: "border-slate-100",
+    hoverBg: "hover:bg-slate-50",
+  },
+  {
+    name: "Tenues invités",
+    icon: "",
+    count: "0",
+    color: "from-violet-50 to-indigo-50",
+    border: "border-violet-100",
+    hoverBg: "hover:bg-violet-50",
+  },
 ];

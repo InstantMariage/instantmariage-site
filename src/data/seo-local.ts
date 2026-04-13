@@ -274,6 +274,9 @@ export const METIERS_SEO: MetierSEO[] = [
   { slug: "lieu-de-reception", nom: "Lieu de réception", categorie: "Lieu de réception", icon: "🏛️", nomPluriel: "lieux de réception" },
   { slug: "coiffeur", nom: "Coiffeur", categorie: "Coiffeur", icon: "✂️", nomPluriel: "coiffeurs" },
   { slug: "maquilleur", nom: "Maquilleur", categorie: "Maquilleur", icon: "💄", nomPluriel: "maquilleurs" },
+  { slug: "robes-de-mariee", nom: "Robes de mariée", categorie: "Robes de mariée", icon: "", nomPluriel: "boutiques de robes de mariée" },
+  { slug: "costumes-smokings", nom: "Costumes & Smokings", categorie: "Costumes & Smokings", icon: "", nomPluriel: "boutiques de costumes et smokings" },
+  { slug: "tenues-invites", nom: "Tenues invités", categorie: "Tenues invités", icon: "", nomPluriel: "boutiques de tenues pour invités" },
 ];
 
 // ─── Fonctions utilitaires — Villes ───────────────────────────────────────────
@@ -370,6 +373,9 @@ export const FALLBACK_IMAGES: Record<string, string> = {
   Traiteur: "https://images.unsplash.com/photo-1555244162-803834f70033?w=500&q=80",
   Coiffeur: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500&q=80",
   Maquilleur: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=500&q=80",
+  "Robes de mariée": "https://images.unsplash.com/photo-1594552072238-b8a33785b6cd?w=500&q=80",
+  "Costumes & Smokings": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&q=80",
+  "Tenues invités": "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=500&q=80",
 };
 
 export const DEFAULT_FALLBACK =
