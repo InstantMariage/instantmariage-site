@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
-import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
+import CookieBanner from "@/components/CookieBanner";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -84,23 +85,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <head>
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-ZP327QEQKW"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-ZP327QEQKW');
-          `}
-        </Script>
-      </head>
       <body className={`${playfair.variable} ${inter.variable} font-inter antialiased overflow-x-hidden max-w-full`}>
         {children}
         <Analytics />
+        {/* Chargement conditionnel GA selon consentement CNIL */}
+        <GoogleAnalytics />
+        {/* Bandeau de consentement cookies */}
+        <CookieBanner />
       </body>
     </html>
   );

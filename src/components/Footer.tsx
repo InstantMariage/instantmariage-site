@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import NewsletterForm from "@/components/NewsletterForm";
+import { CookieReopenButton } from "@/components/CookieBanner";
 
 const footerLinks = {
   prestataires: {
@@ -193,8 +194,7 @@ export default function Footer() {
                 { label: "Mentions légales", href: "/mentions-legales" },
                 { label: "Politique de confidentialité", href: "/confidentialite" },
                 { label: "CGU", href: "/cgu" },
-                { label: "Cookies", href: "#" },
-                { label: "Accessibilité", href: "#" },
+                  { label: "Accessibilité", href: "#" },
               ].map((item) => (
                 <Link
                   key={item.label}
@@ -204,6 +204,7 @@ export default function Footer() {
                   {item.label}
                 </Link>
               ))}
+              <CookieReopenButton className="text-gray-400 hover:text-gray-700 text-xs transition-colors cursor-pointer" />
             </div>
           </div>
         </div>
