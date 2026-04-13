@@ -1395,26 +1395,16 @@ function Sidebar({ prestataire }: { prestataire: PrestatireData }) {
         <div className="mt-4 space-y-2.5 border-t border-gray-100 pt-4">
           {PRESTATAIRE.telephone ? (
             <a
-              href={`tel:${PRESTATAIRE.telephone}`}
-              className="flex items-center gap-3 text-sm text-gray-600 hover:text-rose-500 transition-colors group"
+              href={`tel:${PRESTATAIRE.telephone.replace(/\s/g, "")}`}
+              className="flex items-center justify-center gap-2.5 w-full py-3 px-4 rounded-2xl text-white text-sm font-semibold shadow-md transition-all duration-200 hover:brightness-110 hover:shadow-lg hover:-translate-y-0.5 active:scale-95"
+              style={{ backgroundColor: "#F06292" }}
             >
-              <div className="w-8 h-8 bg-gray-50 group-hover:bg-rose-50 rounded-lg flex items-center justify-center transition-colors">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-              </div>
+              <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+              </svg>
               {PRESTATAIRE.telephone}
             </a>
-          ) : (
-            <div className="flex items-center gap-3 text-sm text-gray-300">
-              <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-              </div>
-              <span className="italic">Téléphone non renseigné</span>
-            </div>
-          )}
+          ) : null}
           {PRESTATAIRE.email ? (
             <a
               href={`mailto:${PRESTATAIRE.email}`}
