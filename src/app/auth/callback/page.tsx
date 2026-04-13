@@ -14,7 +14,39 @@ function AuthCallbackContent() {
   useEffect(() => {
     const handleCallback = async () => {
       const code = searchParams.get("code");
+      const tokenHash = searchParams.get("token_hash");
+      const type = searchParams.get("type") as "signup" | "email_change" | "recovery" | null;
 
+      // Confirmation d'email (signup ou email_change)
+      if (tokenHash && type) {
+        setStatus("Confirmation de votre email…");
+        const { data, error } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type,
+        });
+
+        if (error || !data.session) {
+          setStatus("Lien invalide ou expiré. Redirection…");
+          setTimeout(() => router.push("/login?error=email_confirm_failed"), 2000);
+          return;
+        }
+
+        if (type === "email_change") {
+          setStatus("Email modifié avec succès ! Redirection…");
+          const role = data.session.user.user_metadata?.role as string | undefined;
+          setTimeout(() => router.push(role === "prestataire" ? "/dashboard/prestataire" : "/dashboard/marie"), 1500);
+          return;
+        }
+
+        // type === "signup"
+        setStatus("Email confirmé ! Redirection…");
+        const user = data.session.user;
+        const role = user.user_metadata?.role as string | undefined;
+        setTimeout(() => router.push(role === "prestataire" ? "/dashboard/prestataire" : "/dashboard/marie"), 1500);
+        return;
+      }
+
+      // Flux OAuth (Google, etc.)
       if (!code) {
         setStatus("Erreur : paramètre manquant.");
         setTimeout(() => router.push("/login?error=oauth_failed"), 2000);
