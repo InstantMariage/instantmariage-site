@@ -217,7 +217,7 @@ function prestataireToDisplay(p: Prestataire & { abonnements?: { plan: string; s
     verifie: p.verifie ?? false,
     prixMin: p.prix_depart ?? 0,
     prixLabel: p.prix_depart != null ? `À partir de ${p.prix_depart.toLocaleString("fr-FR")} €` : "Sur devis",
-    photo: p.photos?.[0] || FALLBACK_IMAGES[p.categorie] || DEFAULT_FALLBACK,
+    photo: p.cover_url || p.photos?.[0] || FALLBACK_IMAGES[p.categorie] || DEFAULT_FALLBACK,
     disponible: true,
     nouveau: isRecentDate(p.created_at),
     description: p.description || "",
