@@ -5,11 +5,28 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = "InstantMariage <contact@instantmariage.fr>";
 const UNSUBSCRIBE_EMAIL = "contact@instantmariage.fr";
 
+const REPLY_TO = "contact@instantmariage.fr";
+
 const unsubscribeHeaders = {
   "List-Unsubscribe": `<mailto:${UNSUBSCRIBE_EMAIL}?subject=unsubscribe>`,
   "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
 };
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://instantmariage.fr";
+
+// ─── Plain-text footer ────────────────────────────────────────────────────────
+
+function textFooter(unsubscribe = false) {
+  const lines = [
+    "",
+    "---",
+    `Vous recevez cet email car vous êtes inscrit(e) sur InstantMariage.fr.`,
+    `© ${new Date().getFullYear()} InstantMariage. Tous droits réservés.`,
+  ];
+  if (unsubscribe) {
+    lines.push(`Pour vous désabonner : mailto:${UNSUBSCRIBE_EMAIL}?subject=unsubscribe`);
+  }
+  return lines.join("\n");
+}
 
 // ─── Base template ────────────────────────────────────────────────────────────
 
@@ -123,11 +140,25 @@ export async function sendNewMessageEmail({
     </p>
   `;
 
+  const text = [
+    `Bonjour ${recipientName},`,
+    "",
+    `${senderName} vous a envoyé un nouveau message sur InstantMariage.fr.`,
+    "",
+    `"${preview}"`,
+    "",
+    `Voir et répondre au message :`,
+    `${SITE_URL}/messages/${conversationId}`,
+    textFooter(true),
+  ].join("\n");
+
   return resend.emails.send({
     from: FROM,
     to: recipientEmail,
+    replyTo: REPLY_TO,
     subject: `Nouveau message de ${senderName}`,
     html: baseTemplate(content),
+    text,
     headers: unsubscribeHeaders,
   });
 }
@@ -178,11 +209,27 @@ export async function sendNewAvisEmail({
     </p>
   `;
 
+  const starsText = "★".repeat(note) + "☆".repeat(5 - note);
+  const text = [
+    `Bonjour ${recipientName},`,
+    "",
+    `${reviewerName} a laissé un avis sur votre profil InstantMariage.fr.`,
+    "",
+    `Note : ${starsText} (${note}/5)`,
+    ...(commentaire ? [`"${commentaire}"`, `— ${reviewerName}`] : []),
+    "",
+    `Voir votre profil :`,
+    `${SITE_URL}/prestataires/${prestaireId}`,
+    textFooter(true),
+  ].join("\n");
+
   return resend.emails.send({
     from: FROM,
     to: recipientEmail,
+    replyTo: REPLY_TO,
     subject: `Nouvel avis de ${reviewerName} — ${note}/5 étoiles`,
     html: baseTemplate(content),
+    text,
     headers: unsubscribeHeaders,
   });
 }
@@ -242,12 +289,24 @@ export async function sendContactEmail({
     ${ctaButton(`Répondre à ${name}`, `mailto:${email}`)}
   `;
 
+  const text = [
+    `Formulaire de contact — InstantMariage.fr`,
+    "",
+    `Nom : ${name}`,
+    `Email : ${email}`,
+    `Sujet : ${subject}`,
+    "",
+    message,
+    textFooter(),
+  ].join("\n");
+
   const result = await resend.emails.send({
     from: FROM,
     to: adminEmail,
     replyTo: email,
     subject: `[Contact] ${subject} — ${name}`,
     html: baseTemplate(content),
+    text,
   });
 
   if (result.error) {
@@ -315,11 +374,25 @@ export async function sendSignalementEmail({
     ${ctaButton("Voir la fiche prestataire", `${SITE_URL}/prestataires/${prestaireId}`)}
   `;
 
+  const text = [
+    `[Signalement] ${prestataireName}`,
+    "",
+    `Prestataire : ${prestataireName}`,
+    `Motif : ${motif}`,
+    `Signalé par : ${userId ?? "Anonyme"}`,
+    "",
+    description,
+    "",
+    `Voir la fiche : ${SITE_URL}/prestataires/${prestaireId}`,
+    textFooter(),
+  ].join("\n");
+
   return resend.emails.send({
     from: FROM,
     to: adminEmail,
     subject: `[Signalement] ${motif} — ${prestataireName}`,
     html: baseTemplate(content),
+    text,
   });
 }
 
@@ -380,11 +453,25 @@ export async function sendNewPrestaireAdminEmail({
     ${ctaButton("Gérer les prestataires", `${SITE_URL}/admin`)}
   `;
 
+  const text = [
+    `Nouveau prestataire inscrit sur InstantMariage.fr`,
+    "",
+    `Entreprise : ${entreprise}`,
+    `Catégorie : ${categorie}`,
+    `Ville : ${ville}`,
+    `Email : ${email}`,
+    `User ID : ${userId}`,
+    "",
+    `Gérer les prestataires : ${SITE_URL}/admin`,
+    textFooter(),
+  ].join("\n");
+
   return resend.emails.send({
     from: FROM,
     to: adminEmail,
     subject: `Nouveau prestataire : ${entreprise} (${categorie}, ${ville})`,
     html: baseTemplate(content),
+    text,
     headers: unsubscribeHeaders,
   });
 }
