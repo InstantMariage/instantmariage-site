@@ -30,6 +30,9 @@ const METIERS = [
   "Créateur de contenu",
   "Papeterie & Personnalisation",
   "Pâtissier / Wedding cake",
+  "Robes de mariée",
+  "Costumes & Smokings",
+  "Tenues invités",
 ];
 
 const REGIONS = [
@@ -87,6 +90,9 @@ const FALLBACK_IMAGES: Record<string, string> = {
   "Créateur de contenu": "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&q=80",
   "Papeterie & Personnalisation": "https://images.unsplash.com/photo-1456735190827-d1262f71b8a3?w=500&q=80",
   "Pâtissier / Wedding cake": "https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=500&q=80",
+  "Robes de mariée": "https://images.unsplash.com/photo-1594552072238-b8a33785b6cd?w=500&q=80",
+  "Costumes & Smokings": "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=500&q=80",
+  "Tenues invités": "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=500&q=80",
 };
 
 const DEFAULT_FALLBACK = "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=500&q=80";
