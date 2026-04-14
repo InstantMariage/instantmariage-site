@@ -145,7 +145,7 @@ function buildPrestataireFromSupabase(
     telephone: p.telephone ?? null,
     email: null,
     site: p.site_web ?? null,
-    instagram: null,
+    instagram: p.instagram ?? null,
     photo: avatar,
     couverture: buildPhotoUrl(p.cover_url) ?? COUVERTURES[p.categorie] ?? null,
     coverPosition: p.cover_position ?? 50,

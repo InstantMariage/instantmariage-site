@@ -25,6 +25,7 @@ export type Prestataire = {
   departement: string | null
   telephone: string | null
   site_web: string | null
+  instagram: string | null
   photos: string[]
   avatar_url: string | null
   cover_url: string | null
