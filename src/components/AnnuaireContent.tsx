@@ -25,7 +25,7 @@ const METIERS = [
   "Lieu de réception",
   "Officiant",
   "Wedding Planner",
-  "Transport",
+  "Voiture de mariage",
   "Animation",
   "Créateur de contenu",
   "Papeterie & Personnalisation",

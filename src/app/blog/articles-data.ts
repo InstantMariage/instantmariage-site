@@ -138,7 +138,7 @@ export const seoArticles: Article[] = [
           ["Alliances", "600 €", "1 200 €", "2 500 €"],
           ["Faire-part / papeterie", "200 €", "500 €", "1 200 €"],
           ["Coiffure & maquillage", "200 €", "450 €", "800 €"],
-          ["Transport / voiture", "300 €", "600 €", "1 500 €"],
+          ["Voiture de mariage", "300 €", "600 €", "1 500 €"],
           ["Animation / extras", "300 €", "700 €", "2 000 €"],
         ],
       },

@@ -37,7 +37,7 @@ const DEFAULT_CATEGORIES: BudgetCategory[] = [
   { id: "coiffure", label: "Coiffure & Maquillage", emoji: "💄", prevu: 0, paye: 0, statut: "À payer" },
   { id: "faire_part", label: "Faire-part", emoji: "💌", prevu: 0, paye: 0, statut: "À payer" },
   { id: "decoration", label: "Décoration", emoji: "✨", prevu: 0, paye: 0, statut: "À payer" },
-  { id: "transport", label: "Transport", emoji: "🚗", prevu: 0, paye: 0, statut: "À payer" },
+  { id: "transport", label: "Voiture de mariage", emoji: "🚗", prevu: 0, paye: 0, statut: "À payer" },
   { id: "voyage", label: "Voyage de noces", emoji: "✈️", prevu: 0, paye: 0, statut: "À payer" },
   { id: "divers", label: "Divers", emoji: "📦", prevu: 0, paye: 0, statut: "À payer" },
 ];

@@ -26,7 +26,7 @@ const metiers = [
   "Wedding Planner",
   "Pâtissier / Wedding cake",
   "Animation",
-  "Transport",
+  "Voiture de mariage",
   "Créateur de contenu",
   "Papeterie & Personnalisation",
   "Autre",
