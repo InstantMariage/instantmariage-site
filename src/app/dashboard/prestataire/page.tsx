@@ -206,12 +206,13 @@ function DashboardPrestataire() {
         setProfileCompletion(suggItems.reduce((s, i) => s + (i.done ? i.points : 0), 0));
         setProfileSuggestions(suggItems);
 
-        // Stats en parallèle : vues du profil, contacts, note/avis, parrainages
-        const [{ count: views }, { count: contacts }, { data: avisData }, { data: parrainagesData }] = await Promise.all([
-          supabase.from("profile_views").select("*", { count: "exact", head: true }).eq("prestataire_id", prestataire.id),
-          supabase.from("conversations").select("*", { count: "exact", head: true }).or(`participant1_id.eq.${uid},participant2_id.eq.${uid}`),
+        // Stats + abonnement en parallèle
+        const [{ count: views }, { count: contacts }, { data: avisData }, { data: parrainagesData }, { data: abonnement }] = await Promise.all([
+          supabase.from("profile_views").select("id", { count: "exact", head: true }).eq("prestataire_id", prestataire.id),
+          supabase.from("conversations").select("id", { count: "exact", head: true }).or(`participant1_id.eq.${uid},participant2_id.eq.${uid}`),
           supabase.from("avis").select("note").eq("prestataire_id", prestataire.id),
           supabase.from("parrainages").select("mois_offerts").eq("parrain_id", prestataire.id).eq("statut", "valide"),
+          supabase.from("abonnements").select("plan, statut, date_fin, stripe_subscription_id").eq("prestataire_id", prestataire.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
         ]);
         setProfileViews(views ?? 0);
         setNbContacts(contacts ?? 0);
@@ -226,15 +227,6 @@ function DashboardPrestataire() {
           setMoisGagnes(parrainagesData.reduce((s: number, p: { mois_offerts: number }) => s + p.mois_offerts, 0));
         }
 
-        // Récupérer l'abonnement actif
-        const { data: abonnement } = await supabase
-          .from("abonnements")
-          .select("plan, statut, date_fin, stripe_subscription_id")
-          .eq("prestataire_id", prestataire.id)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .single();
-
         if (abonnement && abonnement.statut === "actif") {
           setPlan(abonnement.plan as PlanAbonnement);
           if (abonnement.date_fin) {
@@ -244,19 +236,12 @@ function DashboardPrestataire() {
             );
           }
 
-          // Vérifier si l'abonnement est en cours d'annulation
+          // Vérifier l'annulation Stripe de façon non-bloquante
           if (abonnement.stripe_subscription_id) {
-            try {
-              const res = await fetch(
-                `/api/stripe/subscription-status?subscriptionId=${abonnement.stripe_subscription_id}`
-              );
-              if (res.ok) {
-                const { cancel_at_period_end } = await res.json();
-                setCancelAtPeriodEnd(cancel_at_period_end ?? false);
-              }
-            } catch {
-              // silencieux si l'API est indisponible
-            }
+            fetch(`/api/stripe/subscription-status?subscriptionId=${abonnement.stripe_subscription_id}`)
+              .then((res) => (res.ok ? res.json() : null))
+              .then((data) => { if (data) setCancelAtPeriodEnd(data.cancel_at_period_end ?? false); })
+              .catch(() => {});
           }
         }
       } else {
@@ -269,55 +254,43 @@ function DashboardPrestataire() {
       // Charger les conversations
       const { data: convs } = await supabase
         .from("conversations")
-        .select("*")
+        .select("id, participant1_id, participant2_id, created_at, last_message_at")
         .or(`participant1_id.eq.${uid},participant2_id.eq.${uid}`)
         .order("last_message_at", { ascending: false })
         .limit(5);
 
       if (convs && convs.length > 0) {
-        const items: ConversationItem[] = [];
-        for (const conv of convs) {
-          const otherId = conv.participant1_id === uid ? conv.participant2_id : conv.participant1_id;
-          let displayName = "Utilisateur";
-          const { data: marie } = await supabase
-            .from("maries")
-            .select("prenom_marie1, prenom_marie2")
-            .eq("user_id", otherId)
-            .maybeSingle();
-          if (marie) {
-            displayName = marie.prenom_marie2
-              ? `${marie.prenom_marie1} & ${marie.prenom_marie2}`
-              : marie.prenom_marie1;
-          } else {
-            const { data: prest } = await supabase
-              .from("prestataires")
-              .select("nom_entreprise")
-              .eq("user_id", otherId)
-              .maybeSingle();
-            if (prest) displayName = prest.nom_entreprise;
-          }
-          const { data: lastMsg } = await supabase
-            .from("messages")
-            .select("contenu, created_at, expediteur_id")
-            .eq("conversation_id", conv.id)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          const { count } = await supabase
-            .from("messages")
-            .select("*", { count: "exact", head: true })
-            .eq("conversation_id", conv.id)
-            .eq("destinataire_id", uid)
-            .eq("lu", false);
-          items.push({
-            id: conv.id,
-            other_name: displayName,
-            last_message: lastMsg?.contenu ?? "",
-            last_message_at: lastMsg?.created_at ?? conv.created_at,
-            last_message_is_mine: lastMsg?.expediteur_id === uid,
-            unread_count: count ?? 0,
-          });
-        }
+        // Parallélise toutes les sous-requêtes par conversation simultanément
+        const items = await Promise.all(
+          convs.map(async (conv) => {
+            const otherId = conv.participant1_id === uid ? conv.participant2_id : conv.participant1_id;
+
+            const [{ data: marie }, { data: prest }, { data: lastMsg }, { count }] = await Promise.all([
+              supabase.from("maries").select("prenom_marie1, prenom_marie2").eq("user_id", otherId).maybeSingle(),
+              supabase.from("prestataires").select("nom_entreprise").eq("user_id", otherId).maybeSingle(),
+              supabase.from("messages").select("contenu, created_at, expediteur_id").eq("conversation_id", conv.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+              supabase.from("messages").select("id", { count: "exact", head: true }).eq("conversation_id", conv.id).eq("destinataire_id", uid).eq("lu", false),
+            ]);
+
+            let displayName = "Utilisateur";
+            if (marie) {
+              displayName = marie.prenom_marie2
+                ? `${marie.prenom_marie1} & ${marie.prenom_marie2}`
+                : marie.prenom_marie1;
+            } else if (prest) {
+              displayName = prest.nom_entreprise;
+            }
+
+            return {
+              id: conv.id,
+              other_name: displayName,
+              last_message: lastMsg?.contenu ?? "",
+              last_message_at: lastMsg?.created_at ?? conv.created_at,
+              last_message_is_mine: lastMsg?.expediteur_id === uid,
+              unread_count: count ?? 0,
+            } as ConversationItem;
+          })
+        );
         setConversations(items);
       }
       setConvsLoaded(true);
@@ -326,7 +299,57 @@ function DashboardPrestataire() {
     });
   }, [router]);
 
-  if (!authChecked) return null;
+  if (!authChecked) {
+    return (
+      <main className="min-h-screen bg-gray-50 overflow-x-hidden w-full">
+        <Header />
+        <div className="pt-16 sm:pt-20 pb-16">
+          {/* Hero skeleton */}
+          <div className="px-4 py-8 sm:py-10" style={{ background: "linear-gradient(135deg, #F06292 0%, #E91E8C 100%)" }}>
+            <div className="max-w-6xl mx-auto">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex-shrink-0 animate-pulse" style={{ background: "rgba(255,255,255,0.25)" }} />
+                <div className="flex-1 space-y-2">
+                  <div className="h-6 rounded-full w-44 animate-pulse" style={{ background: "rgba(255,255,255,0.25)" }} />
+                  <div className="h-4 rounded-full w-28 animate-pulse" style={{ background: "rgba(255,255,255,0.15)" }} />
+                </div>
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                {[80, 96, 112, 96, 128].map((w, i) => (
+                  <div key={i} className="h-9 rounded-full animate-pulse" style={{ width: w, background: "rgba(255,255,255,0.2)" }} />
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="max-w-6xl mx-auto px-4 mt-5 sm:mt-6">
+            {/* Stats grid skeleton */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-white rounded-2xl p-4 sm:p-5 shadow-card">
+                  <div className="w-9 h-9 bg-gray-100 rounded-xl animate-pulse mb-3" />
+                  <div className="h-7 bg-gray-100 rounded-lg animate-pulse w-14 mb-1.5" />
+                  <div className="h-3 bg-gray-50 rounded animate-pulse w-20" />
+                </div>
+              ))}
+            </div>
+            {/* Main content skeleton */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mt-4 sm:mt-6">
+              <div className="lg:col-span-2 flex flex-col gap-4 sm:gap-6">
+                <div className="bg-white rounded-2xl shadow-card h-72 animate-pulse" />
+                <div className="bg-white rounded-2xl shadow-card h-32 animate-pulse" />
+              </div>
+              <div className="flex flex-col gap-4 sm:gap-6">
+                <div className="bg-white rounded-2xl shadow-card h-44 animate-pulse" />
+                <div className="rounded-2xl h-52 animate-pulse" style={{ background: "#1a1a2e", opacity: 0.6 }} />
+                <div className="bg-white rounded-2xl shadow-card h-36 animate-pulse" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </main>
+    );
+  }
 
   const planConfig = PLAN_CONFIG[plan];
 
