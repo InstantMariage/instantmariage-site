@@ -78,10 +78,15 @@ function buildPhotoUrl(path: string | null | undefined): string | null {
   return SUPABASE_PHOTOS_BASE + path;
 }
 
-function getEmbedUrl(url: string, platform: string): string {
+function extractTikTokId(url: string): string | null {
+  const match = url.match(/tiktok\.com\/@[^/?#]+\/video\/(\d+)/);
+  return match ? match[1] : null;
+}
+
+function getEmbedUrl(url: string, platform: string): string | null {
   if (platform === "tiktok") {
-    const match = url.match(/tiktok\.com\/@[^/]+\/video\/(\d+)/);
-    if (match) return `https://www.tiktok.com/embed/v2/${match[1]}`;
+    const id = extractTikTokId(url);
+    return id ? `https://www.tiktok.com/embed/v2/${id}` : null;
   }
   return url;
 }
@@ -290,7 +295,7 @@ type PrestatireData = {
   zones: string[];
   langues: string[];
   equipements: string[];
-  galerie: { id: number; type: "photo" | "video"; src: string; alt: string; tall: boolean; embedUrl?: string }[];
+  galerie: { id: number; type: "photo" | "video"; src: string; alt: string; tall: boolean; embedUrl?: string | null; platform?: string; originalUrl?: string }[];
 };
 
 function SectionAPropos({ prestataire }: { prestataire: PrestatireData }) {
@@ -624,18 +629,44 @@ function GalerieCarousel({ galerie }: { galerie: PrestatireData["galerie"] }) {
             {(() => {
               const item = galerie.find((p) => p.id === selected);
               if (!item) return null;
-              if (item.type === "video" && item.embedUrl) {
-                return (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <iframe
-                      src={item.embedUrl}
-                      className="w-full aspect-video max-h-[80vh] rounded-xl"
-                      allow="autoplay; fullscreen; picture-in-picture"
-                      allowFullScreen
-                      title={item.alt}
-                    />
-                  </div>
-                );
+              if (item.type === "video") {
+                const isTikTok = item.platform === "tiktok";
+                if (item.embedUrl) {
+                  return (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <iframe
+                        src={item.embedUrl}
+                        width="100%"
+                        height="100%"
+                        className={isTikTok ? "max-w-[340px] max-h-[80vh] rounded-xl" : "w-full aspect-video max-h-[80vh] rounded-xl"}
+                        style={isTikTok ? { aspectRatio: "9/16" } : undefined}
+                        allow="autoplay; fullscreen; picture-in-picture"
+                        allowFullScreen
+                        title={item.alt}
+                      />
+                    </div>
+                  );
+                }
+                // Fallback : extraction VIDEO_ID impossible (URL non standard)
+                if (item.originalUrl) {
+                  return (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <a
+                        href={item.originalUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex flex-col items-center gap-4 text-white"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <svg className="w-16 h-16 opacity-70" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.75a4.85 4.85 0 01-1.01-.06z"/>
+                        </svg>
+                        <span className="text-lg font-medium">Voir sur TikTok</span>
+                      </a>
+                    </div>
+                  );
+                }
+                return null;
               }
               return <Image src={item.src} alt={item.alt} fill className="object-contain" sizes="90vw" />;
             })()}
@@ -1581,6 +1612,8 @@ export default function PrestataireProfil({ id }: { id?: string }) {
           alt: `Vidéo ${i + 1}`,
           tall: false,
           embedUrl: getEmbedUrl(v.url, v.platform),
+          platform: v.platform,
+          originalUrl: v.url,
         }));
         setPRESTATAIRE({ ...built, galerie: [...built.galerie, ...videoItems] });
         // Enregistrer la vue (fire-and-forget)
