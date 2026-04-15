@@ -781,8 +781,8 @@ function SectionVideos({ videos }: { videos: VideoItem[] }) {
               src={iframeSrc}
               className={
                 isVertical
-                  ? "w-screen h-screen md:w-[380px] md:h-[675px]"
-                  : "w-screen h-screen md:w-[854px] md:h-[480px]"
+                  ? "w-screen h-screen md:w-[420px] md:h-[747px]"
+                  : "w-screen h-screen md:w-[960px] md:h-[540px]"
               }
               allow="autoplay; fullscreen; picture-in-picture"
               allowFullScreen
