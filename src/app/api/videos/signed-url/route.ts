@@ -16,6 +16,11 @@ const VIDEO_LIMITS: Record<string, number> = {
 };
 
 export async function POST(req: NextRequest) {
+  console.log('[SIGNED-URL] ENV CHECK:', {
+    libraryId: process.env.BUNNY_STREAM_LIBRARY_ID,
+    apiKeyPresent: !!process.env.BUNNY_STREAM_API_KEY,
+    cdnHostname: process.env.BUNNY_STREAM_CDN_HOSTNAME,
+  });
   try {
     const libraryId = process.env.BUNNY_STREAM_LIBRARY_ID;
     const apiKey = process.env.BUNNY_STREAM_API_KEY;

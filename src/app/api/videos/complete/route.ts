@@ -9,6 +9,11 @@ function getSupabaseAdmin() {
 }
 
 export async function POST(req: NextRequest) {
+  console.log('[COMPLETE] ENV CHECK:', {
+    libraryId: process.env.BUNNY_STREAM_LIBRARY_ID,
+    apiKeyPresent: !!process.env.BUNNY_STREAM_API_KEY,
+    cdnHostname: process.env.BUNNY_STREAM_CDN_HOSTNAME,
+  });
   try {
     const libraryId = process.env.BUNNY_STREAM_LIBRARY_ID;
     const cdnHostname = process.env.BUNNY_STREAM_CDN_HOSTNAME;
@@ -74,6 +79,7 @@ export async function POST(req: NextRequest) {
         prestataire_id: prestataire.id,
         bunnyVideoId,
       });
+      console.log('[COMPLETE] FULL supabase_error:', JSON.stringify(dbError, null, 2));
       return NextResponse.json(
         {
           error: "Erreur lors de la sauvegarde en base de données",
