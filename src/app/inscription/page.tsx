@@ -104,15 +104,19 @@ export default function InscriptionPage() {
 
     if (authError) {
       setLoading(false);
-      setError(authError.message === "User already registered"
-        ? "Un compte existe déjà avec cet email."
-        : `Erreur : ${authError.message}`);
+      if (authError.message === "User already registered") {
+        setError("Un compte existe déjà avec cet email. Rendez-vous sur la page de connexion — si vous avez créé votre compte avec Google, utilisez le bouton « Continuer avec Google ».");
+      } else {
+        setError(`Erreur : ${authError.message}`);
+      }
       return;
     }
 
-    if (!signUpData.user) {
+    // Supabase retourne user=null sans erreur quand l'email existe déjà
+    // (mode "prevent email enumeration" activé) — identities[] vide = email déjà pris
+    if (!signUpData.user || signUpData.user.identities?.length === 0) {
       setLoading(false);
-      setError("Erreur : aucun utilisateur créé. Vérifiez la configuration Supabase.");
+      setError("Un compte existe déjà avec cet email. Rendez-vous sur la page de connexion — si vous avez créé votre compte avec Google, utilisez le bouton « Continuer avec Google ».");
       return;
     }
 

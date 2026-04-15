@@ -520,7 +520,7 @@ export default function AnnuaireContent() {
 
   function handlePageChange(p: number) {
     setCurrentPage(p);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo(0, 0);
   }
 
   function resetFilters() {
