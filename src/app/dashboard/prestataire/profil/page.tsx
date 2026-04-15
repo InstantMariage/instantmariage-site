@@ -40,6 +40,7 @@ const CATEGORIES = [
   "DJ",
   "Musicien / Groupe",
   "Traiteur",
+  "Pâtissier / Wedding cake",
   "Fleuriste",
   "Décorateur",
   "Coiffeur",
@@ -52,7 +53,10 @@ const CATEGORIES = [
   "Animation",
   "Créateur de contenu",
   "Papeterie & Personnalisation",
-  "Pâtissier / Wedding cake",
+  "Cadeaux invités",
+  "Robes de mariée",
+  "Costumes & Smokings",
+  "Tenues invités",
   "Autre",
 ];
 
