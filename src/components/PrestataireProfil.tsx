@@ -680,6 +680,39 @@ function modalContainerDimensions(ratio: string | null): React.CSSProperties {
 
 function SectionVideos({ videos }: { videos: VideoItem[] }) {
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
+  const [streamUrl, setStreamUrl] = useState<string | null>(null);
+  const [loadingVideo, setLoadingVideo] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const openVideo = async (video: VideoItem) => {
+    setActiveVideo(video);
+    setStreamUrl(null);
+    setLoadingVideo(true);
+    try {
+      const res = await fetch(`/api/videos/stream-url?videoId=${video.bunny_video_id}`);
+      const data = await res.json();
+      setStreamUrl(data.url ?? null);
+    } catch {
+      setStreamUrl(null);
+    } finally {
+      setLoadingVideo(false);
+    }
+  };
+
+  const closeVideo = () => {
+    setActiveVideo(null);
+    setStreamUrl(null);
+  };
+
+  useEffect(() => {
+    if (!streamUrl || !videoRef.current) return;
+    const timer = setTimeout(() => {
+      videoRef.current?.requestFullscreen().catch(() => {
+        // iOS Safari ne supporte pas requestFullscreen — la modal reste visible en grand
+      });
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [streamUrl]);
 
   if (videos.length === 0) return null;
 
@@ -700,7 +733,7 @@ function SectionVideos({ videos }: { videos: VideoItem[] }) {
             <button
               key={video.id}
               type="button"
-              onClick={() => setActiveVideo(video)}
+              onClick={() => openVideo(video)}
               className={`relative group rounded-2xl overflow-hidden bg-gray-100 focus:outline-none ${container.className} ${isWide ? "col-span-2 sm:col-span-1" : "col-span-1"}`}
               style={container.style}
             >
@@ -744,17 +777,17 @@ function SectionVideos({ videos }: { videos: VideoItem[] }) {
         })}
       </div>
 
-      {/* Modal plein écran */}
+      {/* Modal vidéo native */}
       {activeVideo && (
         <div
-          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center"
-          onClick={() => setActiveVideo(null)}
+          className="fixed inset-0 bg-black z-50 flex items-center justify-center"
+          onClick={closeVideo}
         >
-          {/* Bouton fermer — coin supérieur droit de la modal */}
+          {/* Bouton fermer */}
           <button
             type="button"
-            onClick={() => setActiveVideo(null)}
-            className="absolute top-4 right-4 bg-black/50 hover:bg-black/80 text-white rounded-full p-2 transition-colors z-10"
+            onClick={closeVideo}
+            className="absolute top-4 right-4 bg-white/20 hover:bg-white/40 text-white rounded-full p-3 transition-colors z-10"
             aria-label="Fermer"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -762,22 +795,30 @@ function SectionVideos({ videos }: { videos: VideoItem[] }) {
             </svg>
           </button>
 
-          {/* Conteneur vidéo — dimensions explicites pour que l'iframe remplisse à 100% */}
-          <div
-            className="rounded-2xl overflow-hidden bg-black"
-            style={modalContainerDimensions(activeVideo.aspect_ratio)}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {activeVideo.play_url && (
-              <iframe
-                src={`${activeVideo.play_url}?autoplay=true&muted=false`}
-                width="100%"
-                height="100%"
-                style={{ border: "none", display: "block" }}
-                allow="autoplay; fullscreen"
-                allowFullScreen
-                title={activeVideo.title ?? "Vidéo"}
+          {/* Contenu vidéo */}
+          <div className="w-full h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+            {loadingVideo && (
+              <div className="flex flex-col items-center gap-3 text-white">
+                <svg className="w-10 h-10 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+                <span className="text-sm">Chargement…</span>
+              </div>
+            )}
+            {streamUrl && (
+              // eslint-disable-next-line jsx-a11y/media-has-caption
+              <video
+                ref={videoRef}
+                src={streamUrl}
+                controls
+                autoPlay
+                playsInline
+                style={{ width: "100%", height: "100%", objectFit: "contain" }}
               />
+            )}
+            {!loadingVideo && !streamUrl && (
+              <p className="text-white/60 text-sm">Impossible de charger la vidéo.</p>
             )}
           </div>
         </div>
