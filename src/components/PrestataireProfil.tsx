@@ -681,18 +681,24 @@ function modalContainerDimensions(ratio: string | null): React.CSSProperties {
 function SectionVideos({ videos }: { videos: VideoItem[] }) {
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
   const [streamUrl, setStreamUrl] = useState<string | null>(null);
+  const [streamFallbacks, setStreamFallbacks] = useState<string[]>([]);
   const [loadingVideo, setLoadingVideo] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const openVideo = async (video: VideoItem) => {
     setActiveVideo(video);
     setStreamUrl(null);
+    setStreamFallbacks([]);
     setLoadingVideo(true);
     try {
       const res = await fetch(`/api/videos/stream-url?videoId=${video.bunny_video_id}`);
       const data = await res.json();
+      console.log("[SectionVideos] URL reçue:", data.url);
+      console.log("[SectionVideos] Fallbacks reçus:", data.fallbacks);
       setStreamUrl(data.url ?? null);
-    } catch {
+      setStreamFallbacks(data.fallbacks ?? []);
+    } catch (err) {
+      console.error("[SectionVideos] Erreur fetch stream-url:", err);
       setStreamUrl(null);
     } finally {
       setLoadingVideo(false);
@@ -815,6 +821,16 @@ function SectionVideos({ videos }: { videos: VideoItem[] }) {
                 autoPlay
                 playsInline
                 style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                onError={(e) => {
+                  const video = e.currentTarget;
+                  const tried = video.src;
+                  const remaining = streamFallbacks.filter((u) => u !== tried);
+                  console.warn("[SectionVideos] Erreur chargement URL:", tried, "— essai fallback:", remaining[0]);
+                  if (remaining.length > 0) {
+                    setStreamFallbacks(remaining.slice(1));
+                    setStreamUrl(remaining[0]);
+                  }
+                }}
               />
             )}
             {!loadingVideo && !streamUrl && (

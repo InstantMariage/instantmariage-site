@@ -25,12 +25,29 @@ export async function GET(req: NextRequest) {
     }
 
     const meta = await res.json();
-    // Utilise directPlayUrl si disponible, sinon construit l'URL MP4 depuis le CDN
+
+    // Log complet pour déboguer les champs URL disponibles
+    console.log("[STREAM-URL] Bunny response keys:", Object.keys(meta));
+    console.log("[STREAM-URL] directPlayUrl:", meta.directPlayUrl);
+    console.log("[STREAM-URL] storageSize:", meta.storageSize);
+    console.log("[STREAM-URL] encodeProgress:", meta.encodeProgress);
+    console.log("[STREAM-URL] status:", meta.status);
+    console.log("[STREAM-URL] availableResolutions:", meta.availableResolutions);
+
+    // Ordre de priorité pour l'URL de lecture
     const url: string =
       meta.directPlayUrl ||
       `https://${cdnHostname}/${videoId}/play_720p.mp4`;
 
-    return NextResponse.json({ url });
+    const fallbacks: string[] = [
+      `https://${cdnHostname}/${videoId}/play_480p.mp4`,
+      `https://${cdnHostname}/${videoId}/original`,
+    ];
+
+    console.log("[STREAM-URL] URL retournée:", url);
+    console.log("[STREAM-URL] Fallbacks disponibles:", fallbacks);
+
+    return NextResponse.json({ url, fallbacks });
   } catch (err) {
     console.error("[STREAM-URL] Error:", err);
     return NextResponse.json({ error: "Erreur interne du serveur" }, { status: 500 });
