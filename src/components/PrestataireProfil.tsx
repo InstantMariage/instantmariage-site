@@ -78,19 +78,6 @@ function buildPhotoUrl(path: string | null | undefined): string | null {
   return SUPABASE_PHOTOS_BASE + path;
 }
 
-function extractTikTokId(url: string): string | null {
-  const match = url.match(/tiktok\.com\/@[^/?#]+\/video\/(\d+)/);
-  return match ? match[1] : null;
-}
-
-function getEmbedUrl(url: string, platform: string): string | null {
-  if (platform === "tiktok") {
-    const id = extractTikTokId(url);
-    return id ? `https://www.tiktok.com/embed/v2/${id}` : null;
-  }
-  return url;
-}
-
 // ─── Construction du profil depuis un provider ────────────────────────────────
 
 function buildPrestataire(id: number): PrestatireData {
@@ -103,7 +90,7 @@ function buildPrestataire(id: number): PrestatireData {
       telephone: fb.telephone, email: fb.email, site: fb.site, instagram: fb.instagram,
       photo: fb.photo, couverture: fb.couverture, coverPosition: 50, description: fb.description,
       specialites: fb.specialites, experience: fb.experience, zones: fb.zones,
-      langues: fb.langues, equipements: fb.equipements, galerie: GALERIE,
+      langues: fb.langues, equipements: fb.equipements, galerie: GALERIE, videos: [],
     };
   }
 
@@ -132,6 +119,7 @@ function buildPrestataire(id: number): PrestatireData {
     langues: fb.langues,
     equipements: fb.equipements,
     galerie: GALERIE,
+    videos: [],
   };
 }
 
@@ -169,6 +157,7 @@ function buildPrestataireFromSupabase(
     langues: [],
     equipements: [],
     galerie: photos.map((src, i) => ({ id: i + 1, type: "photo" as const, src, alt: `Photo ${i + 1}`, tall: i % 3 === 0 })),
+    videos: [],
   };
 }
 
@@ -295,7 +284,8 @@ type PrestatireData = {
   zones: string[];
   langues: string[];
   equipements: string[];
-  galerie: { id: number; type: "photo" | "video"; src: string; alt: string; tall: boolean; embedUrl?: string | null; platform?: string; originalUrl?: string }[];
+  galerie: { id: number; type: "photo"; src: string; alt: string; tall: boolean }[];
+  videos: { id: number; url: string; platform: string; thumbnail_url: string | null }[];
 };
 
 function SectionAPropos({ prestataire }: { prestataire: PrestatireData }) {
@@ -483,16 +473,7 @@ function GalerieCarousel({ galerie }: { galerie: PrestatireData["galerie"] }) {
                     </svg>
                   </div>
                 )}
-                {item.type === "video" && (
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="w-14 h-14 bg-black/50 rounded-full flex items-center justify-center">
-                      <svg className="w-7 h-7 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
-                    </div>
-                  </div>
-                )}
-              </div>
+                </div>
             ))}
           </div>
 
@@ -557,21 +538,11 @@ function GalerieCarousel({ galerie }: { galerie: PrestatireData["galerie"] }) {
               ) : (
                 <div className="absolute inset-0 bg-gray-800 flex items-center justify-center" />
               )}
-              {item.type === "video" ? (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-12 h-12 bg-black/50 group-hover:bg-black/70 rounded-full flex items-center justify-center transition-colors duration-300">
-                    <svg className="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  </div>
-                </div>
-              ) : (
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
                   <svg className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
                   </svg>
                 </div>
-              )}
             </div>
           ))}
         </div>
@@ -629,45 +600,6 @@ function GalerieCarousel({ galerie }: { galerie: PrestatireData["galerie"] }) {
             {(() => {
               const item = galerie.find((p) => p.id === selected);
               if (!item) return null;
-              if (item.type === "video") {
-                const isTikTok = item.platform === "tiktok";
-                if (item.embedUrl) {
-                  return (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <iframe
-                        src={item.embedUrl}
-                        width="100%"
-                        height="100%"
-                        className={isTikTok ? "max-w-[340px] max-h-[80vh] rounded-xl" : "w-full aspect-video max-h-[80vh] rounded-xl"}
-                        style={isTikTok ? { aspectRatio: "9/16" } : undefined}
-                        allow="autoplay; fullscreen; picture-in-picture"
-                        allowFullScreen
-                        title={item.alt}
-                      />
-                    </div>
-                  );
-                }
-                // Fallback : extraction VIDEO_ID impossible (URL non standard)
-                if (item.originalUrl) {
-                  return (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <a
-                        href={item.originalUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex flex-col items-center gap-4 text-white"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <svg className="w-16 h-16 opacity-70" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.75a4.85 4.85 0 01-1.01-.06z"/>
-                        </svg>
-                        <span className="text-lg font-medium">Voir sur TikTok</span>
-                      </a>
-                    </div>
-                  );
-                }
-                return null;
-              }
               return <Image src={item.src} alt={item.alt} fill className="object-contain" sizes="90vw" />;
             })()}
           </div>
@@ -690,17 +622,9 @@ function SectionGalerie({ galerie }: { galerie: PrestatireData["galerie"] }) {
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-xl font-bold text-gray-900">Galerie</h2>
-          {galerie.length > 0 && (() => {
-            const nbVideos = galerie.filter((i) => i.type === "video").length;
-            const nbPhotos = galerie.length - nbVideos;
-            if (nbVideos > 0 && nbPhotos > 0) {
-              return <span className="text-sm text-gray-400">{nbPhotos} photo{nbPhotos > 1 ? "s" : ""} · {nbVideos} vidéo{nbVideos > 1 ? "s" : ""}</span>;
-            }
-            if (nbVideos > 0) {
-              return <span className="text-sm text-gray-400">{nbVideos} vidéo{nbVideos > 1 ? "s" : ""}</span>;
-            }
-            return <span className="text-sm text-gray-400">{galerie.length} photo{galerie.length > 1 ? "s" : ""}</span>;
-          })()}
+          {galerie.length > 0 && (
+            <span className="text-sm text-gray-400">{galerie.length} photo{galerie.length > 1 ? "s" : ""}</span>
+          )}
         </div>
 
         {galerie.length === 0 ? (
@@ -809,22 +733,77 @@ function SectionAProposGalerie({ prestataire }: { prestataire: PrestatireData })
         </div>
       )}
 
-      {/* Galerie */}
+      {/* Galerie photos */}
       {prestataire.galerie.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-xl font-bold text-gray-900">Galerie</h2>
-            {(() => {
-              const nbVideos = prestataire.galerie.filter((i) => i.type === "video").length;
-              const nbPhotos = prestataire.galerie.length - nbVideos;
-              if (nbVideos > 0 && nbPhotos > 0) return <span className="text-sm text-gray-400">{nbPhotos} photo{nbPhotos > 1 ? "s" : ""} · {nbVideos} vidéo{nbVideos > 1 ? "s" : ""}</span>;
-              if (nbVideos > 0) return <span className="text-sm text-gray-400">{nbVideos} vidéo{nbVideos > 1 ? "s" : ""}</span>;
-              return <span className="text-sm text-gray-400">{prestataire.galerie.length} photo{prestataire.galerie.length > 1 ? "s" : ""}</span>;
-            })()}
+            <span className="text-sm text-gray-400">{prestataire.galerie.length} photo{prestataire.galerie.length > 1 ? "s" : ""}</span>
           </div>
           <GalerieCarousel galerie={prestataire.galerie} />
         </div>
       )}
+
+      {/* Section Vidéos */}
+      {prestataire.videos.length > 0 && (
+        <SectionVideos videos={prestataire.videos} />
+      )}
+    </div>
+  );
+}
+
+// ─── Section Vidéos TikTok ────────────────────────────────────────────────────
+
+function SectionVideos({ videos }: { videos: PrestatireData["videos"] }) {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="text-xl font-bold text-gray-900">Vidéos</h2>
+        <span className="text-sm text-gray-400">{videos.length} vidéo{videos.length > 1 ? "s" : ""}</span>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {videos.map((video) => (
+          <a
+            key={video.id}
+            href={video.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group relative aspect-[9/16] rounded-xl overflow-hidden bg-black block"
+          >
+            {/* Thumbnail */}
+            {video.thumbnail_url ? (
+              <Image
+                src={video.thumbnail_url}
+                alt={`Vidéo TikTok ${video.id}`}
+                fill
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                sizes="(max-width: 640px) 50vw, 33vw"
+              />
+            ) : (
+              <div className="absolute inset-0 bg-gray-900" />
+            )}
+
+            {/* Overlay au hover */}
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300" />
+
+            {/* Icône play */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-12 h-12 bg-black/50 group-hover:bg-black/70 rounded-full flex items-center justify-center transition-colors duration-300">
+                <svg className="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Logo TikTok */}
+            <div className="absolute bottom-2 right-2">
+              <svg className="w-6 h-6 text-white drop-shadow" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.75a4.85 4.85 0 01-1.01-.06z"/>
+              </svg>
+            </div>
+          </a>
+        ))}
+      </div>
     </div>
   );
 }
@@ -1588,7 +1567,7 @@ export default function PrestataireProfil({ id }: { id?: string }) {
       telephone: null, email: null, site: null, instagram: null,
       photo: null, couverture: null, coverPosition: 50, description: null,
       specialites: [], experience: null, zones: [], langues: [], equipements: [],
-      galerie: [],
+      galerie: [], videos: [],
     }
   );
 
@@ -1604,18 +1583,14 @@ export default function PrestataireProfil({ id }: { id?: string }) {
       if (data) {
         const built = buildPrestataireFromSupabase(data as SupabasePrestataire & { abonnements?: { plan: string; statut: string }[] });
         console.log("[PrestataireProfil] built.plan:", built.plan, "built.verifie:", built.verifie);
-        // Ajouter les vidéos à la galerie
+        // Vidéos séparées de la galerie photos
         const videoItems = (videoData ?? []).map((v, i) => ({
-          id: built.galerie.length + i + 1,
-          type: "video" as const,
-          src: v.thumbnail_url ?? "",
-          alt: `Vidéo ${i + 1}`,
-          tall: false,
-          embedUrl: getEmbedUrl(v.url, v.platform),
+          id: i + 1,
+          url: v.url,
           platform: v.platform,
-          originalUrl: v.url,
+          thumbnail_url: v.thumbnail_url ?? null,
         }));
-        setPRESTATAIRE({ ...built, galerie: [...built.galerie, ...videoItems] });
+        setPRESTATAIRE({ ...built, videos: videoItems });
         // Enregistrer la vue (fire-and-forget)
         supabase.from("profile_views").insert({ prestataire_id: id });
       }
