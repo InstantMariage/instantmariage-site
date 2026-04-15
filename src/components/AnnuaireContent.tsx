@@ -256,18 +256,18 @@ function ProviderCard({ provider }: { provider: DisplayProvider }) {
   return (
     <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md border border-gray-100 transition-all duration-300 group flex flex-col">
       {/* Image */}
-      <div className="relative h-48 overflow-hidden">
+      <Link href={`/prestataires/${provider.id}`} className="relative h-48 overflow-hidden block cursor-pointer">
         {provider.photo ? (
           <Image
             src={provider.photo}
             alt={provider.nom}
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            className="object-cover group-hover:scale-105 hover:opacity-90 transition-all duration-500"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         ) : (
           <div
-            className="absolute inset-0 flex items-center justify-center group-hover:scale-105 transition-transform duration-500"
+            className="absolute inset-0 flex items-center justify-center group-hover:scale-105 hover:opacity-90 transition-all duration-500"
             style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)" }}
           >
             <span className="text-white text-4xl font-bold tracking-wide select-none">
@@ -297,7 +297,7 @@ function ProviderCard({ provider }: { provider: DisplayProvider }) {
             PREMIUM
           </span>
         )}
-      </div>
+      </Link>
 
       {/* Content */}
       <div className="p-4 flex flex-col flex-1">
