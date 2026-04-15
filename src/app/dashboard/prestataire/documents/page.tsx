@@ -47,6 +47,20 @@ type SavedDoc = {
   created_at: string;
 };
 
+type FullDoc = SavedDoc & {
+  client_telephone: string | null;
+  client_adresse: string | null;
+  date_emission: string | null;
+  date_mariage: string | null;
+  contenu: {
+    lignes?: Ligne[];
+    acompteType?: "pourcentage" | "montant";
+    acompteValeur?: string;
+    notes?: string;
+    clauses?: Clause[];
+  } | null;
+};
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const DOC_QUOTA: Record<PlanAbonnement, number | null> = {
@@ -360,6 +374,7 @@ function DocumentPreview(props: PreviewProps) {
 export default function DocumentsPage() {
   const router = useRouter();
   const previewRef = useRef<HTMLDivElement>(null);
+  const downloadRef = useRef<HTMLDivElement>(null);
 
   // Auth & prestataire
   const [authChecked, setAuthChecked] = useState(false);
@@ -399,6 +414,10 @@ export default function DocumentsPage() {
   const [filterType, setFilterType] = useState<"all" | "devis" | "facture" | "contrat">("all");
   const [filterStatut, setFilterStatut] = useState<string>("all");
   const [docsLoading, setDocsLoading] = useState(false);
+
+  // Téléchargement PDF depuis la liste
+  const [downloadingDocId, setDownloadingDocId] = useState<string | null>(null);
+  const [downloadDoc, setDownloadDoc] = useState<FullDoc | null>(null);
 
   // ── Chargement initial ────────────────────────────────────────────────────
 
@@ -498,6 +517,101 @@ export default function DocumentsPage() {
   useEffect(() => {
     if (view === "list" && prestataire) loadDocs();
   }, [view, prestataire, loadDocs]);
+
+  // Génère le PDF depuis le preview caché une fois qu'il est monté dans le DOM
+  useEffect(() => {
+    if (!downloadDoc || !downloadRef.current || !prestataire) return;
+    const el = downloadRef.current;
+    const doc = downloadDoc;
+    const avatarUrl = prestataire.avatar_url;
+
+    // Petit délai pour s'assurer que le DOM est peint
+    const timer = setTimeout(async () => {
+      try {
+        let logoBase64: string | null = null;
+        if (avatarUrl) {
+          try {
+            const res = await fetch(avatarUrl, { mode: "cors" });
+            const blob = await res.blob();
+            logoBase64 = await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.onerror = reject;
+              reader.readAsDataURL(blob);
+            });
+          } catch { /* logo non disponible */ }
+        }
+
+        const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+          import("html2canvas"),
+          import("jspdf"),
+        ]);
+
+        const imgEl = el.querySelector("img") as HTMLImageElement | null;
+        const originalSrc = imgEl?.src ?? null;
+        if (imgEl && logoBase64) {
+          imgEl.src = logoBase64;
+          await new Promise<void>((resolve) => {
+            if (imgEl.complete) { resolve(); return; }
+            imgEl.onload = () => resolve();
+            imgEl.onerror = () => resolve();
+          });
+        }
+
+        const canvas = await html2canvas(el, {
+          scale: 3,
+          useCORS: true,
+          allowTaint: false,
+          backgroundColor: "#ffffff",
+        });
+
+        if (imgEl && originalSrc !== null) imgEl.src = originalSrc;
+
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jsPDF("p", "mm", "a4");
+        const pw = pdf.internal.pageSize.getWidth();
+        const ph = pdf.internal.pageSize.getHeight();
+        const ratio = canvas.width / canvas.height;
+        const imgH = pw / ratio;
+
+        if (imgH <= ph) {
+          pdf.addImage(imgData, "PNG", 0, 0, pw, imgH);
+        } else if (imgH <= ph * 1.12) {
+          pdf.addImage(imgData, "PNG", 0, 0, pw, ph);
+        } else {
+          const MIN_LAST_PAGE = 35;
+          let offset = 0;
+          let remaining = imgH;
+          while (remaining > 0) {
+            const afterThisPage = remaining - ph;
+            if (afterThisPage > 0 && afterThisPage < MIN_LAST_PAGE) {
+              const thisPageH = remaining - MIN_LAST_PAGE;
+              pdf.addImage(imgData, "PNG", 0, -offset, pw, imgH);
+              offset += thisPageH;
+              remaining = MIN_LAST_PAGE;
+              pdf.addPage();
+              pdf.addImage(imgData, "PNG", 0, -offset, pw, imgH);
+              remaining = 0;
+            } else {
+              pdf.addImage(imgData, "PNG", 0, -offset, pw, imgH);
+              offset += ph;
+              remaining -= ph;
+              if (remaining > 0) pdf.addPage();
+            }
+          }
+        }
+
+        const typeLabels = { devis: "Devis", facture: "Facture", contrat: "Contrat" };
+        pdf.save(`${typeLabels[doc.type]}_${doc.client_nom || "Client"}_${doc.numero}.pdf`);
+      } finally {
+        setDownloadDoc(null);
+        setDownloadingDocId(null);
+      }
+    }, 120);
+
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [downloadDoc]);
 
   // ── Calculs ───────────────────────────────────────────────────────────────
 
@@ -670,6 +784,23 @@ export default function DocumentsPage() {
       pdf.save(`${typeLabels[docType]}_${clientNom || "Client"}_${numeroDoc}.pdf`);
     } finally {
       setPdfLoading(false);
+    }
+  }
+
+  async function handleDownloadDoc(docId: string) {
+    if (downloadingDocId) return;
+    setDownloadingDocId(docId);
+    try {
+      const { data } = await supabase
+        .from("documents_prestataire")
+        .select("id, type, numero, client_prenom, client_nom, client_email, client_telephone, client_adresse, date_emission, date_mariage, montant_ttc, statut, created_at, contenu")
+        .eq("id", docId)
+        .single();
+      if (!data) { setDownloadingDocId(null); return; }
+      setDownloadDoc(data as FullDoc);
+      // PDF généré dans le useEffect dès que downloadRef est monté
+    } catch {
+      setDownloadingDocId(null);
     }
   }
 
@@ -1309,7 +1440,7 @@ export default function DocumentsPage() {
                   <div
                     className="hidden sm:grid gap-4 px-5 py-3 text-xs font-semibold uppercase tracking-wide"
                     style={{
-                      gridTemplateColumns: "80px 120px 1fr 110px 100px 90px 80px",
+                      gridTemplateColumns: "80px 120px 1fr 110px 100px 90px 100px",
                       color: "#F06292",
                       background: "#FFF0F5",
                     }}
@@ -1330,7 +1461,7 @@ export default function DocumentsPage() {
                         <div
                           key={doc.id}
                           className="flex flex-col sm:grid gap-3 sm:gap-4 px-5 py-4 hover:bg-gray-50/50 transition-colors"
-                          style={{ gridTemplateColumns: "80px 120px 1fr 110px 100px 90px 80px" }}
+                          style={{ gridTemplateColumns: "80px 120px 1fr 110px 100px 90px 100px" }}
                         >
                           {/* Type */}
                           <div className="flex items-center">
@@ -1392,7 +1523,24 @@ export default function DocumentsPage() {
                           </div>
 
                           {/* Actions */}
-                          <div className="flex items-center justify-start sm:justify-end">
+                          <div className="flex items-center gap-1 justify-start sm:justify-end">
+                            <button
+                              onClick={() => handleDownloadDoc(doc.id)}
+                              disabled={downloadingDocId === doc.id}
+                              className="p-1.5 rounded-lg text-gray-400 hover:text-rose-400 hover:bg-rose-50 transition-all disabled:opacity-50"
+                              title="Télécharger en PDF"
+                            >
+                              {downloadingDocId === doc.id ? (
+                                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                </svg>
+                              ) : (
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                              )}
+                            </button>
                             <button
                               onClick={() => deleteDoc(doc.id)}
                               className="p-1.5 rounded-lg text-gray-300 hover:text-red-400 hover:bg-red-50 transition-all"
@@ -1415,6 +1563,51 @@ export default function DocumentsPage() {
       </div>
 
       <Footer />
+
+      {/* Preview hors-écran pour génération PDF depuis la liste */}
+      {downloadDoc && (
+        <div
+          ref={downloadRef}
+          style={{ position: "fixed", left: "-9999px", top: 0, width: "794px", zIndex: -1, pointerEvents: "none" }}
+          aria-hidden="true"
+        >
+          <DocumentPreview
+            docType={downloadDoc.type}
+            prestataire={prestataire!}
+            clientPrenom={downloadDoc.client_prenom ?? ""}
+            clientNom={downloadDoc.client_nom ?? ""}
+            clientEmail={downloadDoc.client_email ?? ""}
+            clientTelephone={downloadDoc.client_telephone ?? ""}
+            clientAdresse={downloadDoc.client_adresse ?? ""}
+            dateMariage={downloadDoc.date_mariage ?? ""}
+            dateEmission={downloadDoc.date_emission ?? todayStr()}
+            numeroDoc={downloadDoc.numero}
+            lignes={downloadDoc.contenu?.lignes ?? []}
+            totals={(downloadDoc.contenu?.lignes ?? []).reduce(
+              (acc, l) => {
+                const ht = l.quantite * l.prixUnitaire;
+                const tva = (ht * l.tva) / 100;
+                return { ht: acc.ht + ht, tva: acc.tva + tva, ttc: acc.ttc + ht + tva };
+              },
+              { ht: 0, tva: 0, ttc: 0 }
+            )}
+            acompteType={downloadDoc.contenu?.acompteType ?? "pourcentage"}
+            acompteValeur={downloadDoc.contenu?.acompteValeur ?? "0"}
+            acompteAmount={(() => {
+              const v = parseFloat(downloadDoc.contenu?.acompteValeur ?? "0") || 0;
+              const ttc = (downloadDoc.contenu?.lignes ?? []).reduce((acc, l) => {
+                const ht = l.quantite * l.prixUnitaire;
+                return acc + ht + (ht * l.tva) / 100;
+              }, 0);
+              return (downloadDoc.contenu?.acompteType ?? "pourcentage") === "pourcentage"
+                ? (ttc * v) / 100
+                : v;
+            })()}
+            notes={downloadDoc.contenu?.notes ?? ""}
+            clauses={downloadDoc.contenu?.clauses ?? DEFAULT_CLAUSES}
+          />
+        </div>
+      )}
     </main>
   );
 }
