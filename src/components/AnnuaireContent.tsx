@@ -527,7 +527,7 @@ export default function AnnuaireContent() {
 
   function handlePageChange(p: number) {
     setCurrentPage(p);
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function resetFilters() {
