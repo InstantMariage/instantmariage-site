@@ -680,45 +680,14 @@ function modalContainerDimensions(ratio: string | null): React.CSSProperties {
 
 function SectionVideos({ videos }: { videos: VideoItem[] }) {
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
-  const [streamUrl, setStreamUrl] = useState<string | null>(null);
-  const [streamFallbacks, setStreamFallbacks] = useState<string[]>([]);
-  const [loadingVideo, setLoadingVideo] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
-  const openVideo = async (video: VideoItem) => {
+  const openVideo = (video: VideoItem) => {
     setActiveVideo(video);
-    setStreamUrl(null);
-    setStreamFallbacks([]);
-    setLoadingVideo(true);
-    try {
-      const res = await fetch(`/api/videos/stream-url?videoId=${video.bunny_video_id}`);
-      const data = await res.json();
-      console.log("[SectionVideos] URL reçue:", data.url);
-      console.log("[SectionVideos] Fallbacks reçus:", data.fallbacks);
-      setStreamUrl(data.url ?? null);
-      setStreamFallbacks(data.fallbacks ?? []);
-    } catch (err) {
-      console.error("[SectionVideos] Erreur fetch stream-url:", err);
-      setStreamUrl(null);
-    } finally {
-      setLoadingVideo(false);
-    }
   };
 
   const closeVideo = () => {
     setActiveVideo(null);
-    setStreamUrl(null);
   };
-
-  useEffect(() => {
-    if (!streamUrl || !videoRef.current) return;
-    const timer = setTimeout(() => {
-      videoRef.current?.requestFullscreen().catch(() => {
-        // iOS Safari ne supporte pas requestFullscreen — la modal reste visible en grand
-      });
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [streamUrl]);
 
   if (videos.length === 0) return null;
 
@@ -783,62 +752,43 @@ function SectionVideos({ videos }: { videos: VideoItem[] }) {
         })}
       </div>
 
-      {/* Modal vidéo native */}
-      {activeVideo && (
-        <div
-          className="fixed inset-0 bg-black z-50 flex items-center justify-center"
-          onClick={closeVideo}
-        >
-          {/* Bouton fermer */}
-          <button
-            type="button"
+      {/* Modal vidéo Bunny iframe */}
+      {activeVideo && (() => {
+        const isVertical = activeVideo.aspect_ratio === "9:16" || activeVideo.aspect_ratio === "4:5";
+        const iframeWidth = isVertical ? 380 : 854;
+        const iframeHeight = isVertical ? 675 : 480;
+        const iframeSrc = `https://iframe.mediadelivery.net/embed/638400/${activeVideo.bunny_video_id}?autoplay=true&muted=false&loop=false&preload=true`;
+        return (
+          <div
+            className="fixed inset-0 bg-black z-50 flex items-center justify-center"
             onClick={closeVideo}
-            className="absolute top-4 right-4 bg-white/20 hover:bg-white/40 text-white rounded-full p-3 transition-colors z-10"
-            aria-label="Fermer"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+            {/* Bouton fermer */}
+            <button
+              type="button"
+              onClick={closeVideo}
+              className="fixed top-4 right-4 bg-white/20 hover:bg-white/40 text-white rounded-full p-3 transition-colors"
+              style={{ zIndex: 60 }}
+              aria-label="Fermer"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
 
-          {/* Contenu vidéo */}
-          <div className="w-full h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
-            {loadingVideo && (
-              <div className="flex flex-col items-center gap-3 text-white">
-                <svg className="w-10 h-10 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                </svg>
-                <span className="text-sm">Chargement…</span>
-              </div>
-            )}
-            {streamUrl && (
-              // eslint-disable-next-line jsx-a11y/media-has-caption
-              <video
-                ref={videoRef}
-                src={streamUrl}
-                controls
-                autoPlay
-                playsInline
-                style={{ width: "100%", height: "100%", objectFit: "contain" }}
-                onError={(e) => {
-                  const video = e.currentTarget;
-                  const tried = video.src;
-                  const remaining = streamFallbacks.filter((u) => u !== tried);
-                  console.warn("[SectionVideos] Erreur chargement URL:", tried, "— essai fallback:", remaining[0]);
-                  if (remaining.length > 0) {
-                    setStreamFallbacks(remaining.slice(1));
-                    setStreamUrl(remaining[0]);
-                  }
-                }}
-              />
-            )}
-            {!loadingVideo && !streamUrl && (
-              <p className="text-white/60 text-sm">Impossible de charger la vidéo.</p>
-            )}
+            {/* Iframe Bunny */}
+            <iframe
+              src={iframeSrc}
+              width={iframeWidth}
+              height={iframeHeight}
+              allow="autoplay; fullscreen; picture-in-picture"
+              allowFullScreen
+              style={{ border: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            />
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
