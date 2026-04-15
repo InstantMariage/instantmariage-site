@@ -612,21 +612,18 @@ export default function ProfilPrestatairePage() {
 
   // ─── Vidéos ─────────────────────────────────────────────────────────────────
 
-  function detectVideoPlatform(url: string): "youtube" | "tiktok" | null {
-    if (/(?:youtube\.com\/(?:watch|shorts)|youtu\.be\/)/.test(url)) return "youtube";
-    if (/tiktok\.com/.test(url)) return "tiktok";
+  function detectVideoPlatform(url: string): "tiktok" | null {
+    // Accepte tiktok.com, www.tiktok.com, vm.tiktok.com, vt.tiktok.com
+    if (/(?:(?:www|vm|vt)\.)?tiktok\.com/.test(url)) return "tiktok";
     return null;
   }
 
-  async function fetchVideoThumbnail(url: string, platform: "youtube" | "tiktok"): Promise<string | null> {
+  async function fetchVideoThumbnail(url: string): Promise<string | null> {
     try {
-      const oembedUrl = platform === "youtube"
-        ? `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`
-        : `https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`;
-      const res = await fetch(oembedUrl);
+      const res = await fetch(`/api/oembed/tiktok?url=${encodeURIComponent(url)}`);
       if (!res.ok) return null;
       const data = await res.json();
-      return (data.thumbnail_url as string) ?? null;
+      return (data?.thumbnail_url as string) ?? null;
     } catch {
       return null;
     }
@@ -639,7 +636,7 @@ export default function ProfilPrestatairePage() {
 
     const platform = detectVideoPlatform(url);
     if (!platform) {
-      setVideoError("URL invalide. Collez un lien YouTube ou TikTok.");
+      setVideoError("URL invalide. Collez un lien TikTok (ex : https://www.tiktok.com/@compte/video/123).");
       return;
     }
 
@@ -661,7 +658,7 @@ export default function ProfilPrestatairePage() {
     if (!prestataireId) return;
 
     setAddingVideo(true);
-    const thumbnail_url = await fetchVideoThumbnail(url, platform);
+    const thumbnail_url = await fetchVideoThumbnail(url);
 
     const { data, error } = await supabase
       .from("prestataire_videos")
@@ -672,7 +669,12 @@ export default function ProfilPrestatairePage() {
     setAddingVideo(false);
 
     if (error || !data) {
-      setVideoError("Erreur lors de l'ajout. Vérifiez le lien et réessayez.");
+      console.error("[prestataire_videos] insert error:", error);
+      setVideoError(
+        error?.message
+          ? `Erreur : ${error.message}`
+          : "Erreur lors de l'ajout. Vérifiez le lien et réessayez."
+      );
       return;
     }
 
@@ -1366,7 +1368,7 @@ export default function ProfilPrestatairePage() {
                     value={videoUrl}
                     onChange={(e) => { setVideoUrl(e.target.value); setVideoError(null); }}
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddVideo(); } }}
-                    placeholder="Collez un lien YouTube ou TikTok…"
+                    placeholder="Collez un lien TikTok…"
                     className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
                     style={{ "--tw-ring-color": "#F06292" } as React.CSSProperties}
                     disabled={addingVideo || (videoLimit !== null && videos.length >= videoLimit)}
@@ -1400,7 +1402,7 @@ export default function ProfilPrestatairePage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
                     <span className="text-sm font-medium">Aucune vidéo ajoutée</span>
-                    <span className="text-xs">YouTube ou TikTok uniquement</span>
+                    <span className="text-xs">TikTok uniquement</span>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">

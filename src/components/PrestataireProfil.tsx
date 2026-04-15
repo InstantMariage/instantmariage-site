@@ -79,10 +79,6 @@ function buildPhotoUrl(path: string | null | undefined): string | null {
 }
 
 function getEmbedUrl(url: string, platform: string): string {
-  if (platform === "youtube") {
-    const match = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-    if (match) return `https://www.youtube.com/embed/${match[1]}?autoplay=1`;
-  }
   if (platform === "tiktok") {
     const match = url.match(/tiktok\.com\/@[^/]+\/video\/(\d+)/);
     if (match) return `https://www.tiktok.com/embed/v2/${match[1]}`;
