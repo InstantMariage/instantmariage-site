@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { PROVIDERS } from "@/data/providers";
 import { supabase } from "@/lib/supabase";
-import type { Prestataire } from "@/lib/supabase";
+import type { PrestataireRanked } from "@/lib/supabase";
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -94,6 +94,8 @@ interface DisplayProvider {
   description: string;
   departement: string;
   plan: string | null;
+  score: number;       // score total 0-100
+  sort_score: number;  // cle de tri: plan_score*1000 + has_cover*100 + completeness_score
 }
 
 // Construire la map inverse département → région une seule fois
@@ -181,9 +183,7 @@ function isRecentDate(dateStr: string): boolean {
   return (now.getTime() - d.getTime()) < 30 * 24 * 60 * 60 * 1000;
 }
 
-function prestataireToDisplay(p: Prestataire & { abonnements?: { plan: string; statut: string }[] }): DisplayProvider {
-  const activeAbo = p.abonnements?.find((a) => a.statut === "actif") ?? p.abonnements?.[0] ?? null;
-  const plan = activeAbo?.plan ?? null;
+function prestataireToDisplay(p: PrestataireRanked): DisplayProvider {
   return {
     id: p.id,
     nom: p.nom_entreprise,
@@ -200,7 +200,9 @@ function prestataireToDisplay(p: Prestataire & { abonnements?: { plan: string; s
     nouveau: isRecentDate(p.created_at),
     description: p.description || "",
     departement: p.departement || "",
-    plan: plan && plan !== "gratuit" && plan !== "starter" ? plan : null,
+    plan: p.active_plan && p.active_plan !== "gratuit" && p.active_plan !== "starter" ? p.active_plan : null,
+    score: p.score,
+    sort_score: p.plan_score * 1000 + (p.has_cover ? 100 : 0) + p.completeness_score,
   };
 }
 
@@ -222,6 +224,8 @@ function mockToDisplay(p: typeof PROVIDERS[number]): DisplayProvider {
     description: p.description,
     departement: (p as any).departement || "",
     plan: null,
+    score: 0,
+    sort_score: 0,
   };
 }
 
@@ -429,11 +433,11 @@ export default function AnnuaireContent() {
 
   useEffect(() => {
     supabase
-      .from("prestataires")
-      .select("*, abonnements(plan, statut)")
+      .from("prestataires_ranked")
+      .select("*")
       .then(({ data }) => {
         if (data && data.length > 0) {
-          setSupabaseProviders((data as (Prestataire & { abonnements?: { plan: string; statut: string }[] })[]).map(prestataireToDisplay));
+          setSupabaseProviders((data as PrestataireRanked[]).map(prestataireToDisplay));
           setIsDemo(false);
         } else {
           setSupabaseProviders(PROVIDERS.map(mockToDisplay));
@@ -502,7 +506,10 @@ export default function AnnuaireContent() {
     });
 
     // Sort
-    if (tri === "note") {
+    if (tri === "pertinence") {
+      // Tri par score: plan DESC → has_cover DESC → completeness DESC
+      list = [...list].sort((a, b) => b.sort_score - a.sort_score);
+    } else if (tri === "note") {
       list = [...list].sort((a, b) => b.note - a.note);
     } else if (tri === "prix_asc") {
       list = [...list].sort((a, b) => a.prixMin - b.prixMin);

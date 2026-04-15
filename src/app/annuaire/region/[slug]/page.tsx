@@ -15,7 +15,7 @@ import {
   getVillesByRegion,
   getDepartementsByRegion,
 } from "@/data/seo-local";
-import type { Prestataire } from "@/lib/supabase";
+import type { PrestataireRanked } from "@/lib/supabase";
 
 // ─── ISR : revalidation toutes les heures ─────────────────────────────────────
 export const revalidate = 3600;
@@ -77,41 +77,32 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 const PER_PAGE = 24;
 
-type PrestataireWithAbo = Prestataire & {
-  abonnements?: { plan: string; statut: string }[];
-};
-
-function planPriority(p: PrestataireWithAbo): number {
-  const activeAbo = p.abonnements?.find((a) => a.statut === "actif") ?? p.abonnements?.[0];
-  const plan = activeAbo?.plan;
-  if (plan === "premium") return 2;
-  if (plan === "pro" || plan === "starter" || plan === "essentiel") return 1;
-  return 0;
+function scoreSort(a: PrestataireRanked, b: PrestataireRanked): number {
+  const sortA = a.plan_score * 1000 + (a.has_cover ? 100 : 0) + a.completeness_score;
+  const sortB = b.plan_score * 1000 + (b.has_cover ? 100 : 0) + b.completeness_score;
+  if (sortB !== sortA) return sortB - sortA;
+  return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
 }
 
 async function fetchPrestataires(
   categorie: string,
   regionNom: string,
   page: number
-): Promise<{ data: PrestataireWithAbo[]; total: number }> {
+): Promise<{ data: PrestataireRanked[]; total: number }> {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
   const { data, error } = await supabase
-    .from("prestataires")
-    .select("*, abonnements(plan, statut)")
+    .from("prestataires_ranked")
+    .select("*")
     .eq("categorie", categorie)
     .ilike("region", `%${regionNom}%`);
 
   if (error || !data) return { data: [], total: 0 };
 
-  const sorted = (data as PrestataireWithAbo[]).sort((a, b) => {
-    const planDiff = planPriority(b) - planPriority(a);
-    if (planDiff !== 0) return planDiff;
-    return (b.note_moyenne ?? 0) - (a.note_moyenne ?? 0);
-  });
+  const sorted = (data as PrestataireRanked[]).sort(scoreSort);
 
   const from = (page - 1) * PER_PAGE;
   return { data: sorted.slice(from, from + PER_PAGE), total: sorted.length };
@@ -123,9 +114,8 @@ function getInitials(name: string): string {
   return name.split(/\s+/).filter(Boolean).map(w => w[0].toUpperCase()).slice(0, 2).join("");
 }
 
-function ProviderCard({ p }: { p: PrestataireWithAbo }) {
-  const activeAbo = p.abonnements?.find((a) => a.statut === "actif") ?? p.abonnements?.[0];
-  const isPro = activeAbo?.plan === "pro" || activeAbo?.plan === "premium";
+function ProviderCard({ p }: { p: PrestataireRanked }) {
+  const isPro = p.active_plan === "pro" || p.active_plan === "premium";
   const photo = p.cover_url || p.photos?.[0] || null;
   const prixLabel = p.prix_depart != null
     ? `À partir de ${p.prix_depart.toLocaleString("fr-FR")} €`

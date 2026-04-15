@@ -52,6 +52,15 @@ export type Marie = {
   updated_at: string
 }
 
+// Vue prestataires_ranked — ajoute les colonnes de score au type Prestataire
+export type PrestataireRanked = Prestataire & {
+  active_plan: string        // plan actif ('gratuit' si aucun abonnement actif)
+  plan_score: number         // 0 | 15 | 30 | 40
+  has_cover: boolean         // cover_url presente et non vide
+  completeness_score: number // 0–60 (completude du profil)
+  score: number              // 0–100 (plan_score + completeness_score)
+}
+
 export type PlanAbonnement = 'gratuit' | 'starter' | 'pro' | 'premium'
 
 export type Abonnement = {
