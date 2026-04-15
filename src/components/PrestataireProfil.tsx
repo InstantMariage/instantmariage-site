@@ -90,9 +90,10 @@ function buildPrestataire(id: number): PrestatireData {
       telephone: fb.telephone, email: fb.email, site: fb.site, instagram: fb.instagram,
       photo: fb.photo, couverture: fb.couverture, coverPosition: 50, description: fb.description,
       specialites: fb.specialites, experience: fb.experience, zones: fb.zones,
-      langues: fb.langues, equipements: fb.equipements, galerie: GALERIE,
+      langues: fb.langues, equipements: fb.equipements, galerie: GALERIE, videos: [],
     };
   }
+
 
   const emailSlug = provider.nom.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 20);
   return {
@@ -119,6 +120,7 @@ function buildPrestataire(id: number): PrestatireData {
     langues: fb.langues,
     equipements: fb.equipements,
     galerie: GALERIE,
+    videos: [],
   };
 }
 
@@ -156,6 +158,7 @@ function buildPrestataireFromSupabase(
     langues: [],
     equipements: [],
     galerie: photos.map((src, i) => ({ id: i + 1, type: "photo" as const, src, alt: `Photo ${i + 1}`, tall: i % 3 === 0 })),
+    videos: (p as unknown as { prestataire_videos?: { id: string; bunny_video_id: string; thumbnail_url: string | null; play_url: string | null; title: string | null }[] }).prestataire_videos ?? [],
   };
 }
 
@@ -283,6 +286,7 @@ type PrestatireData = {
   langues: string[];
   equipements: string[];
   galerie: { id: number; type: "photo"; src: string; alt: string; tall: boolean }[];
+  videos: { id: string; bunny_video_id: string; thumbnail_url: string | null; play_url: string | null; title: string | null }[];
 };
 
 function SectionAPropos({ prestataire }: { prestataire: PrestatireData }) {
@@ -635,6 +639,118 @@ function SectionGalerie({ galerie }: { galerie: PrestatireData["galerie"] }) {
           <GalerieCarousel galerie={galerie} />
         )}
       </div>
+    </div>
+  );
+}
+
+// ─── Section Vidéos (profil public) ──────────────────────────────────────────
+
+type VideoItem = {
+  id: string;
+  bunny_video_id: string;
+  thumbnail_url: string | null;
+  play_url: string | null;
+  title: string | null;
+};
+
+function SectionVideos({ videos }: { videos: VideoItem[] }) {
+  const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
+
+  if (videos.length === 0) return null;
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="text-xl font-bold text-gray-900">Vidéos</h2>
+        <span className="text-sm text-gray-400">{videos.length} vidéo{videos.length > 1 ? "s" : ""}</span>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {videos.map((video) => (
+          <button
+            key={video.id}
+            type="button"
+            onClick={() => setActiveVideo(video)}
+            className="relative group aspect-video rounded-2xl overflow-hidden bg-gray-100 focus:outline-none"
+          >
+            {video.thumbnail_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={video.thumbnail_url}
+                alt={video.title ?? "Vidéo"}
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                <svg className="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              </div>
+            )}
+            {/* Overlay + icône play */}
+            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors duration-200 flex items-center justify-center">
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg"
+                style={{ backgroundColor: "#F06292" }}
+              >
+                <svg className="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+            </div>
+            {/* Titre */}
+            {video.title && (
+              <div
+                className="absolute bottom-0 left-0 right-0 text-xs font-medium px-2 py-1.5 text-white truncate text-left"
+                style={{ background: "linear-gradient(to top, rgba(0,0,0,0.7), transparent)" }}
+              >
+                {video.title}
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Modal player */}
+      {activeVideo && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.85)" }}
+          onClick={() => setActiveVideo(null)}
+        >
+          <div
+            className="relative w-full max-w-3xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Fermer */}
+            <button
+              type="button"
+              onClick={() => setActiveVideo(null)}
+              className="absolute -top-10 right-0 text-white/70 hover:text-white transition-colors"
+              aria-label="Fermer"
+            >
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <div className="relative w-full rounded-2xl overflow-hidden bg-black" style={{ paddingBottom: "56.25%" }}>
+              {activeVideo.play_url && (
+                <iframe
+                  src={`${activeVideo.play_url}?autoplay=true`}
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title={activeVideo.title ?? "Vidéo"}
+                />
+              )}
+            </div>
+            {activeVideo.title && (
+              <p className="text-white/80 text-sm text-center mt-3">{activeVideo.title}</p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1504,13 +1620,13 @@ export default function PrestataireProfil({ id }: { id?: string }) {
       telephone: null, email: null, site: null, instagram: null,
       photo: null, couverture: null, coverPosition: 50, description: null,
       specialites: [], experience: null, zones: [], langues: [], equipements: [],
-      galerie: [],
+      galerie: [], videos: [],
     }
   );
 
   useEffect(() => {
     if (!id || isNumericId) return;
-    supabase.from("prestataires").select("*, abonnements(plan, statut)").eq("id", id).maybeSingle()
+    supabase.from("prestataires").select("*, abonnements(plan, statut), prestataire_videos(id, bunny_video_id, thumbnail_url, play_url, title, created_at)").eq("id", id).maybeSingle()
       .then(({ data, error }) => {
         console.log("[PrestataireProfil] raw Supabase response:", JSON.stringify({ data, error }, null, 2));
         console.log("[PrestataireProfil] abonnements:", data?.abonnements);
@@ -1950,6 +2066,13 @@ export default function PrestataireProfil({ id }: { id?: string }) {
               <div className="bg-white rounded-3xl p-7 shadow-sm">
                 <SectionAProposGalerie prestataire={PRESTATAIRE} />
               </div>
+
+              {/* Section Vidéos — masquée si aucune vidéo */}
+              {PRESTATAIRE.videos.length > 0 && (
+                <div className="bg-white rounded-3xl p-7 shadow-sm">
+                  <SectionVideos videos={PRESTATAIRE.videos} />
+                </div>
+              )}
 
               {/* Onglets Avis / Tarifs */}
               <div className="bg-white rounded-3xl shadow-sm overflow-hidden">

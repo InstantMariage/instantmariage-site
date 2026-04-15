@@ -18,6 +18,22 @@ const PHOTO_LIMITS: Record<PlanAbonnement, number> = {
   premium: 50,
 };
 
+const VIDEO_LIMITS: Record<PlanAbonnement, number | null> = {
+  gratuit: 0,
+  starter: 3,
+  pro: null, // illimité
+  premium: null, // illimité
+};
+
+type VideoRecord = {
+  id: string;
+  bunny_video_id: string;
+  title: string | null;
+  thumbnail_url: string | null;
+  play_url: string | null;
+  created_at: string;
+};
+
 const CATEGORIES = [
   "Photographe",
   "Vidéaste",
@@ -297,6 +313,7 @@ export default function ProfilPrestatairePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   const [authChecked, setAuthChecked] = useState(false);
   const [prestataireId, setPrestataireId] = useState<string | null>(null);
@@ -313,6 +330,13 @@ export default function ProfilPrestatairePage() {
   // Photos
   const [photos, setPhotos] = useState<string[]>([]);
   const [reservedDates, setReservedDates] = useState<string[]>([]);
+
+  // Vidéos
+  const [videos, setVideos] = useState<VideoRecord[]>([]);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [videoError, setVideoError] = useState<string | null>(null);
+  const [deletingVideoId, setDeletingVideoId] = useState<string | null>(null);
 
   const [form, setForm] = useState<ProfilForm>({
     nom_entreprise: "",
@@ -395,6 +419,15 @@ export default function ProfilPrestatairePage() {
         if (abo && abo.statut === "actif") {
           setPlan(abo.plan as PlanAbonnement);
         }
+
+        // Vidéos
+        const { data: existingVideos } = await supabase
+          .from("prestataire_videos")
+          .select("id, bunny_video_id, title, thumbnail_url, play_url, created_at")
+          .eq("prestataire_id", p.id)
+          .order("created_at", { ascending: false });
+
+        if (existingVideos) setVideos(existingVideos as VideoRecord[]);
 
       } else {
         // Prestataire pas encore créé
@@ -583,6 +616,98 @@ export default function ProfilPrestatairePage() {
     setPhotos((prev) => prev.filter((p) => p !== url));
   }
 
+  async function handleVideoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (videoInputRef.current) videoInputRef.current.value = "";
+    if (!file) return;
+
+    setVideoError(null);
+
+    const videoLimit = VIDEO_LIMITS[plan];
+    if (videoLimit === 0) {
+      setVideoError("Votre plan Gratuit ne permet pas l'upload de vidéos. Passez au plan Starter ou supérieur.");
+      return;
+    }
+    if (videoLimit !== null && videos.length >= videoLimit) {
+      setVideoError(`Limite de ${videoLimit} vidéo${videoLimit > 1 ? "s" : ""} atteinte pour votre plan ${plan.toUpperCase()}.`);
+      return;
+    }
+    if (!file.type.startsWith("video/")) {
+      setVideoError("Format invalide. Utilisez MP4 ou MOV.");
+      return;
+    }
+    if (file.size > 500 * 1024 * 1024) {
+      setVideoError("Fichier trop volumineux. Maximum 500 Mo.");
+      return;
+    }
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    setUploadingVideo(true);
+    setUploadProgress(0);
+
+    const formData = new FormData();
+    formData.append("video", file);
+
+    await new Promise<void>((resolve) => {
+      const xhr = new XMLHttpRequest();
+      xhr.upload.onprogress = (ev) => {
+        if (ev.lengthComputable) {
+          setUploadProgress(Math.round((ev.loaded / ev.total) * 100));
+        }
+      };
+      xhr.onload = () => {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          if (xhr.status === 200) {
+            setVideos((prev) => [data as VideoRecord, ...prev]);
+          } else {
+            setVideoError(data.error || "Erreur lors de l'upload");
+          }
+        } catch {
+          setVideoError("Réponse inattendue du serveur");
+        }
+        resolve();
+      };
+      xhr.onerror = () => {
+        setVideoError("Erreur réseau lors de l'upload");
+        resolve();
+      };
+      xhr.open("POST", "/api/videos/upload");
+      xhr.setRequestHeader("Authorization", `Bearer ${session.access_token}`);
+      xhr.send(formData);
+    });
+
+    setUploadingVideo(false);
+    setUploadProgress(0);
+  }
+
+  async function handleVideoDelete(videoId: string) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    setDeletingVideoId(videoId);
+
+    const res = await fetch("/api/videos/delete", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ videoId }),
+    });
+
+    if (res.ok) {
+      setVideos((prev) => prev.filter((v) => v.id !== videoId));
+    } else {
+      const data = await res.json();
+      alert(data.error || "Erreur lors de la suppression");
+    }
+
+    setDeletingVideoId(null);
+  }
+
   async function handleSave() {
     if (!form.nom_entreprise.trim()) {
       alert("Le nom de l'entreprise est requis.");
@@ -664,6 +789,7 @@ export default function ProfilPrestatairePage() {
   }
 
   const photoLimit = PHOTO_LIMITS[plan];
+  const videoLimit = VIDEO_LIMITS[plan];
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -1216,7 +1342,209 @@ export default function ProfilPrestatairePage() {
             )}
           </Section>
 
-          {/* ── 4. Réseaux sociaux ────────────────────────────────────────── */}
+          {/* ── 4. Vidéos ────────────────────────────────────────────────── */}
+          <Section
+            title="Vidéos"
+            icon={
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+            }
+          >
+            {/* Info plan */}
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-xs text-gray-500">
+                {videoLimit === 0 ? (
+                  <>
+                    <span className="font-semibold text-gray-700">0</span> vidéo autorisée
+                    {" "}(plan <span className="font-semibold uppercase">{plan}</span>)
+                  </>
+                ) : videoLimit === null ? (
+                  <>
+                    <span className="font-semibold text-gray-700">{videos.length}</span> vidéo{videos.length !== 1 ? "s" : ""}
+                    {" "}· <span className="font-semibold uppercase">{plan}</span> — illimité
+                  </>
+                ) : (
+                  <>
+                    <span className="font-semibold text-gray-700">{videos.length}</span> / {videoLimit} vidéo{videoLimit > 1 ? "s" : ""}
+                    {" "}(plan <span className="font-semibold uppercase">{plan}</span>)
+                  </>
+                )}
+              </p>
+              {videoLimit !== 0 && (videoLimit === null || videos.length < videoLimit) && !uploadingVideo && (
+                <button
+                  type="button"
+                  onClick={() => videoInputRef.current?.click()}
+                  className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full text-white transition-all hover:opacity-90"
+                  style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)" }}
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Ajouter une vidéo
+                </button>
+              )}
+              <input
+                ref={videoInputRef}
+                type="file"
+                accept="video/mp4,video/quicktime,.mp4,.mov"
+                className="hidden"
+                onChange={handleVideoUpload}
+              />
+            </div>
+
+            {/* Barre de progression */}
+            {uploadingVideo && (
+              <div className="mb-4">
+                <div className="flex items-center justify-between text-xs text-gray-500 mb-1.5">
+                  <span className="flex items-center gap-1.5">
+                    <div className="w-3 h-3 rounded-full border-2 border-[#F06292] border-t-transparent animate-spin" />
+                    Upload en cours…
+                  </span>
+                  <span className="font-semibold text-[#F06292]">{uploadProgress}%</span>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-2">
+                  <div
+                    className="h-2 rounded-full transition-all duration-300"
+                    style={{
+                      width: `${uploadProgress}%`,
+                      background: "linear-gradient(90deg, #F06292, #E91E8C)",
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {videoError && (
+              <p className="text-sm text-red-600 font-medium mb-3">{videoError}</p>
+            )}
+
+            {/* Grille vidéos */}
+            {videos.length === 0 && !uploadingVideo ? (
+              videoLimit === 0 ? (
+                <div className="flex items-center justify-between gap-3 p-4 rounded-2xl bg-white border border-[#F06292]">
+                  <div className="flex items-center gap-3">
+                    <svg className="w-5 h-5 text-[#F06292] flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    </svg>
+                    <p className="text-sm text-gray-700">
+                      L&apos;upload de vidéos est disponible à partir du plan Starter.
+                    </p>
+                  </div>
+                  <Link
+                    href="/tarifs"
+                    className="flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium text-white"
+                    style={{ backgroundColor: "#F06292" }}
+                  >
+                    Passer au Starter
+                  </Link>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => videoInputRef.current?.click()}
+                  className="w-full border-2 border-dashed border-gray-200 rounded-2xl py-12 flex flex-col items-center gap-3 text-gray-400 hover:border-rose-300 hover:text-rose-400 transition-all duration-200"
+                >
+                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                  <span className="text-sm font-medium">Cliquez pour ajouter une vidéo</span>
+                  <span className="text-xs">MP4, MOV · 500 Mo max</span>
+                </button>
+              )
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {videos.map((video) => (
+                  <div key={video.id} className="relative group aspect-video rounded-xl overflow-hidden bg-gray-100">
+                    {video.thumbnail_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={video.thumbnail_url}
+                        alt={video.title ?? "Vidéo"}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <svg className="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    )}
+                    {/* Overlay play */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-full bg-black/50 flex items-center justify-center">
+                        <svg className="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
+                    </div>
+                    {/* Supprimer */}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                      <button
+                        type="button"
+                        onClick={() => handleVideoDelete(video.id)}
+                        disabled={deletingVideoId === video.id}
+                        className="w-9 h-9 rounded-full bg-red-500 flex items-center justify-center text-white hover:bg-red-600 transition-colors shadow-lg disabled:opacity-60"
+                      >
+                        {deletingVideoId === video.id ? (
+                          <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                        ) : (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                    {/* Titre */}
+                    {video.title && (
+                      <div
+                        className="absolute bottom-0 left-0 right-0 text-xs font-medium px-2 py-1 text-white truncate"
+                        style={{ background: "rgba(0,0,0,0.55)" }}
+                      >
+                        {video.title}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {/* Ajouter case */}
+                {(videoLimit === null || videos.length < videoLimit) && !uploadingVideo && (
+                  <button
+                    type="button"
+                    onClick={() => videoInputRef.current?.click()}
+                    className="aspect-video rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-rose-300 hover:text-rose-400 transition-all duration-200"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span className="text-xs font-medium">Ajouter</span>
+                  </button>
+                )}
+              </div>
+            )}
+
+            {videoLimit !== null && videoLimit > 0 && videos.length >= videoLimit && (
+              <div className="mt-4 flex items-center justify-between gap-3 p-4 rounded-2xl bg-white border border-[#F06292]">
+                <div className="flex items-center gap-3">
+                  <svg className="w-5 h-5 text-[#F06292] flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                  </svg>
+                  <p className="text-sm text-gray-700">Limite de vidéos atteinte.</p>
+                </div>
+                <Link
+                  href="/tarifs"
+                  className="flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium text-white"
+                  style={{ backgroundColor: "#F06292" }}
+                >
+                  Passer au Pro
+                </Link>
+              </div>
+            )}
+          </Section>
+
+          {/* ── 5. Réseaux sociaux ────────────────────────────────────────── */}
           <Section
             title="Réseaux sociaux"
             icon={
@@ -1293,7 +1621,7 @@ export default function ProfilPrestatairePage() {
             </div>
           </Section>
 
-          {/* ── 5. Informations légales ─────────────────────────────────── */}
+          {/* ── 6. Informations légales ─────────────────────────────────── */}
           <Section
             title="Informations légales"
             icon={
@@ -1329,7 +1657,7 @@ export default function ProfilPrestatairePage() {
             </p>
           </Section>
 
-          {/* ── 6. Tarifs ─────────────────────────────────────────────────── */}
+          {/* ── 7. Tarifs ─────────────────────────────────────────────────── */}
           <Section
             title="Tarifs"
             icon={
@@ -1368,7 +1696,7 @@ export default function ProfilPrestatairePage() {
             </p>
           </Section>
 
-          {/* ── 7. Disponibilités ─────────────────────────────────────────── */}
+          {/* ── 8. Disponibilités ─────────────────────────────────────────── */}
           <Section
             title="Disponibilités"
             icon={
