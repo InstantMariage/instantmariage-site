@@ -59,6 +59,8 @@ export async function POST(req: NextRequest) {
         title,
         thumbnail_url: thumbnailUrl,
         play_url: playUrl,
+        url: playUrl,
+        platform: "bunny",
       })
       .select()
       .single();
