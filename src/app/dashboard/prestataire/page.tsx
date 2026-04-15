@@ -35,7 +35,7 @@ const PLAN_CONFIG: Record<PlanAbonnement, PlanConfig> = {
     canAccessFactures: false,
     canAccessContrats: false,
     hasPremiumBadge: false,
-    devisLabel: "",
+    devisLabel: "1 document/mois",
     upgradeLabel: "Passer Starter →",
     upgradeHref: "/tarifs",
   },
@@ -48,7 +48,7 @@ const PLAN_CONFIG: Record<PlanAbonnement, PlanConfig> = {
     canAccessFactures: false,
     canAccessContrats: false,
     hasPremiumBadge: false,
-    devisLabel: "Limité à 5 devis/mois",
+    devisLabel: "5 documents/mois",
     upgradeLabel: "Passer Pro →",
     upgradeHref: "/tarifs",
   },
@@ -431,6 +431,15 @@ function DashboardPrestataire() {
                   Mon abonnement
                 </Link>
                 <Link
+                  href="/dashboard/prestataire/documents"
+                  className="inline-flex items-center gap-2 bg-white/20 text-white font-semibold px-4 py-2 rounded-full text-sm hover:bg-white/30 transition-all duration-200 shadow-sm"
+                >
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Documents
+                </Link>
+                <Link
                   href="/dashboard/parametres"
                   className="inline-flex items-center gap-2 bg-white/20 text-white font-semibold px-4 py-2 rounded-full text-sm hover:bg-white/30 transition-all duration-200 shadow-sm"
                 >
@@ -632,56 +641,41 @@ function DashboardPrestataire() {
               <div className="bg-white rounded-2xl shadow-card p-4 sm:p-6">
                 <h2 className="font-semibold text-gray-900 mb-4">Mes outils</h2>
 
-                {/* Gestion Administrative Pro */}
-                <div className="relative">
-                  <a
-                    href={plan !== "gratuit" ? "https://wedding-devis.vercel.app" : undefined}
-                    target={plan !== "gratuit" ? "_blank" : undefined}
-                    rel="noopener noreferrer"
-                    className={`flex flex-col gap-3 p-4 sm:p-5 rounded-xl border transition-all duration-200 group ${
-                      plan !== "gratuit"
-                        ? "border-gray-100 hover:border-rose-200 hover:bg-rose-50/30 cursor-pointer"
-                        : "border-gray-100 cursor-default select-none opacity-60"
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div
-                        className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0"
-                        style={{ background: "#FFF0F5" }}
-                      >
-                        <svg className="w-6 h-6" style={{ color: "#F06292" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
+                {/* Documents */}
+                <Link
+                  href="/dashboard/prestataire/documents"
+                  className="flex flex-col gap-3 p-4 sm:p-5 rounded-xl border border-gray-100 hover:border-rose-200 hover:bg-rose-50/30 transition-all duration-200 group"
+                >
+                  <div className="flex items-start gap-3">
+                    <div
+                      className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0"
+                      style={{ background: "#FFF0F5" }}
+                    >
+                      <svg className="w-6 h-6" style={{ color: "#F06292" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <div className="text-sm font-semibold text-gray-900">Devis, Factures & Contrats</div>
+                        {planConfig.devisLabel && (
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium text-gray-500 bg-gray-100">
+                            {planConfig.devisLabel}
+                          </span>
+                        )}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <div className="text-sm font-semibold text-gray-900">Gestion Administrative Pro</div>
-                          {plan === "gratuit" && (
-                            <a
-                              href="/tarifs"
-                              className="text-xs px-2 py-0.5 rounded-full font-semibold text-white hover:opacity-80 transition-opacity"
-                              style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)" }}
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              Abonnement pro
-                            </a>
-                          )}
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1 leading-relaxed">
-                          Générateur de factures, devis et contrats
-                        </div>
+                      <div className="text-xs text-gray-500 mt-1 leading-relaxed">
+                        Générez vos documents professionnels directement depuis votre dashboard
                       </div>
                     </div>
-                    {plan !== "gratuit" && (
-                      <span
-                        className="self-start text-xs font-semibold px-4 py-2 rounded-xl transition-all duration-200 group-hover:opacity-90"
-                        style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)", color: "white" }}
-                      >
-                        Ouvrir →
-                      </span>
-                    )}
-                  </a>
-                </div>
+                  </div>
+                  <span
+                    className="self-start text-xs font-semibold px-4 py-2 rounded-xl transition-all duration-200 group-hover:opacity-90"
+                    style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)", color: "white" }}
+                  >
+                    Ouvrir →
+                  </span>
+                </Link>
               </div>
             </div>
 
