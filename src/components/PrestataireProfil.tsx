@@ -668,26 +668,17 @@ function videoContainerStyle(ratio: string | null): { className: string; style: 
   }
 }
 
-// Retourne le padding-bottom % pour la modal iframe
-function modalPaddingBottom(ratio: string | null): string {
-  switch (ratio) {
-    case "9:16": return "177.78%";
-    case "4:5":  return "125%";
-    case "1:1":  return "100%";
-    default:     return "56.25%";
-  }
-}
-
-// Max-width de la modal selon le ratio
-function modalMaxWidth(ratio: string | null): string {
+// Style du conteneur iframe dans la modal (remplace le padding-bottom hack)
+function modalContainerStyle(ratio: string | null): React.CSSProperties {
   switch (ratio) {
     case "9:16":
+      return { height: "min(80vh, 675px)", width: "auto", aspectRatio: "9 / 16", maxWidth: "380px", margin: "0 auto" };
     case "4:5":
-      return "380px";
+      return { height: "min(80vh, 475px)", width: "auto", aspectRatio: "4 / 5", maxWidth: "380px", margin: "0 auto" };
     case "1:1":
-      return "560px";
-    default:
-      return "768px";
+      return { height: "min(80vh, 560px)", width: "auto", aspectRatio: "1 / 1", maxWidth: "560px", margin: "0 auto" };
+    default: // 16:9
+      return { width: "100%", aspectRatio: "16 / 9", maxWidth: "800px", margin: "0 auto" };
   }
 }
 
@@ -765,15 +756,14 @@ function SectionVideos({ videos }: { videos: VideoItem[] }) {
           onClick={() => setActiveVideo(null)}
         >
           <div
-            className="relative w-full mx-auto"
-            style={{ maxWidth: modalMaxWidth(activeVideo.aspect_ratio) }}
+            className="relative w-full flex flex-col items-center"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Fermer */}
             <button
               type="button"
               onClick={() => setActiveVideo(null)}
-              className="absolute -top-10 right-0 text-white/70 hover:text-white transition-colors"
+              className="absolute -top-10 right-0 text-white/70 hover:text-white transition-colors z-10"
               aria-label="Fermer"
             >
               <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -781,14 +771,14 @@ function SectionVideos({ videos }: { videos: VideoItem[] }) {
               </svg>
             </button>
             <div
-              className="relative w-full rounded-2xl overflow-hidden bg-black"
-              style={{ paddingBottom: modalPaddingBottom(activeVideo.aspect_ratio) }}
+              className="rounded-2xl overflow-hidden bg-black"
+              style={modalContainerStyle(activeVideo.aspect_ratio)}
             >
               {activeVideo.play_url && (
                 <iframe
                   src={`${activeVideo.play_url}?autoplay=true`}
-                  className="absolute inset-0 w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  style={{ width: "100%", height: "100%", display: "block" }}
+                  allow="autoplay; fullscreen"
                   allowFullScreen
                   title={activeVideo.title ?? "Vidéo"}
                 />
