@@ -78,6 +78,18 @@ function buildPhotoUrl(path: string | null | undefined): string | null {
   return SUPABASE_PHOTOS_BASE + path;
 }
 
+function getEmbedUrl(url: string, platform: string): string {
+  if (platform === "youtube") {
+    const match = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    if (match) return `https://www.youtube.com/embed/${match[1]}?autoplay=1`;
+  }
+  if (platform === "tiktok") {
+    const match = url.match(/tiktok\.com\/@[^/]+\/video\/(\d+)/);
+    if (match) return `https://www.tiktok.com/embed/v2/${match[1]}`;
+  }
+  return url;
+}
+
 // ─── Construction du profil depuis un provider ────────────────────────────────
 
 function buildPrestataire(id: number): PrestatireData {
@@ -155,20 +167,20 @@ function buildPrestataireFromSupabase(
     zones: [],
     langues: [],
     equipements: [],
-    galerie: photos.map((src, i) => ({ id: i + 1, src, alt: `Photo ${i + 1}`, tall: i % 3 === 0 })),
+    galerie: photos.map((src, i) => ({ id: i + 1, type: "photo" as const, src, alt: `Photo ${i + 1}`, tall: i % 3 === 0 })),
   };
 }
 
 const GALERIE = [
-  { id: 1, src: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=600&q=80", alt: "Cérémonie en plein air", tall: true },
-  { id: 2, src: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&q=80", alt: "Premier regard", tall: false },
-  { id: 3, src: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80", alt: "Couple au coucher de soleil", tall: false },
-  { id: 4, src: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&q=80", alt: "Détail robe de mariée", tall: true },
-  { id: 5, src: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=600&q=80", alt: "Bouquet de fleurs", tall: false },
-  { id: 6, src: "https://images.unsplash.com/photo-1470213764058-42543a5d85c7?w=600&q=80", alt: "Danse des mariés", tall: false },
-  { id: 7, src: "https://images.unsplash.com/photo-1529636798458-92182e662485?w=600&q=80", alt: "Cérémonie laïque", tall: true },
-  { id: 8, src: "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=600&q=80", alt: "Table de réception", tall: false },
-  { id: 9, src: "https://images.unsplash.com/photo-1523438885200-e635ba2c371e?w=600&q=80", alt: "Confettis", tall: false },
+  { id: 1, type: "photo" as const, src: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=600&q=80", alt: "Cérémonie en plein air", tall: true },
+  { id: 2, type: "photo" as const, src: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&q=80", alt: "Premier regard", tall: false },
+  { id: 3, type: "photo" as const, src: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80", alt: "Couple au coucher de soleil", tall: false },
+  { id: 4, type: "photo" as const, src: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&q=80", alt: "Détail robe de mariée", tall: true },
+  { id: 5, type: "photo" as const, src: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=600&q=80", alt: "Bouquet de fleurs", tall: false },
+  { id: 6, type: "photo" as const, src: "https://images.unsplash.com/photo-1470213764058-42543a5d85c7?w=600&q=80", alt: "Danse des mariés", tall: false },
+  { id: 7, type: "photo" as const, src: "https://images.unsplash.com/photo-1529636798458-92182e662485?w=600&q=80", alt: "Cérémonie laïque", tall: true },
+  { id: 8, type: "photo" as const, src: "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=600&q=80", alt: "Table de réception", tall: false },
+  { id: 9, type: "photo" as const, src: "https://images.unsplash.com/photo-1523438885200-e635ba2c371e?w=600&q=80", alt: "Confettis", tall: false },
 ];
 
 
@@ -282,7 +294,7 @@ type PrestatireData = {
   zones: string[];
   langues: string[];
   equipements: string[];
-  galerie: { id: number; src: string; alt: string; tall: boolean }[];
+  galerie: { id: number; type: "photo" | "video"; src: string; alt: string; tall: boolean; embedUrl?: string }[];
 };
 
 function SectionAPropos({ prestataire }: { prestataire: PrestatireData }) {
@@ -459,9 +471,26 @@ function GalerieCarousel({ galerie }: { galerie: PrestatireData["galerie"] }) {
             className="flex h-full transition-transform duration-300 ease-out"
             style={{ transform: `translateX(-${carouselIndex * 100}%)` }}
           >
-            {galerie.map((photo) => (
-              <div key={photo.id} className="min-w-full h-full relative flex-shrink-0">
-                <Image src={photo.src} alt={photo.alt} fill className="object-cover" sizes="100vw" />
+            {galerie.map((item) => (
+              <div key={item.id} className="min-w-full h-full relative flex-shrink-0">
+                {item.src ? (
+                  <Image src={item.src} alt={item.alt} fill className="object-cover" sizes="100vw" />
+                ) : (
+                  <div className="absolute inset-0 bg-gray-800 flex items-center justify-center">
+                    <svg className="w-12 h-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                )}
+                {item.type === "video" && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="w-14 h-14 bg-black/50 rounded-full flex items-center justify-center">
+                      <svg className="w-7 h-7 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -510,24 +539,38 @@ function GalerieCarousel({ galerie }: { galerie: PrestatireData["galerie"] }) {
       {/* ── Desktop : grille masonry ── */}
       <div className="hidden sm:block">
         <div className="columns-2 sm:columns-3 gap-3 space-y-3">
-          {galerie.map((photo) => (
+          {galerie.map((item) => (
             <div
-              key={photo.id}
-              className={`break-inside-avoid relative overflow-hidden rounded-xl cursor-pointer group ${photo.tall ? "aspect-[3/4]" : "aspect-square"}`}
-              onClick={() => setSelected(photo.id)}
+              key={item.id}
+              className={`break-inside-avoid relative overflow-hidden rounded-xl cursor-pointer group ${item.tall ? "aspect-[3/4]" : "aspect-square"}`}
+              onClick={() => setSelected(item.id)}
             >
-              <Image
-                src={photo.src}
-                alt={photo.alt}
-                fill
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-                sizes="(max-width: 768px) 50vw, 33vw"
-              />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-                <svg className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                </svg>
-              </div>
+              {item.src ? (
+                <Image
+                  src={item.src}
+                  alt={item.alt}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  sizes="(max-width: 768px) 50vw, 33vw"
+                />
+              ) : (
+                <div className="absolute inset-0 bg-gray-800 flex items-center justify-center" />
+              )}
+              {item.type === "video" ? (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-12 h-12 bg-black/50 group-hover:bg-black/70 rounded-full flex items-center justify-center transition-colors duration-300">
+                    <svg className="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+                </div>
+              ) : (
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                  </svg>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -583,10 +626,22 @@ function GalerieCarousel({ galerie }: { galerie: PrestatireData["galerie"] }) {
 
           <div className="relative max-w-4xl max-h-[90vh] w-full h-full" onClick={(e) => e.stopPropagation()}>
             {(() => {
-              const photo = galerie.find((p) => p.id === selected);
-              return photo ? (
-                <Image src={photo.src} alt={photo.alt} fill className="object-contain" sizes="90vw" />
-              ) : null;
+              const item = galerie.find((p) => p.id === selected);
+              if (!item) return null;
+              if (item.type === "video" && item.embedUrl) {
+                return (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <iframe
+                      src={item.embedUrl}
+                      className="w-full aspect-video max-h-[80vh] rounded-xl"
+                      allow="autoplay; fullscreen; picture-in-picture"
+                      allowFullScreen
+                      title={item.alt}
+                    />
+                  </div>
+                );
+              }
+              return <Image src={item.src} alt={item.alt} fill className="object-contain" sizes="90vw" />;
             })()}
           </div>
 
@@ -608,7 +663,17 @@ function SectionGalerie({ galerie }: { galerie: PrestatireData["galerie"] }) {
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-xl font-bold text-gray-900">Galerie</h2>
-          {galerie.length > 0 && <span className="text-sm text-gray-400">{galerie.length} photo{galerie.length > 1 ? "s" : ""}</span>}
+          {galerie.length > 0 && (() => {
+            const nbVideos = galerie.filter((i) => i.type === "video").length;
+            const nbPhotos = galerie.length - nbVideos;
+            if (nbVideos > 0 && nbPhotos > 0) {
+              return <span className="text-sm text-gray-400">{nbPhotos} photo{nbPhotos > 1 ? "s" : ""} · {nbVideos} vidéo{nbVideos > 1 ? "s" : ""}</span>;
+            }
+            if (nbVideos > 0) {
+              return <span className="text-sm text-gray-400">{nbVideos} vidéo{nbVideos > 1 ? "s" : ""}</span>;
+            }
+            return <span className="text-sm text-gray-400">{galerie.length} photo{galerie.length > 1 ? "s" : ""}</span>;
+          })()}
         </div>
 
         {galerie.length === 0 ? (
@@ -722,7 +787,13 @@ function SectionAProposGalerie({ prestataire }: { prestataire: PrestatireData })
         <div>
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-xl font-bold text-gray-900">Galerie</h2>
-            <span className="text-sm text-gray-400">{prestataire.galerie.length} photo{prestataire.galerie.length > 1 ? "s" : ""}</span>
+            {(() => {
+              const nbVideos = prestataire.galerie.filter((i) => i.type === "video").length;
+              const nbPhotos = prestataire.galerie.length - nbVideos;
+              if (nbVideos > 0 && nbPhotos > 0) return <span className="text-sm text-gray-400">{nbPhotos} photo{nbPhotos > 1 ? "s" : ""} · {nbVideos} vidéo{nbVideos > 1 ? "s" : ""}</span>;
+              if (nbVideos > 0) return <span className="text-sm text-gray-400">{nbVideos} vidéo{nbVideos > 1 ? "s" : ""}</span>;
+              return <span className="text-sm text-gray-400">{prestataire.galerie.length} photo{prestataire.galerie.length > 1 ? "s" : ""}</span>;
+            })()}
           </div>
           <GalerieCarousel galerie={prestataire.galerie} />
         </div>
@@ -1496,23 +1567,30 @@ export default function PrestataireProfil({ id }: { id?: string }) {
 
   useEffect(() => {
     if (!id || isNumericId) return;
-    supabase
-      .from("prestataires")
-      .select("*, abonnements(plan, statut)")
-      .eq("id", id)
-      .maybeSingle()
-      .then(({ data, error }) => {
-        console.log("[PrestataireProfil] raw Supabase response:", JSON.stringify({ data, error }, null, 2));
-        console.log("[PrestataireProfil] abonnements:", data?.abonnements);
-        console.log("[PrestataireProfil] verifie:", data?.verifie);
-        if (data) {
-          const built = buildPrestataireFromSupabase(data as SupabasePrestataire & { abonnements?: { plan: string; statut: string }[] });
-          console.log("[PrestataireProfil] built.plan:", built.plan, "built.verifie:", built.verifie);
-          setPRESTATAIRE(built);
-          // Enregistrer la vue (fire-and-forget)
-          supabase.from("profile_views").insert({ prestataire_id: id });
-        }
-      });
+    Promise.all([
+      supabase.from("prestataires").select("*, abonnements(plan, statut)").eq("id", id).maybeSingle(),
+      supabase.from("prestataire_videos").select("id, url, platform, thumbnail_url, created_at").eq("prestataire_id", id).order("created_at", { ascending: true }),
+    ]).then(([{ data, error }, { data: videoData }]) => {
+      console.log("[PrestataireProfil] raw Supabase response:", JSON.stringify({ data, error }, null, 2));
+      console.log("[PrestataireProfil] abonnements:", data?.abonnements);
+      console.log("[PrestataireProfil] verifie:", data?.verifie);
+      if (data) {
+        const built = buildPrestataireFromSupabase(data as SupabasePrestataire & { abonnements?: { plan: string; statut: string }[] });
+        console.log("[PrestataireProfil] built.plan:", built.plan, "built.verifie:", built.verifie);
+        // Ajouter les vidéos à la galerie
+        const videoItems = (videoData ?? []).map((v, i) => ({
+          id: built.galerie.length + i + 1,
+          type: "video" as const,
+          src: v.thumbnail_url ?? "",
+          alt: `Vidéo ${i + 1}`,
+          tall: false,
+          embedUrl: getEmbedUrl(v.url, v.platform),
+        }));
+        setPRESTATAIRE({ ...built, galerie: [...built.galerie, ...videoItems] });
+        // Enregistrer la vue (fire-and-forget)
+        supabase.from("profile_views").insert({ prestataire_id: id });
+      }
+    });
   }, [id, isNumericId]);
 
   const [activeTab, setActiveTab] = useState<Tab>("avis");

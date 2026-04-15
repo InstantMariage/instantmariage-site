@@ -18,6 +18,13 @@ const PHOTO_LIMITS: Record<PlanAbonnement, number> = {
   premium: 50,
 };
 
+const VIDEO_LIMITS: Record<PlanAbonnement, number | null> = {
+  gratuit: 0,
+  starter: 3,
+  pro: null,    // illimité
+  premium: null, // illimité
+};
+
 const CATEGORIES = [
   "Photographe",
   "Vidéaste",
@@ -93,6 +100,13 @@ type ProfilForm = {
   // Couverture
   cover_url: string;
   cover_position: number;
+};
+
+type PrestataireVideo = {
+  id: string;
+  url: string;
+  platform: string;
+  thumbnail_url: string | null;
 };
 
 // ─── Calendar Component ───────────────────────────────────────────────────────
@@ -314,6 +328,12 @@ export default function ProfilPrestatairePage() {
   const [photos, setPhotos] = useState<string[]>([]);
   const [reservedDates, setReservedDates] = useState<string[]>([]);
 
+  // Vidéos
+  const [videos, setVideos] = useState<PrestataireVideo[]>([]);
+  const [videoUrl, setVideoUrl] = useState("");
+  const [addingVideo, setAddingVideo] = useState(false);
+  const [videoError, setVideoError] = useState<string | null>(null);
+
   const [form, setForm] = useState<ProfilForm>({
     nom_entreprise: "",
     categorie: "",
@@ -395,6 +415,14 @@ export default function ProfilPrestatairePage() {
         if (abo && abo.statut === "actif") {
           setPlan(abo.plan as PlanAbonnement);
         }
+
+        // Vidéos
+        const { data: vids } = await supabase
+          .from("prestataire_videos")
+          .select("id, url, platform, thumbnail_url")
+          .eq("prestataire_id", p.id)
+          .order("created_at", { ascending: true });
+        setVideos((vids ?? []) as PrestataireVideo[]);
       } else {
         // Prestataire pas encore créé
         const meta = session.user.user_metadata;
@@ -582,6 +610,81 @@ export default function ProfilPrestatairePage() {
     setPhotos((prev) => prev.filter((p) => p !== url));
   }
 
+  // ─── Vidéos ─────────────────────────────────────────────────────────────────
+
+  function detectVideoPlatform(url: string): "youtube" | "tiktok" | null {
+    if (/(?:youtube\.com\/(?:watch|shorts)|youtu\.be\/)/.test(url)) return "youtube";
+    if (/tiktok\.com/.test(url)) return "tiktok";
+    return null;
+  }
+
+  async function fetchVideoThumbnail(url: string, platform: "youtube" | "tiktok"): Promise<string | null> {
+    try {
+      const oembedUrl = platform === "youtube"
+        ? `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`
+        : `https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`;
+      const res = await fetch(oembedUrl);
+      if (!res.ok) return null;
+      const data = await res.json();
+      return (data.thumbnail_url as string) ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  async function handleAddVideo() {
+    setVideoError(null);
+    const url = videoUrl.trim();
+    if (!url) return;
+
+    const platform = detectVideoPlatform(url);
+    if (!platform) {
+      setVideoError("URL invalide. Collez un lien YouTube ou TikTok.");
+      return;
+    }
+
+    const limit = VIDEO_LIMITS[plan];
+    if (limit === 0) {
+      setVideoError("Les vidéos ne sont pas disponibles avec le plan Gratuit. Passez à un plan supérieur.");
+      return;
+    }
+    if (limit !== null && videos.length >= limit) {
+      setVideoError(`Votre plan ${plan.toUpperCase()} est limité à ${limit} vidéo${limit > 1 ? "s" : ""}.`);
+      return;
+    }
+
+    if (videos.some((v) => v.url === url)) {
+      setVideoError("Cette vidéo est déjà dans votre galerie.");
+      return;
+    }
+
+    if (!prestataireId) return;
+
+    setAddingVideo(true);
+    const thumbnail_url = await fetchVideoThumbnail(url, platform);
+
+    const { data, error } = await supabase
+      .from("prestataire_videos")
+      .insert({ prestataire_id: prestataireId, url, platform, thumbnail_url })
+      .select("id, url, platform, thumbnail_url")
+      .single();
+
+    setAddingVideo(false);
+
+    if (error || !data) {
+      setVideoError("Erreur lors de l'ajout. Vérifiez le lien et réessayez.");
+      return;
+    }
+
+    setVideos((prev) => [...prev, data as PrestataireVideo]);
+    setVideoUrl("");
+  }
+
+  async function handleDeleteVideo(id: string) {
+    await supabase.from("prestataire_videos").delete().eq("id", id);
+    setVideos((prev) => prev.filter((v) => v.id !== id));
+  }
+
   async function handleSave() {
     if (!form.nom_entreprise.trim()) {
       alert("Le nom de l'entreprise est requis.");
@@ -663,6 +766,7 @@ export default function ProfilPrestatairePage() {
   }
 
   const photoLimit = PHOTO_LIMITS[plan];
+  const videoLimit = VIDEO_LIMITS[plan]; // null = illimité
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -1215,7 +1319,161 @@ export default function ProfilPrestatairePage() {
             )}
           </Section>
 
-          {/* ── 4. Réseaux sociaux ────────────────────────────────────────── */}
+          {/* ── 4. Galerie vidéos ─────────────────────────────────────────── */}
+          <Section
+            title="Galerie vidéos"
+            icon={
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+            }
+          >
+            {videoLimit === 0 ? (
+              /* Plan Gratuit : pas de vidéo */
+              <div className="flex items-center justify-between gap-3 p-4 rounded-2xl bg-white border border-[#F06292]">
+                <div className="flex items-center gap-3">
+                  <svg className="w-5 h-5 text-[#F06292] flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                  </svg>
+                  <p className="text-sm text-gray-700">
+                    Les vidéos ne sont pas disponibles avec le plan Gratuit.
+                  </p>
+                </div>
+                <Link
+                  href="/tarifs"
+                  className="flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium text-white"
+                  style={{ backgroundColor: "#F06292" }}
+                >
+                  Passer au Starter
+                </Link>
+              </div>
+            ) : (
+              <>
+                {/* Quota */}
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-xs text-gray-500">
+                    <span className="font-semibold text-gray-700">{videos.length}</span>
+                    {videoLimit !== null ? ` / ${videoLimit} vidéo${videoLimit > 1 ? "s" : ""}` : " vidéo" + (videos.length !== 1 ? "s" : "")}
+                    {" "}(plan <span className="font-semibold uppercase">{plan}</span>)
+                    {videoLimit === null && <span className="text-gray-400"> · illimité</span>}
+                  </p>
+                </div>
+
+                {/* Champ d'ajout */}
+                <div className="flex gap-2 mb-4">
+                  <input
+                    type="url"
+                    value={videoUrl}
+                    onChange={(e) => { setVideoUrl(e.target.value); setVideoError(null); }}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddVideo(); } }}
+                    placeholder="Collez un lien YouTube ou TikTok…"
+                    className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all"
+                    style={{ "--tw-ring-color": "#F06292" } as React.CSSProperties}
+                    disabled={addingVideo || (videoLimit !== null && videos.length >= videoLimit)}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddVideo}
+                    disabled={addingVideo || !videoUrl.trim() || (videoLimit !== null && videos.length >= videoLimit)}
+                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 flex-shrink-0"
+                    style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)" }}
+                  >
+                    {addingVideo ? (
+                      <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                      </svg>
+                    )}
+                    Ajouter
+                  </button>
+                </div>
+
+                {videoError && (
+                  <p className="text-sm text-red-600 font-medium mb-3">{videoError}</p>
+                )}
+
+                {/* Grille vidéos */}
+                {videos.length === 0 ? (
+                  <div className="w-full border-2 border-dashed border-gray-200 rounded-2xl py-10 flex flex-col items-center gap-2 text-gray-400">
+                    <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    <span className="text-sm font-medium">Aucune vidéo ajoutée</span>
+                    <span className="text-xs">YouTube ou TikTok uniquement</span>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {videos.map((video) => (
+                      <div key={video.id} className="relative group aspect-video rounded-xl overflow-hidden bg-gray-100">
+                        {video.thumbnail_url ? (
+                          <Image
+                            src={video.thumbnail_url}
+                            alt="Aperçu vidéo"
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 640px) 50vw, 33vw"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+                            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                        )}
+                        {/* Icône play */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-10 h-10 bg-black/50 rounded-full flex items-center justify-center">
+                            <svg className="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M8 5v14l11-7z" />
+                            </svg>
+                          </div>
+                        </div>
+                        {/* Badge plateforme */}
+                        <div className="absolute top-2 left-2 bg-black/60 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase">
+                          {video.platform}
+                        </div>
+                        {/* Bouton supprimer */}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-end p-2">
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteVideo(video.id)}
+                            className="w-9 h-9 rounded-full bg-red-500 flex items-center justify-center text-white hover:bg-red-600 transition-colors shadow-lg"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {videoLimit !== null && videos.length >= videoLimit && (
+                  <div className="mt-4 flex items-center justify-between gap-3 p-4 rounded-2xl bg-white border border-[#F06292]">
+                    <div className="flex items-center gap-3">
+                      <svg className="w-5 h-5 text-[#F06292] flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                      </svg>
+                      <p className="text-sm text-gray-700">
+                        Limite de vidéos atteinte.
+                      </p>
+                    </div>
+                    <Link
+                      href="/tarifs"
+                      className="flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium text-white"
+                      style={{ backgroundColor: "#F06292" }}
+                    >
+                      Passer au Pro
+                    </Link>
+                  </div>
+                )}
+              </>
+            )}
+          </Section>
+
+          {/* ── 5. Réseaux sociaux ────────────────────────────────────────── */}
           <Section
             title="Réseaux sociaux"
             icon={
