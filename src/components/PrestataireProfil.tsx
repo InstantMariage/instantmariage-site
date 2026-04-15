@@ -90,7 +90,7 @@ function buildPrestataire(id: number): PrestatireData {
       telephone: fb.telephone, email: fb.email, site: fb.site, instagram: fb.instagram,
       photo: fb.photo, couverture: fb.couverture, coverPosition: 50, description: fb.description,
       specialites: fb.specialites, experience: fb.experience, zones: fb.zones,
-      langues: fb.langues, equipements: fb.equipements, galerie: GALERIE, videos: [],
+      langues: fb.langues, equipements: fb.equipements, galerie: GALERIE,
     };
   }
 
@@ -119,7 +119,6 @@ function buildPrestataire(id: number): PrestatireData {
     langues: fb.langues,
     equipements: fb.equipements,
     galerie: GALERIE,
-    videos: [],
   };
 }
 
@@ -157,7 +156,6 @@ function buildPrestataireFromSupabase(
     langues: [],
     equipements: [],
     galerie: photos.map((src, i) => ({ id: i + 1, type: "photo" as const, src, alt: `Photo ${i + 1}`, tall: i % 3 === 0 })),
-    videos: [],
   };
 }
 
@@ -285,7 +283,6 @@ type PrestatireData = {
   langues: string[];
   equipements: string[];
   galerie: { id: number; type: "photo"; src: string; alt: string; tall: boolean }[];
-  videos: { id: number; url: string; platform: string; thumbnail_url: string | null }[];
 };
 
 function SectionAPropos({ prestataire }: { prestataire: PrestatireData }) {
@@ -744,66 +741,6 @@ function SectionAProposGalerie({ prestataire }: { prestataire: PrestatireData })
         </div>
       )}
 
-      {/* Section Vidéos */}
-      {prestataire.videos.length > 0 && (
-        <SectionVideos videos={prestataire.videos} />
-      )}
-    </div>
-  );
-}
-
-// ─── Section Vidéos TikTok ────────────────────────────────────────────────────
-
-function SectionVideos({ videos }: { videos: PrestatireData["videos"] }) {
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-5">
-        <h2 className="text-xl font-bold text-gray-900">Vidéos</h2>
-        <span className="text-sm text-gray-400">{videos.length} vidéo{videos.length > 1 ? "s" : ""}</span>
-      </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {videos.map((video) => (
-          <a
-            key={video.id}
-            href={video.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group relative aspect-[9/16] rounded-xl overflow-hidden bg-black block"
-          >
-            {/* Thumbnail */}
-            {video.thumbnail_url ? (
-              <Image
-                src={video.thumbnail_url}
-                alt={`Vidéo TikTok ${video.id}`}
-                fill
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-                sizes="(max-width: 640px) 50vw, 33vw"
-              />
-            ) : (
-              <div className="absolute inset-0 bg-gray-900" />
-            )}
-
-            {/* Overlay au hover */}
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300" />
-
-            {/* Icône play */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-12 h-12 bg-black/50 group-hover:bg-black/70 rounded-full flex items-center justify-center transition-colors duration-300">
-                <svg className="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </div>
-            </div>
-
-            {/* Logo TikTok */}
-            <div className="absolute bottom-2 right-2">
-              <svg className="w-6 h-6 text-white drop-shadow" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.75a4.85 4.85 0 01-1.01-.06z"/>
-              </svg>
-            </div>
-          </a>
-        ))}
-      </div>
     </div>
   );
 }
@@ -1567,34 +1504,25 @@ export default function PrestataireProfil({ id }: { id?: string }) {
       telephone: null, email: null, site: null, instagram: null,
       photo: null, couverture: null, coverPosition: 50, description: null,
       specialites: [], experience: null, zones: [], langues: [], equipements: [],
-      galerie: [], videos: [],
+      galerie: [],
     }
   );
 
   useEffect(() => {
     if (!id || isNumericId) return;
-    Promise.all([
-      supabase.from("prestataires").select("*, abonnements(plan, statut)").eq("id", id).maybeSingle(),
-      supabase.from("prestataire_videos").select("id, url, platform, thumbnail_url, created_at").eq("prestataire_id", id).order("created_at", { ascending: true }),
-    ]).then(([{ data, error }, { data: videoData }]) => {
-      console.log("[PrestataireProfil] raw Supabase response:", JSON.stringify({ data, error }, null, 2));
-      console.log("[PrestataireProfil] abonnements:", data?.abonnements);
-      console.log("[PrestataireProfil] verifie:", data?.verifie);
-      if (data) {
-        const built = buildPrestataireFromSupabase(data as SupabasePrestataire & { abonnements?: { plan: string; statut: string }[] });
-        console.log("[PrestataireProfil] built.plan:", built.plan, "built.verifie:", built.verifie);
-        // Vidéos séparées de la galerie photos
-        const videoItems = (videoData ?? []).map((v, i) => ({
-          id: i + 1,
-          url: v.url,
-          platform: v.platform,
-          thumbnail_url: v.thumbnail_url ?? null,
-        }));
-        setPRESTATAIRE({ ...built, videos: videoItems });
-        // Enregistrer la vue (fire-and-forget)
-        supabase.from("profile_views").insert({ prestataire_id: id });
-      }
-    });
+    supabase.from("prestataires").select("*, abonnements(plan, statut)").eq("id", id).maybeSingle()
+      .then(({ data, error }) => {
+        console.log("[PrestataireProfil] raw Supabase response:", JSON.stringify({ data, error }, null, 2));
+        console.log("[PrestataireProfil] abonnements:", data?.abonnements);
+        console.log("[PrestataireProfil] verifie:", data?.verifie);
+        if (data) {
+          const built = buildPrestataireFromSupabase(data as SupabasePrestataire & { abonnements?: { plan: string; statut: string }[] });
+          console.log("[PrestataireProfil] built.plan:", built.plan, "built.verifie:", built.verifie);
+          setPRESTATAIRE(built);
+          // Enregistrer la vue (fire-and-forget)
+          supabase.from("profile_views").insert({ prestataire_id: id });
+        }
+      });
   }, [id, isNumericId]);
 
   const [activeTab, setActiveTab] = useState<Tab>("avis");
