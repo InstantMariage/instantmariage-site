@@ -8,6 +8,29 @@ function getSupabaseAdmin() {
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
+function computeAspectRatio(w: number, h: number): string {
+  if (!w || !h) return "16:9";
+  const r = w / h;
+  if (r < 0.70) return "9:16";
+  if (r >= 0.70 && r < 0.90) return "4:5";
+  if (r >= 0.90 && r < 1.10) return "1:1";
+  return "16:9";
+}
+
+async function fetchBunnyAspectRatio(libraryId: string, videoId: string, apiKey: string): Promise<string> {
+  try {
+    const res = await fetch(
+      `https://video.bunnycdn.com/library/${libraryId}/videos/${videoId}`,
+      { headers: { AccessKey: apiKey, Accept: "application/json" } }
+    );
+    if (!res.ok) return "16:9";
+    const meta = await res.json();
+    return computeAspectRatio(meta.width, meta.height);
+  } catch {
+    return "16:9";
+  }
+}
+
 export async function POST(req: NextRequest) {
   console.log('[COMPLETE] ENV CHECK:', {
     libraryId: process.env.BUNNY_STREAM_LIBRARY_ID,
@@ -16,9 +39,10 @@ export async function POST(req: NextRequest) {
   });
   try {
     const libraryId = process.env.BUNNY_STREAM_LIBRARY_ID;
+    const apiKey = process.env.BUNNY_STREAM_API_KEY;
     const cdnHostname = process.env.BUNNY_STREAM_CDN_HOSTNAME;
 
-    if (!libraryId || !cdnHostname) {
+    if (!libraryId || !cdnHostname || !apiKey) {
       return NextResponse.json({ error: "Configuration Bunny Stream manquante" }, { status: 500 });
     }
 
@@ -56,6 +80,10 @@ export async function POST(req: NextRequest) {
     const thumbnailUrl = `https://${cdnHostname}/${bunnyVideoId}/thumbnail.jpg`;
     const playUrl = `https://iframe.mediadelivery.net/embed/${libraryId}/${bunnyVideoId}`;
 
+    // Récupère les dimensions réelles de la vidéo via l'API Bunny
+    const aspect_ratio = await fetchBunnyAspectRatio(libraryId, bunnyVideoId, apiKey);
+    console.log("[COMPLETE] aspect_ratio detected:", aspect_ratio, "for video", bunnyVideoId);
+
     const { data: videoRecord, error: dbError } = await supabaseAdmin
       .from("prestataire_videos")
       .insert({
@@ -66,6 +94,7 @@ export async function POST(req: NextRequest) {
         play_url: playUrl,
         url: playUrl,
         platform: "bunny",
+        aspect_ratio,
       })
       .select()
       .single();
@@ -100,6 +129,7 @@ export async function POST(req: NextRequest) {
       title: videoRecord.title,
       thumbnail_url: thumbnailUrl,
       play_url: playUrl,
+      aspect_ratio,
       created_at: videoRecord.created_at,
     });
   } catch (err) {

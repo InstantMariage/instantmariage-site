@@ -158,7 +158,7 @@ function buildPrestataireFromSupabase(
     langues: [],
     equipements: [],
     galerie: photos.map((src, i) => ({ id: i + 1, type: "photo" as const, src, alt: `Photo ${i + 1}`, tall: i % 3 === 0 })),
-    videos: (p as unknown as { prestataire_videos?: { id: string; bunny_video_id: string; thumbnail_url: string | null; play_url: string | null; title: string | null }[] }).prestataire_videos ?? [],
+    videos: (p as unknown as { prestataire_videos?: { id: string; bunny_video_id: string; thumbnail_url: string | null; play_url: string | null; title: string | null; aspect_ratio: string | null }[] }).prestataire_videos ?? [],
   };
 }
 
@@ -286,7 +286,7 @@ type PrestatireData = {
   langues: string[];
   equipements: string[];
   galerie: { id: number; type: "photo"; src: string; alt: string; tall: boolean }[];
-  videos: { id: string; bunny_video_id: string; thumbnail_url: string | null; play_url: string | null; title: string | null }[];
+  videos: { id: string; bunny_video_id: string; thumbnail_url: string | null; play_url: string | null; title: string | null; aspect_ratio: string | null }[];
 };
 
 function SectionAPropos({ prestataire }: { prestataire: PrestatireData }) {
@@ -651,7 +651,45 @@ type VideoItem = {
   thumbnail_url: string | null;
   play_url: string | null;
   title: string | null;
+  aspect_ratio: string | null;
 };
+
+// Retourne les classes CSS et le style inline pour le conteneur de thumbnail
+function videoContainerStyle(ratio: string | null): { className: string; style: React.CSSProperties } {
+  switch (ratio) {
+    case "9:16":
+      return { className: "aspect-[9/16]", style: {} };
+    case "4:5":
+      return { className: "aspect-[4/5]", style: {} };
+    case "1:1":
+      return { className: "aspect-square", style: {} };
+    default:
+      return { className: "aspect-video", style: {} };
+  }
+}
+
+// Retourne le padding-bottom % pour la modal iframe
+function modalPaddingBottom(ratio: string | null): string {
+  switch (ratio) {
+    case "9:16": return "177.78%";
+    case "4:5":  return "125%";
+    case "1:1":  return "100%";
+    default:     return "56.25%";
+  }
+}
+
+// Max-width de la modal selon le ratio
+function modalMaxWidth(ratio: string | null): string {
+  switch (ratio) {
+    case "9:16":
+    case "4:5":
+      return "380px";
+    case "1:1":
+      return "560px";
+    default:
+      return "768px";
+  }
+}
 
 function SectionVideos({ videos }: { videos: VideoItem[] }) {
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
@@ -665,54 +703,61 @@ function SectionVideos({ videos }: { videos: VideoItem[] }) {
         <span className="text-sm text-gray-400">{videos.length} vidéo{videos.length > 1 ? "s" : ""}</span>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {videos.map((video) => (
-          <button
-            key={video.id}
-            type="button"
-            onClick={() => setActiveVideo(video)}
-            className="relative group aspect-video rounded-2xl overflow-hidden bg-gray-100 focus:outline-none"
-          >
-            {video.thumbnail_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={video.thumbnail_url}
-                alt={video.title ?? "Vidéo"}
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                <svg className="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
+      {/* Grille : horizontales sur 2 colonnes, verticales/carrées sur 1 */}
+      <div className="grid grid-cols-2 gap-3">
+        {videos.map((video) => {
+          const ratio = video.aspect_ratio;
+          const isWide = !ratio || ratio === "16:9";
+          const container = videoContainerStyle(ratio);
+          return (
+            <button
+              key={video.id}
+              type="button"
+              onClick={() => setActiveVideo(video)}
+              className={`relative group rounded-2xl overflow-hidden bg-gray-100 focus:outline-none ${container.className} ${isWide ? "col-span-2 sm:col-span-1" : "col-span-1"}`}
+              style={container.style}
+            >
+              {video.thumbnail_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={video.thumbnail_url}
+                  alt={video.title ?? "Vidéo"}
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                  <svg className="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </div>
+              )}
+              {/* Overlay + icône play */}
+              <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors duration-200 flex items-center justify-center">
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg"
+                  style={{ backgroundColor: "#F06292" }}
+                >
+                  <svg className="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </div>
               </div>
-            )}
-            {/* Overlay + icône play */}
-            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors duration-200 flex items-center justify-center">
-              <div
-                className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg"
-                style={{ backgroundColor: "#F06292" }}
-              >
-                <svg className="w-6 h-6 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </div>
-            </div>
-            {/* Titre */}
-            {video.title && (
-              <div
-                className="absolute bottom-0 left-0 right-0 text-xs font-medium px-2 py-1.5 text-white truncate text-left"
-                style={{ background: "linear-gradient(to top, rgba(0,0,0,0.7), transparent)" }}
-              >
-                {video.title}
-              </div>
-            )}
-          </button>
-        ))}
+              {/* Titre */}
+              {video.title && (
+                <div
+                  className="absolute bottom-0 left-0 right-0 text-xs font-medium px-2 py-1.5 text-white truncate text-left"
+                  style={{ background: "linear-gradient(to top, rgba(0,0,0,0.7), transparent)" }}
+                >
+                  {video.title}
+                </div>
+              )}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Modal player */}
+      {/* Modal player — s'adapte au ratio natif */}
       {activeVideo && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -720,7 +765,8 @@ function SectionVideos({ videos }: { videos: VideoItem[] }) {
           onClick={() => setActiveVideo(null)}
         >
           <div
-            className="relative w-full max-w-3xl"
+            className="relative w-full mx-auto"
+            style={{ maxWidth: modalMaxWidth(activeVideo.aspect_ratio) }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Fermer */}
@@ -734,7 +780,10 @@ function SectionVideos({ videos }: { videos: VideoItem[] }) {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <div className="relative w-full rounded-2xl overflow-hidden bg-black" style={{ paddingBottom: "56.25%" }}>
+            <div
+              className="relative w-full rounded-2xl overflow-hidden bg-black"
+              style={{ paddingBottom: modalPaddingBottom(activeVideo.aspect_ratio) }}
+            >
               {activeVideo.play_url && (
                 <iframe
                   src={`${activeVideo.play_url}?autoplay=true`}
@@ -1626,7 +1675,7 @@ export default function PrestataireProfil({ id }: { id?: string }) {
 
   useEffect(() => {
     if (!id || isNumericId) return;
-    supabase.from("prestataires").select("*, abonnements(plan, statut), prestataire_videos(id, bunny_video_id, thumbnail_url, play_url, title, created_at)").eq("id", id).maybeSingle()
+    supabase.from("prestataires").select("*, abonnements(plan, statut), prestataire_videos(id, bunny_video_id, thumbnail_url, play_url, title, aspect_ratio, created_at)").eq("id", id).maybeSingle()
       .then(({ data, error }) => {
         console.log("[PrestataireProfil] raw Supabase response:", JSON.stringify({ data, error }, null, 2));
         console.log("[PrestataireProfil] abonnements:", data?.abonnements);
