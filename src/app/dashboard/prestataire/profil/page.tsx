@@ -636,10 +636,6 @@ export default function ProfilPrestatairePage() {
       setVideoError("Format invalide. Utilisez MP4 ou MOV.");
       return;
     }
-    if (file.size > 500 * 1024 * 1024) {
-      setVideoError("Fichier trop volumineux. Maximum 500 Mo.");
-      return;
-    }
 
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
@@ -647,40 +643,75 @@ export default function ProfilPrestatairePage() {
     setUploadingVideo(true);
     setUploadProgress(0);
 
-    const formData = new FormData();
-    formData.append("video", file);
+    try {
+      // Étape 1 : obtenir une URL d'upload Bunny depuis notre API
+      const signedRes = await fetch("/api/videos/signed-url", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ filename: file.name }),
+      });
 
-    await new Promise<void>((resolve) => {
-      const xhr = new XMLHttpRequest();
-      xhr.upload.onprogress = (ev) => {
-        if (ev.lengthComputable) {
-          setUploadProgress(Math.round((ev.loaded / ev.total) * 100));
-        }
+      const signedData = await signedRes.json();
+      if (!signedRes.ok) {
+        setVideoError(signedData.error || "Impossible d'initialiser l'upload");
+        return;
+      }
+
+      const { videoId, uploadUrl, accessKey, title } = signedData as {
+        videoId: string;
+        uploadUrl: string;
+        accessKey: string;
+        title: string;
       };
-      xhr.onload = () => {
-        try {
-          const data = JSON.parse(xhr.responseText);
-          if (xhr.status === 200) {
-            setVideos((prev) => [data as VideoRecord, ...prev]);
-          } else {
-            setVideoError(data.error || "Erreur lors de l'upload");
+
+      // Étape 2 : upload direct navigateur → Bunny (sans passer par Vercel)
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.upload.onprogress = (ev) => {
+          if (ev.lengthComputable) {
+            setUploadProgress(Math.round((ev.loaded / ev.total) * 100));
           }
-        } catch {
-          setVideoError("Réponse inattendue du serveur");
-        }
-        resolve();
-      };
-      xhr.onerror = () => {
-        setVideoError("Erreur réseau lors de l'upload");
-        resolve();
-      };
-      xhr.open("POST", "/api/videos/upload");
-      xhr.setRequestHeader("Authorization", `Bearer ${session.access_token}`);
-      xhr.send(formData);
-    });
+        };
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve();
+          } else {
+            reject(new Error(`Erreur Bunny : ${xhr.status}`));
+          }
+        };
+        xhr.onerror = () => reject(new Error("Erreur réseau lors de l'upload"));
+        xhr.open("PUT", uploadUrl);
+        xhr.setRequestHeader("AccessKey", accessKey);
+        xhr.setRequestHeader("Content-Type", "application/octet-stream");
+        xhr.send(file);
+      });
 
-    setUploadingVideo(false);
-    setUploadProgress(0);
+      // Étape 3 : notifier notre API pour sauvegarder en base Supabase
+      const completeRes = await fetch("/api/videos/complete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ bunnyVideoId: videoId, title }),
+      });
+
+      const completeData = await completeRes.json();
+      if (!completeRes.ok) {
+        setVideoError(completeData.error || "Erreur lors de la finalisation");
+        return;
+      }
+
+      setVideos((prev) => [completeData as VideoRecord, ...prev]);
+    } catch (err) {
+      setVideoError(err instanceof Error ? err.message : "Erreur lors de l'upload");
+    } finally {
+      setUploadingVideo(false);
+      setUploadProgress(0);
+    }
   }
 
   async function handleVideoDelete(videoId: string) {
@@ -1383,6 +1414,9 @@ export default function ProfilPrestatairePage() {
                   </svg>
                   Ajouter une vidéo
                 </button>
+              )}
+              {videoLimit !== 0 && (videoLimit === null || videos.length < videoLimit) && !uploadingVideo && (
+                <p className="text-xs text-gray-400 mt-1">Format MP4 ou MOV</p>
               )}
               <input
                 ref={videoInputRef}

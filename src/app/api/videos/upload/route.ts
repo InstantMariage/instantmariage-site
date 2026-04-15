@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-export const maxDuration = 300; // 5 minutes max pour les gros fichiers
+export const maxDuration = 60;
 
-// Désactiver le bodyParser natif de Next.js n'est pas nécessaire en App Router
-// mais on s'assure que la limite n'est pas un problème via maxDuration + streaming FormData
+export const config = {
+  api: {
+    bodyParser: false,
+    responseLimit: false,
+  },
+};
 
 function getSupabaseAdmin() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -157,11 +161,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const MAX_SIZE = 500 * 1024 * 1024; // 500 Mo
+    const MAX_SIZE = 50 * 1024 * 1024; // 50 Mo
     if (file.size > MAX_SIZE) {
       return NextResponse.json(
-        { error: "Fichier trop volumineux. Maximum 500 Mo.", detail: `Taille reçue : ${(file.size / 1024 / 1024).toFixed(2)} Mo` },
-        { status: 400 }
+        { error: "Vidéo trop lourde, 50MB maximum.", detail: `Taille reçue : ${(file.size / 1024 / 1024).toFixed(2)} Mo` },
+        { status: 413 }
       );
     }
 
