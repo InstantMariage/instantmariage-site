@@ -265,13 +265,13 @@ function DocumentPreview(props: PreviewProps) {
                   Qté
                 </th>
                 <th style={{ padding: "8px 10px", textAlign: "right", fontSize: "9px", fontWeight: "700", color: "#F06292", textTransform: "uppercase", letterSpacing: "0.6px", width: "90px" }}>
-                  PU HT
+                  Prix HT
                 </th>
                 <th style={{ padding: "8px 10px", textAlign: "center", fontSize: "9px", fontWeight: "700", color: "#F06292", textTransform: "uppercase", letterSpacing: "0.6px", width: "60px" }}>
                   TVA
                 </th>
                 <th style={{ padding: "8px 10px", textAlign: "right", fontSize: "9px", fontWeight: "700", color: "#F06292", textTransform: "uppercase", letterSpacing: "0.6px", width: "90px", borderRadius: "0 4px 4px 0" }}>
-                  Total HT
+                  Prix TTC
                 </th>
               </tr>
             </thead>
