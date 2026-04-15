@@ -779,8 +779,11 @@ function SectionVideos({ videos }: { videos: VideoItem[] }) {
             {/* Iframe Bunny */}
             <iframe
               src={iframeSrc}
-              width={iframeWidth}
-              height={iframeHeight}
+              className={
+                isVertical
+                  ? "w-screen h-screen md:w-[380px] md:h-[675px]"
+                  : "w-screen h-screen md:w-[854px] md:h-[480px]"
+              }
               allow="autoplay; fullscreen; picture-in-picture"
               allowFullScreen
               style={{ border: 0 }}
