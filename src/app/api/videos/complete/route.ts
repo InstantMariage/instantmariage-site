@@ -64,9 +64,24 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (dbError) {
-      console.error("[COMPLETE] DB insert error:", dbError);
+      console.error("[COMPLETE] DB insert error:", {
+        code: dbError.code,
+        message: dbError.message,
+        details: dbError.details,
+        hint: dbError.hint,
+        prestataire_id: prestataire.id,
+        bunnyVideoId,
+      });
       return NextResponse.json(
-        { error: "Erreur lors de la sauvegarde en base de données", detail: dbError.message },
+        {
+          error: "Erreur lors de la sauvegarde en base de données",
+          supabase_error: {
+            code: dbError.code,
+            message: dbError.message,
+            details: dbError.details,
+            hint: dbError.hint,
+          },
+        },
         { status: 500 }
       );
     }

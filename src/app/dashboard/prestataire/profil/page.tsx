@@ -1415,9 +1415,6 @@ export default function ProfilPrestatairePage() {
                   Ajouter une vidéo
                 </button>
               )}
-              {videoLimit !== 0 && (videoLimit === null || videos.length < videoLimit) && !uploadingVideo && (
-                <p className="text-xs text-gray-400 mt-1">Format MP4 ou MOV</p>
-              )}
               <input
                 ref={videoInputRef}
                 type="file"
@@ -1426,6 +1423,9 @@ export default function ProfilPrestatairePage() {
                 onChange={handleVideoUpload}
               />
             </div>
+            {videoLimit !== 0 && (videoLimit === null || videos.length < videoLimit) && !uploadingVideo && (
+              <p className="text-xs text-gray-400 -mt-3 mb-4">Format MP4 ou MOV</p>
+            )}
 
             {/* Barre de progression */}
             {uploadingVideo && (
