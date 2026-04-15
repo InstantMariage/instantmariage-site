@@ -175,7 +175,7 @@ function DocumentPreview(props: PreviewProps) {
           {prestataire.avatar_url && (
             <div style={{ width: "52px", height: "52px", borderRadius: "10px", overflow: "hidden", flexShrink: 0 }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={prestataire.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <img src={prestataire.avatar_url} alt="" crossOrigin="anonymous" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             </div>
           )}
           <div>
@@ -580,34 +580,92 @@ export default function DocumentsPage() {
     if (!previewRef.current) return;
     setPdfLoading(true);
     try {
+      // Charger le logo en base64 pour éviter les erreurs CORS dans html2canvas
+      let logoBase64: string | null = null;
+      if (prestataire?.avatar_url) {
+        try {
+          const res = await fetch(prestataire.avatar_url, { mode: "cors" });
+          const blob = await res.blob();
+          logoBase64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+        } catch {
+          // Logo non disponible, on continue sans
+        }
+      }
+
       const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
         import("html2canvas"),
         import("jspdf"),
       ]);
+
+      // Remplacer temporairement le src du logo par le base64
+      const imgEl = previewRef.current.querySelector("img") as HTMLImageElement | null;
+      const originalSrc = imgEl?.src ?? null;
+      if (imgEl && logoBase64) {
+        imgEl.src = logoBase64;
+        await new Promise<void>((resolve) => {
+          if (imgEl.complete) { resolve(); return; }
+          imgEl.onload = () => resolve();
+          imgEl.onerror = () => resolve();
+        });
+      }
+
       const canvas = await html2canvas(previewRef.current, {
-        scale: 2,
+        scale: 3,
         useCORS: true,
+        allowTaint: false,
         backgroundColor: "#ffffff",
       });
+
+      // Restaurer le src original
+      if (imgEl && originalSrc !== null) {
+        imgEl.src = originalSrc;
+      }
+
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF("p", "mm", "a4");
-      const pw = pdf.internal.pageSize.getWidth();
-      const ph = pdf.internal.pageSize.getHeight();
+      const pw = pdf.internal.pageSize.getWidth();   // 210 mm
+      const ph = pdf.internal.pageSize.getHeight();  // 297 mm
       const ratio = canvas.width / canvas.height;
-      const imgH = pw / ratio;
+      const imgH = pw / ratio; // hauteur totale du contenu en mm
 
       if (imgH <= ph) {
+        // Tient sur une seule page
         pdf.addImage(imgData, "PNG", 0, 0, pw, imgH);
+      } else if (imgH <= ph * 1.12) {
+        // Légèrement plus grand qu'une page : forcer une seule page (réduction ~12% max)
+        pdf.addImage(imgData, "PNG", 0, 0, pw, ph);
       } else {
+        // Multi-pages : éviter les lignes orphelines en bas de dernière page
+        const MIN_LAST_PAGE = 35; // mm minimum sur la dernière page
         let offset = 0;
         let remaining = imgH;
+
         while (remaining > 0) {
-          pdf.addImage(imgData, "PNG", 0, -offset, pw, imgH);
-          remaining -= ph;
-          offset += ph;
-          if (remaining > 0) pdf.addPage();
+          const afterThisPage = remaining - ph;
+
+          if (afterThisPage > 0 && afterThisPage < MIN_LAST_PAGE) {
+            // La dernière page serait trop petite : réduire la page courante
+            const thisPageH = remaining - MIN_LAST_PAGE;
+            pdf.addImage(imgData, "PNG", 0, -offset, pw, imgH);
+            offset += thisPageH;
+            remaining = MIN_LAST_PAGE;
+            pdf.addPage();
+            pdf.addImage(imgData, "PNG", 0, -offset, pw, imgH);
+            remaining = 0;
+          } else {
+            pdf.addImage(imgData, "PNG", 0, -offset, pw, imgH);
+            offset += ph;
+            remaining -= ph;
+            if (remaining > 0) pdf.addPage();
+          }
         }
       }
+
       const typeLabels = { devis: "Devis", facture: "Facture", contrat: "Contrat" };
       pdf.save(`${typeLabels[docType]}_${clientNom || "Client"}_${numeroDoc}.pdf`);
     } finally {
