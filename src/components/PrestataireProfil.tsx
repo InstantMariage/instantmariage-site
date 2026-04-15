@@ -668,18 +668,14 @@ function videoContainerStyle(ratio: string | null): { className: string; style: 
   }
 }
 
-// Style du conteneur iframe dans la modal (remplace le padding-bottom hack)
-function modalContainerStyle(ratio: string | null): React.CSSProperties {
-  switch (ratio) {
-    case "9:16":
-      return { height: "min(80vh, 675px)", width: "auto", aspectRatio: "9 / 16", maxWidth: "380px", margin: "0 auto" };
-    case "4:5":
-      return { height: "min(80vh, 475px)", width: "auto", aspectRatio: "4 / 5", maxWidth: "380px", margin: "0 auto" };
-    case "1:1":
-      return { height: "min(80vh, 560px)", width: "auto", aspectRatio: "1 / 1", maxWidth: "560px", margin: "0 auto" };
-    default: // 16:9
-      return { width: "100%", aspectRatio: "16 / 9", maxWidth: "800px", margin: "0 auto" };
+// Dimensions explicites du conteneur vidéo dans la modal
+function modalContainerDimensions(ratio: string | null): React.CSSProperties {
+  const isVertical = ratio === "9:16" || ratio === "4:5";
+  if (isVertical) {
+    return { width: "380px", height: "675px", flexShrink: 0 };
   }
+  // Horizontal (16:9 ou autre) : largeur = min(90vw, 800px), hauteur = 9/16 × largeur
+  return { width: "min(90vw, 800px)", height: "min(50.625vw, 450px)", flexShrink: 0 };
 }
 
 function SectionVideos({ videos }: { videos: VideoItem[] }) {
@@ -748,44 +744,40 @@ function SectionVideos({ videos }: { videos: VideoItem[] }) {
         })}
       </div>
 
-      {/* Modal player — s'adapte au ratio natif */}
+      {/* Modal plein écran */}
       {activeVideo && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: "rgba(0,0,0,0.85)" }}
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center"
           onClick={() => setActiveVideo(null)}
         >
+          {/* Bouton fermer — coin supérieur droit de la modal */}
+          <button
+            type="button"
+            onClick={() => setActiveVideo(null)}
+            className="absolute top-4 right-4 bg-black/50 hover:bg-black/80 text-white rounded-full p-2 transition-colors z-10"
+            aria-label="Fermer"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Conteneur vidéo — dimensions explicites pour que l'iframe remplisse à 100% */}
           <div
-            className="relative w-full flex flex-col items-center"
+            className="rounded-2xl overflow-hidden bg-black"
+            style={modalContainerDimensions(activeVideo.aspect_ratio)}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Fermer */}
-            <button
-              type="button"
-              onClick={() => setActiveVideo(null)}
-              className="absolute -top-10 right-0 text-white/70 hover:text-white transition-colors z-10"
-              aria-label="Fermer"
-            >
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-            <div
-              className="rounded-2xl overflow-hidden bg-black"
-              style={modalContainerStyle(activeVideo.aspect_ratio)}
-            >
-              {activeVideo.play_url && (
-                <iframe
-                  src={`${activeVideo.play_url}?autoplay=true`}
-                  style={{ width: "100%", height: "100%", display: "block" }}
-                  allow="autoplay; fullscreen"
-                  allowFullScreen
-                  title={activeVideo.title ?? "Vidéo"}
-                />
-              )}
-            </div>
-            {activeVideo.title && (
-              <p className="text-white/80 text-sm text-center mt-3">{activeVideo.title}</p>
+            {activeVideo.play_url && (
+              <iframe
+                src={`${activeVideo.play_url}?autoplay=true&muted=false`}
+                width="100%"
+                height="100%"
+                style={{ border: "none", display: "block" }}
+                allow="autoplay; fullscreen"
+                allowFullScreen
+                title={activeVideo.title ?? "Vidéo"}
+              />
             )}
           </div>
         </div>
