@@ -168,6 +168,15 @@ export default function Header() {
               <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-rose-400 group-hover:w-full transition-all duration-200" />
             </Link>
 
+            {/* Faire-part */}
+            <Link
+              href="/faire-part"
+              className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors duration-200 relative group py-2"
+            >
+              Faire-part
+              <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-rose-400 group-hover:w-full transition-all duration-200" />
+            </Link>
+
             {/* Outils mariés */}
             {user?.role !== "prestataire" && (
             <div
@@ -370,6 +379,13 @@ export default function Header() {
               onClick={() => setMobileOpen(false)}
             >
               Annuaire prestataires
+            </Link>
+            <Link
+              href="/faire-part"
+              className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
+              onClick={() => setMobileOpen(false)}
+            >
+              Faire-part
             </Link>
             {user?.role !== "marie" && (
               <Link
