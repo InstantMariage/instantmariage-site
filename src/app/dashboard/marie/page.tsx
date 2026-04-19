@@ -242,7 +242,7 @@ export default function DashboardMarie() {
 
   const tools = [
     {
-      href: "/dashboard/marie/faire-part",
+      href: "/dashboard/marie/faire-parts",
       external: false,
       icon: <IconMail />,
       label: "Faire-parts animés",

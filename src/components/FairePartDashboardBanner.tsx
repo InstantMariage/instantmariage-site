@@ -36,7 +36,7 @@ export default function FairePartDashboardBanner() {
           Vous avez déjà des faire-parts créés sur votre compte.
         </p>
         <Link
-          href="/dashboard/marie/faire-part"
+          href="/dashboard/marie/faire-parts"
           className="flex-shrink-0 inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-1.5 rounded-full transition-all duration-200 hover:opacity-90 active:scale-95"
           style={{ background: "rgba(255,255,255,0.22)", color: "white", border: "1px solid rgba(255,255,255,0.4)" }}
         >
