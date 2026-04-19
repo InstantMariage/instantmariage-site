@@ -18,6 +18,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/sitemap-villes", priority: 0.8, changeFrequency: "monthly" as const },
     { path: "/tarifs", priority: 0.8, changeFrequency: "monthly" as const },
     { path: "/blog", priority: 0.8, changeFrequency: "weekly" as const },
+    // Faire-part — landing principale et variantes intentionnelles
+    { path: "/faire-part", priority: 0.9, changeFrequency: "weekly" as const },
+    { path: "/faire-part-mariage", priority: 0.95, changeFrequency: "weekly" as const },
+    { path: "/faire-part-digital-mariage", priority: 0.9, changeFrequency: "monthly" as const },
+    { path: "/faire-part-anime-mariage", priority: 0.9, changeFrequency: "monthly" as const },
+    { path: "/faire-part-mariage-gratuit", priority: 0.9, changeFrequency: "monthly" as const },
+    // Faire-part — pages par style
+    { path: "/faire-part-mariage-boheme", priority: 0.85, changeFrequency: "monthly" as const },
+    { path: "/faire-part-mariage-luxe", priority: 0.85, changeFrequency: "monthly" as const },
+    { path: "/faire-part-mariage-champetre", priority: 0.85, changeFrequency: "monthly" as const },
+    { path: "/faire-part-mariage-moderne", priority: 0.85, changeFrequency: "monthly" as const },
     { path: "/inscription", priority: 0.7, changeFrequency: "monthly" as const },
     { path: "/login", priority: 0.5, changeFrequency: "monthly" as const },
     { path: "/demo", priority: 0.7, changeFrequency: "monthly" as const },
