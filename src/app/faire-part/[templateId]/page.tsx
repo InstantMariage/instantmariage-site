@@ -325,10 +325,11 @@ export default function FairePartEditorPage() {
       // template_id is nullable — save proceeds even if slug not yet seeded in DB
       const templateDbId = tpl?.id ?? null;
 
-      const { data: slug } = await supabase.rpc('generate_invitation_slug', {
-        prenom1: form.prenomMariee,
-        prenom2: form.prenomMarie,
+      const { data: slugFromRpc } = await supabase.rpc('generate_invitation_slug', {
+        p_prenom1: form.prenomMariee || null,
+        p_prenom2: form.prenomMarie || null,
       });
+      const slug = slugFromRpc || `invitation-${crypto.randomUUID().slice(0, 8)}`;
 
       const config = {
         coupleNames,
