@@ -24,7 +24,7 @@ async function fetchInvitation(slug: string) {
       invitation_templates!template_id(slug)
     `)
     .eq('slug', slug)
-    .eq('statut', 'publie')
+    // .eq('statut', 'publie')  // temporairement désactivé pour debug
     .maybeSingle();
   return data;
 }
