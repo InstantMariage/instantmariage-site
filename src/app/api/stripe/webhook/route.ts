@@ -4,10 +4,131 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import type { PlanAbonnement } from "@/lib/supabase";
+import { renderInvitationVideo } from "../../../../../lib/remotion-lambda";
+import { sendInvitationConfirmationEmail } from "@/lib/emails";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-03-31.basil",
 });
+
+// ── Invitation payment handler ────────────────────────────────────────────────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function handleInvitationPayment(
+  supabase: any,
+  session: Stripe.Checkout.Session
+) {
+  const invitationId = session.metadata?.invitation_id ?? null;
+  const pack = session.metadata?.pack ?? "digital";
+  const montantCts = session.amount_total ?? 0;
+  const stripeSessionId = session.id;
+  const stripePaymentIntent = typeof session.payment_intent === "string"
+    ? session.payment_intent
+    : null;
+
+  // Récupère la config de l'invitation et l'id du marié
+  let marieId: string | null = null;
+  let invitationConfig: Record<string, unknown> = {};
+  let templateId: string | null = null;
+
+  if (invitationId) {
+    const { data: inv, error: invErr } = await supabase
+      .from("invitations")
+      .select("marie_id, config, template_id")
+      .eq("id", invitationId)
+      .single();
+
+    if (invErr) {
+      console.error("[webhook/invitation] Erreur lecture invitation:", invErr);
+    } else if (inv) {
+      marieId = inv.marie_id;
+      invitationConfig = (inv.config ?? {}) as Record<string, unknown>;
+      templateId = inv.template_id;
+    }
+  }
+
+  // Crée l'invitation_order
+  const { data: order, error: orderErr } = await supabase
+    .from("invitation_orders")
+    .insert({
+      marie_id: marieId,
+      invitation_id: invitationId,
+      template_id: templateId,
+      stripe_session_id: stripeSessionId,
+      stripe_payment_intent: stripePaymentIntent,
+      montant_cts: montantCts,
+      devise: "eur",
+      statut: "paye",
+      pack,
+      render_statut: "pending",
+    })
+    .select("id")
+    .single();
+
+  if (orderErr || !order) {
+    console.error("[webhook/invitation] Erreur INSERT invitation_order:", orderErr);
+    return;
+  }
+
+  // Déclenche le rendu Lambda
+  const renderParams = {
+    coupleNames: String(invitationConfig.coupleNames ?? ""),
+    date: String(invitationConfig.date ?? ""),
+    lieu: String(invitationConfig.lieu ?? ""),
+    message: invitationConfig.message ? String(invitationConfig.message) : undefined,
+    accentColor: invitationConfig.accentColor ? String(invitationConfig.accentColor) : undefined,
+  };
+
+  let renderId: string | null = null;
+  let renderBucket: string | null = null;
+
+  try {
+    const result = await renderInvitationVideo(renderParams);
+    renderId = result.renderId;
+    renderBucket = result.bucketName;
+
+    await supabase
+      .from("invitation_orders")
+      .update({ render_id: renderId, render_bucket: renderBucket, render_statut: "processing" })
+      .eq("id", order.id);
+  } catch (renderErr) {
+    console.error("[webhook/invitation] Erreur déclenchement rendu Lambda:", renderErr);
+    await supabase
+      .from("invitation_orders")
+      .update({ render_statut: "error" })
+      .eq("id", order.id);
+  }
+
+  // Email de confirmation au marié
+  if (marieId) {
+    const { data: marie } = await supabase
+      .from("maries")
+      .select("user_id")
+      .eq("id", marieId)
+      .single();
+
+    if (marie?.user_id) {
+      const { data: user } = await supabase
+        .from("users")
+        .select("email")
+        .eq("id", marie.user_id)
+        .single();
+
+      if (user?.email) {
+        try {
+          await sendInvitationConfirmationEmail({
+            recipientEmail: user.email,
+            coupleNames: String(invitationConfig.coupleNames ?? "Votre mariage"),
+            pack,
+            montantEuros: montantCts / 100,
+          });
+        } catch (emailErr) {
+          console.error("[webhook/invitation] Erreur envoi email confirmation:", emailErr);
+        }
+      }
+    }
+  }
+}
 
 // Map Price ID → plan name
 const PRICE_TO_PLAN: Record<string, PlanAbonnement> = {
@@ -62,6 +183,13 @@ export async function POST(req: NextRequest) {
     // ─── Paiement réussi ───────────────────────────────────────────────────
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
+
+      // ── Faire-part : paiement one-time ────────────────────────────────
+      if (session.metadata?.product_type === "invitation") {
+        await handleInvitationPayment(supabase, session);
+        return NextResponse.json({ received: true });
+      }
+
       const prestataireId = session.metadata?.prestataire_id;
       const subscriptionId = session.subscription as string;
       const customerId = session.customer as string;

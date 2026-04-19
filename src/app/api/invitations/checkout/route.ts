@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
     }
 
     const metadata: Record<string, string> = {
+      product_type: "invitation",
       pack,
       is_premium: isPremium ? "true" : "false",
     };

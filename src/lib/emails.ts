@@ -396,6 +396,93 @@ export async function sendSignalementEmail({
   });
 }
 
+// ─── Email 6 : Confirmation commande faire-part ───────────────────────────────
+
+export async function sendInvitationConfirmationEmail({
+  recipientEmail,
+  coupleNames,
+  pack,
+  montantEuros,
+}: {
+  recipientEmail: string;
+  coupleNames: string;
+  pack: string;
+  montantEuros: number;
+}) {
+  const PACK_LABELS: Record<string, string> = {
+    digital: "Faire-part Numérique",
+    print_50: "Impression 50 exemplaires",
+    print_100: "Impression 100 exemplaires",
+    print_150: "Impression 150 exemplaires",
+    print_200: "Impression 200 exemplaires",
+    print_250: "Impression 250 exemplaires",
+    print_300: "Impression 300 exemplaires",
+  };
+  const packLabel = PACK_LABELS[pack] ?? pack;
+
+  const content = `
+    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#F06292;letter-spacing:0.5px;text-transform:uppercase;">Commande confirmée</p>
+    <h1 style="margin:0 0 24px;font-size:26px;font-weight:700;color:#1a1a1a;line-height:1.25;">
+      Votre faire-part est en cours de création&nbsp;✨
+    </h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#555555;line-height:1.65;">
+      Bonjour,<br/>
+      Votre commande pour <strong>${coupleNames}</strong> a bien été reçue.
+      Votre vidéo animée sera prête dans quelques minutes.
+    </p>
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#fafafa;border-radius:12px;padding:24px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;width:140px;">Couple</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:600;color:#1a1a1a;">${coupleNames}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Pack</td>
+              <td style="padding:6px 0;font-size:14px;color:#333333;">${packLabel}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Montant</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:600;color:#1a1a1a;">${montantEuros.toFixed(2)} €</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+    ${ctaButton("Voir mes faire-parts", `${SITE_URL}/dashboard/marie/faire-parts`)}
+    ${divider()}
+    <p style="margin:0;font-size:13px;color:#aaaaaa;line-height:1.6;text-align:center;">
+      Vous recevrez une notification dès que votre vidéo animée sera prête à partager.
+    </p>
+  `;
+
+  const text = [
+    `Bonjour,`,
+    "",
+    `Votre commande de faire-part pour ${coupleNames} a bien été confirmée.`,
+    "",
+    `Pack : ${packLabel}`,
+    `Montant : ${montantEuros.toFixed(2)} €`,
+    "",
+    `Votre vidéo animée sera prête dans quelques minutes.`,
+    "",
+    `Voir vos faire-parts : ${SITE_URL}/dashboard/marie/faire-parts`,
+    textFooter(true),
+  ].join("\n");
+
+  return resend.emails.send({
+    from: FROM,
+    to: recipientEmail,
+    replyTo: REPLY_TO,
+    subject: `Votre faire-part ${coupleNames} est en cours de création`,
+    html: baseTemplate(content),
+    text,
+    headers: unsubscribeHeaders,
+  });
+}
+
 // ─── Email 4 : Nouveau prestataire (admin) ────────────────────────────────────
 
 export async function sendNewPrestaireAdminEmail({
