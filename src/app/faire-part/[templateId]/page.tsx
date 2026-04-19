@@ -399,19 +399,26 @@ export default function FairePartEditorPage() {
         accentColor: template.accentColor,
       };
 
-      let finalSlug = invitationSlug;
+      let finalSlug: string | null = null;
 
       if (draftInvitationId) {
-        const { data: updated, error } = await supabase.from('invitations').update({
+        const { error: updateErr } = await supabase.from('invitations').update({
           titre: `${coupleNames} — ${dateFormatted}`,
           config,
           rsvp_actif: !!form.rsvpDeadline,
           rsvp_deadline: form.rsvpDeadline || null,
           statut: 'publie',
           updated_at: new Date().toISOString(),
-        }).eq('id', draftInvitationId).select('slug').single();
-        if (error) throw error;
-        finalSlug = updated.slug;
+        }).eq('id', draftInvitationId);
+        if (updateErr) throw updateErr;
+
+        const { data: fetched, error: fetchErr } = await supabase
+          .from('invitations')
+          .select('slug')
+          .eq('id', draftInvitationId)
+          .single();
+        if (fetchErr) throw fetchErr;
+        finalSlug = fetched.slug;
       } else {
         const { data: tpl } = await supabase
           .from('invitation_templates')
@@ -437,6 +444,8 @@ export default function FairePartEditorPage() {
         });
         if (error) throw error;
       }
+
+      if (!finalSlug) throw new Error('Slug introuvable après publication');
 
       setToast({ type: 'success', message: 'Faire-part publié ! Redirection vers votre invitation…' });
       setTimeout(() => router.push(`/invitation/${finalSlug}`), 1800);
