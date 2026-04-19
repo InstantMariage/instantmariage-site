@@ -483,6 +483,110 @@ export async function sendInvitationConfirmationEmail({
   });
 }
 
+// ─── Email 7 : Notification RSVP aux mariés ──────────────────────────────────
+
+export async function sendRsvpNotificationEmail({
+  coupleEmail,
+  coupleNames,
+  guestPrenom,
+  guestNom,
+  guestEmail,
+  presence,
+  nbPersonnes,
+  regimeAlimentaire,
+  message,
+  invitationSlug,
+}: {
+  coupleEmail: string;
+  coupleNames: string;
+  guestPrenom: string;
+  guestNom: string;
+  guestEmail: string;
+  presence: boolean;
+  nbPersonnes: number;
+  regimeAlimentaire: string | null;
+  message: string | null;
+  invitationSlug: string;
+}) {
+  const guestFullName = `${guestPrenom} ${guestNom}`;
+  const presenceLabel = presence ? `✅ Présent(e) — ${nbPersonnes} personne${nbPersonnes > 1 ? 's' : ''}` : '❌ Absent(e)';
+  const accentColor = presence ? '#16a34a' : '#dc2626';
+
+  const content = `
+    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#F06292;letter-spacing:0.5px;text-transform:uppercase;">Nouvelle réponse RSVP</p>
+    <h1 style="margin:0 0 24px;font-size:26px;font-weight:700;color:#1a1a1a;line-height:1.25;">
+      ${guestFullName} a répondu
+    </h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#555555;line-height:1.65;">
+      Bonjour ${coupleNames},<br/>
+      Vous venez de recevoir une réponse à votre faire-part.
+    </p>
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#fafafa;border-radius:12px;padding:24px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;width:140px;">Invité(e)</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:600;color:#1a1a1a;">${guestFullName}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Email</td>
+              <td style="padding:6px 0;font-size:14px;color:#333333;">
+                <a href="mailto:${guestEmail}" style="color:#F06292;text-decoration:none;">${guestEmail}</a>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Réponse</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:600;" style="color:${accentColor};">${presenceLabel}</td>
+            </tr>
+            ${regimeAlimentaire ? `
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Régime</td>
+              <td style="padding:6px 0;font-size:14px;color:#333333;">${regimeAlimentaire}</td>
+            </tr>` : ''}
+          </table>
+        </td>
+      </tr>
+    </table>
+    ${message ? `
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#fafafa;border-left:3px solid #F06292;border-radius:0 8px 8px 0;padding:16px 20px;">
+          <p style="margin:0 0 6px;font-size:12px;font-weight:600;color:#aaaaaa;text-transform:uppercase;letter-spacing:0.5px;">Message</p>
+          <p style="margin:0;font-size:14px;color:#444444;line-height:1.7;font-style:italic;">&ldquo;${message}&rdquo;</p>
+        </td>
+      </tr>
+    </table>` : ''}
+    ${ctaButton('Voir toutes les réponses', `${SITE_URL}/dashboard/marie/faire-parts`)}
+  `;
+
+  const lines = [
+    `Bonjour ${coupleNames},`,
+    '',
+    `${guestFullName} a répondu à votre faire-part.`,
+    '',
+    `Réponse : ${presence ? `Présent(e) — ${nbPersonnes} personne${nbPersonnes > 1 ? 's' : ''}` : 'Absent(e)'}`,
+    `Email : ${guestEmail}`,
+    ...(regimeAlimentaire ? [`Régime : ${regimeAlimentaire}`] : []),
+    ...(message ? ['', `Message : "${message}"`] : []),
+    '',
+    `Voir toutes les réponses : ${SITE_URL}/dashboard/marie/faire-parts`,
+    textFooter(true),
+  ];
+
+  return resend.emails.send({
+    from: FROM,
+    to: coupleEmail,
+    replyTo: guestEmail,
+    subject: `Nouvelle réponse RSVP de ${guestFullName}`,
+    html: baseTemplate(content),
+    text: lines.join('\n'),
+    headers: unsubscribeHeaders,
+  });
+}
+
 // ─── Email 4 : Nouveau prestataire (admin) ────────────────────────────────────
 
 export async function sendNewPrestaireAdminEmail({
