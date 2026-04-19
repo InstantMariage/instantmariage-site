@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { supabase } from '@/lib/supabase';
@@ -177,8 +177,12 @@ function FormSection({ number, title, children }: { number: number; title: strin
 export default function FairePartEditorPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const draftId = searchParams.get('draft');
   const templateId = params.templateId as string;
   const template = TEMPLATES[templateId];
+
+  const [draftInvitationId, setDraftInvitationId] = useState<string | null>(draftId);
 
   const [form, setForm] = useState({
     prenomMariee: '',
@@ -198,9 +202,32 @@ export default function FairePartEditorPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
-      if (session && templateId) {
+      if (session && draftId) {
+        // Charger le brouillon existant depuis Supabase
+        const { data: inv } = await supabase
+          .from('invitations')
+          .select('id, config, rsvp_actif, rsvp_deadline')
+          .eq('id', draftId)
+          .maybeSingle();
+        if (inv?.config) {
+          const c = inv.config as Record<string, string>;
+          setForm((prev) => ({
+            ...prev,
+            prenomMariee: c.prenomMariee ?? prev.prenomMariee,
+            prenomMarie: c.prenomMarie ?? prev.prenomMarie,
+            dateMariage: c.dateMariage ?? prev.dateMariage,
+            lieu: c.lieu ?? prev.lieu,
+            message: c.message ?? prev.message,
+            emailContact: c.emailContact ?? prev.emailContact,
+            photoUrl: c.photoUrl ?? prev.photoUrl,
+            rsvpDeadline: inv.rsvp_deadline ?? prev.rsvpDeadline,
+          }));
+          setDraftInvitationId(inv.id);
+          setToast({ type: 'success', message: 'Brouillon chargé — continuez votre faire-part !' });
+        }
+      } else if (session && templateId) {
         const key = `faire-part-draft-${templateId}`;
         const saved = localStorage.getItem(key);
         if (saved) {
@@ -215,7 +242,7 @@ export default function FairePartEditorPage() {
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(s);
-      if (s && templateId) {
+      if (s && !draftId && templateId) {
         const key = `faire-part-draft-${templateId}`;
         const saved = localStorage.getItem(key);
         if (saved) {
@@ -229,7 +256,7 @@ export default function FairePartEditorPage() {
       }
     });
     return () => subscription.unsubscribe();
-  }, [templateId]);
+  }, [templateId, draftId]);
 
   useEffect(() => {
     if (template === undefined && templateId) router.replace('/faire-part');
@@ -344,21 +371,35 @@ export default function FairePartEditorPage() {
         accentColor: template.accentColor,
       };
 
-      const { error: insertErr } = await supabase.from('invitations').insert({
-        marie_id: marie.id,
-        template_id: templateDbId,
-        slug,
-        titre: `${coupleNames} — ${dateFormatted}`,
-        config,
-        rsvp_actif: !!form.rsvpDeadline,
-        rsvp_deadline: form.rsvpDeadline || null,
-        statut: 'brouillon',
-      });
+      let saveErr;
+      if (draftInvitationId) {
+        // Mise à jour du brouillon existant
+        const { error } = await supabase.from('invitations').update({
+          titre: `${coupleNames} — ${dateFormatted}`,
+          config,
+          rsvp_actif: !!form.rsvpDeadline,
+          rsvp_deadline: form.rsvpDeadline || null,
+          updated_at: new Date().toISOString(),
+        }).eq('id', draftInvitationId);
+        saveErr = error;
+      } else {
+        const { error } = await supabase.from('invitations').insert({
+          marie_id: marie.id,
+          template_id: templateDbId,
+          slug,
+          titre: `${coupleNames} — ${dateFormatted}`,
+          config,
+          rsvp_actif: !!form.rsvpDeadline,
+          rsvp_deadline: form.rsvpDeadline || null,
+          statut: 'brouillon',
+        });
+        saveErr = error;
+      }
 
-      if (insertErr) throw insertErr;
+      if (saveErr) throw saveErr;
 
       setToast({ type: 'success', message: 'Faire-part sauvegardé en brouillon !' });
-      setTimeout(() => router.push('/dashboard/marie'), 1800);
+      setTimeout(() => router.push('/dashboard/marie/faire-parts'), 1800);
     } catch (err: any) {
       setToast({ type: 'error', message: err.message || 'Erreur lors de la sauvegarde' });
     } finally {

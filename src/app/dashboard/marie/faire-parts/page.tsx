@@ -371,7 +371,7 @@ export default function FairePartsPage() {
                       >
                         {/* Bouton éditer (toujours visible) */}
                         <Link
-                          href={`/faire-part/${inv.template?.id ?? ""}?invitation=${inv.id}`}
+                          href={`/faire-part/${inv.template?.slug ?? ""}?draft=${inv.id}`}
                           className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 hover:opacity-80"
                           style={{ background: "#FFF0F5", color: "#F06292" }}
                         >
