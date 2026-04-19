@@ -781,18 +781,6 @@ export default function FairePartEditorPage() {
                 )}
               </FormSection>
 
-              {/* Save button (desktop inline, mobile sticky) */}
-              <div className="hidden lg:block">
-                <SaveButton
-                  saving={saving}
-                  publishing={publishing}
-                  session={session}
-                  accentColor={template.accentColor}
-                  onSave={handleSave}
-                  onPublish={() => setShowPublishConfirm(true)}
-                />
-              </div>
-
             </div>
 
             {/* ── RIGHT: Preview ──────────────────────────────────────────────── */}
