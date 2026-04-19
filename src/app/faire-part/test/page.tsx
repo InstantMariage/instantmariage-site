@@ -183,7 +183,7 @@ export default function FairepartTestPage() {
                     {result.missing.map((m) => <li key={m}>{m}</li>)}
                   </ul>
                 )}
-                {result.details && (
+                {!!result.details && (
                   <pre className="text-xs bg-red-50 p-3 rounded overflow-auto max-h-40 text-red-800">
                     {typeof result.details === "string" ? result.details : JSON.stringify(result.details, null, 2)}
                   </pre>
