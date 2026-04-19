@@ -370,14 +370,25 @@ export default function FairePartsPage() {
                         style={{ borderTop: "1px solid #FEE2E2", paddingTop: "14px" }}
                       >
                         {/* Bouton éditer (toujours visible) */}
+                        {inv.statut === "brouillon" ? (
+                          <Link
+                            href={`/faire-part/${inv.template?.slug ?? ""}?draft=${inv.id}`}
+                            className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full text-sm font-bold transition-all duration-200 hover:opacity-90 active:scale-95"
+                            style={{ background: "#e91e8c", color: "white" }}
+                          >
+                            <IconEdit />
+                            Continuer →
+                          </Link>
+                        ) : (
                         <Link
                           href={`/faire-part/${inv.template?.slug ?? ""}?draft=${inv.id}`}
                           className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 hover:opacity-80"
                           style={{ background: "#FFF0F5", color: "#F06292" }}
                         >
                           <IconEdit />
-                          {inv.statut === "brouillon" ? "Continuer" : "Modifier"}
+                          Modifier
                         </Link>
+                        )}
 
                         {/* Lien public (si publié) */}
                         {isPublie && (
