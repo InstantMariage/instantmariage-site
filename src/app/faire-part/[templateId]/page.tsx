@@ -198,10 +198,38 @@ export default function FairePartEditorPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session && templateId) {
+        const key = `faire-part-draft-${templateId}`;
+        const saved = localStorage.getItem(key);
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            setForm((prev) => ({ ...prev, ...parsed }));
+            setToast({ type: 'success', message: 'Votre formulaire a été restauré !' });
+          } catch {}
+          localStorage.removeItem(key);
+        }
+      }
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
+      setSession(s);
+      if (s && templateId) {
+        const key = `faire-part-draft-${templateId}`;
+        const saved = localStorage.getItem(key);
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            setForm((prev) => ({ ...prev, ...parsed }));
+            setToast({ type: 'success', message: 'Votre formulaire a été restauré !' });
+          } catch {}
+          localStorage.removeItem(key);
+        }
+      }
+    });
     return () => subscription.unsubscribe();
-  }, []);
+  }, [templateId]);
 
   useEffect(() => {
     if (template === undefined && templateId) router.replace('/faire-part');
@@ -265,6 +293,7 @@ export default function FairePartEditorPage() {
   // ── Save ────────────────────────────────────────────────────────────────────
   const handleSave = async () => {
     if (!session) {
+      localStorage.setItem(`faire-part-draft-${templateId}`, JSON.stringify(form));
       router.push(`/login?redirect=/faire-part/${templateId}`);
       return;
     }
@@ -287,13 +316,14 @@ export default function FairePartEditorPage() {
 
       if (marieErr || !marie) throw new Error('Profil marié introuvable. Créez votre profil dans le dashboard.');
 
-      const { data: tpl, error: tplErr } = await supabase
+      const { data: tpl } = await supabase
         .from('invitation_templates')
         .select('id')
         .eq('slug', templateId)
-        .single();
+        .maybeSingle();
 
-      if (tplErr || !tpl) throw new Error('Ce template n\'est pas encore disponible en sauvegarde.');
+      // template_id is nullable — save proceeds even if slug not yet seeded in DB
+      const templateDbId = tpl?.id ?? null;
 
       const { data: slug } = await supabase.rpc('generate_invitation_slug', {
         prenom1: form.prenomMariee,
@@ -315,7 +345,7 @@ export default function FairePartEditorPage() {
 
       const { error: insertErr } = await supabase.from('invitations').insert({
         marie_id: marie.id,
-        template_id: tpl.id,
+        template_id: templateDbId,
         slug,
         titre: `${coupleNames} — ${dateFormatted}`,
         config,
