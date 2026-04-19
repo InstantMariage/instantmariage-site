@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -97,25 +96,18 @@ function StaticPreview({
   dateFormatted,
   lieu,
   message,
-  photoUrl,
 }: {
   template: (typeof TEMPLATES)[string];
   coupleNames: string;
   dateFormatted: string;
   lieu: string;
   message: string;
-  photoUrl: string;
 }) {
   return (
     <div
       className={`relative w-full rounded-2xl bg-gradient-to-br ${template.preview.bg} flex flex-col items-center justify-center p-8 gap-4 shadow-xl min-h-[380px]`}
       style={{ border: `2px solid ${template.preview.borderColor}22` }}
     >
-      {photoUrl && (
-        <div className="w-20 h-20 rounded-full overflow-hidden border-2 shadow-lg" style={{ borderColor: template.accentColor }}>
-          <Image src={photoUrl} alt="Couple" width={80} height={80} className="object-cover w-full h-full" />
-        </div>
-      )}
       <div className="text-center">
         <p className={`text-xs uppercase tracking-widest mb-2 opacity-60 ${template.preview.textColor}`}>Mariage</p>
         <p
@@ -192,17 +184,14 @@ export default function FairePartEditorPage() {
     message: 'Nous vous invitons à célébrer notre union',
     rsvpDeadline: '',
     emailContact: '',
-    photoUrl: '',
   });
 
-  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [showPublishConfirm, setShowPublishConfirm] = useState(false);
   const [invitationSlug, setInvitationSlug] = useState<string | null>(null);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [session, setSession] = useState<any>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -224,7 +213,6 @@ export default function FairePartEditorPage() {
             lieu: c.lieu ?? prev.lieu,
             message: c.message ?? prev.message,
             emailContact: c.emailContact ?? prev.emailContact,
-            photoUrl: c.photoUrl ?? prev.photoUrl,
             rsvpDeadline: inv.rsvp_deadline ?? prev.rsvpDeadline,
           }));
           setDraftInvitationId(inv.id);
@@ -283,44 +271,6 @@ export default function FairePartEditorPage() {
   const lieuDisplay = form.lieu || 'Château de Versailles, Paris';
   const messageDisplay = form.message || 'Nous vous invitons à célébrer notre union';
 
-  // ── Photo upload ────────────────────────────────────────────────────────────
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      setToast({ type: 'error', message: 'Photo trop lourde (max 5 Mo)' });
-      return;
-    }
-    if (!file.type.startsWith('image/')) {
-      setToast({ type: 'error', message: 'Format non supporté (JPG, PNG, WebP)' });
-      return;
-    }
-
-    setUploading(true);
-    try {
-      const ext = file.name.split('.').pop();
-      const path = `couples/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error: uploadErr } = await supabase.storage
-        .from('invitation-assets')
-        .upload(path, file, { upsert: false });
-
-      if (uploadErr) throw uploadErr;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('invitation-assets')
-        .getPublicUrl(path);
-
-      setField('photoUrl', publicUrl);
-      setToast({ type: 'success', message: 'Photo ajoutée !' });
-    } catch {
-      setToast({ type: 'error', message: "Erreur lors de l'upload" });
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
-
   // ── Save ────────────────────────────────────────────────────────────────────
   const handleSave = async () => {
     if (!session) {
@@ -371,7 +321,6 @@ export default function FairePartEditorPage() {
         lieu: form.lieu,
         message: form.message,
         emailContact: form.emailContact,
-        photoUrl: form.photoUrl,
         accentColor: template.accentColor,
       };
 
@@ -447,7 +396,6 @@ export default function FairePartEditorPage() {
         lieu: form.lieu,
         message: form.message,
         emailContact: form.emailContact,
-        photoUrl: form.photoUrl,
         accentColor: template.accentColor,
       };
 
@@ -724,63 +672,6 @@ export default function FairePartEditorPage() {
                 </div>
               </FormSection>
 
-              {/* Section 5: Photo du couple */}
-              <FormSection number={5} title="Photo du couple">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={handlePhotoUpload}
-                  className="hidden"
-                />
-                {form.photoUrl ? (
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-xl overflow-hidden border-2 shadow" style={{ borderColor: template.accentColor }}>
-                      <Image
-                        src={form.photoUrl}
-                        alt="Photo du couple"
-                        width={64}
-                        height={64}
-                        className="object-cover w-full h-full"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-700 font-medium">Photo ajoutée</p>
-                      <p className="text-xs text-gray-400 mb-2">Intégrée dans votre faire-part</p>
-                      <button
-                        onClick={() => fileInputRef.current?.click()}
-                        className="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
-                      >
-                        Changer de photo
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploading}
-                    className="w-full flex flex-col items-center gap-3 py-8 rounded-xl border-2 border-dashed border-gray-200 hover:border-rose-300 hover:bg-rose-50/50 transition-all duration-200 text-gray-400 hover:text-rose-400 disabled:opacity-60"
-                  >
-                    {uploading ? (
-                      <>
-                        <div className="w-6 h-6 border-2 border-rose-300 border-t-transparent rounded-full animate-spin" />
-                        <span className="text-sm">Upload en cours…</span>
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                        </svg>
-                        <div className="text-center">
-                          <p className="text-sm font-medium">Ajouter une photo du couple</p>
-                          <p className="text-xs mt-0.5">JPG, PNG ou WebP · Max 5 Mo</p>
-                        </div>
-                      </>
-                    )}
-                  </button>
-                )}
-              </FormSection>
-
             </div>
 
             {/* ── RIGHT: Preview ──────────────────────────────────────────────── */}
@@ -838,7 +729,6 @@ export default function FairePartEditorPage() {
                     dateFormatted={dateFormatted}
                     lieu={lieuDisplay}
                     message={messageDisplay}
-                    photoUrl={form.photoUrl}
                   />
                 )}
 
