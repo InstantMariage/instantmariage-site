@@ -309,19 +309,7 @@ export default function FairePartPage() {
 
                   <Link
                     href={`/faire-part/${template.id}`}
-                    className="block w-full text-center text-sm font-semibold py-2.5 px-4 rounded-full transition-all duration-200 border-2 group-hover:text-white group-hover:shadow-md"
-                    style={{
-                      borderColor: "#F06292",
-                      color: "#F06292",
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.background = "#F06292";
-                      (e.currentTarget as HTMLElement).style.color = "white";
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.background = "transparent";
-                      (e.currentTarget as HTMLElement).style.color = "#F06292";
-                    }}
+                    className="block w-full text-center text-sm font-semibold py-2.5 px-4 rounded-full transition-all duration-200 border-2 border-[#F06292] text-[#F06292] hover:bg-[#F06292] hover:text-white group-hover:shadow-md"
                   >
                     Personnaliser →
                   </Link>
