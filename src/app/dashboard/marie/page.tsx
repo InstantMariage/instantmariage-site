@@ -141,6 +141,7 @@ export default function DashboardMarie() {
   const [favorisLoaded, setFavorisLoaded] = useState(false);
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [convsLoaded, setConvsLoaded] = useState(false);
+  const [invitationCount, setInvitationCount] = useState<number | null>(null);
 
   const weddingDate = dateMariage ? new Date(dateMariage) : null;
   const { days } = useCountdown(weddingDate);
@@ -154,7 +155,7 @@ export default function DashboardMarie() {
 
       const { data: marie } = await supabase
         .from("maries")
-        .select("prenom_marie1, prenom_marie2, date_mariage, lieu_mariage")
+        .select("id, prenom_marie1, prenom_marie2, date_mariage, lieu_mariage")
         .eq("user_id", session.user.id)
         .single();
 
@@ -163,7 +164,14 @@ export default function DashboardMarie() {
         setPrenomMarie2(marie.prenom_marie2 || "");
         setDateMariage(marie.date_mariage || null);
         setLieuMariage(marie.lieu_mariage || null);
+
+        const { count } = await supabase
+          .from("invitations")
+          .select("*", { count: "exact", head: true })
+          .eq("marie_id", marie.id);
+        setInvitationCount(count ?? 0);
       } else {
+        setInvitationCount(0);
         const meta = session.user.user_metadata;
         setPrenomMarie1(meta?.prenom || "");
         setPrenomMarie2(meta?.prenom_marie2 || "");
@@ -338,6 +346,20 @@ export default function DashboardMarie() {
                 <p className="text-xs uppercase tracking-wider mb-0.5" style={{ color: "rgba(255,255,255,0.7)" }}>jusqu&apos;au grand jour</p>
                 <p className="text-sm font-medium text-white">{formatDateFr(dateMariage)}</p>
               </div>
+            </div>
+          )}
+
+          {/* Faire-part CTA */}
+          {invitationCount !== null && (
+            <div className="mt-4">
+              <Link
+                href={invitationCount > 0 ? "/dashboard/marie/faire-part" : "/faire-part"}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-200 hover:opacity-90 active:scale-95"
+                style={{ background: "rgba(255,255,255,0.22)", color: "white", border: "1px solid rgba(255,255,255,0.35)" }}
+              >
+                <IconMail />
+                {invitationCount > 0 ? "Mes faire-parts animés" : "Créer mon faire-part"}
+              </Link>
             </div>
           )}
         </section>
