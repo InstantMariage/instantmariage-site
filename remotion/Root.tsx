@@ -1,3 +1,4 @@
+import React from "react";
 import { Composition } from "remotion";
 import { EleganceDoree, EleganceDoreeProps } from "./EleganceDoree";
 
@@ -11,7 +12,7 @@ export function RemotionRoot() {
     <>
       <Composition
         id="EleganceDoree"
-        component={EleganceDoree}
+        component={EleganceDoree as unknown as React.ComponentType<Record<string, unknown>>}
         durationInFrames={FPS * DURATION_SECONDS}
         fps={FPS}
         width={WIDTH}
