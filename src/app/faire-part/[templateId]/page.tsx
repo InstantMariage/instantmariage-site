@@ -197,6 +197,9 @@ export default function FairePartEditorPage() {
 
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [showPublishConfirm, setShowPublishConfirm] = useState(false);
+  const [invitationSlug, setInvitationSlug] = useState<string | null>(null);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [session, setSession] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -208,7 +211,7 @@ export default function FairePartEditorPage() {
         // Charger le brouillon existant depuis Supabase
         const { data: inv } = await supabase
           .from('invitations')
-          .select('id, config, rsvp_actif, rsvp_deadline')
+          .select('id, slug, config, rsvp_actif, rsvp_deadline')
           .eq('id', draftId)
           .maybeSingle();
         if (inv?.config) {
@@ -225,6 +228,7 @@ export default function FairePartEditorPage() {
             rsvpDeadline: inv.rsvp_deadline ?? prev.rsvpDeadline,
           }));
           setDraftInvitationId(inv.id);
+          setInvitationSlug(inv.slug);
           setToast({ type: 'success', message: 'Brouillon chargé — continuez votre faire-part !' });
         }
       } else if (session && templateId) {
@@ -407,6 +411,93 @@ export default function FairePartEditorPage() {
     }
   };
 
+  // ── Publish ─────────────────────────────────────────────────────────────────
+  const handlePublish = async () => {
+    setShowPublishConfirm(false);
+    if (!session) {
+      localStorage.setItem(`faire-part-draft-${templateId}`, JSON.stringify(form));
+      router.push(`/login?redirect=/faire-part/${templateId}`);
+      return;
+    }
+    if (!form.prenomMariee || !form.prenomMarie) {
+      setToast({ type: 'error', message: 'Veuillez indiquer les prénoms des mariés' });
+      return;
+    }
+    if (!form.dateMariage) {
+      setToast({ type: 'error', message: 'Veuillez indiquer la date du mariage' });
+      return;
+    }
+
+    setPublishing(true);
+    try {
+      const { data: marie, error: marieErr } = await supabase
+        .from('maries')
+        .select('id')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (marieErr || !marie) throw new Error('Profil marié introuvable. Créez votre profil dans le dashboard.');
+
+      const config = {
+        coupleNames,
+        prenomMariee: form.prenomMariee,
+        prenomMarie: form.prenomMarie,
+        date: dateFormatted,
+        dateMariage: form.dateMariage,
+        lieu: form.lieu,
+        message: form.message,
+        emailContact: form.emailContact,
+        photoUrl: form.photoUrl,
+        accentColor: template.accentColor,
+      };
+
+      let finalSlug = invitationSlug;
+
+      if (draftInvitationId) {
+        const { error } = await supabase.from('invitations').update({
+          titre: `${coupleNames} — ${dateFormatted}`,
+          config,
+          rsvp_actif: !!form.rsvpDeadline,
+          rsvp_deadline: form.rsvpDeadline || null,
+          statut: 'publie',
+          updated_at: new Date().toISOString(),
+        }).eq('id', draftInvitationId);
+        if (error) throw error;
+      } else {
+        const { data: tpl } = await supabase
+          .from('invitation_templates')
+          .select('id')
+          .eq('slug', templateId)
+          .maybeSingle();
+
+        const { data: slugFromRpc } = await supabase.rpc('generate_invitation_slug', {
+          p_prenom1: form.prenomMariee || null,
+          p_prenom2: form.prenomMarie || null,
+        });
+        finalSlug = slugFromRpc || `invitation-${crypto.randomUUID().slice(0, 8)}`;
+
+        const { error } = await supabase.from('invitations').insert({
+          marie_id: marie.id,
+          template_id: tpl?.id ?? null,
+          slug: finalSlug,
+          titre: `${coupleNames} — ${dateFormatted}`,
+          config,
+          rsvp_actif: !!form.rsvpDeadline,
+          rsvp_deadline: form.rsvpDeadline || null,
+          statut: 'publie',
+        });
+        if (error) throw error;
+      }
+
+      setToast({ type: 'success', message: 'Faire-part publié ! Redirection vers votre invitation…' });
+      setTimeout(() => router.push(`/invitation/${finalSlug}`), 1800);
+    } catch (err: any) {
+      setToast({ type: 'error', message: err.message || 'Erreur lors de la publication' });
+    } finally {
+      setPublishing(false);
+    }
+  };
+
   if (!template) return null;
 
   const isEleganceDoree = templateId === 'elegance-doree';
@@ -434,6 +525,41 @@ export default function FairePartEditorPage() {
             </svg>
           )}
           {toast.message}
+        </div>
+      )}
+
+      {/* Publish confirmation modal */}
+      {showPublishConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: '#FFF0F5' }}>
+                <svg className="w-5 h-5" fill="none" stroke="#E91E8C" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+              </div>
+              <h2 className="text-base font-bold text-gray-900">Publier votre faire-part ?</h2>
+            </div>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              Votre faire-part sera accessible à tous via un lien unique. Vos invités pourront le consulter et répondre au RSVP.
+            </p>
+            <p className="text-xs text-gray-400">Vous pourrez le modifier à tout moment depuis votre dashboard.</p>
+            <div className="flex gap-3 pt-1">
+              <button
+                onClick={() => setShowPublishConfirm(false)}
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handlePublish}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 shadow-md hover:shadow-lg"
+                style={{ background: 'linear-gradient(135deg, #E91E8C 0%, #C2185B 100%)' }}
+              >
+                Oui, publier
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -659,9 +785,11 @@ export default function FairePartEditorPage() {
               <div className="hidden lg:block">
                 <SaveButton
                   saving={saving}
+                  publishing={publishing}
                   session={session}
                   accentColor={template.accentColor}
                   onSave={handleSave}
+                  onPublish={() => setShowPublishConfirm(true)}
                 />
               </div>
 
@@ -750,9 +878,11 @@ export default function FairePartEditorPage() {
               <div className="hidden lg:block">
                 <SaveButton
                   saving={saving}
+                  publishing={publishing}
                   session={session}
                   accentColor={template.accentColor}
                   onSave={handleSave}
+                  onPublish={() => setShowPublishConfirm(true)}
                 />
               </div>
             </div>
@@ -762,10 +892,10 @@ export default function FairePartEditorPage() {
       </main>
 
       {/* ── Mobile sticky save bar ──────────────────────────────────────────── */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-sm border-t border-gray-100 px-4 py-3 flex gap-3">
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-sm border-t border-gray-100 px-4 py-3 flex gap-2">
         <Link
           href="/faire-part"
-          className="flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors shrink-0"
+          className="flex items-center justify-center px-3 py-3 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors shrink-0"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
@@ -773,21 +903,35 @@ export default function FairePartEditorPage() {
         </Link>
         <button
           onClick={handleSave}
-          disabled={saving}
-          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-70"
-          style={{ background: saving ? '#e0a0b0' : 'linear-gradient(135deg, #F06292, #E91E8C)' }}
+          disabled={saving || publishing}
+          className="flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl text-sm font-semibold border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200 disabled:opacity-60 shrink-0"
         >
           {saving ? (
+            <div className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
+          ) : (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          )}
+          <span className="hidden xs:inline">Brouillon</span>
+        </button>
+        <button
+          onClick={() => setShowPublishConfirm(true)}
+          disabled={saving || publishing}
+          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-70"
+          style={{ background: publishing ? '#9C27B0aa' : 'linear-gradient(135deg, #E91E8C 0%, #C2185B 100%)' }}
+        >
+          {publishing ? (
             <>
               <div className="w-4 h-4 border-2 border-white/60 border-t-white rounded-full animate-spin" />
-              Sauvegarde…
+              Publication…
             </>
           ) : (
             <>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
               </svg>
-              {session ? 'Sauvegarder le faire-part' : 'Se connecter pour sauvegarder'}
+              {session ? 'Publier' : 'Connexion pour publier'}
             </>
           )}
         </button>
@@ -804,41 +948,69 @@ export default function FairePartEditorPage() {
 
 function SaveButton({
   saving,
+  publishing,
   session,
   accentColor,
   onSave,
+  onPublish,
 }: {
   saving: boolean;
+  publishing: boolean;
   session: any;
   accentColor: string;
   onSave: () => void;
+  onPublish: () => void;
 }) {
+  const busy = saving || publishing;
   return (
-    <div className="space-y-2">
+    <div className="space-y-2.5">
+      {/* Publish — primary CTA */}
       <button
-        onClick={onSave}
-        disabled={saving}
+        onClick={onPublish}
+        disabled={busy}
         className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 shadow-md hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-70 disabled:translate-y-0"
         style={{
-          background: saving
-            ? '#e0a0b0'
-            : 'linear-gradient(135deg, #F06292 0%, #E91E8C 100%)',
+          background: publishing
+            ? '#9C27B0aa'
+            : 'linear-gradient(135deg, #E91E8C 0%, #C2185B 100%)',
         }}
       >
-        {saving ? (
+        {publishing ? (
           <>
             <div className="w-4 h-4 border-2 border-white/60 border-t-white rounded-full animate-spin" />
-            Sauvegarde en cours…
+            Publication en cours…
           </>
         ) : (
           <>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+            </svg>
+            {session ? 'Publier le faire-part' : 'Se connecter pour publier'}
+          </>
+        )}
+      </button>
+
+      {/* Save draft — secondary */}
+      <button
+        onClick={onSave}
+        disabled={busy}
+        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-60"
+      >
+        {saving ? (
+          <>
+            <div className="w-3.5 h-3.5 border-2 border-gray-400 border-t-gray-700 rounded-full animate-spin" />
+            Sauvegarde…
+          </>
+        ) : (
+          <>
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             {session ? 'Sauvegarder en brouillon' : 'Se connecter pour sauvegarder'}
           </>
         )}
       </button>
+
       {!session && (
         <p className="text-xs text-center text-gray-400">
           Vous serez redirigé vers la connexion
