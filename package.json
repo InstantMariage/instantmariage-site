@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "next lint",
     "remotion:studio": "remotion studio remotion/index.ts",
-    "remotion:render": "remotion render remotion/index.ts"
+    "remotion:render": "remotion render remotion/index.ts",
+    "remotion:lambda:deploy": "remotion lambda functions deploy --memory=2048 --disk=2048 --timeout=120 --region=eu-west-3",
+    "remotion:lambda:site": "remotion lambda sites create remotion/index.ts --site-name=instantmariage-faire-part --region=eu-west-3",
+    "remotion:lambda:info": "remotion lambda functions ls --region=eu-west-3 && remotion lambda sites ls --region=eu-west-3"
   },
   "remotion": {
     "entryPoint": "./remotion/index.ts"
