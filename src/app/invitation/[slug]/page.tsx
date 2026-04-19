@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import type { Metadata } from 'next';
 import RsvpForm from './RsvpForm';
+import EleganceDoreeInteractive from '@/components/faire-part/EleganceDoreeInteractive';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +20,8 @@ async function fetchInvitation(slug: string) {
     .from('invitations')
     .select(`
       id, slug, titre, config, rsvp_actif, rsvp_deadline, apercu_url,
-      maries!marie_id(prenom_marie1, prenom_marie2, date_mariage, lieu_mariage)
+      maries!marie_id(prenom_marie1, prenom_marie2, date_mariage, lieu_mariage),
+      invitation_templates!template_id(slug)
     `)
     .eq('slug', slug)
     .eq('statut', 'publie')
@@ -43,8 +45,8 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
   const marie = Array.isArray(invitation.maries) ? invitation.maries[0] : invitation.maries as any;
   const config = (invitation.config as Record<string, string>) ?? {};
-  const prenom1 = config.prenom_marie1 ?? marie?.prenom_marie1 ?? '';
-  const prenom2 = config.prenom_marie2 ?? marie?.prenom_marie2 ?? null;
+  const prenom1 = config.prenomMariee ?? config.prenom_marie1 ?? marie?.prenom_marie1 ?? '';
+  const prenom2 = config.prenomMarie ?? config.prenom_marie2 ?? marie?.prenom_marie2 ?? null;
   const names = prenom2 ? `${prenom1} & ${prenom2}` : prenom1 || 'Notre Mariage';
 
   return {
@@ -64,19 +66,41 @@ export default async function InvitationPage({ params }: { params: Params }) {
 
   const marie = Array.isArray(invitation.maries) ? invitation.maries[0] : invitation.maries as any;
   const config = (invitation.config as Record<string, string | undefined>) ?? {};
+  const tpl = Array.isArray(invitation.invitation_templates)
+    ? invitation.invitation_templates[0]
+    : (invitation.invitation_templates as any);
+  const templateSlug: string = tpl?.slug ?? '';
 
-  const prenom1 = config.prenom_marie1 ?? marie?.prenom_marie1 ?? '';
-  const prenom2 = config.prenom_marie2 ?? marie?.prenom_marie2 ?? null;
+  const prenom1 = config.prenomMariee ?? config.prenom_marie1 ?? marie?.prenom_marie1 ?? '';
+  const prenom2 = config.prenomMarie ?? config.prenom_marie2 ?? marie?.prenom_marie2 ?? null;
   const coupleNames = prenom2 ? `${prenom1} & ${prenom2}` : prenom1 || invitation.titre;
 
-  const dateMariage = config.date_mariage ?? marie?.date_mariage ?? null;
-  const lieuMariage = config.lieu_mariage ?? marie?.lieu_mariage ?? null;
-  const videoUrl = config.video_url ?? invitation.apercu_url ?? null;
-  const couleurPrimaire = config.couleur_primaire ?? '#f43f8e';
+  const dateMariage = config.dateMariage ?? config.date_mariage ?? marie?.date_mariage ?? null;
+  const lieuMariage = config.lieu ?? config.lieu_mariage ?? marie?.lieu_mariage ?? null;
+  const dateFormatted = config.date ?? (dateMariage ? formatDate(dateMariage) : '');
+  const couleurPrimaire = config.accentColor ?? config.couleur_primaire ?? '#C9A84C';
 
   const isRsvpOpen =
     invitation.rsvp_actif &&
     (!invitation.rsvp_deadline || new Date(invitation.rsvp_deadline) >= new Date());
+
+  // ── Élégance Dorée: full interactive experience ───────────────────────────
+  if (templateSlug === 'elegance-doree') {
+    return (
+      <EleganceDoreeInteractive
+        coupleNames={coupleNames}
+        date={dateFormatted}
+        lieu={lieuMariage ?? ''}
+        message={config.message}
+        rsvpActif={isRsvpOpen}
+        rsvpDeadline={invitation.rsvp_deadline ?? null}
+        rsvpSlug={isRsvpOpen ? invitation.slug : undefined}
+      />
+    );
+  }
+
+  // ── Classic layout for other templates ───────────────────────────────────
+  const videoUrl = config.video_url ?? invitation.apercu_url ?? null;
 
   return (
     <main className="min-h-screen bg-white">
@@ -118,9 +142,9 @@ export default async function InvitationPage({ params }: { params: Params }) {
       {(dateMariage || lieuMariage) && (
         <section className="py-10 px-4 bg-rose-50 text-center">
           <div className="max-w-sm mx-auto space-y-2">
-            {dateMariage && (
+            {dateFormatted && (
               <p className="text-rose-700 font-medium capitalize" style={{ fontSize: '1.1rem' }}>
-                {formatDate(dateMariage)}
+                {dateFormatted}
               </p>
             )}
             {lieuMariage && (
@@ -163,7 +187,6 @@ export default async function InvitationPage({ params }: { params: Params }) {
         </div>
       </section>
 
-      {/* ── Footer minimal ── */}
       <footer className="py-8 text-center">
         <p className="text-xs text-gray-300">
           Faire-part créé avec{' '}

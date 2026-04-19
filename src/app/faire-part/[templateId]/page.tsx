@@ -1,20 +1,13 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { supabase } from '@/lib/supabase';
-import { EleganceDoree, EleganceDoreeProps } from '../../../../remotion/EleganceDoree';
-
-// Avoid SSR for Remotion Player (uses browser APIs)
-const DynamicPlayer = dynamic(
-  () => import('@remotion/player').then((m) => m.Player),
-  { ssr: false }
-) as React.ComponentType<any>;
+import EleganceDoreeInteractive from '@/components/faire-part/EleganceDoreeInteractive';
 
 // ─── Template config ─────────────────────────────────────────────────────────
 
@@ -230,14 +223,6 @@ export default function FairePartEditorPage() {
   const dateFormatted = form.dateMariage ? formatDateFr(form.dateMariage) : '14 Juin 2025';
   const lieuDisplay = form.lieu || 'Château de Versailles, Paris';
   const messageDisplay = form.message || 'Nous vous invitons à célébrer notre union';
-
-  const remotionProps: EleganceDoreeProps = {
-    coupleNames,
-    date: dateFormatted,
-    lieu: lieuDisplay,
-    message: messageDisplay,
-    accentColor: template?.accentColor,
-  };
 
   // ── Photo upload ────────────────────────────────────────────────────────────
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -629,24 +614,33 @@ export default function FairePartEditorPage() {
                 </div>
 
                 {isEleganceDoree ? (
-                  /* Remotion Player — portrait 9:16, scaled to fit panel */
+                  /* Interactive HTML preview — scaled mobile 390×844 → 240×426 */
                   <div className="flex justify-center">
                     <div
-                      className="relative rounded-xl overflow-hidden shadow-lg bg-black"
-                      style={{ width: 240, height: 426 }}
+                      className="relative rounded-xl overflow-hidden shadow-lg"
+                      style={{ width: 240, height: 426, flexShrink: 0 }}
                     >
-                      <DynamicPlayer
-                        component={EleganceDoree}
-                        inputProps={remotionProps}
-                        durationInFrames={900}
-                        compositionWidth={1080}
-                        compositionHeight={1920}
-                        fps={30}
-                        style={{ width: 240, height: 426 }}
-                        controls
-                        loop
-                        autoPlay
-                      />
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: 390,
+                          height: 844,
+                          transform: 'scale(0.6154)',
+                          transformOrigin: 'top left',
+                          pointerEvents: 'none',
+                        }}
+                      >
+                        <EleganceDoreeInteractive
+                          coupleNames={coupleNames}
+                          date={dateFormatted}
+                          lieu={lieuDisplay}
+                          message={messageDisplay}
+                          autoPlay
+                          fixedHeight={844}
+                        />
+                      </div>
                     </div>
                   </div>
                 ) : (
