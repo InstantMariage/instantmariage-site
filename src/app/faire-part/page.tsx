@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import FairePartDashboardBanner from "@/components/FairePartDashboardBanner";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -253,6 +254,8 @@ export default function FairePartPage() {
             </div>
           </div>
         </section>
+
+        <FairePartDashboardBanner />
 
         {/* Filter bar */}
         <section className="sticky top-16 md:top-20 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
