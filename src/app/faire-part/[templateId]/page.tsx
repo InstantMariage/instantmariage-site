@@ -402,15 +402,16 @@ export default function FairePartEditorPage() {
       let finalSlug = invitationSlug;
 
       if (draftInvitationId) {
-        const { error } = await supabase.from('invitations').update({
+        const { data: updated, error } = await supabase.from('invitations').update({
           titre: `${coupleNames} — ${dateFormatted}`,
           config,
           rsvp_actif: !!form.rsvpDeadline,
           rsvp_deadline: form.rsvpDeadline || null,
           statut: 'publie',
           updated_at: new Date().toISOString(),
-        }).eq('id', draftInvitationId);
+        }).eq('id', draftInvitationId).select('slug').single();
         if (error) throw error;
+        finalSlug = updated.slug;
       } else {
         const { data: tpl } = await supabase
           .from('invitation_templates')
