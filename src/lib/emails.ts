@@ -451,7 +451,7 @@ export async function sendInvitationConfirmationEmail({
         </td>
       </tr>
     </table>
-    ${ctaButton("Voir mes faire-parts", `${SITE_URL}/dashboard/marie/faire-parts`)}
+    ${ctaButton("Voir mes faire-parts", `${SITE_URL}/dashboard/marie/faire-part`)}
     ${divider()}
     <p style="margin:0;font-size:13px;color:#aaaaaa;line-height:1.6;text-align:center;">
       Vous recevrez une notification dès que votre vidéo animée sera prête à partager.
@@ -468,7 +468,7 @@ export async function sendInvitationConfirmationEmail({
     "",
     `Votre vidéo animée sera prête dans quelques minutes.`,
     "",
-    `Voir vos faire-parts : ${SITE_URL}/dashboard/marie/faire-parts`,
+    `Voir vos faire-parts : ${SITE_URL}/dashboard/marie/faire-part`,
     textFooter(true),
   ].join("\n");
 
@@ -559,7 +559,7 @@ export async function sendRsvpNotificationEmail({
         </td>
       </tr>
     </table>` : ''}
-    ${ctaButton('Voir toutes les réponses', `${SITE_URL}/dashboard/marie/faire-parts`)}
+    ${ctaButton('Voir toutes les réponses', `${SITE_URL}/dashboard/marie/faire-part`)}
   `;
 
   const lines = [
@@ -572,7 +572,7 @@ export async function sendRsvpNotificationEmail({
     ...(regimeAlimentaire ? [`Régime : ${regimeAlimentaire}`] : []),
     ...(message ? ['', `Message : "${message}"`] : []),
     '',
-    `Voir toutes les réponses : ${SITE_URL}/dashboard/marie/faire-parts`,
+    `Voir toutes les réponses : ${SITE_URL}/dashboard/marie/faire-part`,
     textFooter(true),
   ];
 
