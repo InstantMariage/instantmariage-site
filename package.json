@@ -6,9 +6,18 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "remotion:studio": "remotion studio remotion/index.ts",
+    "remotion:render": "remotion render remotion/index.ts"
+  },
+  "remotion": {
+    "entryPoint": "./remotion/index.ts"
   },
   "dependencies": {
+    "@remotion/cli": "^4.0.448",
+    "@remotion/google-fonts": "^4.0.448",
+    "@remotion/lambda": "^4.0.448",
+    "@remotion/player": "^4.0.448",
     "@stripe/stripe-js": "^9.1.0",
     "@supabase/supabase-js": "^2.102.1",
     "@vercel/analytics": "^2.0.1",
@@ -17,6 +26,7 @@
     "next": "14.2.35",
     "react": "^18",
     "react-dom": "^18",
+    "remotion": "^4.0.448",
     "resend": "^6.10.0",
     "stripe": "^22.0.0"
   },
