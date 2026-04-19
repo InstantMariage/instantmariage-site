@@ -242,6 +242,15 @@ export default function DashboardMarie() {
 
   const tools = [
     {
+      href: "/dashboard/marie/faire-part",
+      external: false,
+      icon: <IconMail />,
+      label: "Faire-parts animés",
+      desc: "Créez et partagez votre faire-part digital",
+      iconBg: "#FFF0F5",
+      iconColor: "#F06292",
+    },
+    {
       href: "https://tableau-de-bord-mariage.vercel.app",
       external: true,
       icon: <IconChair />,
