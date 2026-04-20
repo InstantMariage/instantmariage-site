@@ -25,6 +25,8 @@ type Guest = {
   relation: string;
   table_id: string | null;
   presence_confirmee: boolean | null;
+  email: string | null;
+  telephone: string | null;
 };
 
 /* ─── Constants ─── */
@@ -110,6 +112,9 @@ export default function PlanDeTablePage() {
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
 
+  /* Guest popup */
+  const [popupGuest, setPopupGuest] = useState<Guest | null>(null);
+
   /* Drag: guest */
   const [dragGuest, setDragGuest] = useState<{ guestId: string; fromTableId: string | null } | null>(null);
   const [dragOverTable, setDragOverTable] = useState<string | null>(null);
@@ -134,7 +139,7 @@ export default function PlanDeTablePage() {
   const loadData = useCallback(async (mid: string) => {
     const [tRes, gRes] = await Promise.all([
       supabase.from("wedding_tables").select("*").eq("marie_id", mid).order("nom"),
-      supabase.from("wedding_guests").select("id,prenom,nom,regime_alimentaire,relation,table_id,presence_confirmee").eq("marie_id", mid),
+      supabase.from("wedding_guests").select("id,prenom,nom,regime_alimentaire,relation,table_id,presence_confirmee,email,telephone").eq("marie_id", mid),
     ]);
     if (tRes.data) setTables(tRes.data as WeddingTable[]);
     if (gRes.data) setGuests(gRes.data as Guest[]);
@@ -564,6 +569,7 @@ export default function PlanDeTablePage() {
                           onDragStart={handleGuestDragStart(guest.id, table.id)}
                           isDragging={dragGuest?.guestId === guest.id}
                           compact
+                          onGuestClick={setPopupGuest}
                           style={{ position: "absolute", left: pos.left, top: pos.top }}
                         />
                       );
@@ -622,6 +628,135 @@ export default function PlanDeTablePage() {
           )}
         </div>
       </div>
+
+      {/* ── Guest info popup ── */}
+      {popupGuest && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.4)" }}
+          onClick={() => setPopupGuest(null)}
+        >
+          <div
+            className="w-full max-w-xs rounded-3xl p-5"
+            style={{
+              background: "linear-gradient(145deg, #1e293b, #182032)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              boxShadow: "0 25px 60px rgba(0,0,0,0.5)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+                  style={{
+                    background: REGIME_COLORS[popupGuest.regime_alimentaire].bg,
+                    color: REGIME_COLORS[popupGuest.regime_alimentaire].text,
+                    boxShadow: `0 0 16px ${REGIME_COLORS[popupGuest.regime_alimentaire].bg}60`,
+                  }}
+                >
+                  {`${popupGuest.prenom[0] ?? ""}${popupGuest.nom[0] ?? ""}`.toUpperCase()}
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-white leading-tight">
+                    {popupGuest.prenom} {popupGuest.nom}
+                  </p>
+                  {popupGuest.relation && (
+                    <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
+                      {popupGuest.relation}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => setPopupGuest(null)}
+                className="w-7 h-7 rounded-full flex items-center justify-center transition-colors flex-shrink-0"
+                style={{ background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.4)" }}
+              >
+                <IconClose />
+              </button>
+            </div>
+
+            {/* Divider */}
+            <div className="h-px mb-4" style={{ background: "rgba(255,255,255,0.07)" }} />
+
+            {/* Details */}
+            <div className="space-y-2.5">
+              {/* Régime */}
+              <div className="flex items-center gap-2.5">
+                <span
+                  className="w-2 h-2 rounded-full flex-shrink-0"
+                  style={{ background: REGIME_COLORS[popupGuest.regime_alimentaire].bg }}
+                />
+                <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Régime</span>
+                <span className="text-xs font-semibold ml-auto" style={{ color: "rgba(255,255,255,0.85)" }}>
+                  {REGIME_LABELS[popupGuest.regime_alimentaire]}
+                </span>
+              </div>
+
+              {/* Email */}
+              {popupGuest.email && (
+                <div className="flex items-center gap-2.5">
+                  <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" style={{ color: "rgba(255,255,255,0.3)" }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  <a
+                    href={`mailto:${popupGuest.email}`}
+                    className="text-xs truncate transition-colors hover:underline"
+                    style={{ color: "#F06292", maxWidth: "180px" }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {popupGuest.email}
+                  </a>
+                </div>
+              )}
+
+              {/* Téléphone */}
+              {popupGuest.telephone && (
+                <div className="flex items-center gap-2.5">
+                  <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" style={{ color: "rgba(255,255,255,0.3)" }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                  <a
+                    href={`tel:${popupGuest.telephone}`}
+                    className="text-xs transition-colors hover:underline"
+                    style={{ color: "#F06292" }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {popupGuest.telephone}
+                  </a>
+                </div>
+              )}
+
+              {/* Présence */}
+              <div className="flex items-center gap-2.5">
+                <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" style={{ color: "rgba(255,255,255,0.3)" }}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Présence</span>
+                <span
+                  className="text-xs font-semibold ml-auto px-2 py-0.5 rounded-full"
+                  style={{
+                    background: popupGuest.presence_confirmee === true
+                      ? "rgba(22,163,74,0.15)"
+                      : popupGuest.presence_confirmee === false
+                      ? "rgba(220,38,38,0.15)"
+                      : "rgba(255,255,255,0.07)",
+                    color: popupGuest.presence_confirmee === true
+                      ? "#4ADE80"
+                      : popupGuest.presence_confirmee === false
+                      ? "#F87171"
+                      : "rgba(255,255,255,0.4)",
+                  }}
+                >
+                  {popupGuest.presence_confirmee === true ? "Confirmée" : popupGuest.presence_confirmee === false ? "Déclinée" : "En attente"}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Add/Edit table modal ── */}
       {addTableOpen && (
@@ -713,6 +848,7 @@ function GuestChip({
   onDragStart,
   isDragging,
   compact,
+  onGuestClick,
   style: extraStyle,
 }: {
   guest: Guest;
@@ -720,6 +856,7 @@ function GuestChip({
   onDragStart: (e: React.DragEvent) => void;
   isDragging: boolean;
   compact: boolean;
+  onGuestClick?: (guest: Guest) => void;
   style?: React.CSSProperties;
 }) {
   const colors = REGIME_COLORS[guest.regime_alimentaire];
@@ -731,7 +868,7 @@ function GuestChip({
         data-guest-chip="true"
         draggable
         onDragStart={onDragStart}
-        title={`${guest.prenom} ${guest.nom} · ${REGIME_LABELS[guest.regime_alimentaire]}`}
+        onClick={(e) => { e.stopPropagation(); onGuestClick?.(guest); }}
         style={{
           ...extraStyle,
           width: SEAT_SIZE,
@@ -744,9 +881,9 @@ function GuestChip({
           justifyContent: "center",
           fontSize: "11px",
           fontWeight: "bold",
-          cursor: "grab",
+          cursor: "pointer",
           opacity: isDragging ? 0.3 : 1,
-          transition: "opacity 0.15s, transform 0.1s",
+          transition: "opacity 0.15s, transform 0.1s, box-shadow 0.15s",
           border: "2px solid rgba(255,255,255,0.2)",
           userSelect: "none",
           zIndex: 10,
