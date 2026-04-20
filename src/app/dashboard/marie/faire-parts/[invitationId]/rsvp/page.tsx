@@ -48,6 +48,12 @@ const IconUsers = () => (
   </svg>
 );
 
+const IconTrash = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+  </svg>
+);
+
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("fr-FR", {
     day: "numeric",
@@ -68,6 +74,7 @@ export default function RsvpResponsesPage() {
   const [responses, setResponses] = useState<RsvpResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"tous" | "presents" | "absents">("tous");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -115,6 +122,17 @@ export default function RsvpResponsesPage() {
   }, [router, invitationId]);
 
   if (!authChecked) return null;
+
+  async function handleDelete(id: string, prenom: string, nom: string) {
+    const confirmed = window.confirm(`Supprimer la réponse de ${prenom} ${nom} ? Cette action est irréversible.`);
+    if (!confirmed) return;
+
+    setDeletingId(id);
+    await supabase.from("wedding_guests").delete().eq("rsvp_response_id", id);
+    await supabase.from("rsvp_responses").delete().eq("id", id);
+    setResponses((prev) => prev.filter((r) => r.id !== id));
+    setDeletingId(null);
+  }
 
   const filtered = responses.filter((r) => {
     if (filter === "presents") return r.presence;
@@ -242,7 +260,7 @@ export default function RsvpResponsesPage() {
                       className="rounded-3xl px-5 py-4"
                       style={{ background: "white", boxShadow: "0 4px 24px rgba(240,98,146,0.08)", border: "1px solid #FECDD3" }}
                     >
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-start justify-between gap-3">
                         <div
                           className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
                           style={{
@@ -278,6 +296,19 @@ export default function RsvpResponsesPage() {
                           )}
                           <p className="text-xs text-gray-300 mt-2">{formatDate(r.created_at)}</p>
                         </div>
+                        <button
+                          onClick={() => handleDelete(r.id, r.prenom, r.nom)}
+                          disabled={deletingId === r.id}
+                          className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors hover:bg-red-50 disabled:opacity-40"
+                          style={{ color: "#F87171" }}
+                          title="Supprimer cette réponse"
+                        >
+                          {deletingId === r.id ? (
+                            <div className="w-4 h-4 border-2 border-red-300 border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <IconTrash />
+                          )}
+                        </button>
                       </div>
                     </div>
                   ))}
