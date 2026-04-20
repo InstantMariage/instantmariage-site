@@ -252,16 +252,25 @@ export default function FairePartsPage() {
     if (invitations.length === 0) return;
     setChangingTemplate(true);
     try {
-      const { data: tpl } = await supabase
-        .from("invitation_templates")
-        .select("id")
-        .eq("slug", templateSlug)
-        .maybeSingle();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
       const inv = invitations[0];
-      await supabase
-        .from("invitations")
-        .update({ template_id: tpl?.id ?? null, updated_at: new Date().toISOString() })
-        .eq("id", inv.id);
+      const res = await fetch("/api/invitations/change-template", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ invitationId: inv.id, templateSlug }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        console.error("[handleChangeTemplate] Erreur API:", json);
+        return;
+      }
+
       setShowChangeTemplate(false);
       router.push(`/faire-part/${templateSlug}?draft=${inv.id}`);
     } finally {
