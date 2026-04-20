@@ -260,6 +260,41 @@ export default function EleganceDoreeInteractive({
               />
             ))}
 
+            {/* Title hint above envelope */}
+            {phase === 'idle' && (
+              <div
+                style={{
+                  textAlign: 'center',
+                  animation: 'envelopeIn 1s .6s ease-out both',
+                  opacity: 0,
+                  marginBottom: 40,
+                  pointerEvents: 'none',
+                }}
+              >
+                <p
+                  style={{
+                    color: 'rgba(201,168,76,.6)',
+                    fontSize: 11,
+                    letterSpacing: '.28em',
+                    textTransform: 'uppercase',
+                    marginBottom: 8,
+                  }}
+                >
+                  Faire-part de mariage
+                </p>
+                <p
+                  style={{
+                    color: 'rgba(255,253,247,.85)',
+                    fontSize: 'clamp(1.5rem, 6vw, 2rem)',
+                    fontStyle: 'italic',
+                    fontWeight: 300,
+                  }}
+                >
+                  {coupleNames}
+                </p>
+              </div>
+            )}
+
             {/* Envelope */}
             <div
               style={{
@@ -501,42 +536,6 @@ export default function EleganceDoreeInteractive({
               )}
             </div>
 
-            {/* Title hint above envelope */}
-            {phase === 'idle' && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '22%',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  textAlign: 'center',
-                  animation: 'envelopeIn 1s .6s ease-out both',
-                  opacity: 0,
-                }}
-              >
-                <p
-                  style={{
-                    color: 'rgba(201,168,76,.6)',
-                    fontSize: 11,
-                    letterSpacing: '.28em',
-                    textTransform: 'uppercase',
-                    marginBottom: 8,
-                  }}
-                >
-                  Faire-part de mariage
-                </p>
-                <p
-                  style={{
-                    color: 'rgba(255,253,247,.85)',
-                    fontSize: 'clamp(1.5rem, 6vw, 2rem)',
-                    fontStyle: 'italic',
-                    fontWeight: 300,
-                  }}
-                >
-                  {coupleNames}
-                </p>
-              </div>
-            )}
           </div>
         )}
 
@@ -557,6 +556,10 @@ export default function EleganceDoreeInteractive({
             {/* Letter content */}
             <div
               style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                width: '100%',
                 maxWidth: 420,
                 margin: '0 auto',
                 padding: '72px 28px 100px',
@@ -743,7 +746,7 @@ export default function EleganceDoreeInteractive({
                       borderRadius: 2,
                       color: '#8B6914',
                       fontSize: 11,
-                      letterSpacing: '.22em',
+                      letterSpacing: '.12em',
                       textTransform: 'uppercase',
                       marginBottom: 8,
                       cursor: 'pointer',
@@ -753,7 +756,7 @@ export default function EleganceDoreeInteractive({
                       el?.scrollIntoView({ behavior: 'smooth' });
                     }}
                   >
-                    R.S.V.P.
+                    Confirmer ma présence
                   </div>
                   {rsvpDeadline && (
                     <p
@@ -812,7 +815,7 @@ export default function EleganceDoreeInteractive({
                         marginBottom: 10,
                       }}
                     >
-                      R.S.V.P.
+                      Je réponds
                     </p>
                     <p
                       style={{

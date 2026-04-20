@@ -36,7 +36,7 @@ const PACKS: Pack[] = [
     quantity: "Invitation animée",
     price: 9.9,
     description:
-      "Lien personnalisé, partage illimité par SMS & email, QR code inclus, RSVP en ligne",
+      "Lien personnalisé, partage illimité par SMS & email, QR code inclus, confirmation de présence en ligne",
     badge: "Éco & Rapide",
     isPrint: false,
   },

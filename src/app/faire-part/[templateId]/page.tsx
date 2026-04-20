@@ -499,7 +499,7 @@ export default function FairePartEditorPage() {
               <h2 className="text-base font-bold text-gray-900">Publier votre faire-part ?</h2>
             </div>
             <p className="text-sm text-gray-600 leading-relaxed">
-              Votre faire-part sera accessible à tous via un lien unique. Vos invités pourront le consulter et répondre au RSVP.
+              Votre faire-part sera accessible à tous via un lien unique. Vos invités pourront le consulter et confirmer leur présence.
             </p>
             <p className="text-xs text-gray-400">Vous pourrez le modifier à tout moment depuis votre dashboard.</p>
             <div className="flex gap-3 pt-1">
@@ -651,9 +651,9 @@ export default function FairePartEditorPage() {
               </FormSection>
 
               {/* Section 4: RSVP */}
-              <FormSection number={4} title="RSVP & contact">
+              <FormSection number={4} title="Confirmation de présence & contact">
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1.5 font-medium">Date limite RSVP</label>
+                  <label className="block text-xs text-gray-500 mb-1.5 font-medium">Date limite de réponse</label>
                   <input
                     type="date"
                     value={form.rsvpDeadline}
@@ -665,7 +665,7 @@ export default function FairePartEditorPage() {
                       <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                       </svg>
-                      La date limite RSVP doit être avant le mariage
+                      La date limite de réponse doit être avant le mariage
                     </p>
                   )}
                 </div>
@@ -751,7 +751,7 @@ export default function FairePartEditorPage() {
               <div className="bg-gradient-to-br from-rose-50 to-pink-50 rounded-2xl border border-rose-100 p-4 space-y-2.5">
                 {[
                   { icon: '🔗', text: 'Lien unique partageable généré automatiquement' },
-                  { icon: '💌', text: 'Formulaire RSVP intégré pour vos invités' },
+                  { icon: '💌', text: 'Confirmation de présence intégrée pour vos invités' },
                   { icon: '📱', text: 'Optimisé mobile & desktop' },
                   { icon: '📊', text: 'Suivi des réponses dans votre dashboard' },
                 ].map((item) => (

@@ -244,7 +244,7 @@ export default function FairePartPage() {
                 { icon: "✨", label: "100% personnalisable" },
                 { icon: "📱", label: "Mobile & desktop" },
                 { icon: "🔗", label: "Lien partageable" },
-                { icon: "💌", label: "RSVP intégré" },
+                { icon: "💌", label: "Confirmations intégrées" },
               ].map((f) => (
                 <span key={f.label} className="flex items-center gap-1.5">
                   <span>{f.icon}</span>

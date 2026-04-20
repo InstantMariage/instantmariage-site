@@ -118,7 +118,7 @@ export default function FairePartDigitalMariagePage() {
                     ["Coût", "Gratuit", "5 – 10 € / unité"],
                     ["Délai d'envoi", "Instantané", "2 – 4 semaines"],
                     ["Modifications possibles", "À tout moment", "Impression nouvelle"],
-                    ["RSVP automatique", "✓ Intégré", "Courrier / téléphone"],
+                    ["Confirmation de présence", "✓ Intégrée", "Courrier / téléphone"],
                     ["Animations", "✓ Incluses", "Non"],
                     ["Impact écologique", "✓ Minimal", "Papier + transport"],
                     ["Photo du couple", "✓ Incluse", "Option coûteuse"],
@@ -145,7 +145,7 @@ export default function FairePartDigitalMariagePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
                 { icon: "🔗", title: "Lien personnalisé", desc: "Votre invitation accessible via un lien unique que vous partagez librement. Pas d'application à télécharger pour vos invités." },
-                { icon: "💌", title: "Formulaire RSVP", desc: "Vos invités confirment leur présence, le nombre d'accompagnants et leurs restrictions alimentaires directement en ligne." },
+                { icon: "💌", title: "Confirmer ma présence", desc: "Vos invités confirment leur présence, le nombre d'accompagnants et leurs restrictions alimentaires directement en ligne." },
                 { icon: "📊", title: "Tableau de bord", desc: "Suivez en temps réel le nombre d'ouvertures, les confirmations de présence et les réponses de chaque invité." },
                 { icon: "🎨", title: "8 templates élégants", desc: "Du classique au contemporain, chaque template a été designé par des experts du mariage pour une esthétique irréprochable." },
                 { icon: "📷", title: "Photo du couple", desc: "Intégrez votre plus belle photo de couple directement dans l'invitation pour une touche ultra-personnelle." },

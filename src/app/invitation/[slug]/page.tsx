@@ -180,7 +180,7 @@ export default async function InvitationPage({ params }: { params: Params }) {
               <RsvpForm slug={invitation.slug} couleurPrimaire={couleurPrimaire} />
             ) : (
               <div className="text-center py-8">
-                <p className="text-gray-400">Les RSVP sont désormais fermés.</p>
+                <p className="text-gray-400">Les confirmations de présence sont désormais fermées.</p>
               </div>
             )}
           </div>

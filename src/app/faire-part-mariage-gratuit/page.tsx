@@ -112,8 +112,8 @@ export default function FairePartMariageGratuitPage() {
                 { feature: "Animations incluses", detail: "Les effets visuels animés (particules, révélation, transitions) sont inclus dans la version gratuite." },
                 { feature: "Personnalisation complète", detail: "Vos prénoms, date, lieu, message et photo de couple — tout est personnalisable gratuitement." },
                 { feature: "Lien de partage illimité", detail: "Partagez votre faire-part avec autant d'invités que vous le souhaitez, sans limite." },
-                { feature: "Formulaire RSVP", detail: "Recevez les confirmations de présence de tous vos invités via le formulaire intégré." },
-                { feature: "Tableau de bord des réponses", detail: "Suivez les RSVP en temps réel depuis votre espace personnel." },
+                { feature: "Confirmation de présence", detail: "Recevez les confirmations de présence de tous vos invités via le formulaire intégré." },
+                { feature: "Tableau de bord des réponses", detail: "Suivez les confirmations en temps réel depuis votre espace personnel." },
                 { feature: "Compatible mobile & desktop", detail: "Votre faire-part s'affiche parfaitement sur tous les appareils, pour tous vos invités." },
                 { feature: "Lien permanent", detail: "Votre faire-part reste accessible en ligne pendant toute la durée de vos préparatifs." },
               ].map((item) => (

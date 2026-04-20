@@ -158,7 +158,7 @@ export default function FairePartMariagePage() {
                 },
                 {
                   icon: "💌",
-                  title: "RSVP automatique",
+                  title: "Confirmations automatiques",
                   desc: "Fini les appels téléphoniques ! Vos invités confirment leur présence directement en ligne. Consultez le tableau de bord de vos réponses en temps réel.",
                 },
                 {
