@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { revalidatePath } from "next/cache";
 
 function getSupabaseAdmin() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
     // Vérifier que l'invitation appartient bien à ce marié
     const { data: invitation, error: invErr } = await supabaseAdmin
       .from("invitations")
-      .select("id, marie_id, maries!inner(user_id)")
+      .select("id, slug, marie_id, maries!inner(user_id)")
       .eq("id", invitationId)
       .single();
 
@@ -67,6 +68,8 @@ export async function POST(req: NextRequest) {
     if (updateErr) {
       return NextResponse.json({ error: "Erreur mise à jour", detail: updateErr.message }, { status: 500 });
     }
+
+    revalidatePath(`/invitation/${invitation.slug}`);
 
     return NextResponse.json({ success: true, template_id: template.id });
   } catch (err) {

@@ -272,6 +272,7 @@ export default function FairePartsPage() {
       }
 
       setShowChangeTemplate(false);
+      router.refresh();
       router.push(`/faire-part/${templateSlug}?draft=${inv.id}`);
     } finally {
       setChangingTemplate(false);
