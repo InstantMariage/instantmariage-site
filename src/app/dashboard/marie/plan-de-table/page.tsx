@@ -24,6 +24,7 @@ type Guest = {
   regime_alimentaire: Regime;
   relation: string;
   table_id: string | null;
+  seat_number: number | null;
   presence_confirmee: boolean | null;
   email: string | null;
   telephone: string | null;
@@ -55,10 +56,10 @@ const REGIME_LABELS: Record<Regime, string> = {
 };
 
 /* Table visual constants */
-const TABLE_RADIUS = 50;      // px — radius of the round table circle
-const SEAT_RADIUS = 85;       // px — radius for seat position from center
-const SEAT_SIZE = 34;         // px — size of each guest chip
-const CONTAINER = (SEAT_RADIUS + SEAT_SIZE) * 2; // full table container size
+const TABLE_RADIUS = 50;
+const SEAT_RADIUS = 85;
+const SEAT_SIZE = 34;
+const CONTAINER = (SEAT_RADIUS + SEAT_SIZE) * 2;
 
 function seatPosition(index: number, total: number) {
   const angle = (2 * Math.PI * index) / total - Math.PI / 2;
@@ -106,8 +107,6 @@ const IconSave = () => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
   </svg>
 );
-
-/* ─── Icons (additional) ─── */
 const IconDownload = () => (
   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
@@ -138,9 +137,14 @@ export default function PlanDeTablePage() {
   }>({ prenom: "", nom: "", relation: "", regime_alimentaire: "normal", email: "", telephone: "" });
   const [savingGuest, setSavingGuest] = useState(false);
 
-  /* Drag: guest */
-  const [dragGuest, setDragGuest] = useState<{ guestId: string; fromTableId: string | null } | null>(null);
+  /* Drag: guest — fromSeatNumber null means sidebar or unassigned */
+  const [dragGuest, setDragGuest] = useState<{
+    guestId: string;
+    fromTableId: string | null;
+    fromSeatNumber: number | null;
+  } | null>(null);
   const [dragOverTable, setDragOverTable] = useState<string | null>(null);
+  const [dragOverSeat, setDragOverSeat] = useState<{ tableId: string; seatIdx: number } | null>(null);
   const [dragOverSidebar, setDragOverSidebar] = useState(false);
 
   /* Drag: table move */
@@ -162,10 +166,50 @@ export default function PlanDeTablePage() {
   const loadData = useCallback(async (mid: string) => {
     const [tRes, gRes] = await Promise.all([
       supabase.from("wedding_tables").select("*").eq("marie_id", mid).order("nom"),
-      supabase.from("wedding_guests").select("id,prenom,nom,regime_alimentaire,relation,table_id,presence_confirmee,email,telephone").eq("marie_id", mid),
+      supabase.from("wedding_guests")
+        .select("id,prenom,nom,regime_alimentaire,relation,table_id,seat_number,presence_confirmee,email,telephone")
+        .eq("marie_id", mid),
     ]);
-    if (tRes.data) setTables(tRes.data as WeddingTable[]);
-    if (gRes.data) setGuests(gRes.data as Guest[]);
+
+    const tablesData = (tRes.data ?? []) as WeddingTable[];
+    const guestsData = (gRes.data ?? []) as Guest[];
+
+    /* Auto-assign seat_number for legacy guests that have table_id but no seat_number */
+    const needsSeat = guestsData.filter((g) => g.table_id !== null && g.seat_number === null);
+    if (needsSeat.length > 0) {
+      const updates: PromiseLike<unknown>[] = [];
+      const byTable = new Map<string, Guest[]>();
+      needsSeat.forEach((g) => {
+        if (!byTable.has(g.table_id!)) byTable.set(g.table_id!, []);
+        byTable.get(g.table_id!)!.push(g);
+      });
+
+      byTable.forEach((list, tableId) => {
+        const table = tablesData.find((t) => t.id === tableId);
+        if (!table) return;
+        const occupied = new Set(
+          guestsData
+            .filter((g) => g.table_id === tableId && g.seat_number !== null)
+            .map((g) => g.seat_number as number)
+        );
+        let cursor = 0;
+        list.forEach((g) => {
+          while (cursor < table.capacite && occupied.has(cursor)) cursor++;
+          if (cursor >= table.capacite) return;
+          g.seat_number = cursor;
+          occupied.add(cursor);
+          updates.push(
+            supabase.from("wedding_guests").update({ seat_number: cursor }).eq("id", g.id).then()
+          );
+          cursor++;
+        });
+      });
+
+      await Promise.all(updates);
+    }
+
+    setTables(tablesData);
+    setGuests(guestsData);
     setLoading(false);
   }, []);
 
@@ -192,6 +236,10 @@ export default function PlanDeTablePage() {
       const q = sideSearch.toLowerCase();
       return g.prenom.toLowerCase().includes(q) || g.nom.toLowerCase().includes(q);
     });
+
+  function guestAtSeat(tableId: string, seatIdx: number): Guest | null {
+    return guests.find((g) => g.table_id === tableId && g.seat_number === seatIdx) ?? null;
+  }
 
   function tableGuests(tableId: string) {
     return guests.filter((g) => g.table_id === tableId);
@@ -247,34 +295,97 @@ export default function PlanDeTablePage() {
     await supabase.from("wedding_guests").update({ relation }).eq("id", guestId);
   }
 
-  /* ── Assign guest to table ── */
-  async function assignGuest(guestId: string, tableId: string | null) {
-    setGuests((prev) => prev.map((g) => g.id === guestId ? { ...g, table_id: tableId } : g));
+  /* ── Assign guest to a specific seat ── */
+  async function assignGuest(guestId: string, tableId: string | null, seatNumber: number | null) {
+    setGuests((prev) =>
+      prev.map((g) => g.id === guestId ? { ...g, table_id: tableId, seat_number: seatNumber } : g)
+    );
     triggerSave(async () => {
-      await supabase.from("wedding_guests").update({ table_id: tableId }).eq("id", guestId);
+      await supabase
+        .from("wedding_guests")
+        .update({ table_id: tableId, seat_number: seatNumber })
+        .eq("id", guestId);
+    });
+  }
+
+  /* ── Swap two guests between their seats ── */
+  function swapGuests(
+    guestAId: string, tableAId: string | null, seatA: number | null,
+    guestBId: string, tableBId: string | null, seatB: number | null
+  ) {
+    setGuests((prev) =>
+      prev.map((g) => {
+        if (g.id === guestAId) return { ...g, table_id: tableBId, seat_number: seatB };
+        if (g.id === guestBId) return { ...g, table_id: tableAId, seat_number: seatA };
+        return g;
+      })
+    );
+    triggerSave(async () => {
+      await Promise.all([
+        supabase.from("wedding_guests").update({ table_id: tableBId, seat_number: seatB }).eq("id", guestAId),
+        supabase.from("wedding_guests").update({ table_id: tableAId, seat_number: seatA }).eq("id", guestBId),
+      ]);
     });
   }
 
   /* ── Guest DnD handlers ── */
-  function handleGuestDragStart(guestId: string, fromTableId: string | null) {
+  function handleGuestDragStart(guestId: string, fromTableId: string | null, fromSeatNumber: number | null) {
     return (e: React.DragEvent) => {
-      setDragGuest({ guestId, fromTableId });
+      setDragGuest({ guestId, fromTableId, fromSeatNumber });
       e.dataTransfer.effectAllowed = "move";
       e.stopPropagation();
     };
   }
 
+  /* Drop on a specific seat */
+  function handleDropOnSeat(tableId: string, seatIdx: number) {
+    return (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setDragOverSeat(null);
+      setDragOverTable(null);
+      if (!dragGuest) return;
+      /* Same seat — no-op */
+      if (dragGuest.fromTableId === tableId && dragGuest.fromSeatNumber === seatIdx) {
+        setDragGuest(null);
+        return;
+      }
+      const occupant = guests.find(
+        (g) => g.table_id === tableId && g.seat_number === seatIdx && g.id !== dragGuest.guestId
+      );
+      if (occupant) {
+        /* Swap: occupant goes to dragged guest's old spot (or sidebar if from sidebar) */
+        swapGuests(
+          dragGuest.guestId, dragGuest.fromTableId, dragGuest.fromSeatNumber,
+          occupant.id, tableId, seatIdx
+        );
+      } else {
+        assignGuest(dragGuest.guestId, tableId, seatIdx);
+      }
+      setDragGuest(null);
+    };
+  }
+
+  /* Drop on a table (center area) — places at first free seat */
   function handleDropOnTable(tableId: string) {
     return (e: React.DragEvent) => {
       e.preventDefault();
       e.stopPropagation();
       setDragOverTable(null);
       if (!dragGuest) return;
-      if (dragGuest.fromTableId === tableId) return;
-      const occupied = tableGuests(tableId).length;
       const table = tables.find((t) => t.id === tableId);
-      if (table && occupied >= table.capacite) return;
-      assignGuest(dragGuest.guestId, tableId);
+      if (!table) return;
+      const occupied = new Set(
+        guests
+          .filter((g) => g.table_id === tableId && g.id !== dragGuest.guestId)
+          .map((g) => g.seat_number)
+      );
+      let firstFree = -1;
+      for (let i = 0; i < table.capacite; i++) {
+        if (!occupied.has(i)) { firstFree = i; break; }
+      }
+      if (firstFree === -1) { setDragGuest(null); return; }
+      assignGuest(dragGuest.guestId, tableId, firstFree);
       setDragGuest(null);
     };
   }
@@ -283,7 +394,7 @@ export default function PlanDeTablePage() {
     e.preventDefault();
     setDragOverSidebar(false);
     if (!dragGuest || dragGuest.fromTableId === null) return;
-    assignGuest(dragGuest.guestId, null);
+    assignGuest(dragGuest.guestId, null, null);
     setDragGuest(null);
   }
 
@@ -292,6 +403,7 @@ export default function PlanDeTablePage() {
     return (e: React.MouseEvent) => {
       if ((e.target as HTMLElement).closest("[data-guest-chip]")) return;
       if ((e.target as HTMLElement).closest("[data-table-action]")) return;
+      if ((e.target as HTMLElement).closest("[data-seat]")) return;
       e.preventDefault();
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -331,11 +443,10 @@ export default function PlanDeTablePage() {
     }
   }
 
-  /* Canvas drop: unassign if dropped on empty canvas */
   function handleCanvasDrop(e: React.DragEvent) {
     e.preventDefault();
     if (!dragGuest) return;
-    assignGuest(dragGuest.guestId, null);
+    assignGuest(dragGuest.guestId, null, null);
     setDragGuest(null);
   }
 
@@ -374,7 +485,7 @@ export default function PlanDeTablePage() {
 
   async function deleteTable(id: string) {
     if (!marieId) return;
-    await supabase.from("wedding_guests").update({ table_id: null }).eq("table_id", id);
+    await supabase.from("wedding_guests").update({ table_id: null, seat_number: null }).eq("table_id", id);
     await supabase.from("wedding_tables").delete().eq("id", id);
     await loadData(marieId);
   }
@@ -429,6 +540,7 @@ export default function PlanDeTablePage() {
         doc.text("InstantMariage", W / 2, H - 9.5, { align: "center" });
       };
 
+      let y = 0;
       const checkPage = (needed: number) => {
         if (y + needed > H - 20) {
           pageFooter();
@@ -437,7 +549,6 @@ export default function PlanDeTablePage() {
         }
       };
 
-      // Group guests by table
       const byTable: { [id: string]: { name: string; guests: Guest[] } } = {};
       const unassigned: Guest[] = [];
       guests.forEach((g) => {
@@ -446,31 +557,30 @@ export default function PlanDeTablePage() {
         if (!byTable[g.table_id]) byTable[g.table_id] = { name: tbl?.nom ?? "Table", guests: [] };
         byTable[g.table_id].guests.push(g);
       });
+
+      /* Sort guests within each table by seat_number */
+      Object.values(byTable).forEach((t) => {
+        t.guests.sort((a, b) => (a.seat_number ?? 0) - (b.seat_number ?? 0));
+      });
+
       const sortedTables = Object.values(byTable).sort((a, b) => a.name.localeCompare(b.name));
       if (unassigned.length) sortedTables.push({ name: "Non placés", guests: unassigned });
 
-      // ── PAGE 1 : EN-TÊTE ──
       bgPage();
 
-      // Couple names
       doc.setFont("times", "bolditalic"); doc.setFontSize(32); st(BLACK);
       doc.text(coupleNames, W / 2, 38, { align: "center" });
 
-      // Subtitle
-      doc.setFont("times", "normal"); doc.setFontSize(10);
-      st(GOLD);
+      doc.setFont("times", "normal"); doc.setFontSize(10); st(GOLD);
       doc.text("P L A N  D E  T A B L E", W / 2, 48, { align: "center" });
 
-      // Meta
       const dateStr = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
       doc.setFont("times", "italic"); doc.setFontSize(8); st(GRAY);
       doc.text(`${guests.length} invités · ${tables.length} tables · ${dateStr}`, W / 2, 56, { align: "center" });
 
       divider(63);
+      y = 73;
 
-      let y = 73;
-
-      // ── CARTES PAR TABLE ──
       for (const t of sortedTables) {
         const isUnplaced = t.name === "Non placés";
         const LINE_H = 6.5;
@@ -478,26 +588,20 @@ export default function PlanDeTablePage() {
 
         checkPage(cardH + 6);
 
-        // Card: white bg + gold border
         sf(WHITE); doc.roundedRect(mL, y, cW, cardH, 2, 2, "F");
         sd(isUnplaced ? GRAY : GOLD);
         doc.setLineWidth(0.5);
         doc.roundedRect(mL, y, cW, cardH, 2, 2, "S");
 
-        // Table name
-        doc.setFont("times", "bold"); doc.setFontSize(10);
-        st(isUnplaced ? GRAY : GOLD);
+        doc.setFont("times", "bold"); doc.setFontSize(10); st(isUnplaced ? GRAY : GOLD);
         doc.text(t.name.toUpperCase(), mL + 8, y + 8.5);
 
-        // Guest count right-aligned
         doc.setFont("times", "italic"); doc.setFontSize(8); st(GRAY);
         doc.text(`${t.guests.length} invité${t.guests.length > 1 ? "s" : ""}`, mL + cW - 6, y + 8.5, { align: "right" });
 
-        // Thin gold divider under title
         sd(isUnplaced ? GRAY : GOLD); doc.setLineWidth(0.3);
         doc.line(mL + 6, y + 12, mL + cW - 6, y + 12);
 
-        // Guest lines — two columns
         const half = Math.ceil(t.guests.length / 2);
         const col1 = t.guests.slice(0, half);
         const col2 = t.guests.slice(half);
@@ -506,26 +610,32 @@ export default function PlanDeTablePage() {
         col1.forEach((g, i) => {
           const gy = y + 12 + LINE_H * (i + 1);
           const isSpecial = g.regime_alimentaire !== "normal";
+          const seatLabel = g.seat_number !== null ? `${g.seat_number + 1}. ` : "";
           doc.setFont("times", isSpecial ? "italic" : "normal"); doc.setFontSize(9); st(BLACK);
+          doc.text(seatLabel, mL + 8, gy);
+          const seatW = doc.getTextWidth(seatLabel);
           const label = `${g.prenom} ${g.nom}`;
-          doc.text(label, mL + 8, gy);
+          doc.text(label, mL + 8 + seatW, gy);
           if (isSpecial) {
             const lw = doc.getTextWidth(label);
             doc.setFontSize(7); st(GRAY);
-            doc.text(REGIME_LABELS[g.regime_alimentaire].slice(0, 3).toUpperCase(), mL + 8 + lw + 1.5, gy);
+            doc.text(REGIME_LABELS[g.regime_alimentaire].slice(0, 3).toUpperCase(), mL + 8 + seatW + lw + 1.5, gy);
           }
         });
 
         col2.forEach((g, i) => {
           const gy = y + 12 + LINE_H * (i + 1);
           const isSpecial = g.regime_alimentaire !== "normal";
+          const seatLabel = g.seat_number !== null ? `${g.seat_number + 1}. ` : "";
           doc.setFont("times", isSpecial ? "italic" : "normal"); doc.setFontSize(9); st(BLACK);
+          doc.text(seatLabel, mL + 8 + colW + 2, gy);
+          const seatW = doc.getTextWidth(seatLabel);
           const label = `${g.prenom} ${g.nom}`;
-          doc.text(label, mL + 8 + colW + 2, gy);
+          doc.text(label, mL + 8 + colW + 2 + seatW, gy);
           if (isSpecial) {
             const lw = doc.getTextWidth(label);
             doc.setFontSize(7); st(GRAY);
-            doc.text(REGIME_LABELS[g.regime_alimentaire].slice(0, 3).toUpperCase(), mL + 8 + colW + 2 + lw + 1.5, gy);
+            doc.text(REGIME_LABELS[g.regime_alimentaire].slice(0, 3).toUpperCase(), mL + 8 + colW + 2 + seatW + lw + 1.5, gy);
           }
         });
 
@@ -534,7 +644,6 @@ export default function PlanDeTablePage() {
 
       pageFooter();
 
-      // ── PAGE RÉCAPITULATIF ──
       doc.addPage(); bgPage();
 
       doc.setFont("times", "bolditalic"); doc.setFontSize(24); st(BLACK);
@@ -545,7 +654,6 @@ export default function PlanDeTablePage() {
 
       let sy = 68;
 
-      // Régimes
       doc.setFont("times", "bold"); doc.setFontSize(8.5); st(GOLD);
       doc.text("RÉGIMES ALIMENTAIRES", mL + 6, sy); sy += 10;
 
@@ -570,7 +678,6 @@ export default function PlanDeTablePage() {
       st(GOLD);
       doc.text(`${guests.length} couvert${guests.length > 1 ? "s" : ""}`, W - mR - 6, sy, { align: "right" });
 
-      // Présences
       sy += 22;
       doc.setFont("times", "bold"); doc.setFontSize(8.5); st(GOLD);
       doc.text("PRÉSENCES", mL + 6, sy); sy += 10;
@@ -634,7 +741,6 @@ export default function PlanDeTablePage() {
         <h1 className="text-sm font-bold text-white">Plan de table</h1>
 
         <div className="flex items-center gap-2 ml-auto">
-          {/* Save status */}
           {saveStatus !== "idle" && (
             <span
               className="text-xs font-medium px-2.5 py-1 rounded-full flex items-center gap-1.5 transition-all"
@@ -682,7 +788,7 @@ export default function PlanDeTablePage() {
       {/* ── Body: sidebar + canvas ── */}
       <div className="flex flex-1 overflow-hidden">
 
-        {/* ── Sidebar: unassigned guests ── */}
+        {/* ── Sidebar ── */}
         <div
           className="w-64 flex-shrink-0 flex flex-col overflow-hidden"
           style={{ background: "#1e293b", borderRight: "1px solid rgba(255,255,255,0.08)" }}
@@ -690,7 +796,6 @@ export default function PlanDeTablePage() {
           onDragLeave={() => setDragOverSidebar(false)}
           onDrop={handleDropOnSidebar}
         >
-          {/* Sidebar header */}
           <div
             className="px-4 py-3 flex-shrink-0"
             style={{
@@ -719,7 +824,6 @@ export default function PlanDeTablePage() {
             </div>
           </div>
 
-          {/* Guest list */}
           <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1.5">
             {unassignedGuests.length === 0 ? (
               <div className="flex flex-col items-center py-10 text-center px-2">
@@ -735,9 +839,9 @@ export default function PlanDeTablePage() {
                 <GuestChip
                   key={g.id}
                   guest={g}
-                  fromTableId={null}
-                  onDragStart={handleGuestDragStart(g.id, null)}
+                  onDragStart={handleGuestDragStart(g.id, null, null)}
                   isDragging={dragGuest?.guestId === g.id}
+                  isDropTarget={false}
                   compact={false}
                   onGuestClick={setPopupGuest}
                 />
@@ -745,7 +849,6 @@ export default function PlanDeTablePage() {
             )}
           </div>
 
-          {/* Legend */}
           <div className="px-3 py-3 flex-shrink-0" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
             <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "rgba(255,255,255,0.25)" }}>Régimes</p>
             <div className="space-y-1">
@@ -779,164 +882,209 @@ export default function PlanDeTablePage() {
               backgroundSize: "32px 32px",
             }}
           >
-          {tables.length === 0 ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-8">
-              <div
-                className="w-20 h-20 rounded-full flex items-center justify-center mb-4"
-                style={{ border: "2px dashed rgba(255,255,255,0.15)" }}
-              >
-                <span className="text-3xl">🪑</span>
-              </div>
-              <p className="text-base font-bold mb-2" style={{ color: "rgba(255,255,255,0.7)" }}>Aucune table pour l&apos;instant</p>
-              <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.3)" }}>
-                Ajoutez des tables rondes et placez vos invités par glisser-déposer
-              </p>
-              <button
-                onClick={openAddTable}
-                className="flex items-center gap-2 text-sm font-bold px-5 py-2.5 rounded-2xl transition-all hover:opacity-90"
-                style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)", color: "white" }}
-              >
-                <IconPlus /> Créer une table
-              </button>
-            </div>
-          ) : (
-            /* Render each table */
-            tables.map((table) => {
-              const tGuests = tableGuests(table.id);
-              const isFull = tGuests.length >= table.capacite;
-              const isOver = dragOverTable === table.id;
-
-              return (
+            {tables.length === 0 ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-8">
                 <div
-                  key={table.id}
-                  style={{
-                    position: "absolute",
-                    left: table.position_x,
-                    top: table.position_y,
-                    width: CONTAINER,
-                    height: CONTAINER + 44,
-                    cursor: movingTable.current?.id === table.id ? "grabbing" : "grab",
-                    userSelect: "none",
-                  }}
-                  onMouseDown={handleTableMouseDown(table.id)}
-                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragOverTable(table.id); }}
-                  onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverTable(null); }}
-                  onDrop={handleDropOnTable(table.id)}
+                  className="w-20 h-20 rounded-full flex items-center justify-center mb-4"
+                  style={{ border: "2px dashed rgba(255,255,255,0.15)" }}
                 >
-                  {/* Table circle */}
+                  <span className="text-3xl">🪑</span>
+                </div>
+                <p className="text-base font-bold mb-2" style={{ color: "rgba(255,255,255,0.7)" }}>Aucune table pour l&apos;instant</p>
+                <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.3)" }}>
+                  Ajoutez des tables rondes et placez vos invités par glisser-déposer
+                </p>
+                <button
+                  onClick={openAddTable}
+                  className="flex items-center gap-2 text-sm font-bold px-5 py-2.5 rounded-2xl transition-all hover:opacity-90"
+                  style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)", color: "white" }}
+                >
+                  <IconPlus /> Créer une table
+                </button>
+              </div>
+            ) : (
+              tables.map((table) => {
+                const tGuests = tableGuests(table.id);
+                const isFull = tGuests.length >= table.capacite;
+                const isTableOver = dragOverTable === table.id;
+
+                return (
                   <div
+                    key={table.id}
                     style={{
                       position: "absolute",
-                      left: CONTAINER / 2 - TABLE_RADIUS,
-                      top: CONTAINER / 2 - TABLE_RADIUS,
-                      width: TABLE_RADIUS * 2,
-                      height: TABLE_RADIUS * 2,
-                      borderRadius: "50%",
-                      background: isOver && !isFull
-                        ? "rgba(240,98,146,0.25)"
-                        : isFull
-                        ? "rgba(220,38,38,0.12)"
-                        : "rgba(255,255,255,0.07)",
-                      border: isOver && !isFull
-                        ? "2px solid #F06292"
-                        : isFull
-                        ? "2px solid rgba(220,38,38,0.4)"
-                        : "2px solid rgba(255,255,255,0.15)",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      transition: "background 0.15s, border-color 0.15s",
-                      pointerEvents: "none",
+                      left: table.position_x,
+                      top: table.position_y,
+                      width: CONTAINER,
+                      height: CONTAINER + 44,
+                      cursor: movingTable.current?.id === table.id ? "grabbing" : "grab",
+                      userSelect: "none",
                     }}
+                    onMouseDown={handleTableMouseDown(table.id)}
+                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragOverTable(table.id); }}
+                    onDragLeave={(e) => {
+                      if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverTable(null);
+                    }}
+                    onDrop={handleDropOnTable(table.id)}
                   >
-                    <span
-                      className="text-xs font-bold text-center px-1 leading-tight"
-                      style={{ color: "rgba(255,255,255,0.85)", maxWidth: TABLE_RADIUS * 2 - 8, fontSize: "11px" }}
-                    >
-                      {table.nom}
-                    </span>
-                    <span
-                      className="text-xs mt-0.5"
+                    {/* Table circle */}
+                    <div
                       style={{
-                        color: isFull ? "rgba(220,38,38,0.8)" : "rgba(255,255,255,0.35)",
-                        fontSize: "10px",
+                        position: "absolute",
+                        left: CONTAINER / 2 - TABLE_RADIUS,
+                        top: CONTAINER / 2 - TABLE_RADIUS,
+                        width: TABLE_RADIUS * 2,
+                        height: TABLE_RADIUS * 2,
+                        borderRadius: "50%",
+                        background: isTableOver && !isFull
+                          ? "rgba(240,98,146,0.25)"
+                          : isFull
+                          ? "rgba(220,38,38,0.12)"
+                          : "rgba(255,255,255,0.07)",
+                        border: isTableOver && !isFull
+                          ? "2px solid #F06292"
+                          : isFull
+                          ? "2px solid rgba(220,38,38,0.4)"
+                          : "2px solid rgba(255,255,255,0.15)",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        transition: "background 0.15s, border-color 0.15s",
+                        pointerEvents: "none",
                       }}
                     >
-                      {tGuests.length}/{table.capacite}
-                    </span>
-                  </div>
-
-                  {/* Seat slots around the table */}
-                  {Array.from({ length: table.capacite }).map((_, idx) => {
-                    const pos = seatPosition(idx, table.capacite);
-                    const guest = tGuests[idx];
-                    if (guest) {
-                      return (
-                        <GuestChip
-                          key={guest.id}
-                          guest={guest}
-                          fromTableId={table.id}
-                          onDragStart={handleGuestDragStart(guest.id, table.id)}
-                          isDragging={dragGuest?.guestId === guest.id}
-                          compact
-                          onGuestClick={setPopupGuest}
-                          style={{ position: "absolute", left: pos.left, top: pos.top }}
-                        />
-                      );
-                    }
-                    return (
-                      <div
-                        key={idx}
+                      <span
+                        className="text-xs font-bold text-center px-1 leading-tight"
+                        style={{ color: "rgba(255,255,255,0.85)", maxWidth: TABLE_RADIUS * 2 - 8, fontSize: "11px" }}
+                      >
+                        {table.nom}
+                      </span>
+                      <span
+                        className="text-xs mt-0.5"
                         style={{
-                          position: "absolute",
-                          left: pos.left,
-                          top: pos.top,
-                          width: SEAT_SIZE,
-                          height: SEAT_SIZE,
-                          borderRadius: "50%",
-                          border: "1.5px dashed rgba(255,255,255,0.1)",
-                          pointerEvents: "none",
+                          color: isFull ? "rgba(220,38,38,0.8)" : "rgba(255,255,255,0.35)",
+                          fontSize: "10px",
                         }}
-                      />
-                    );
-                  })}
+                      >
+                        {tGuests.length}/{table.capacite}
+                      </span>
+                    </div>
 
-                  {/* Table action buttons (edit/delete) */}
-                  <div
-                    data-table-action="true"
-                    className="flex items-center justify-center gap-1"
-                    style={{
-                      position: "absolute",
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      height: 44,
-                    }}
-                  >
-                    <button
+                    {/* Seat slots — each is an individual drop target */}
+                    {Array.from({ length: table.capacite }).map((_, seatIdx) => {
+                      const pos = seatPosition(seatIdx, table.capacite);
+                      const seatGuest = guestAtSeat(table.id, seatIdx);
+                      const isSeatOver =
+                        dragOverSeat?.tableId === table.id && dragOverSeat.seatIdx === seatIdx;
+                      const isDraggingThis = dragGuest?.guestId === seatGuest?.id;
+
+                      return (
+                        <div
+                          key={seatIdx}
+                          data-seat="true"
+                          style={{
+                            position: "absolute",
+                            left: pos.left,
+                            top: pos.top,
+                            width: SEAT_SIZE,
+                            height: SEAT_SIZE,
+                            borderRadius: "50%",
+                            zIndex: isSeatOver ? 20 : 10,
+                          }}
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (dragGuest) setDragOverSeat({ tableId: table.id, seatIdx });
+                          }}
+                          onDragLeave={(e) => {
+                            if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                              setDragOverSeat((prev) =>
+                                prev?.tableId === table.id && prev.seatIdx === seatIdx ? null : prev
+                              );
+                            }
+                          }}
+                          onDrop={handleDropOnSeat(table.id, seatIdx)}
+                        >
+                          {seatGuest ? (
+                            <GuestChip
+                              guest={seatGuest}
+                              onDragStart={handleGuestDragStart(seatGuest.id, table.id, seatIdx)}
+                              isDragging={isDraggingThis}
+                              isDropTarget={isSeatOver && !isDraggingThis}
+                              compact
+                              onGuestClick={setPopupGuest}
+                            />
+                          ) : (
+                            <div
+                              style={{
+                                width: SEAT_SIZE,
+                                height: SEAT_SIZE,
+                                borderRadius: "50%",
+                                border: isSeatOver
+                                  ? "2px solid #F06292"
+                                  : "1.5px dashed rgba(255,255,255,0.15)",
+                                background: isSeatOver
+                                  ? "rgba(240,98,146,0.2)"
+                                  : "rgba(255,255,255,0.02)",
+                                transition: "border-color 0.15s, background 0.15s",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  fontSize: "9px",
+                                  fontWeight: "700",
+                                  color: isSeatOver ? "#F06292" : "rgba(255,255,255,0.2)",
+                                  userSelect: "none",
+                                  lineHeight: 1,
+                                }}
+                              >
+                                {seatIdx + 1}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+
+                    {/* Table action buttons */}
+                    <div
                       data-table-action="true"
-                      onClick={(e) => { e.stopPropagation(); openEditTable(table); }}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
-                      style={{ background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.4)" }}
-                      onMouseDown={(e) => e.stopPropagation()}
+                      className="flex items-center justify-center gap-1"
+                      style={{
+                        position: "absolute",
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: 44,
+                      }}
                     >
-                      <IconEdit />
-                    </button>
-                    <button
-                      data-table-action="true"
-                      onClick={(e) => { e.stopPropagation(); deleteTable(table.id); }}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
-                      style={{ background: "rgba(220,38,38,0.12)", color: "rgba(220,38,38,0.6)" }}
-                      onMouseDown={(e) => e.stopPropagation()}
-                    >
-                      <IconTrash />
-                    </button>
+                      <button
+                        data-table-action="true"
+                        onClick={(e) => { e.stopPropagation(); openEditTable(table); }}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
+                        style={{ background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.4)" }}
+                        onMouseDown={(e) => e.stopPropagation()}
+                      >
+                        <IconEdit />
+                      </button>
+                      <button
+                        data-table-action="true"
+                        onClick={(e) => { e.stopPropagation(); deleteTable(table.id); }}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
+                        style={{ background: "rgba(220,38,38,0.12)", color: "rgba(220,38,38,0.6)" }}
+                        onMouseDown={(e) => e.stopPropagation()}
+                      >
+                        <IconTrash />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              );
-            })
-          )}
+                );
+              })
+            )}
           </div>
         </div>
       </div>
@@ -957,7 +1105,6 @@ export default function PlanDeTablePage() {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div
@@ -1000,24 +1147,33 @@ export default function PlanDeTablePage() {
               </button>
             </div>
 
-            {/* Divider */}
             <div className="h-px mb-4" style={{ background: "rgba(255,255,255,0.07)" }} />
 
-            {/* Details */}
             <div className="space-y-2.5">
-              {/* Régime */}
+              {/* Table + siège */}
+              {popupGuest.table_id && (
+                <div className="flex items-center gap-2.5">
+                  <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" style={{ color: "rgba(255,255,255,0.3)" }}>
+                    <circle cx="12" cy="12" r="9" /><path strokeLinecap="round" d="M12 8v4l3 3" />
+                  </svg>
+                  <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Place</span>
+                  <span className="text-xs font-semibold ml-auto" style={{ color: "rgba(255,255,255,0.85)" }}>
+                    {tables.find((t) => t.id === popupGuest.table_id)?.nom ?? "—"}
+                    {popupGuest.seat_number !== null && (
+                      <span style={{ color: "rgba(255,255,255,0.4)" }}> · siège {popupGuest.seat_number + 1}</span>
+                    )}
+                  </span>
+                </div>
+              )}
+
               <div className="flex items-center gap-2.5">
-                <span
-                  className="w-2 h-2 rounded-full flex-shrink-0"
-                  style={{ background: REGIME_COLORS[popupGuest.regime_alimentaire].bg }}
-                />
+                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: REGIME_COLORS[popupGuest.regime_alimentaire].bg }} />
                 <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Régime</span>
                 <span className="text-xs font-semibold ml-auto" style={{ color: "rgba(255,255,255,0.85)" }}>
                   {REGIME_LABELS[popupGuest.regime_alimentaire]}
                 </span>
               </div>
 
-              {/* Email */}
               {popupGuest.email && (
                 <div className="flex items-center gap-2.5">
                   <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" style={{ color: "rgba(255,255,255,0.3)" }}>
@@ -1034,7 +1190,6 @@ export default function PlanDeTablePage() {
                 </div>
               )}
 
-              {/* Téléphone */}
               {popupGuest.telephone && (
                 <div className="flex items-center gap-2.5">
                   <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" style={{ color: "rgba(255,255,255,0.3)" }}>
@@ -1051,7 +1206,6 @@ export default function PlanDeTablePage() {
                 </div>
               )}
 
-              {/* Présence */}
               <div className="flex items-center gap-2.5">
                 <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" style={{ color: "rgba(255,255,255,0.3)" }}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1077,7 +1231,6 @@ export default function PlanDeTablePage() {
               </div>
             </div>
 
-            {/* Edit button */}
             <div className="mt-4 pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
               <button
                 onClick={() => openEditGuest(popupGuest)}
@@ -1283,17 +1436,17 @@ export default function PlanDeTablePage() {
 /* ─── GuestChip component ─── */
 function GuestChip({
   guest,
-  fromTableId,
   onDragStart,
   isDragging,
+  isDropTarget,
   compact,
   onGuestClick,
   style: extraStyle,
 }: {
   guest: Guest;
-  fromTableId: string | null;
   onDragStart: (e: React.DragEvent) => void;
   isDragging: boolean;
+  isDropTarget: boolean;
   compact: boolean;
   onGuestClick?: (guest: Guest) => void;
   style?: React.CSSProperties;
@@ -1308,6 +1461,7 @@ function GuestChip({
         draggable
         onDragStart={onDragStart}
         onClick={(e) => { e.stopPropagation(); onGuestClick?.(guest); }}
+        title={`${guest.prenom} ${guest.nom}`}
         style={{
           ...extraStyle,
           width: SEAT_SIZE,
@@ -1320,10 +1474,13 @@ function GuestChip({
           justifyContent: "center",
           fontSize: "11px",
           fontWeight: "bold",
-          cursor: "pointer",
+          cursor: "grab",
           opacity: isDragging ? 0.3 : 1,
-          transition: "opacity 0.15s, transform 0.1s, box-shadow 0.15s",
-          border: "2px solid rgba(255,255,255,0.2)",
+          transition: "opacity 0.15s, box-shadow 0.15s",
+          border: isDropTarget ? "2px solid #F06292" : "2px solid rgba(255,255,255,0.2)",
+          boxShadow: isDropTarget
+            ? "0 0 0 3px rgba(240,98,146,0.4), 0 0 14px rgba(240,98,146,0.4)"
+            : undefined,
           userSelect: "none",
           zIndex: 10,
         }}
@@ -1345,6 +1502,7 @@ function GuestChip({
         border: "1px solid rgba(255,255,255,0.08)",
         opacity: isDragging ? 0.4 : 1,
         userSelect: "none",
+        ...extraStyle,
       }}
     >
       <div
