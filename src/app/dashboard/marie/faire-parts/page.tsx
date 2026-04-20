@@ -89,6 +89,12 @@ const IconCheck = () => (
   </svg>
 );
 
+const IconTable = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 6h18M3 6v12M21 6v12M3 18h18M8 6v12M16 6v12" />
+  </svg>
+);
+
 /* ─────────────────── Helpers ─────────────────── */
 const STATUT_LABEL: Record<Statut, string> = {
   brouillon: "Brouillon",
@@ -421,7 +427,7 @@ export default function FairePartsPage() {
 
                       {/* ── Lien réponses RSVP (si publié) ── */}
                       {isPublie && (
-                        <div className="px-5 pb-5">
+                        <div className="px-5 pb-5 space-y-2">
                           <Link
                             href={`/dashboard/marie/faire-parts/${inv.id}/rsvp`}
                             className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 hover:opacity-80"
@@ -438,6 +444,18 @@ export default function FairePartsPage() {
                               </span>
                             )}
                           </Link>
+
+                          {/* Bouton plan de table (si des présences confirmées) */}
+                          {inv.rsvpStats && inv.rsvpStats.nb_presences > 0 && (
+                            <Link
+                              href="/dashboard/marie/plan-de-table"
+                              className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full text-sm font-bold transition-all duration-200 hover:opacity-90 active:scale-95"
+                              style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)", color: "white", boxShadow: "0 4px 12px rgba(233,30,140,0.25)" }}
+                            >
+                              <IconTable />
+                              Placer mes invités par table →
+                            </Link>
+                          )}
                         </div>
                       )}
 
