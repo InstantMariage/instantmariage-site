@@ -23,7 +23,7 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
     return NextResponse.json({ error: 'Corps de la requête invalide' }, { status: 400 });
   }
 
-  const { prenom, nom, email, presence, nb_personnes, regime_alimentaire, message } = body;
+  const { prenom, nom, email, telephone, presence, nb_personnes, regime_alimentaire, message } = body;
 
   if (!prenom || !nom || !email || typeof presence !== 'boolean') {
     return NextResponse.json({ error: 'Champs obligatoires manquants' }, { status: 400 });
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
   const { data: invitation, error: invErr } = await supabase
     .from('invitations')
     .select(`
-      id, slug, titre, rsvp_actif, rsvp_deadline, config,
+      id, slug, titre, rsvp_actif, rsvp_deadline, config, marie_id,
       maries!marie_id(user_id, prenom_marie1, prenom_marie2)
     `)
     .eq('slug', slug)
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
 
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null;
 
-  const { error: insertErr } = await supabase.from('rsvp_responses').insert({
+  const { data: rsvpInserted, error: insertErr } = await supabase.from('rsvp_responses').insert({
     invitation_id: invitation.id,
     prenom: String(prenom).slice(0, 100),
     nom: String(nom).slice(0, 100),
@@ -85,11 +85,27 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
     regime_alimentaire: regime_alimentaire ? String(regime_alimentaire).slice(0, 200) : null,
     message: message ? String(message).slice(0, 1000) : null,
     ip_address: ip,
-  });
+  }).select('id').single();
 
   if (insertErr) {
     console.error('[rsvp] insert error:', insertErr.message);
     return NextResponse.json({ error: 'Erreur lors de l\'enregistrement' }, { status: 500 });
+  }
+
+  // Auto-add to wedding_guests when guest confirms attendance
+  if (presence && rsvpInserted?.id && (invitation as any).marie_id) {
+    supabase.from('wedding_guests').insert({
+      marie_id: (invitation as any).marie_id,
+      prenom: String(prenom).slice(0, 100),
+      nom: String(nom).slice(0, 100),
+      email: String(email).toLowerCase().slice(0, 255),
+      telephone: telephone ? String(telephone).slice(0, 50) : null,
+      presence_confirmee: true,
+      source: 'rsvp',
+      rsvp_response_id: rsvpInserted.id,
+    }).then(({ error }) => {
+      if (error) console.error('[rsvp] wedding_guests insert error:', error.message);
+    });
   }
 
   // Send email notification to the couple (fire-and-forget)

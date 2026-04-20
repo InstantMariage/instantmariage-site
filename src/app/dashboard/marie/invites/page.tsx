@@ -79,11 +79,6 @@ const IconDownload = () => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
   </svg>
 );
-const IconImport = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-  </svg>
-);
 const IconTrash = () => (
   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -143,9 +138,6 @@ export default function InvitesPage() {
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  /* Import state */
-  const [importing, setImporting] = useState(false);
-  const [importMsg, setImportMsg] = useState("");
 
   /* Load data */
   const loadData = useCallback(async (mid: string) => {
@@ -267,75 +259,6 @@ export default function InvitesPage() {
     if (!marieId) return;
     await supabase.from("wedding_guests").delete().eq("id", id);
     setDeleteId(null);
-    await loadData(marieId);
-  }
-
-  /* Import from RSVP */
-  async function importFromRsvp() {
-    if (!marieId) return;
-    setImporting(true);
-    setImportMsg("");
-
-    const { data: invitations } = await supabase
-      .from("invitations")
-      .select("id")
-      .eq("marie_id", marieId);
-
-    if (!invitations?.length) {
-      setImportMsg("Aucun faire-part trouvé.");
-      setImporting(false);
-      return;
-    }
-
-    const invIds = invitations.map((i) => i.id);
-
-    const { data: rsvpData } = await supabase
-      .from("rsvp_responses")
-      .select(`id, regime_alimentaire, invitation_guests (prenom, nom, email, telephone, groupe)`)
-      .in("invitation_id", invIds)
-      .eq("presence", true);
-
-    if (!rsvpData?.length) {
-      setImportMsg("Aucune confirmation de présence trouvée.");
-      setImporting(false);
-      return;
-    }
-
-    const { data: existing } = await supabase
-      .from("wedding_guests")
-      .select("rsvp_response_id")
-      .eq("marie_id", marieId)
-      .not("rsvp_response_id", "is", null);
-
-    const existingIds = new Set((existing ?? []).map((e) => e.rsvp_response_id));
-
-    const validRegimes = ["normal", "vegetarien", "vegan", "halal", "casher", "sans_gluten"];
-
-    const toInsert = rsvpData
-      .filter((r) => r.invitation_guests && !existingIds.has(r.id))
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .map((r: any) => ({
-        marie_id: marieId,
-        prenom: r.invitation_guests.prenom ?? "Invité",
-        nom: r.invitation_guests.nom ?? "",
-        email: r.invitation_guests.email ?? null,
-        telephone: r.invitation_guests.telephone ?? null,
-        regime_alimentaire: validRegimes.includes(r.regime_alimentaire) ? r.regime_alimentaire : "normal",
-        relation: "Autres" as Relation,
-        presence_confirmee: true,
-        source: "rsvp",
-        rsvp_response_id: r.id,
-      }));
-
-    if (toInsert.length === 0) {
-      setImportMsg("Tous les invités confirmés ont déjà été importés.");
-      setImporting(false);
-      return;
-    }
-
-    await supabase.from("wedding_guests").insert(toInsert);
-    setImportMsg(`${toInsert.length} invité${toInsert.length > 1 ? "s" : ""} importé${toInsert.length > 1 ? "s" : ""} avec succès.`);
-    setImporting(false);
     await loadData(marieId);
   }
 
@@ -484,15 +407,6 @@ export default function InvitesPage() {
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               <button
-                onClick={importFromRsvp}
-                disabled={importing}
-                className="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-full transition-all duration-200"
-                style={{ background: "rgba(255,255,255,0.2)", color: "white", border: "1px solid rgba(255,255,255,0.35)" }}
-              >
-                <IconImport />
-                {importing ? "Import…" : "Importer RSVP"}
-              </button>
-              <button
                 onClick={exportPDF}
                 className="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-full transition-all duration-200"
                 style={{ background: "rgba(255,255,255,0.2)", color: "white", border: "1px solid rgba(255,255,255,0.35)" }}
@@ -509,11 +423,9 @@ export default function InvitesPage() {
             </div>
           </div>
 
-          {importMsg && (
-            <div className="mt-4 text-sm font-medium px-4 py-2 rounded-xl inline-block" style={{ background: "rgba(255,255,255,0.2)", color: "white" }}>
-              {importMsg}
-            </div>
-          )}
+          <p className="mt-4 text-xs" style={{ color: "rgba(255,255,255,0.7)" }}>
+            Les invités sont automatiquement ajoutés dès qu&apos;ils confirment leur présence.
+          </p>
         </section>
 
         <div className="max-w-5xl mx-auto px-6 space-y-4">
