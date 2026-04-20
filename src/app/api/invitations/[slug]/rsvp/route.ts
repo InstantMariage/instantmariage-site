@@ -80,6 +80,7 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
     prenom: String(prenom).slice(0, 100),
     nom: String(nom).slice(0, 100),
     email: String(email).toLowerCase().slice(0, 255),
+    telephone: telephone ? String(telephone).slice(0, 50) : null,
     presence,
     nb_personnes: nbPersonnes,
     regime_alimentaire: regime_alimentaire ? String(regime_alimentaire).slice(0, 200) : null,

@@ -11,6 +11,7 @@ type FormState = {
   prenom: string;
   nom: string;
   email: string;
+  telephone: string;
   presence: '' | 'oui' | 'non';
   nb_personnes: number;
   regime_alimentaire: string;
@@ -21,6 +22,7 @@ const INITIAL: FormState = {
   prenom: '',
   nom: '',
   email: '',
+  telephone: '',
   presence: '',
   nb_personnes: 1,
   regime_alimentaire: '',
@@ -51,6 +53,7 @@ export default function RsvpForm({ slug, couleurPrimaire }: Props) {
           prenom: form.prenom.trim(),
           nom: form.nom.trim(),
           email: form.email.trim(),
+          telephone: form.telephone.trim() || null,
           presence: form.presence === 'oui',
           nb_personnes: form.presence === 'oui' ? form.nb_personnes : 0,
           regime_alimentaire: form.regime_alimentaire.trim() || null,
@@ -134,6 +137,18 @@ export default function RsvpForm({ slug, couleurPrimaire }: Props) {
           placeholder="sophie@email.fr"
           value={form.email}
           onChange={e => update('email', e.target.value)}
+        />
+      </div>
+
+      {/* Téléphone */}
+      <div>
+        <label className={labelClass}>Téléphone <span className="text-gray-400 normal-case font-normal">(facultatif)</span></label>
+        <input
+          type="tel"
+          className={inputClass}
+          placeholder="+33 6 12 34 56 78"
+          value={form.telephone}
+          onChange={e => update('telephone', e.target.value)}
         />
       </div>
 
