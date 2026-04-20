@@ -561,15 +561,6 @@ export default function FairePartsPage() {
                 })}
               </div>
 
-              {/* CTA changer de template en bas */}
-              <button
-                onClick={() => setShowChangeTemplate(true)}
-                className="flex items-center justify-center gap-2 py-4 rounded-3xl text-sm font-semibold transition-all duration-200 hover:opacity-80"
-                style={{ background: "white", color: "#F06292", border: "2px dashed #FECDD3" }}
-              >
-                <IconRefresh />
-                Changer de template
-              </button>
             </>
           )}
         </div>
