@@ -264,8 +264,8 @@ export default function EleganceDoreeInteractive({
             <div
               style={{
                 position: 'relative',
-                width: 308,
-                height: 216,
+                width: 'min(92vw, 440px)',
+                height: 'min(64.5vw, 308px)',
                 animation: 'envelopeIn .8s .2s ease-out both',
               }}
             >
@@ -282,7 +282,7 @@ export default function EleganceDoreeInteractive({
                 }}
               >
                 {/* Diagonal fold X lines */}
-                <svg width="308" height="216" style={{ position: 'absolute', inset: 0 }}>
+                <svg width="100%" height="100%" viewBox="0 0 308 216" style={{ position: 'absolute', inset: 0 }}>
                   <line x1="0" y1="216" x2="154" y2="108" stroke="#C9A84C" strokeWidth=".6" opacity=".3" />
                   <line x1="308" y1="216" x2="154" y2="108" stroke="#C9A84C" strokeWidth=".6" opacity=".3" />
                 </svg>
@@ -295,7 +295,7 @@ export default function EleganceDoreeInteractive({
                   top: 0,
                   left: 0,
                   right: 0,
-                  height: 116,
+                  height: '53.7%',
                   perspective: 1000,
                   perspectiveOrigin: '50% 0%',
                   zIndex: 3,
@@ -517,7 +517,7 @@ export default function EleganceDoreeInteractive({
                     marginBottom: 36,
                   }}
                 >
-                  Together with their families
+                  Unis pour la vie
                 </p>
               )}
 
