@@ -116,6 +116,12 @@ function formatDate(dateStr: string): string {
   });
 }
 
+const IconTrash = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+  </svg>
+);
+
 /* ─────────────────── Page ─────────────────── */
 export default function FairePartsPage() {
   const router = useRouter();
@@ -123,6 +129,8 @@ export default function FairePartsPage() {
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Invitation | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -194,6 +202,24 @@ export default function FairePartsPage() {
       setAuthChecked(true);
     });
   }, [router]);
+
+  async function deleteInvitation(inv: Invitation) {
+    setDeleting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const res = await fetch(`/api/invitations/${inv.slug}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (res.ok) {
+        setInvitations((prev) => prev.filter((i) => i.id !== inv.id));
+        setDeleteTarget(null);
+      }
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   async function copyPublicLink(slug: string) {
     const url = `${window.location.origin}/invitation/${slug}`;
@@ -375,6 +401,15 @@ export default function FairePartsPage() {
                         className="flex items-center gap-2 px-5 pb-5"
                         style={{ borderTop: "1px solid #FEE2E2", paddingTop: "14px" }}
                       >
+                        {/* Bouton supprimer */}
+                        <button
+                          onClick={() => setDeleteTarget(inv)}
+                          className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200 hover:opacity-80"
+                          style={{ background: "#FFF0F5", color: "#F06292" }}
+                          title="Supprimer ce faire-part"
+                        >
+                          <IconTrash />
+                        </button>
                         {/* Bouton éditer (toujours visible) */}
                         {inv.statut === "brouillon" ? (
                           <Link
@@ -479,6 +514,54 @@ export default function FairePartsPage() {
       </div>
 
       <Footer />
+
+      {/* ── Modale de confirmation de suppression ── */}
+      {deleteTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-6"
+          style={{ background: "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)" }}
+          onClick={(e) => { if (e.target === e.currentTarget && !deleting) setDeleteTarget(null); }}
+        >
+          <div
+            className="w-full max-w-sm rounded-3xl p-7 flex flex-col"
+            style={{ background: "white", boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}
+          >
+            {/* Icône */}
+            <div
+              className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5 mx-auto"
+              style={{ background: "#FFF0F5", color: "#F06292" }}
+            >
+              <IconTrash />
+            </div>
+
+            <h3 className="text-base font-semibold text-gray-900 text-center mb-2">
+              Supprimer ce faire-part&nbsp;?
+            </h3>
+            <p className="text-sm text-gray-500 text-center leading-relaxed mb-6">
+              Êtes-vous sûr de vouloir supprimer <span className="font-medium text-gray-700">&ldquo;{deleteTarget.titre}&rdquo;</span>&nbsp;? Cette action est irréversible.
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleting}
+                className="flex-1 py-3 rounded-full text-sm font-semibold transition-all duration-200 hover:opacity-80 disabled:opacity-40"
+                style={{ background: "#F3F4F6", color: "#374151" }}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => deleteInvitation(deleteTarget)}
+                disabled={deleting}
+                className="flex-1 py-3 rounded-full text-sm font-semibold transition-all duration-200 hover:opacity-90 active:scale-95 disabled:opacity-40"
+                style={{ background: "#F06292", color: "white" }}
+              >
+                {deleting ? "Suppression…" : "Confirmer la suppression"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
