@@ -580,7 +580,7 @@ export default function InvitesPage() {
                       )}
                       {g.source === "rsvp" && (
                         <span className="text-xs px-1.5 py-0.5 rounded-full" style={{ background: "#EDE9FE", color: "#7C3AED", fontSize: "10px" }}>
-                          RSVP
+                          Importé automatiquement
                         </span>
                       )}
                     </div>
