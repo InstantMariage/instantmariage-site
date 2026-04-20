@@ -134,6 +134,9 @@ export default function PlanDeTablePage() {
   /* Mobile sidebar */
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  /* Mobile tabs */
+  const [mobileTab, setMobileTab] = useState<"invites" | "tables">("invites");
+
   /* Guest popup */
   const [popupGuest, setPopupGuest] = useState<Guest | null>(null);
 
@@ -332,6 +335,22 @@ export default function PlanDeTablePage() {
         .update({ table_id: tableId, seat_number: seatNumber })
         .eq("id", guestId);
     });
+  }
+
+  /* ── Assign guest to table (mobile — picks first free seat) ── */
+  function assignGuestToTable(guestId: string, tableId: string | null) {
+    if (tableId === null) { assignGuest(guestId, null, null); return; }
+    const table = tables.find((t) => t.id === tableId);
+    if (!table) return;
+    const occupied = new Set(
+      guests.filter((g) => g.table_id === tableId && g.id !== guestId).map((g) => g.seat_number)
+    );
+    let firstFree = -1;
+    for (let i = 0; i < table.capacite; i++) {
+      if (!occupied.has(i)) { firstFree = i; break; }
+    }
+    if (firstFree === -1) return;
+    assignGuest(guestId, tableId, firstFree);
   }
 
   /* ── Swap two guests between their seats ── */
@@ -1035,10 +1054,10 @@ export default function PlanDeTablePage() {
             <span className="hidden sm:inline">Table {tables.length >= 50 ? "(50/50)" : ""}</span>
           </button>
 
-          {/* Mobile sidebar toggle */}
+          {/* Mobile sidebar toggle — desktop only (lg+), replaced by tab UI on mobile */}
           <button
             onClick={() => setSidebarOpen((v) => !v)}
-            className="flex sm:hidden items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-xl relative"
+            className="hidden items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-xl relative"
             style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)", border: "1px solid rgba(255,255,255,0.12)" }}
           >
             <IconMenu />
@@ -1054,8 +1073,206 @@ export default function PlanDeTablePage() {
         </div>
       </div>
 
-      {/* ── Body: sidebar + canvas ── */}
-      <div className="flex flex-1 overflow-hidden relative">
+      {/* ── Mobile view (< lg): 2-tab interface ── */}
+      <div className="flex flex-col flex-1 overflow-hidden lg:hidden">
+        {/* Tab content */}
+        <div className="flex-1 overflow-y-auto">
+          {mobileTab === "invites" ? (
+            <div className="px-4 py-3 space-y-2">
+              {guests.length === 0 ? (
+                <div className="flex flex-col items-center py-16 text-center">
+                  <span className="text-3xl mb-2">👥</span>
+                  <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>Aucun invité</p>
+                </div>
+              ) : (
+                guests
+                  .slice()
+                  .sort((a, b) => `${a.prenom} ${a.nom}`.localeCompare(`${b.prenom} ${b.nom}`))
+                  .map((g) => {
+                    const colors = REGIME_COLORS[g.regime_alimentaire];
+                    const initials = `${g.prenom[0] ?? ""}${g.nom[0] ?? ""}`.toUpperCase();
+                    return (
+                      <div
+                        key={g.id}
+                        className="flex items-center gap-3 p-3 rounded-2xl"
+                        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+                      >
+                        <div
+                          className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                          style={{ background: colors.bg, color: colors.text }}
+                        >
+                          {initials}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold truncate" style={{ color: "rgba(255,255,255,0.85)" }}>
+                            {g.prenom} {g.nom}
+                          </p>
+                          <p className="text-xs truncate" style={{ color: "rgba(255,255,255,0.35)", fontSize: "10px" }}>
+                            {g.relation || "—"} · {REGIME_LABELS[g.regime_alimentaire]}
+                          </p>
+                        </div>
+                        <select
+                          value={g.table_id ?? ""}
+                          onChange={(e) => assignGuestToTable(g.id, e.target.value || null)}
+                          className="text-xs rounded-xl px-2 py-1.5 outline-none flex-shrink-0"
+                          style={{
+                            background: g.table_id ? "rgba(240,98,146,0.12)" : "rgba(255,255,255,0.07)",
+                            border: `1px solid ${g.table_id ? "rgba(240,98,146,0.3)" : "rgba(255,255,255,0.12)"}`,
+                            color: g.table_id ? "#F06292" : "rgba(255,255,255,0.5)",
+                            maxWidth: "120px",
+                          }}
+                        >
+                          <option value="" style={{ background: "#1e293b", color: "rgba(255,255,255,0.7)" }}>Non placé</option>
+                          {tables.map((t) => {
+                            const count = guests.filter((gg) => gg.table_id === t.id && gg.id !== g.id).length;
+                            const full = count >= t.capacite;
+                            return (
+                              <option
+                                key={t.id}
+                                value={t.id}
+                                disabled={full && g.table_id !== t.id}
+                                style={{ background: "#1e293b", color: full && g.table_id !== t.id ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.85)" }}
+                              >
+                                {t.nom}{full && g.table_id !== t.id ? " (complet)" : ""}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </div>
+                    );
+                  })
+              )}
+            </div>
+          ) : (
+            <div className="px-4 py-3 space-y-4">
+              {tables.length === 0 ? (
+                <div className="flex flex-col items-center py-16 text-center">
+                  <span className="text-3xl mb-2">🪑</span>
+                  <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.4)" }}>Aucune table</p>
+                  <button
+                    onClick={openAddTable}
+                    className="flex items-center gap-2 text-sm font-bold px-4 py-2 rounded-xl"
+                    style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)", color: "white" }}
+                  >
+                    <IconPlus /> Créer une table
+                  </button>
+                </div>
+              ) : (
+                tables.map((table) => {
+                  const tGuests = tableGuests(table.id).sort((a, b) => (a.seat_number ?? 0) - (b.seat_number ?? 0));
+                  const isFull = tGuests.length >= table.capacite;
+                  return (
+                    <div
+                      key={table.id}
+                      className="rounded-2xl overflow-hidden"
+                      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)" }}
+                    >
+                      <div
+                        className="flex items-center justify-between px-4 py-3"
+                        style={{ borderBottom: tGuests.length > 0 ? "1px solid rgba(255,255,255,0.07)" : "none" }}
+                      >
+                        <div>
+                          <p className="text-sm font-bold text-white">{table.nom}</p>
+                          <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+                            {tGuests.length}/{table.capacite} places
+                          </p>
+                        </div>
+                        <span
+                          className="text-xs px-2.5 py-1 rounded-full"
+                          style={{
+                            background: isFull ? "rgba(220,38,38,0.15)" : "rgba(255,255,255,0.08)",
+                            color: isFull ? "#F87171" : "rgba(255,255,255,0.4)",
+                          }}
+                        >
+                          {isFull ? "Complet" : `${table.capacite - tGuests.length} libre${table.capacite - tGuests.length > 1 ? "s" : ""}`}
+                        </span>
+                      </div>
+                      {tGuests.length === 0 && (
+                        <div className="px-4 py-3 text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>
+                          Aucun invité assigné
+                        </div>
+                      )}
+                      {tGuests.map((g) => {
+                        const colors = REGIME_COLORS[g.regime_alimentaire];
+                        const initials = `${g.prenom[0] ?? ""}${g.nom[0] ?? ""}`.toUpperCase();
+                        return (
+                          <div
+                            key={g.id}
+                            className="flex items-center gap-3 px-4 py-2.5"
+                            style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+                          >
+                            <div
+                              className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                              style={{ background: colors.bg, color: colors.text }}
+                            >
+                              {initials}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-semibold truncate" style={{ color: "rgba(255,255,255,0.8)" }}>
+                                {g.prenom} {g.nom}
+                              </p>
+                              <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)", fontSize: "10px" }}>
+                                Siège {(g.seat_number ?? 0) + 1}
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => assignGuest(g.id, null, null)}
+                              className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-colors"
+                              style={{ background: "rgba(220,38,38,0.12)", color: "rgba(220,38,38,0.7)" }}
+                              title="Retirer de la table"
+                            >
+                              <IconClose />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Bottom tab bar */}
+        <div
+          className="flex flex-shrink-0"
+          style={{ background: "#1e293b", borderTop: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          <button
+            onClick={() => setMobileTab("invites")}
+            className="flex-1 flex flex-col items-center gap-0.5 py-3 transition-colors"
+            style={{ color: mobileTab === "invites" ? "#F06292" : "rgba(255,255,255,0.4)" }}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span className="text-xs font-semibold">Invités</span>
+            {unassignedCount > 0 && (
+              <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.3)" }}>
+                {unassignedCount} non placé{unassignedCount > 1 ? "s" : ""}
+              </span>
+            )}
+          </button>
+          <div style={{ width: "1px", background: "rgba(255,255,255,0.07)", margin: "8px 0" }} />
+          <button
+            onClick={() => setMobileTab("tables")}
+            className="flex-1 flex flex-col items-center gap-0.5 py-3 transition-colors"
+            style={{ color: mobileTab === "tables" ? "#F06292" : "rgba(255,255,255,0.4)" }}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <rect x="3" y="3" width="18" height="18" rx="2" /><path strokeLinecap="round" d="M3 9h18M3 15h18M9 3v18M15 3v18" />
+            </svg>
+            <span className="text-xs font-semibold">Tables</span>
+            <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.3)" }}>
+              {tables.length} table{tables.length > 1 ? "s" : ""}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* ── Desktop view (>= lg): sidebar + canvas ── */}
+      <div className="hidden lg:flex flex-1 overflow-hidden relative">
 
         {/* ── Sidebar ─ desktop: always visible, mobile: slide-in drawer ── */}
         {/* Mobile backdrop */}
