@@ -221,7 +221,7 @@ export default function FairePartsPage() {
           </p>
           <h1 className="text-3xl font-semibold text-white leading-tight mb-1">Faire-parts animés</h1>
           <p className="text-base mb-8" style={{ color: "rgba(255,255,255,0.8)" }}>
-            Créez et partagez votre faire-part digital avec RSVP en ligne
+            Créez et partagez votre faire-part digital avec confirmations de présence en ligne
           </p>
 
           {/* CTA créer */}
@@ -359,7 +359,7 @@ export default function FairePartsPage() {
                             style={{ background: "#F3F4F6" }}
                           >
                             <IconUsers />
-                            <p className="text-sm text-gray-400">En attente des premières réponses RSVP</p>
+                            <p className="text-sm text-gray-400">En attente des premières confirmations de présence</p>
                           </div>
                         </div>
                       )}
@@ -428,7 +428,7 @@ export default function FairePartsPage() {
                             style={{ background: "#FFF0F5", color: "#F06292", border: "1px solid #FECDD3" }}
                           >
                             <IconUsers />
-                            Voir les réponses RSVP
+                            Voir les confirmations de présence
                             {inv.rsvpStats && inv.rsvpStats.total_reponses > 0 && (
                               <span
                                 className="ml-1 px-2 py-0.5 rounded-full text-xs font-bold"
