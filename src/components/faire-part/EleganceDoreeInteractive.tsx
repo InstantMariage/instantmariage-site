@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import RsvpForm from '@/app/invitation/[slug]/RsvpForm';
-import { OrnamentalFrameOverlay } from '@/components/faire-part/OrnamentalFrame';
 
 type Phase =
   | 'idle'
@@ -55,8 +54,6 @@ export default function EleganceDoreeInteractive({
 }: EleganceDoreeInteractiveProps) {
   const [phase, setPhase] = useState<Phase>('idle');
   const [clipExpanded, setClipExpanded] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [scrollY, setScrollY] = useState(0);
 
   const advance = useCallback(() => {
     setPhase(prev => NEXT[prev] ?? prev);
@@ -88,16 +85,6 @@ export default function EleganceDoreeInteractive({
       return () => cancelAnimationFrame(raf);
     }
     setClipExpanded(false);
-  }, [phase]);
-
-  // Parallax on scroll (letter phase only)
-  useEffect(() => {
-    if (phase !== 'complete' && phase !== 'revealing') return;
-    const el = scrollRef.current;
-    if (!el) return;
-    const handler = () => setScrollY(el.scrollTop);
-    el.addEventListener('scroll', handler, { passive: true });
-    return () => el.removeEventListener('scroll', handler);
   }, [phase]);
 
   const handleSealClick = () => {
@@ -225,7 +212,7 @@ export default function EleganceDoreeInteractive({
         style={{
           position: 'relative',
           width: '100%',
-          minHeight: fixedHeight ? fixedHeight : '100dvh',
+          minHeight: fixedHeight ? fixedHeight : showEnvelope ? 560 : 0,
           height: fixedHeight ? fixedHeight : undefined,
           fontFamily: "'Cormorant Garamond', serif",
         }}
@@ -234,7 +221,7 @@ export default function EleganceDoreeInteractive({
         {showEnvelope && (
           <div
             style={{
-              position: 'fixed',
+              position: 'absolute',
               inset: 0,
               background: 'linear-gradient(155deg, #180E06 0%, #2A1A0C 55%, #1C1008 100%)',
               display: 'flex',
@@ -242,6 +229,7 @@ export default function EleganceDoreeInteractive({
               alignItems: 'center',
               justifyContent: 'center',
               overflow: 'hidden',
+              borderRadius: 'inherit',
             }}
           >
             {/* Background gold sparkles */}
@@ -540,21 +528,15 @@ export default function EleganceDoreeInteractive({
           </div>
         )}
 
-        {/* ── ORNAMENTAL FRAME OVERLAY ─────────────────────────────────────── */}
-        <OrnamentalFrameOverlay />
-
-        {/* ── LETTER OVERLAY ───────────────────────────────────────────────── */}
+        {/* ── LETTER ───────────────────────────────────────────────────────── */}
         {showLetter && (
           <div
-            ref={scrollRef}
-            className={isComplete ? 'ed-letter-scroll' : 'ed-letter-fixed'}
             style={{
-              position: 'fixed',
-              inset: 0,
+              position: 'relative',
+              width: '100%',
               background: 'linear-gradient(180deg, #FFFDF7 0%, #FDF8EE 40%, #FFFDF7 100%)',
               clipPath: letterClip(),
               transition: showLetter ? 'clip-path .55s cubic-bezier(.25,.46,.45,.94)' : 'none',
-              zIndex: 20,
             }}
           >
             {/* Letter content */}
@@ -654,7 +636,6 @@ export default function EleganceDoreeInteractive({
                   className="ed-reveal-5"
                   style={{
                     marginBottom: 24,
-                    transform: `translateY(${-scrollY * 0.06}px)`,
                   }}
                 >
                   <p
@@ -687,7 +668,6 @@ export default function EleganceDoreeInteractive({
                   className="ed-reveal-6"
                   style={{
                     marginBottom: message ? 44 : 56,
-                    transform: `translateY(${-scrollY * 0.04}px)`,
                   }}
                 >
                   <p
