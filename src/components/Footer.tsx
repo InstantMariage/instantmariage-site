@@ -8,8 +8,8 @@ const footerLinks = {
   mariees: {
     title: "Espace mariés",
     links: [
-      { label: "Liste des invités", href: "https://tableau-de-bord-mariage.vercel.app" },
-      { label: "Plan de table", href: "https://tableau-de-bord-mariage.vercel.app" },
+      { label: "Liste des invités", href: "/dashboard/marie/invites" },
+      { label: "Plan de table", href: "/dashboard/marie/plan-de-table" },
       { label: "Rétroplanning", href: "/dashboard/marie/retroplanning" },
       { label: "Budget mariage", href: "/dashboard/marie/budget" },
       { label: "Checklist mariage", href: "/dashboard/marie/checklist" },

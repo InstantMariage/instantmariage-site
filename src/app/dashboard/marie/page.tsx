@@ -251,8 +251,8 @@ export default function DashboardMarie() {
       iconColor: "#F06292",
     },
     {
-      href: "https://tableau-de-bord-mariage.vercel.app",
-      external: true,
+      href: "/dashboard/marie/invites",
+      external: false,
       icon: <IconChair />,
       label: "Invités & Plan de table",
       desc: "Gérez vos invités et organisez le placement",

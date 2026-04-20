@@ -11,7 +11,7 @@ const outils = [
   {
     label: "Invités & Plan de table",
     icon: "🪑",
-    href: "https://tableau-de-bord-mariage.vercel.app",
+    href: "/dashboard/marie/invites",
     desc: "Gérez vos invités et votre plan de table",
   },
   {
