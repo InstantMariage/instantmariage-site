@@ -135,7 +135,7 @@ export default async function InvitationPage({ params }: { params: Params }) {
   }
 
   // ── Côte d'Azur ───────────────────────────────────────────────────────────
-  if (templateSlug === 'cote-azur') {
+  if (templateSlug === 'cote-dazur') {
     return <CoteAzurInteractive {...interactiveProps} />;
   }
 

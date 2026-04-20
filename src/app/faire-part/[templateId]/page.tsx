@@ -7,6 +7,14 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { supabase } from '@/lib/supabase';
 import EleganceDoreeInteractive from '@/components/faire-part/EleganceDoreeInteractive';
+import BohemeChampetreInteractive from '@/components/faire-part/BohemeChampetreInteractive';
+import ModerneMinimalInteractive from '@/components/faire-part/ModerneMinimalInteractive';
+import LuxeMarbreInteractive from '@/components/faire-part/LuxeMarbreInteractive';
+import RomantiqueFloralInteractive from '@/components/faire-part/RomantiqueFloralInteractive';
+import CoteAzurInteractive from '@/components/faire-part/CoteAzurInteractive';
+import ProvenceOlivierInteractive from '@/components/faire-part/ProvenceOlivierInteractive';
+import NuitEtoileeInteractive from '@/components/faire-part/NuitEtoileeInteractive';
+import JardinJaponaisInteractive from '@/components/faire-part/JardinJaponaisInteractive';
 
 // ─── Template config ─────────────────────────────────────────────────────────
 
@@ -458,8 +466,6 @@ export default function FairePartEditorPage() {
 
   if (!template) return null;
 
-  const isEleganceDoree = templateId === 'elegance-doree';
-
   return (
     <>
       <Header />
@@ -692,55 +698,62 @@ export default function FairePartEditorPage() {
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Prévisualisation live
                   </p>
-                  {isEleganceDoree && (
-                    <span
-                      className="text-xs px-2.5 py-1 rounded-full font-semibold"
-                      style={{ background: `${template.accentColor}18`, color: template.accentColor }}
-                    >
-                      Animé
-                    </span>
-                  )}
+                  <span
+                    className="text-xs px-2.5 py-1 rounded-full font-semibold"
+                    style={{ background: `${template.accentColor}18`, color: template.accentColor }}
+                  >
+                    Animé
+                  </span>
                 </div>
 
-                {isEleganceDoree ? (
-                  /* Interactive HTML preview — scaled mobile 390×844 → 240×426 */
-                  <div className="flex justify-center">
+                {/* Interactive HTML preview — scaled mobile 390×844 → 240×426 */}
+                <div className="flex justify-center">
+                  <div
+                    className="relative rounded-xl overflow-hidden shadow-lg"
+                    style={{ width: 240, height: 426, flexShrink: 0 }}
+                  >
                     <div
-                      className="relative rounded-xl overflow-hidden shadow-lg"
-                      style={{ width: 240, height: 426, flexShrink: 0 }}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: 390,
+                        height: 844,
+                        transform: 'scale(0.6154)',
+                        transformOrigin: 'top left',
+                        pointerEvents: 'none',
+                      }}
                     >
-                      <div
-                        style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: 390,
-                          height: 844,
-                          transform: 'scale(0.6154)',
-                          transformOrigin: 'top left',
-                          pointerEvents: 'none',
-                        }}
-                      >
-                        <EleganceDoreeInteractive
-                          coupleNames={coupleNames}
-                          date={dateFormatted}
-                          lieu={lieuDisplay}
-                          message={messageDisplay}
-                          autoPlay
-                          fixedHeight={844}
-                        />
-                      </div>
+                      {templateId === 'elegance-doree' && (
+                        <EleganceDoreeInteractive coupleNames={coupleNames} date={dateFormatted} lieu={lieuDisplay} message={messageDisplay} autoPlay fixedHeight={844} />
+                      )}
+                      {templateId === 'boheme-champetre' && (
+                        <BohemeChampetreInteractive coupleNames={coupleNames} date={dateFormatted} lieu={lieuDisplay} message={messageDisplay} autoPlay fixedHeight={844} />
+                      )}
+                      {templateId === 'moderne-minimal' && (
+                        <ModerneMinimalInteractive coupleNames={coupleNames} date={dateFormatted} lieu={lieuDisplay} message={messageDisplay} autoPlay fixedHeight={844} />
+                      )}
+                      {templateId === 'luxe-marbre' && (
+                        <LuxeMarbreInteractive coupleNames={coupleNames} date={dateFormatted} lieu={lieuDisplay} message={messageDisplay} autoPlay fixedHeight={844} />
+                      )}
+                      {templateId === 'romantique-floral' && (
+                        <RomantiqueFloralInteractive coupleNames={coupleNames} date={dateFormatted} lieu={lieuDisplay} message={messageDisplay} autoPlay fixedHeight={844} />
+                      )}
+                      {templateId === 'cote-dazur' && (
+                        <CoteAzurInteractive coupleNames={coupleNames} date={dateFormatted} lieu={lieuDisplay} message={messageDisplay} autoPlay fixedHeight={844} />
+                      )}
+                      {templateId === 'provence-olivier' && (
+                        <ProvenceOlivierInteractive coupleNames={coupleNames} date={dateFormatted} lieu={lieuDisplay} message={messageDisplay} autoPlay fixedHeight={844} />
+                      )}
+                      {templateId === 'nuit-etoilee' && (
+                        <NuitEtoileeInteractive coupleNames={coupleNames} date={dateFormatted} lieu={lieuDisplay} message={messageDisplay} autoPlay fixedHeight={844} />
+                      )}
+                      {templateId === 'jardin-japonais' && (
+                        <JardinJaponaisInteractive coupleNames={coupleNames} date={dateFormatted} lieu={lieuDisplay} message={messageDisplay} autoPlay fixedHeight={844} />
+                      )}
                     </div>
                   </div>
-                ) : (
-                  <StaticPreview
-                    template={template}
-                    coupleNames={coupleNames}
-                    dateFormatted={dateFormatted}
-                    lieu={lieuDisplay}
-                    message={messageDisplay}
-                  />
-                )}
+                </div>
 
                 <p className="text-xs text-center text-gray-400 mt-3">
                   Mis à jour en temps réel
