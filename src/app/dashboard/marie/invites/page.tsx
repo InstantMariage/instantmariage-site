@@ -262,105 +262,264 @@ export default function InvitesPage() {
     await loadData(marieId);
   }
 
-  /* PDF Export */
+  /* PDF Export — design luxe mariage */
   async function exportPDF() {
     const { jsPDF } = await import("jspdf");
+
+    // Fetch couple names
+    let coupleName = "Mariage";
+    if (marieId) {
+      const { data } = await supabase
+        .from("maries")
+        .select("prenom_marie1, prenom_marie2")
+        .eq("id", marieId)
+        .single();
+      if (data?.prenom_marie1) {
+        coupleName = data.prenom_marie2
+          ? `${data.prenom_marie1} & ${data.prenom_marie2}`
+          : data.prenom_marie1;
+      }
+    }
+
     const doc = new jsPDF("p", "mm", "a4");
-    const pageW = doc.internal.pageSize.getWidth();
+    const W = 210, H = 297;
+    const mL = 18, mR = 18;
+    const cW = W - mL - mR;
 
-    // Header
-    doc.setFillColor(240, 98, 146);
-    doc.rect(0, 0, pageW, 30, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(18);
-    doc.text("Liste des invités par table", 20, 13);
-    doc.setFontSize(9);
-    doc.text(`Généré le ${new Date().toLocaleDateString("fr-FR")} · ${guests.length} invités au total`, 20, 23);
+    // Palette
+    const CREAM      = [253, 248, 240] as [number, number, number];
+    const GOLD       = [201, 169, 110] as [number, number, number];
+    const GOLD_LT    = [240, 226, 195] as [number, number, number];
+    const BROWN      = [ 74,  55,  40] as [number, number, number];
+    const BROWN_MID  = [139, 111,  78] as [number, number, number];
+    const GRAY       = [180, 180, 180] as [number, number, number];
 
-    doc.setTextColor(30, 30, 30);
-    let y = 42;
+    const dietDot: Record<string, [number, number, number]> = {
+      normal:      GRAY,
+      vegetarien:  [ 22, 163,  74],
+      vegan:       [  5, 150, 105],
+      halal:       [217, 119,   6],
+      casher:      [ 37,  99, 235],
+      sans_gluten: [220,  38,  38],
+    };
+    const dietShort: Record<string, string> = {
+      normal: "", vegetarien: "V", vegan: "Vg", halal: "H", casher: "K", sans_gluten: "SG",
+    };
 
-    // Group by table
+    const sf = (c: [number,number,number]) => doc.setFillColor(c[0], c[1], c[2]);
+    const sd = (c: [number,number,number]) => doc.setDrawColor(c[0], c[1], c[2]);
+    const st = (c: [number,number,number]) => doc.setTextColor(c[0], c[1], c[2]);
+
+    function bgPage() {
+      sf(CREAM); doc.rect(0, 0, W, H, "F");
+      sf(GOLD);  doc.rect(0, 0, W, 1.8, "F");
+      sf(GOLD_LT); doc.rect(0, 1.8, W, 0.7, "F");
+      // Bottom gold strip
+      sf(GOLD_LT); doc.rect(0, H - 1.5, W, 0.7, "F");
+      sf(GOLD);  doc.rect(0, H - 0.8, W, 0.8, "F");
+    }
+
+    function goldLine(y: number, x1 = mL, x2 = W - mR) {
+      sd(GOLD); doc.setLineWidth(0.3); doc.line(x1, y, x2, y);
+    }
+
+    function divider(y: number) {
+      const cx = W / 2;
+      goldLine(y, mL, cx - 6); goldLine(y, cx + 6, W - mR);
+      sf(GOLD); doc.circle(cx, y, 1.8, "F");
+      sf(GOLD_LT); doc.circle(cx - 4.5, y, 0.9, "F");
+      doc.circle(cx + 4.5, y, 0.9, "F");
+    }
+
+    function pageFooter() {
+      goldLine(H - 11);
+      st(BROWN_MID); doc.setFont("times", "italic"); doc.setFontSize(7.5);
+      doc.text("InstantMariage", W / 2, H - 6, { align: "center" });
+    }
+
+    // Group guests by table
     const byTable: { [key: string]: { name: string; guests: Guest[] } } = {};
     const unassigned: Guest[] = [];
-
     guests.forEach((g) => {
-      if (!g.table_id) {
-        unassigned.push(g);
-        return;
-      }
-      const table = tables.find((t) => t.id === g.table_id);
-      const key = g.table_id;
-      if (!byTable[key]) byTable[key] = { name: table?.nom ?? "Table", guests: [] };
-      byTable[key].guests.push(g);
+      if (!g.table_id) { unassigned.push(g); return; }
+      const tbl = tables.find((t) => t.id === g.table_id);
+      if (!byTable[g.table_id]) byTable[g.table_id] = { name: tbl?.nom ?? "Table", guests: [] };
+      byTable[g.table_id].guests.push(g);
     });
-
     const sortedTables = Object.values(byTable).sort((a, b) => a.name.localeCompare(b.name));
     if (unassigned.length) sortedTables.push({ name: "Non placés", guests: unassigned });
 
-    for (const t of sortedTables) {
-      if (y > 260) { doc.addPage(); y = 20; }
+    // ── PAGE 1 : EN-TÊTE ──
+    bgPage();
 
-      // Table header
-      doc.setFillColor(t.name === "Non placés" ? 243 : 255, t.name === "Non placés" ? 244 : 240, t.name === "Non placés" ? 246 : 245);
-      doc.rect(15, y - 5, pageW - 30, 10, "F");
-      doc.setFontSize(11);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(t.name === "Non placés" ? 107 : 240, t.name === "Non placés" ? 114 : 98, t.name === "Non placés" ? 128 : 146);
-      doc.text(`${t.name}  —  ${t.guests.length} invité${t.guests.length > 1 ? "s" : ""}`, 18, y + 1);
-      y += 10;
+    // Noms des mariés
+    doc.setFont("times", "bolditalic"); doc.setFontSize(30); st(BROWN);
+    doc.text(coupleName, W / 2, 36, { align: "center" });
 
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
+    // Sous-titre
+    doc.setFont("times", "italic"); doc.setFontSize(13); st(BROWN_MID);
+    doc.text("Plan de table", W / 2, 46, { align: "center" });
 
-      for (const g of t.guests) {
-        if (y > 270) { doc.addPage(); y = 20; }
-        doc.setTextColor(30, 30, 30);
-        const regime = regimeInfo(g.regime_alimentaire);
-        const presence = presenceLabel(g.presence_confirmee);
-        const line1 = `${g.prenom} ${g.nom}`;
-        const line2 = `${regime.label}${g.email ? "  ·  " + g.email : ""}`;
-        const line3 = `${g.relation}  ·  ${presence.label}`;
+    // Méta
+    doc.setFont("times", "normal"); doc.setFontSize(8.5); st(BROWN_MID);
+    const dateStr = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+    doc.text(`${guests.length} invités · ${tables.length} tables · Édité le ${dateStr}`, W / 2, 54, { align: "center" });
 
-        doc.text(`•  ${line1}`, 22, y);
-        doc.setTextColor(120, 120, 120);
-        doc.text(`    ${line2}`, 22, y + 4);
-        doc.text(`    ${line3}`, 22, y + 8);
-        doc.setTextColor(30, 30, 30);
-        y += 13;
+    divider(61);
+
+    let y = 71;
+
+    function checkPage(needed: number) {
+      if (y + needed > H - 18) {
+        pageFooter();
+        doc.addPage(); bgPage();
+        y = 22;
       }
-      y += 4;
     }
 
-    // Summary page
-    doc.addPage();
-    y = 20;
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(240, 98, 146);
-    doc.text("Résumé des régimes alimentaires", 20, y);
-    y += 10;
+    // ── CARTES PAR TABLE ──
+    for (const t of sortedTables) {
+      const isUnplaced = t.name === "Non placés";
+      const LINE_H = 7;
+      const cardH = 15 + t.guests.length * LINE_H + 4;
 
-    const regimeCounts: { [k: string]: number } = {};
-    guests.forEach((g) => {
-      regimeCounts[g.regime_alimentaire] = (regimeCounts[g.regime_alimentaire] ?? 0) + 1;
-    });
+      checkPage(cardH + 6);
 
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(30, 30, 30);
+      // Fond blanc de la carte
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(mL, y, cW, cardH, 2.5, 2.5, "F");
+
+      // Bordure dorée (ou grise si non placés)
+      if (isUnplaced) { sd(GRAY); } else { sd(GOLD); }
+      doc.setLineWidth(0.5);
+      doc.roundedRect(mL, y, cW, cardH, 2.5, 2.5, "S");
+
+      // Bandeau de titre intérieur
+      if (!isUnplaced) {
+        sf(GOLD_LT);
+        doc.roundedRect(mL, y, cW, 12, 2.5, 2.5, "F");
+        doc.setFillColor(255, 255, 255);
+        doc.rect(mL, y + 9, cW, 3, "F");
+      }
+
+      // Nom de la table
+      doc.setFont("times", "bold"); doc.setFontSize(11);
+      st(isUnplaced ? GRAY : BROWN);
+      doc.text(t.name, W / 2, y + 8, { align: "center" });
+
+      // Nombre d'invités (droite)
+      doc.setFont("times", "italic"); doc.setFontSize(8); st(BROWN_MID);
+      doc.text(`${t.guests.length} invité${t.guests.length > 1 ? "s" : ""}`, mL + cW - 5, y + 8, { align: "right" });
+
+      // Filet sous le titre
+      if (isUnplaced) { sd(GRAY); } else { sd(GOLD); }
+      doc.setLineWidth(0.4);
+      doc.line(mL + 6, y + 13, mL + cW - 6, y + 13);
+
+      // Lignes invités
+      let gy = y + 13 + LINE_H - 1;
+      for (const g of t.guests) {
+        const dc = dietDot[g.regime_alimentaire] ?? GRAY;
+        const dShort = dietShort[g.regime_alimentaire] ?? "";
+
+        // Pastille régime alimentaire
+        sf(dShort ? dc : GRAY);
+        doc.circle(mL + 7, gy - 1.8, dShort ? 1.8 : 1.2, "F");
+
+        // Nom complet
+        doc.setFont("times", "normal"); doc.setFontSize(9.5); st(BROWN);
+        doc.text(`${g.prenom} ${g.nom}`, mL + 12, gy);
+
+        // Label régime court
+        if (dShort) {
+          const nameW = doc.getTextWidth(`${g.prenom} ${g.nom}`);
+          doc.setFont("times", "italic"); doc.setFontSize(7); st(dc);
+          doc.text(dShort, mL + 12 + nameW + 2, gy);
+        }
+
+        // Coche de présence confirmée
+        if (g.presence_confirmee === true) {
+          doc.setFont("times", "normal"); doc.setFontSize(8);
+          doc.setTextColor(22, 163, 74);
+          doc.text("✓", mL + cW - 5, gy, { align: "right" });
+        }
+
+        gy += LINE_H;
+      }
+
+      y += cardH + 5;
+    }
+
+    pageFooter();
+
+    // ── PAGE RÉCAPITULATIF ──
+    doc.addPage(); bgPage();
+
+    doc.setFont("times", "bolditalic"); doc.setFontSize(22); st(BROWN);
+    doc.text("Récapitulatif", W / 2, 32, { align: "center" });
+    divider(40);
+
+    let sy = 54;
+
+    // Section régimes
+    doc.setFont("times", "bold"); doc.setFontSize(9); st(GOLD);
+    doc.text("RÉGIMES ALIMENTAIRES", mL + 5, sy);
+    sy += 9;
+
+    const regimeCounts: Record<string, number> = {};
+    guests.forEach((g) => { regimeCounts[g.regime_alimentaire] = (regimeCounts[g.regime_alimentaire] ?? 0) + 1; });
+
     for (const r of REGIMES) {
       const count = regimeCounts[r.value] ?? 0;
       if (!count) continue;
-      doc.text(`${r.label} :  ${count} couvert${count > 1 ? "s" : ""}`, 25, y);
-      y += 7;
+      const dc = dietDot[r.value] ?? GRAY;
+      sf(dc); doc.circle(mL + 7, sy - 1.8, 3, "F");
+      doc.setFont("times", "normal"); doc.setFontSize(11.5); st(BROWN);
+      doc.text(r.label, mL + 14, sy);
+      doc.setFont("times", "bold"); doc.setFontSize(11.5); st(BROWN_MID);
+      doc.text(`${count} couvert${count > 1 ? "s" : ""}`, W - mR, sy, { align: "right" });
+      sd(GOLD_LT); doc.setLineWidth(0.2);
+      doc.line(mL + 5, sy + 2, W - mR, sy + 2);
+      sy += 13;
     }
 
-    y += 5;
-    doc.setFont("helvetica", "bold");
-    doc.text(`Total :  ${guests.length} couvert${guests.length > 1 ? "s" : ""}`, 25, y);
+    goldLine(sy + 3); sy += 12;
+    doc.setFont("times", "bold"); doc.setFontSize(14); st(BROWN);
+    doc.text("Total", mL + 14, sy);
+    st(GOLD);
+    doc.text(`${guests.length} couvert${guests.length > 1 ? "s" : ""}`, W - mR, sy, { align: "right" });
 
-    doc.save(`invites-mariage-${new Date().toISOString().slice(0, 10)}.pdf`);
+    // Section présences
+    sy += 22;
+    doc.setFont("times", "bold"); doc.setFontSize(9); st(GOLD);
+    doc.text("PRÉSENCES", mL + 5, sy);
+    sy += 9;
+
+    const confirmed = guests.filter((g) => g.presence_confirmee === true).length;
+    const declined  = guests.filter((g) => g.presence_confirmee === false).length;
+    const pending   = guests.filter((g) => g.presence_confirmee === null).length;
+    const placed    = guests.filter((g) => g.table_id !== null).length;
+
+    const presRows: { label: string; count: number; c: [number,number,number] }[] = [
+      { label: "Confirmés",       count: confirmed, c: [ 22, 163,  74] },
+      { label: "Déclinés",        count: declined,  c: [220,  38,  38] },
+      { label: "Sans réponse",    count: pending,   c: GRAY },
+      { label: "Placés en table", count: placed,    c: GOLD },
+    ];
+    for (const ps of presRows) {
+      sf(ps.c); doc.circle(mL + 7, sy - 1.8, 3, "F");
+      doc.setFont("times", "normal"); doc.setFontSize(11.5); st(BROWN);
+      doc.text(ps.label, mL + 14, sy);
+      doc.setFont("times", "bold"); st(BROWN_MID);
+      doc.text(`${ps.count}`, W - mR, sy, { align: "right" });
+      sd(GOLD_LT); doc.setLineWidth(0.2);
+      doc.line(mL + 5, sy + 2, W - mR, sy + 2);
+      sy += 13;
+    }
+
+    pageFooter();
+
+    doc.save(`plan-de-table-${new Date().toISOString().slice(0, 10)}.pdf`);
   }
 
   /* Table name helper */
