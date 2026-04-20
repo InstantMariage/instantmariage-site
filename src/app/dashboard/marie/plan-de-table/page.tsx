@@ -233,8 +233,8 @@ export default function PlanDeTablePage() {
       if (!table) return;
       movingTable.current = {
         id: tableId,
-        offsetX: e.clientX - rect.left - table.position_x,
-        offsetY: e.clientY - rect.top - table.position_y,
+        offsetX: e.clientX - rect.left + canvas.scrollLeft - table.position_x,
+        offsetY: e.clientY - rect.top + canvas.scrollTop - table.position_y,
       };
     };
   }
@@ -244,8 +244,8 @@ export default function PlanDeTablePage() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
-    const newX = Math.max(0, e.clientX - rect.left - movingTable.current.offsetX);
-    const newY = Math.max(0, e.clientY - rect.top - movingTable.current.offsetY);
+    const newX = Math.max(0, e.clientX - rect.left + canvas.scrollLeft - movingTable.current.offsetX);
+    const newY = Math.max(0, e.clientY - rect.top + canvas.scrollTop - movingTable.current.offsetY);
     const id = movingTable.current.id;
     setTables((prev) => prev.map((t) => t.id === id ? { ...t, position_x: newX, position_y: newY } : t));
   }
@@ -274,6 +274,7 @@ export default function PlanDeTablePage() {
 
   /* ── Add/Edit table ── */
   function openAddTable() {
+    if (tables.length >= 50) return;
     setEditTableId(null);
     setTableForm({ nom: `Table ${tables.length + 1}`, capacite: "10" });
     setAddTableOpen(true);
@@ -366,10 +367,11 @@ export default function PlanDeTablePage() {
 
           <button
             onClick={openAddTable}
-            className="flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-xl transition-all hover:opacity-90"
+            disabled={tables.length >= 50}
+            className="flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-xl transition-all hover:opacity-90 disabled:opacity-40"
             style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)", color: "white" }}
           >
-            <IconPlus /> Table
+            <IconPlus /> Table {tables.length >= 50 ? "(50/50)" : ""}
           </button>
         </div>
       </div>
@@ -456,18 +458,23 @@ export default function PlanDeTablePage() {
         {/* ── Canvas ── */}
         <div
           ref={canvasRef}
-          className="flex-1 relative overflow-auto cursor-default select-none"
-          style={{
-            background: "#0f172a",
-            backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)`,
-            backgroundSize: "32px 32px",
-          }}
+          className="flex-1 overflow-auto cursor-default select-none"
           onMouseMove={handleCanvasMouseMove}
           onMouseUp={handleCanvasMouseUp}
           onMouseLeave={handleCanvasMouseUp}
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleCanvasDrop}
         >
+          <div
+            style={{
+              position: "relative",
+              minWidth: "3000px",
+              minHeight: "2000px",
+              background: "#0f172a",
+              backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)`,
+              backgroundSize: "32px 32px",
+            }}
+          >
           {tables.length === 0 ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-8">
               <div
@@ -626,6 +633,7 @@ export default function PlanDeTablePage() {
               );
             })
           )}
+          </div>
         </div>
       </div>
 
