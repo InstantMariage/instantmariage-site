@@ -55,11 +55,11 @@ const REGIME_LABELS: Record<Regime, string> = {
   sans_gluten: "Sans gluten",
 };
 
-/* Table visual constants */
+/* Table visual constants — SEAT_SIZE 40 for better touch target (was 34) */
 const TABLE_RADIUS = 50;
-const SEAT_RADIUS = 85;
-const SEAT_SIZE = 34;
-const CONTAINER = (SEAT_RADIUS + SEAT_SIZE) * 2;
+const SEAT_RADIUS = 90;
+const SEAT_SIZE = 40;
+const CONTAINER = (SEAT_RADIUS + SEAT_SIZE) * 2; // 260
 
 function seatPosition(index: number, total: number) {
   const angle = (2 * Math.PI * index) / total - Math.PI / 2;
@@ -112,6 +112,11 @@ const IconDownload = () => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
   </svg>
 );
+const IconMenu = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+  </svg>
+);
 
 /* ─── Main component ─── */
 export default function PlanDeTablePage() {
@@ -126,6 +131,9 @@ export default function PlanDeTablePage() {
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [exportingPDF, setExportingPDF] = useState(false);
 
+  /* Mobile sidebar */
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   /* Guest popup */
   const [popupGuest, setPopupGuest] = useState<Guest | null>(null);
 
@@ -137,7 +145,7 @@ export default function PlanDeTablePage() {
   }>({ prenom: "", nom: "", relation: "", regime_alimentaire: "normal", email: "", telephone: "" });
   const [savingGuest, setSavingGuest] = useState(false);
 
-  /* Drag: guest — fromSeatNumber null means sidebar or unassigned */
+  /* Drag state (HTML5 — desktop) */
   const [dragGuest, setDragGuest] = useState<{
     guestId: string;
     fromTableId: string | null;
@@ -147,8 +155,28 @@ export default function PlanDeTablePage() {
   const [dragOverSeat, setDragOverSeat] = useState<{ tableId: string; seatIdx: number } | null>(null);
   const [dragOverSidebar, setDragOverSidebar] = useState(false);
 
-  /* Drag: table move */
+  /* Table move (mouse — desktop) */
   const movingTable = useRef<{ id: string; offsetX: number; offsetY: number } | null>(null);
+
+  /* Touch drag refs */
+  const touchDragRef = useRef<{
+    guestId: string;
+    fromTableId: string | null;
+    fromSeatNumber: number | null;
+    startX: number; startY: number;
+    ghost: HTMLDivElement | null;
+    isDragging: boolean;
+    chipBg: string; chipColor: string; chipInitials: string;
+  } | null>(null);
+
+  const touchMoveTableRef = useRef<{
+    id: string; offsetX: number; offsetY: number;
+    startX: number; startY: number; isMoving: boolean;
+  } | null>(null);
+
+  /* Stable ref: always points to latest callbacks/state for use in effects */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const S = useRef<any>({});
 
   /* Sidebar search */
   const [sideSearch, setSideSearch] = useState("");
@@ -174,7 +202,6 @@ export default function PlanDeTablePage() {
     const tablesData = (tRes.data ?? []) as WeddingTable[];
     const guestsData = (gRes.data ?? []) as Guest[];
 
-    /* Auto-assign seat_number for legacy guests that have table_id but no seat_number */
     const needsSeat = guestsData.filter((g) => g.table_id !== null && g.seat_number === null);
     if (needsSeat.length > 0) {
       const updates: PromiseLike<unknown>[] = [];
@@ -288,7 +315,6 @@ export default function PlanDeTablePage() {
     setEditGuestOpen(false);
   }
 
-  /* ── Update relation inline ── */
   async function updateRelation(guestId: string, relation: string) {
     setGuests((prev) => prev.map((g) => g.id === guestId ? { ...g, relation } : g));
     setPopupGuest((prev) => prev?.id === guestId ? { ...prev, relation } : prev);
@@ -296,7 +322,7 @@ export default function PlanDeTablePage() {
   }
 
   /* ── Assign guest to a specific seat ── */
-  async function assignGuest(guestId: string, tableId: string | null, seatNumber: number | null) {
+  function assignGuest(guestId: string, tableId: string | null, seatNumber: number | null) {
     setGuests((prev) =>
       prev.map((g) => g.id === guestId ? { ...g, table_id: tableId, seat_number: seatNumber } : g)
     );
@@ -328,7 +354,7 @@ export default function PlanDeTablePage() {
     });
   }
 
-  /* ── Guest DnD handlers ── */
+  /* ── HTML5 DnD handlers (desktop) ── */
   function handleGuestDragStart(guestId: string, fromTableId: string | null, fromSeatNumber: number | null) {
     return (e: React.DragEvent) => {
       setDragGuest({ guestId, fromTableId, fromSeatNumber });
@@ -337,7 +363,6 @@ export default function PlanDeTablePage() {
     };
   }
 
-  /* Drop on a specific seat */
   function handleDropOnSeat(tableId: string, seatIdx: number) {
     return (e: React.DragEvent) => {
       e.preventDefault();
@@ -345,7 +370,6 @@ export default function PlanDeTablePage() {
       setDragOverSeat(null);
       setDragOverTable(null);
       if (!dragGuest) return;
-      /* Same seat — no-op */
       if (dragGuest.fromTableId === tableId && dragGuest.fromSeatNumber === seatIdx) {
         setDragGuest(null);
         return;
@@ -354,7 +378,6 @@ export default function PlanDeTablePage() {
         (g) => g.table_id === tableId && g.seat_number === seatIdx && g.id !== dragGuest.guestId
       );
       if (occupant) {
-        /* Swap: occupant goes to dragged guest's old spot (or sidebar if from sidebar) */
         swapGuests(
           dragGuest.guestId, dragGuest.fromTableId, dragGuest.fromSeatNumber,
           occupant.id, tableId, seatIdx
@@ -366,7 +389,6 @@ export default function PlanDeTablePage() {
     };
   }
 
-  /* Drop on a table (center area) — places at first free seat */
   function handleDropOnTable(tableId: string) {
     return (e: React.DragEvent) => {
       e.preventDefault();
@@ -398,7 +420,7 @@ export default function PlanDeTablePage() {
     setDragGuest(null);
   }
 
-  /* ── Table move (mouse) ── */
+  /* ── Table move (mouse — desktop) ── */
   function handleTableMouseDown(tableId: string) {
     return (e: React.MouseEvent) => {
       if ((e.target as HTMLElement).closest("[data-guest-chip]")) return;
@@ -449,6 +471,234 @@ export default function PlanDeTablePage() {
     assignGuest(dragGuest.guestId, null, null);
     setDragGuest(null);
   }
+
+  /* ── Touch: table move start ── */
+  function handleTableTouchStart(tableId: string) {
+    return (e: React.TouchEvent) => {
+      if ((e.target as HTMLElement).closest("[data-guest-chip]")) return;
+      if ((e.target as HTMLElement).closest("[data-table-action]")) return;
+      if ((e.target as HTMLElement).closest("[data-seat]")) return;
+      const touch = e.touches[0];
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      const table = tables.find((t) => t.id === tableId);
+      if (!table) return;
+      touchMoveTableRef.current = {
+        id: tableId,
+        offsetX: touch.clientX - rect.left + canvas.scrollLeft - table.position_x,
+        offsetY: touch.clientY - rect.top + canvas.scrollTop - table.position_y,
+        startX: touch.clientX, startY: touch.clientY, isMoving: false,
+      };
+    };
+  }
+
+  /* ── Touch: guest drag start ── */
+  function handleGuestTouchStart(
+    guestId: string,
+    fromTableId: string | null,
+    fromSeatNumber: number | null,
+    chipBg: string, chipColor: string, chipInitials: string
+  ) {
+    return (e: React.TouchEvent) => {
+      e.stopPropagation(); // prevent table touchstart from also firing
+      const touch = e.touches[0];
+      touchDragRef.current = {
+        guestId, fromTableId, fromSeatNumber,
+        startX: touch.clientX, startY: touch.clientY,
+        ghost: null, isDragging: false,
+        chipBg, chipColor, chipInitials,
+      };
+    };
+  }
+
+  /* ── Update stable ref every render ── */
+  S.current = {
+    guests, tables,
+    assignGuest, swapGuests, triggerSave,
+    setGuests, setTables,
+    setDragGuest, setDragOverSeat, setDragOverTable,
+    setPopupGuest, setSidebarOpen,
+  };
+
+  /* ── Document-level touch handlers ── */
+  useEffect(() => {
+    const DRAG_THRESHOLD = 8;
+
+    function onTouchMove(e: TouchEvent) {
+      const touch = e.touches[0];
+
+      /* Table move */
+      if (touchMoveTableRef.current) {
+        const ref = touchMoveTableRef.current;
+        if (!ref.isMoving) {
+          if (Math.hypot(touch.clientX - ref.startX, touch.clientY - ref.startY) < DRAG_THRESHOLD) return;
+          ref.isMoving = true;
+        }
+        e.preventDefault();
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = Math.max(0, touch.clientX - rect.left + canvas.scrollLeft - ref.offsetX);
+        const y = Math.max(0, touch.clientY - rect.top + canvas.scrollTop - ref.offsetY);
+        S.current.setTables((prev: WeddingTable[]) =>
+          prev.map((t: WeddingTable) => t.id === ref.id ? { ...t, position_x: x, position_y: y } : t)
+        );
+        return;
+      }
+
+      /* Guest drag */
+      if (touchDragRef.current) {
+        const ref = touchDragRef.current;
+        if (!ref.isDragging) {
+          if (Math.hypot(touch.clientX - ref.startX, touch.clientY - ref.startY) < DRAG_THRESHOLD) return;
+          ref.isDragging = true;
+          /* Create ghost avatar */
+          const ghost = document.createElement("div");
+          ghost.style.cssText = [
+            "position:fixed",
+            `width:${SEAT_SIZE}px`,
+            `height:${SEAT_SIZE}px`,
+            "border-radius:50%",
+            `background:${ref.chipBg}`,
+            `color:${ref.chipColor}`,
+            "display:flex",
+            "align-items:center",
+            "justify-content:center",
+            "font-size:14px",
+            "font-weight:bold",
+            "pointer-events:none",
+            "z-index:9999",
+            "opacity:0.92",
+            "box-shadow:0 8px 28px rgba(0,0,0,0.55)",
+            "transform:scale(1.2)",
+            "user-select:none",
+            "transition:none",
+          ].join(";");
+          ghost.textContent = ref.chipInitials;
+          document.body.appendChild(ghost);
+          ref.ghost = ghost as HTMLDivElement;
+          S.current.setDragGuest({ guestId: ref.guestId, fromTableId: ref.fromTableId, fromSeatNumber: ref.fromSeatNumber });
+        }
+        e.preventDefault(); // block scroll during drag
+        const half = SEAT_SIZE / 2;
+        ref.ghost!.style.left = `${touch.clientX - half}px`;
+        ref.ghost!.style.top  = `${touch.clientY - half}px`;
+
+        /* Highlight drop target */
+        const el = document.elementFromPoint(touch.clientX, touch.clientY);
+        const seatEl = el?.closest("[data-seat-idx]");
+        if (seatEl) {
+          S.current.setDragOverSeat({
+            tableId: seatEl.getAttribute("data-seat-table")!,
+            seatIdx: parseInt(seatEl.getAttribute("data-seat-idx")!),
+          });
+          S.current.setDragOverTable(null);
+        } else {
+          const tableEl = el?.closest("[data-table-drop]");
+          S.current.setDragOverSeat(null);
+          S.current.setDragOverTable(tableEl ? tableEl.getAttribute("data-table-drop") : null);
+        }
+      }
+    }
+
+    function onTouchEnd(e: TouchEvent) {
+      const touch = e.changedTouches[0];
+
+      /* Table move end */
+      if (touchMoveTableRef.current) {
+        const ref = touchMoveTableRef.current;
+        touchMoveTableRef.current = null;
+        if (ref.isMoving) {
+          const table = (S.current.tables as WeddingTable[]).find((t) => t.id === ref.id);
+          if (table) {
+            S.current.triggerSave(async () => {
+              await supabase.from("wedding_tables")
+                .update({ position_x: table.position_x, position_y: table.position_y })
+                .eq("id", ref.id);
+            });
+          }
+        }
+        return;
+      }
+
+      /* Guest drag end */
+      if (touchDragRef.current) {
+        const ref = touchDragRef.current;
+        ref.ghost?.remove();
+        const wasDragging = ref.isDragging;
+        const { guestId, fromTableId, fromSeatNumber } = ref;
+        touchDragRef.current = null;
+        S.current.setDragGuest(null);
+        S.current.setDragOverSeat(null);
+        S.current.setDragOverTable(null);
+
+        if (!wasDragging) return; // tap → onClick fires naturally
+
+        /* Find drop target under finger */
+        const el = document.elementFromPoint(touch.clientX, touch.clientY);
+
+        /* Drop on a specific seat */
+        const seatEl = el?.closest("[data-seat-idx]");
+        if (seatEl) {
+          const tableId = seatEl.getAttribute("data-seat-table")!;
+          const seatIdx = parseInt(seatEl.getAttribute("data-seat-idx")!);
+          if (fromTableId === tableId && fromSeatNumber === seatIdx) return;
+          const guests: Guest[] = S.current.guests;
+          const occupant = guests.find(
+            (g) => g.table_id === tableId && g.seat_number === seatIdx && g.id !== guestId
+          );
+          if (occupant) {
+            S.current.swapGuests(guestId, fromTableId, fromSeatNumber, occupant.id, tableId, seatIdx);
+          } else {
+            S.current.assignGuest(guestId, tableId, seatIdx);
+          }
+          S.current.setSidebarOpen(false);
+          return;
+        }
+
+        /* Drop on table center → first free seat */
+        const tableEl = el?.closest("[data-table-drop]");
+        if (tableEl) {
+          const tableId = tableEl.getAttribute("data-table-drop")!;
+          const tables: WeddingTable[] = S.current.tables;
+          const guests: Guest[] = S.current.guests;
+          const table = tables.find((t) => t.id === tableId);
+          if (!table) return;
+          const occupied = new Set(
+            guests.filter((g) => g.table_id === tableId && g.id !== guestId).map((g) => g.seat_number)
+          );
+          let firstFree = -1;
+          for (let i = 0; i < table.capacite; i++) {
+            if (!occupied.has(i)) { firstFree = i; break; }
+          }
+          if (firstFree === -1) return;
+          S.current.assignGuest(guestId, tableId, firstFree);
+          S.current.setSidebarOpen(false);
+          return;
+        }
+
+        /* Drop on sidebar → unassign */
+        const sidebarEl = el?.closest("[data-sidebar]");
+        if (sidebarEl) {
+          S.current.assignGuest(guestId, null, null);
+          return;
+        }
+
+        /* Drop outside everything → unassign if was placed */
+        if (fromTableId !== null) {
+          S.current.assignGuest(guestId, null, null);
+        }
+      }
+    }
+
+    document.addEventListener("touchmove", onTouchMove, { passive: false });
+    document.addEventListener("touchend",  onTouchEnd);
+    return () => {
+      document.removeEventListener("touchmove", onTouchMove);
+      document.removeEventListener("touchend",  onTouchEnd);
+    };
+  }, []); // intentionally empty — S.current always has latest values
 
   /* ── Add/Edit table ── */
   function openAddTable() {
@@ -558,7 +808,6 @@ export default function PlanDeTablePage() {
         byTable[g.table_id].guests.push(g);
       });
 
-      /* Sort guests within each table by seat_number */
       Object.values(byTable).forEach((t) => {
         t.guests.sort((a, b) => (a.seat_number ?? 0) - (b.seat_number ?? 0));
       });
@@ -720,12 +969,13 @@ export default function PlanDeTablePage() {
 
   const totalGuests = guests.length;
   const placedGuests = guests.filter((g) => g.table_id).length;
+  const unassignedCount = guests.filter((g) => !g.table_id).length;
 
   return (
     <div className="h-screen flex flex-col overflow-hidden" style={{ background: "#0f172a" }}>
       {/* ── Top bar ── */}
       <div
-        className="flex items-center gap-4 px-5 py-3 flex-shrink-0 z-20"
+        className="flex items-center gap-2 sm:gap-4 px-3 sm:px-5 py-3 flex-shrink-0 z-20"
         style={{ background: "#1e293b", borderBottom: "1px solid rgba(255,255,255,0.08)" }}
       >
         <Link
@@ -733,7 +983,7 @@ export default function PlanDeTablePage() {
           className="flex items-center gap-1.5 text-sm font-medium transition-opacity hover:opacity-70"
           style={{ color: "rgba(255,255,255,0.6)" }}
         >
-          <IconBack /> Invités
+          <IconBack /> <span className="hidden sm:inline">Invités</span>
         </Link>
 
         <div className="w-px h-4 bg-white/10" />
@@ -743,7 +993,7 @@ export default function PlanDeTablePage() {
         <div className="flex items-center gap-2 ml-auto">
           {saveStatus !== "idle" && (
             <span
-              className="text-xs font-medium px-2.5 py-1 rounded-full flex items-center gap-1.5 transition-all"
+              className="hidden sm:flex text-xs font-medium px-2.5 py-1 rounded-full items-center gap-1.5 transition-all"
               style={{
                 background: saveStatus === "saved" ? "rgba(22,163,74,0.15)" : "rgba(255,255,255,0.08)",
                 color: saveStatus === "saved" ? "#4ADE80" : "rgba(255,255,255,0.5)",
@@ -758,39 +1008,74 @@ export default function PlanDeTablePage() {
           )}
 
           <span className="text-xs px-2.5 py-1 rounded-full" style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)" }}>
-            {placedGuests}/{totalGuests} placés
+            {placedGuests}/{totalGuests}
           </span>
 
           <button
             onClick={generatePDF}
             disabled={exportingPDF || tables.length === 0}
-            className="flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-xl transition-all hover:opacity-90 disabled:opacity-40"
+            className="flex items-center gap-1.5 text-sm font-semibold px-2.5 sm:px-3 py-1.5 rounded-xl transition-all hover:opacity-90 disabled:opacity-40"
             style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)", color: "white" }}
           >
             {exportingPDF ? (
-              <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin inline-block" /> PDF…</>
+              <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin inline-block" />
             ) : (
-              <><IconDownload /> Exporter en PDF</>
+              <IconDownload />
             )}
+            <span className="hidden sm:inline">{exportingPDF ? "PDF…" : "Exporter en PDF"}</span>
           </button>
 
           <button
             onClick={openAddTable}
             disabled={tables.length >= 50}
-            className="flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-xl transition-all hover:opacity-90 disabled:opacity-40"
+            className="flex items-center gap-1.5 text-sm font-semibold px-2.5 sm:px-3 py-1.5 rounded-xl transition-all hover:opacity-90 disabled:opacity-40"
             style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.85)", border: "1px solid rgba(255,255,255,0.15)" }}
           >
-            <IconPlus /> Table {tables.length >= 50 ? "(50/50)" : ""}
+            <IconPlus />
+            <span className="hidden sm:inline">Table {tables.length >= 50 ? "(50/50)" : ""}</span>
+          </button>
+
+          {/* Mobile sidebar toggle */}
+          <button
+            onClick={() => setSidebarOpen((v) => !v)}
+            className="flex sm:hidden items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-xl relative"
+            style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)", border: "1px solid rgba(255,255,255,0.12)" }}
+          >
+            <IconMenu />
+            {unassignedCount > 0 && (
+              <span
+                className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-white flex items-center justify-center"
+                style={{ background: "#F06292", fontSize: "9px", fontWeight: "bold" }}
+              >
+                {unassignedCount > 9 ? "9+" : unassignedCount}
+              </span>
+            )}
           </button>
         </div>
       </div>
 
       {/* ── Body: sidebar + canvas ── */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
 
-        {/* ── Sidebar ── */}
+        {/* ── Sidebar ─ desktop: always visible, mobile: slide-in drawer ── */}
+        {/* Mobile backdrop */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 z-30 sm:hidden"
+            style={{ background: "rgba(0,0,0,0.5)" }}
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
         <div
-          className="w-64 flex-shrink-0 flex flex-col overflow-hidden"
+          data-sidebar="true"
+          className={[
+            /* mobile: fixed slide-in */
+            "fixed sm:relative inset-y-0 left-0 z-40 sm:z-auto",
+            "w-72 sm:w-64 flex-shrink-0 flex flex-col overflow-hidden",
+            "transition-transform duration-200 sm:translate-x-0",
+            sidebarOpen ? "translate-x-0" : "-translate-x-full",
+          ].join(" ")}
           style={{ background: "#1e293b", borderRight: "1px solid rgba(255,255,255,0.08)" }}
           onDragOver={(e) => { e.preventDefault(); setDragOverSidebar(true); }}
           onDragLeave={() => setDragOverSidebar(false)}
@@ -804,9 +1089,19 @@ export default function PlanDeTablePage() {
               transition: "background 0.15s",
             }}
           >
-            <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Non placés · {guests.filter((g) => !g.table_id).length}
-            </p>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.4)" }}>
+                Non placés · {guests.filter((g) => !g.table_id).length}
+              </p>
+              {/* Close button — mobile only */}
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="sm:hidden w-7 h-7 rounded-full flex items-center justify-center"
+                style={{ background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.4)" }}
+              >
+                <IconClose />
+              </button>
+            </div>
             <div className="relative">
               <span className="absolute left-2.5 top-1/2 -translate-y-1/2" style={{ color: "rgba(255,255,255,0.3)" }}><IconSearch /></span>
               <input
@@ -835,17 +1130,22 @@ export default function PlanDeTablePage() {
                 </p>
               </div>
             ) : (
-              unassignedGuests.map((g) => (
-                <GuestChip
-                  key={g.id}
-                  guest={g}
-                  onDragStart={handleGuestDragStart(g.id, null, null)}
-                  isDragging={dragGuest?.guestId === g.id}
-                  isDropTarget={false}
-                  compact={false}
-                  onGuestClick={setPopupGuest}
-                />
-              ))
+              unassignedGuests.map((g) => {
+                const colors = REGIME_COLORS[g.regime_alimentaire];
+                const initials = `${g.prenom[0] ?? ""}${g.nom[0] ?? ""}`.toUpperCase();
+                return (
+                  <GuestChip
+                    key={g.id}
+                    guest={g}
+                    onDragStart={handleGuestDragStart(g.id, null, null)}
+                    onTouchStart={handleGuestTouchStart(g.id, null, null, colors.bg, colors.text, initials)}
+                    isDragging={dragGuest?.guestId === g.id}
+                    isDropTarget={false}
+                    compact={false}
+                    onGuestClick={setPopupGuest}
+                  />
+                );
+              })
             )}
           </div>
 
@@ -866,6 +1166,7 @@ export default function PlanDeTablePage() {
         <div
           ref={canvasRef}
           className="flex-1 overflow-auto cursor-default select-none"
+          style={{ WebkitOverflowScrolling: "touch" } as React.CSSProperties}
           onMouseMove={handleCanvasMouseMove}
           onMouseUp={handleCanvasMouseUp}
           onMouseLeave={handleCanvasMouseUp}
@@ -911,6 +1212,7 @@ export default function PlanDeTablePage() {
                 return (
                   <div
                     key={table.id}
+                    data-table-drop={table.id}
                     style={{
                       position: "absolute",
                       left: table.position_x,
@@ -919,8 +1221,10 @@ export default function PlanDeTablePage() {
                       height: CONTAINER + 44,
                       cursor: movingTable.current?.id === table.id ? "grabbing" : "grab",
                       userSelect: "none",
+                      touchAction: "none",
                     }}
                     onMouseDown={handleTableMouseDown(table.id)}
+                    onTouchStart={handleTableTouchStart(table.id)}
                     onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragOverTable(table.id); }}
                     onDragLeave={(e) => {
                       if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverTable(null);
@@ -971,18 +1275,24 @@ export default function PlanDeTablePage() {
                       </span>
                     </div>
 
-                    {/* Seat slots — each is an individual drop target */}
+                    {/* Seat slots */}
                     {Array.from({ length: table.capacite }).map((_, seatIdx) => {
                       const pos = seatPosition(seatIdx, table.capacite);
                       const seatGuest = guestAtSeat(table.id, seatIdx);
                       const isSeatOver =
                         dragOverSeat?.tableId === table.id && dragOverSeat.seatIdx === seatIdx;
                       const isDraggingThis = dragGuest?.guestId === seatGuest?.id;
+                      const colors = seatGuest ? REGIME_COLORS[seatGuest.regime_alimentaire] : null;
+                      const initials = seatGuest
+                        ? `${seatGuest.prenom[0] ?? ""}${seatGuest.nom[0] ?? ""}`.toUpperCase()
+                        : "";
 
                       return (
                         <div
                           key={seatIdx}
                           data-seat="true"
+                          data-seat-idx={seatIdx}
+                          data-seat-table={table.id}
                           style={{
                             position: "absolute",
                             left: pos.left,
@@ -991,6 +1301,8 @@ export default function PlanDeTablePage() {
                             height: SEAT_SIZE,
                             borderRadius: "50%",
                             zIndex: isSeatOver ? 20 : 10,
+                            /* Larger touch hit area via padding trick */
+                            touchAction: "none",
                           }}
                           onDragOver={(e) => {
                             e.preventDefault();
@@ -1010,6 +1322,10 @@ export default function PlanDeTablePage() {
                             <GuestChip
                               guest={seatGuest}
                               onDragStart={handleGuestDragStart(seatGuest.id, table.id, seatIdx)}
+                              onTouchStart={handleGuestTouchStart(
+                                seatGuest.id, table.id, seatIdx,
+                                colors!.bg, colors!.text, initials
+                              )}
                               isDragging={isDraggingThis}
                               isDropTarget={isSeatOver && !isDraggingThis}
                               compact
@@ -1065,18 +1381,20 @@ export default function PlanDeTablePage() {
                       <button
                         data-table-action="true"
                         onClick={(e) => { e.stopPropagation(); openEditTable(table); }}
-                        className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
+                        className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
                         style={{ background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.4)" }}
                         onMouseDown={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
                       >
                         <IconEdit />
                       </button>
                       <button
                         data-table-action="true"
                         onClick={(e) => { e.stopPropagation(); deleteTable(table.id); }}
-                        className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
+                        className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
                         style={{ background: "rgba(220,38,38,0.12)", color: "rgba(220,38,38,0.6)" }}
                         onMouseDown={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
                       >
                         <IconTrash />
                       </button>
@@ -1150,7 +1468,6 @@ export default function PlanDeTablePage() {
             <div className="h-px mb-4" style={{ background: "rgba(255,255,255,0.07)" }} />
 
             <div className="space-y-2.5">
-              {/* Table + siège */}
               {popupGuest.table_id && (
                 <div className="flex items-center gap-2.5">
                   <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" style={{ color: "rgba(255,255,255,0.3)" }}>
@@ -1437,6 +1754,7 @@ export default function PlanDeTablePage() {
 function GuestChip({
   guest,
   onDragStart,
+  onTouchStart,
   isDragging,
   isDropTarget,
   compact,
@@ -1445,6 +1763,7 @@ function GuestChip({
 }: {
   guest: Guest;
   onDragStart: (e: React.DragEvent) => void;
+  onTouchStart: (e: React.TouchEvent) => void;
   isDragging: boolean;
   isDropTarget: boolean;
   compact: boolean;
@@ -1460,6 +1779,7 @@ function GuestChip({
         data-guest-chip="true"
         draggable
         onDragStart={onDragStart}
+        onTouchStart={onTouchStart}
         onClick={(e) => { e.stopPropagation(); onGuestClick?.(guest); }}
         title={`${guest.prenom} ${guest.nom}`}
         style={{
@@ -1472,7 +1792,7 @@ function GuestChip({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: "11px",
+          fontSize: "12px",
           fontWeight: "bold",
           cursor: "grab",
           opacity: isDragging ? 0.3 : 1,
@@ -1483,6 +1803,7 @@ function GuestChip({
             : undefined,
           userSelect: "none",
           zIndex: 10,
+          touchAction: "none",
         }}
       >
         {initials || guest.prenom[0]?.toUpperCase()}
@@ -1495,18 +1816,20 @@ function GuestChip({
       data-guest-chip="true"
       draggable
       onDragStart={onDragStart}
+      onTouchStart={onTouchStart}
       onClick={(e) => { e.stopPropagation(); onGuestClick?.(guest); }}
-      className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl cursor-pointer transition-all"
+      className="flex items-center gap-2.5 px-2.5 py-2.5 rounded-xl cursor-pointer transition-all"
       style={{
         background: isDragging ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.05)",
         border: "1px solid rgba(255,255,255,0.08)",
         opacity: isDragging ? 0.4 : 1,
         userSelect: "none",
+        touchAction: "none",
         ...extraStyle,
       }}
     >
       <div
-        className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+        className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
         style={{ background: colors.bg, color: colors.text }}
       >
         {initials || guest.prenom[0]?.toUpperCase()}
