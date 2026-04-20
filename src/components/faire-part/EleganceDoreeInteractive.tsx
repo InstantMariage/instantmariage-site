@@ -365,24 +365,98 @@ export default function EleganceDoreeInteractive({
                     WebkitTapHighlightColor: 'transparent',
                   }}
                 >
-                  {/* Inner ring */}
+                  {/* Inner ring + wedding rings SVG */}
                   <div
                     style={{
-                      width: 44,
-                      height: 44,
+                      width: 52,
+                      height: 52,
                       borderRadius: '50%',
                       border: '1px solid rgba(201,168,76,.65)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      color: '#C9A84C',
-                      fontSize: 20,
-                      fontStyle: 'italic',
-                      fontWeight: 600,
-                      letterSpacing: '-.02em',
                     }}
                   >
-                    M
+                    <svg
+                      width="38"
+                      height="28"
+                      viewBox="0 0 38 28"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <defs>
+                        <radialGradient id="ringGold1" cx="40%" cy="35%" r="60%">
+                          <stop offset="0%" stopColor="#F5E07A" />
+                          <stop offset="45%" stopColor="#C9A84C" />
+                          <stop offset="100%" stopColor="#8A6A1A" />
+                        </radialGradient>
+                        <radialGradient id="ringGold2" cx="60%" cy="35%" r="60%">
+                          <stop offset="0%" stopColor="#F5E07A" />
+                          <stop offset="45%" stopColor="#C9A84C" />
+                          <stop offset="100%" stopColor="#8A6A1A" />
+                        </radialGradient>
+                        {/* Mask to create interlocking: right ring passes behind left ring on bottom-left arc */}
+                        <mask id="maskLeft">
+                          <rect width="38" height="28" fill="white" />
+                          {/* Hide the bottom-right portion of left ring where right ring passes in front */}
+                          <circle cx="21" cy="14" r="9.5" fill="black" />
+                        </mask>
+                        <mask id="maskRight">
+                          <rect width="38" height="28" fill="white" />
+                          {/* Hide the bottom-left portion of right ring where left ring passes in front */}
+                          <circle cx="17" cy="14" r="9.5" fill="black" />
+                        </mask>
+                      </defs>
+
+                      {/* Left ring — back layer (partially hidden by right ring) */}
+                      <circle
+                        cx="17" cy="14" r="9.5"
+                        stroke="url(#ringGold1)"
+                        strokeWidth="3"
+                        fill="none"
+                        mask="url(#maskLeft)"
+                      />
+                      {/* Right ring — back layer (partially hidden by left ring) */}
+                      <circle
+                        cx="21" cy="14" r="9.5"
+                        stroke="url(#ringGold2)"
+                        strokeWidth="3"
+                        fill="none"
+                        mask="url(#maskRight)"
+                      />
+                      {/* Left ring — front arc (top half, passes in front of right ring) */}
+                      <path
+                        d="M 7.5 14 A 9.5 9.5 0 0 1 26.5 14"
+                        stroke="url(#ringGold1)"
+                        strokeWidth="3"
+                        fill="none"
+                        strokeLinecap="round"
+                      />
+                      {/* Right ring — front arc (bottom half, passes in front of left ring) */}
+                      <path
+                        d="M 11.5 14 A 9.5 9.5 0 0 0 30.5 14"
+                        stroke="url(#ringGold2)"
+                        strokeWidth="3"
+                        fill="none"
+                        strokeLinecap="round"
+                      />
+                      {/* Highlight shimmer on left ring */}
+                      <path
+                        d="M 9 8 A 9.5 9.5 0 0 1 17 4.5"
+                        stroke="rgba(255,245,180,0.7)"
+                        strokeWidth="1.2"
+                        fill="none"
+                        strokeLinecap="round"
+                      />
+                      {/* Highlight shimmer on right ring */}
+                      <path
+                        d="M 21 4.5 A 9.5 9.5 0 0 1 29 8"
+                        stroke="rgba(255,245,180,0.7)"
+                        strokeWidth="1.2"
+                        fill="none"
+                        strokeLinecap="round"
+                      />
+                    </svg>
                   </div>
 
                   {/* Burst particles */}
