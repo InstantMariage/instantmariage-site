@@ -3,6 +3,14 @@ import { createClient } from '@supabase/supabase-js';
 import type { Metadata } from 'next';
 import RsvpForm from './RsvpForm';
 import EleganceDoreeInteractive from '@/components/faire-part/EleganceDoreeInteractive';
+import BohemeChampetreInteractive from '@/components/faire-part/BohemeChampetreInteractive';
+import ModerneMinimalInteractive from '@/components/faire-part/ModerneMinimalInteractive';
+import LuxeMarbreInteractive from '@/components/faire-part/LuxeMarbreInteractive';
+import RomantiqueFloralInteractive from '@/components/faire-part/RomantiqueFloralInteractive';
+import CoteAzurInteractive from '@/components/faire-part/CoteAzurInteractive';
+import ProvenceOlivierInteractive from '@/components/faire-part/ProvenceOlivierInteractive';
+import NuitEtoileeInteractive from '@/components/faire-part/NuitEtoileeInteractive';
+import JardinJaponaisInteractive from '@/components/faire-part/JardinJaponaisInteractive';
 import { OrnamentalFrameWrapper } from '@/components/faire-part/OrnamentalFrame';
 
 export const dynamic = 'force-dynamic';
@@ -85,29 +93,65 @@ export default async function InvitationPage({ params }: { params: Params }) {
     invitation.rsvp_actif &&
     (!invitation.rsvp_deadline || new Date(invitation.rsvp_deadline) >= new Date());
 
-  // ── Élégance Dorée: pleine page ──────────────────────────────────────────
+  // Shared props for all interactive templates
+  const interactiveProps = {
+    coupleNames,
+    date: dateFormatted,
+    lieu: lieuMariage ?? '',
+    message: config.message,
+    rsvpActif: isRsvpOpen,
+    rsvpDeadline: invitation.rsvp_deadline ?? null,
+    rsvpSlug: isRsvpOpen ? invitation.slug : undefined,
+  };
+
+  // ── Élégance Dorée ────────────────────────────────────────────────────────
   if (templateSlug === 'elegance-doree') {
     return (
       <div style={{ position: 'relative' }}>
-        {/* Cadre doré fin à 15px des bords */}
-        <div aria-hidden style={{
-          position: 'fixed',
-          inset: 15,
-          border: '1px solid rgba(201,168,76,0.55)',
-          pointerEvents: 'none',
-          zIndex: 9999,
-        }} />
-        <EleganceDoreeInteractive
-          coupleNames={coupleNames}
-          date={dateFormatted}
-          lieu={lieuMariage ?? ''}
-          message={config.message}
-          rsvpActif={isRsvpOpen}
-          rsvpDeadline={invitation.rsvp_deadline ?? null}
-          rsvpSlug={isRsvpOpen ? invitation.slug : undefined}
-        />
+        <div aria-hidden style={{ position: 'fixed', inset: 15, border: '1px solid rgba(201,168,76,0.55)', pointerEvents: 'none', zIndex: 9999 }} />
+        <EleganceDoreeInteractive {...interactiveProps} />
       </div>
     );
+  }
+
+  // ── Bohème Champêtre ──────────────────────────────────────────────────────
+  if (templateSlug === 'boheme-champetre') {
+    return <BohemeChampetreInteractive {...interactiveProps} />;
+  }
+
+  // ── Moderne Minimal ───────────────────────────────────────────────────────
+  if (templateSlug === 'moderne-minimal') {
+    return <ModerneMinimalInteractive {...interactiveProps} />;
+  }
+
+  // ── Luxe Marbre ───────────────────────────────────────────────────────────
+  if (templateSlug === 'luxe-marbre') {
+    return <LuxeMarbreInteractive {...interactiveProps} />;
+  }
+
+  // ── Romantique Floral ─────────────────────────────────────────────────────
+  if (templateSlug === 'romantique-floral') {
+    return <RomantiqueFloralInteractive {...interactiveProps} />;
+  }
+
+  // ── Côte d'Azur ───────────────────────────────────────────────────────────
+  if (templateSlug === 'cote-azur') {
+    return <CoteAzurInteractive {...interactiveProps} />;
+  }
+
+  // ── Provence Olivier ──────────────────────────────────────────────────────
+  if (templateSlug === 'provence-olivier') {
+    return <ProvenceOlivierInteractive {...interactiveProps} />;
+  }
+
+  // ── Nuit Étoilée ──────────────────────────────────────────────────────────
+  if (templateSlug === 'nuit-etoilee') {
+    return <NuitEtoileeInteractive {...interactiveProps} />;
+  }
+
+  // ── Jardin Japonais ───────────────────────────────────────────────────────
+  if (templateSlug === 'jardin-japonais') {
+    return <JardinJaponaisInteractive {...interactiveProps} />;
   }
 
   // ── Classic layout for other templates ───────────────────────────────────
