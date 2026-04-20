@@ -107,16 +107,25 @@ const IconSave = () => (
   </svg>
 );
 
+/* ─── Icons (additional) ─── */
+const IconDownload = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+  </svg>
+);
+
 /* ─── Main component ─── */
 export default function PlanDeTablePage() {
   const router = useRouter();
   const canvasRef = useRef<HTMLDivElement>(null);
 
   const [marieId, setMarieId] = useState<string | null>(null);
+  const [coupleNames, setCoupleNames] = useState("Mariage");
   const [tables, setTables] = useState<WeddingTable[]>([]);
   const [guests, setGuests] = useState<Guest[]>([]);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [exportingPDF, setExportingPDF] = useState(false);
 
   /* Guest popup */
   const [popupGuest, setPopupGuest] = useState<Guest | null>(null);
@@ -163,9 +172,14 @@ export default function PlanDeTablePage() {
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) { router.replace("/login"); return; }
-      const { data: marie } = await supabase.from("maries").select("id").eq("user_id", session.user.id).single();
+      const { data: marie } = await supabase.from("maries").select("id,prenom_marie1,prenom_marie2").eq("user_id", session.user.id).single();
       if (!marie) { router.replace("/dashboard/marie"); return; }
       setMarieId(marie.id);
+      if (marie.prenom_marie1) {
+        setCoupleNames(marie.prenom_marie2
+          ? `${marie.prenom_marie1} & ${marie.prenom_marie2}`
+          : marie.prenom_marie1);
+      }
       await loadData(marie.id);
     });
   }, [router, loadData]);
@@ -365,6 +379,229 @@ export default function PlanDeTablePage() {
     await loadData(marieId);
   }
 
+  /* ── PDF Export ── */
+  async function generatePDF() {
+    if (exportingPDF) return;
+    setExportingPDF(true);
+    try {
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF("p", "mm", "a4");
+      const W = 210, H = 297;
+      const mL = 16, mR = 16;
+      const cW = W - mL - mR;
+
+      const WHITE  = [255, 255, 255] as [number,number,number];
+      const BLACK  = [ 26,  26,  26] as [number,number,number];
+      const GOLD   = [201, 168,  76] as [number,number,number];
+      const GRAY   = [160, 160, 160] as [number,number,number];
+
+      const sf = (c: [number,number,number]) => doc.setFillColor(c[0], c[1], c[2]);
+      const sd = (c: [number,number,number]) => doc.setDrawColor(c[0], c[1], c[2]);
+      const st = (c: [number,number,number]) => doc.setTextColor(c[0], c[1], c[2]);
+
+      const bgPage = () => {
+        sf(WHITE); doc.rect(0, 0, W, H, "F");
+        sd(GOLD); doc.setLineWidth(0.4);
+        doc.rect(8, 8, W - 16, H - 16, "S");
+        sd(GOLD); doc.setLineWidth(0.15);
+        doc.rect(10, 10, W - 20, H - 20, "S");
+      };
+
+      const goldLine = (gy: number, x1 = mL + 4, x2 = W - mR - 4) => {
+        sd(GOLD); doc.setLineWidth(0.3); doc.line(x1, gy, x2, gy);
+      };
+
+      const diamond = (x: number, dy: number, size = 2) => {
+        sf(GOLD);
+        doc.lines([[size, size], [size, -size], [-size, -size], [-size, size]], x - size, dy, [1, 1], "F", true);
+      };
+
+      const divider = (dy: number) => {
+        const cx = W / 2;
+        goldLine(dy, mL + 10, cx - 5);
+        goldLine(dy, cx + 5, W - mR - 10);
+        diamond(cx, dy);
+      };
+
+      const pageFooter = () => {
+        goldLine(H - 14);
+        st(GOLD); doc.setFont("times", "italic"); doc.setFontSize(7);
+        doc.text("InstantMariage", W / 2, H - 9.5, { align: "center" });
+      };
+
+      const checkPage = (needed: number) => {
+        if (y + needed > H - 20) {
+          pageFooter();
+          doc.addPage(); bgPage();
+          y = 24;
+        }
+      };
+
+      // Group guests by table
+      const byTable: { [id: string]: { name: string; guests: Guest[] } } = {};
+      const unassigned: Guest[] = [];
+      guests.forEach((g) => {
+        if (!g.table_id) { unassigned.push(g); return; }
+        const tbl = tables.find((t) => t.id === g.table_id);
+        if (!byTable[g.table_id]) byTable[g.table_id] = { name: tbl?.nom ?? "Table", guests: [] };
+        byTable[g.table_id].guests.push(g);
+      });
+      const sortedTables = Object.values(byTable).sort((a, b) => a.name.localeCompare(b.name));
+      if (unassigned.length) sortedTables.push({ name: "Non placés", guests: unassigned });
+
+      // ── PAGE 1 : EN-TÊTE ──
+      bgPage();
+
+      // Couple names
+      doc.setFont("times", "bolditalic"); doc.setFontSize(32); st(BLACK);
+      doc.text(coupleNames, W / 2, 38, { align: "center" });
+
+      // Subtitle
+      doc.setFont("times", "normal"); doc.setFontSize(10);
+      st(GOLD);
+      doc.text("P L A N  D E  T A B L E", W / 2, 48, { align: "center" });
+
+      // Meta
+      const dateStr = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+      doc.setFont("times", "italic"); doc.setFontSize(8); st(GRAY);
+      doc.text(`${guests.length} invités · ${tables.length} tables · ${dateStr}`, W / 2, 56, { align: "center" });
+
+      divider(63);
+
+      let y = 73;
+
+      // ── CARTES PAR TABLE ──
+      for (const t of sortedTables) {
+        const isUnplaced = t.name === "Non placés";
+        const LINE_H = 6.5;
+        const cardH = 14 + t.guests.length * LINE_H + 3;
+
+        checkPage(cardH + 6);
+
+        // Card: white bg + gold border
+        sf(WHITE); doc.roundedRect(mL, y, cW, cardH, 2, 2, "F");
+        sd(isUnplaced ? GRAY : GOLD);
+        doc.setLineWidth(0.5);
+        doc.roundedRect(mL, y, cW, cardH, 2, 2, "S");
+
+        // Table name
+        doc.setFont("times", "bold"); doc.setFontSize(10);
+        st(isUnplaced ? GRAY : GOLD);
+        doc.text(t.name.toUpperCase(), mL + 8, y + 8.5);
+
+        // Guest count right-aligned
+        doc.setFont("times", "italic"); doc.setFontSize(8); st(GRAY);
+        doc.text(`${t.guests.length} invité${t.guests.length > 1 ? "s" : ""}`, mL + cW - 6, y + 8.5, { align: "right" });
+
+        // Thin gold divider under title
+        sd(isUnplaced ? GRAY : GOLD); doc.setLineWidth(0.3);
+        doc.line(mL + 6, y + 12, mL + cW - 6, y + 12);
+
+        // Guest lines — two columns
+        const half = Math.ceil(t.guests.length / 2);
+        const col1 = t.guests.slice(0, half);
+        const col2 = t.guests.slice(half);
+        const colW = (cW - 14) / 2;
+
+        col1.forEach((g, i) => {
+          const gy = y + 12 + LINE_H * (i + 1);
+          const isSpecial = g.regime_alimentaire !== "normal";
+          doc.setFont("times", isSpecial ? "italic" : "normal"); doc.setFontSize(9); st(BLACK);
+          const label = `${g.prenom} ${g.nom}`;
+          doc.text(label, mL + 8, gy);
+          if (isSpecial) {
+            const lw = doc.getTextWidth(label);
+            doc.setFontSize(7); st(GRAY);
+            doc.text(REGIME_LABELS[g.regime_alimentaire].slice(0, 3).toUpperCase(), mL + 8 + lw + 1.5, gy);
+          }
+        });
+
+        col2.forEach((g, i) => {
+          const gy = y + 12 + LINE_H * (i + 1);
+          const isSpecial = g.regime_alimentaire !== "normal";
+          doc.setFont("times", isSpecial ? "italic" : "normal"); doc.setFontSize(9); st(BLACK);
+          const label = `${g.prenom} ${g.nom}`;
+          doc.text(label, mL + 8 + colW + 2, gy);
+          if (isSpecial) {
+            const lw = doc.getTextWidth(label);
+            doc.setFontSize(7); st(GRAY);
+            doc.text(REGIME_LABELS[g.regime_alimentaire].slice(0, 3).toUpperCase(), mL + 8 + colW + 2 + lw + 1.5, gy);
+          }
+        });
+
+        y += cardH + 5;
+      }
+
+      pageFooter();
+
+      // ── PAGE RÉCAPITULATIF ──
+      doc.addPage(); bgPage();
+
+      doc.setFont("times", "bolditalic"); doc.setFontSize(24); st(BLACK);
+      doc.text("Récapitulatif", W / 2, 38, { align: "center" });
+      doc.setFont("times", "normal"); doc.setFontSize(10); st(GOLD);
+      doc.text("S T A T I S T I Q U E S", W / 2, 47, { align: "center" });
+      divider(54);
+
+      let sy = 68;
+
+      // Régimes
+      doc.setFont("times", "bold"); doc.setFontSize(8.5); st(GOLD);
+      doc.text("RÉGIMES ALIMENTAIRES", mL + 6, sy); sy += 10;
+
+      const regimeCounts: Record<string, number> = {};
+      guests.forEach((g) => { regimeCounts[g.regime_alimentaire] = (regimeCounts[g.regime_alimentaire] ?? 0) + 1; });
+
+      Object.entries(REGIME_LABELS).forEach(([key, label]) => {
+        const count = regimeCounts[key] ?? 0;
+        if (!count) return;
+        doc.setFont("times", "normal"); doc.setFontSize(11); st(BLACK);
+        doc.text(label, mL + 10, sy);
+        doc.setFont("times", "bold"); st(GRAY);
+        doc.text(`${count}`, W - mR - 6, sy, { align: "right" });
+        sd(GOLD); doc.setLineWidth(0.15);
+        doc.line(mL + 6, sy + 2.5, W - mR - 6, sy + 2.5);
+        sy += 12;
+      });
+
+      goldLine(sy + 3); sy += 10;
+      doc.setFont("times", "bold"); doc.setFontSize(13); st(BLACK);
+      doc.text("Total", mL + 10, sy);
+      st(GOLD);
+      doc.text(`${guests.length} couvert${guests.length > 1 ? "s" : ""}`, W - mR - 6, sy, { align: "right" });
+
+      // Présences
+      sy += 22;
+      doc.setFont("times", "bold"); doc.setFontSize(8.5); st(GOLD);
+      doc.text("PRÉSENCES", mL + 6, sy); sy += 10;
+
+      const confirmed = guests.filter((g) => g.presence_confirmee === true).length;
+      const declined  = guests.filter((g) => g.presence_confirmee === false).length;
+      const pending   = guests.filter((g) => g.presence_confirmee === null).length;
+      const placed    = guests.filter((g) => g.table_id !== null).length;
+
+      [
+        { label: "Confirmés", count: confirmed },
+        { label: "Déclinés", count: declined },
+        { label: "Sans réponse", count: pending },
+        { label: "Placés en table", count: placed },
+      ].forEach(({ label, count }) => {
+        doc.setFont("times", "normal"); doc.setFontSize(11); st(BLACK);
+        doc.text(label, mL + 10, sy);
+        doc.setFont("times", "bold"); st(GRAY);
+        doc.text(`${count}`, W - mR - 6, sy, { align: "right" });
+        sd(GOLD); doc.setLineWidth(0.15);
+        doc.line(mL + 6, sy + 2.5, W - mR - 6, sy + 2.5);
+        sy += 12;
+      });
+
+      pageFooter();
+      doc.save(`plan-de-table-${new Date().toISOString().slice(0, 10)}.pdf`);
+    } finally {
+      setExportingPDF(false);
+    }
+  }
+
   /* ── Render ── */
   if (loading) {
     return (
@@ -419,10 +656,23 @@ export default function PlanDeTablePage() {
           </span>
 
           <button
+            onClick={generatePDF}
+            disabled={exportingPDF || tables.length === 0}
+            className="flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-xl transition-all hover:opacity-90 disabled:opacity-40"
+            style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)", color: "white" }}
+          >
+            {exportingPDF ? (
+              <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin inline-block" /> PDF…</>
+            ) : (
+              <><IconDownload /> Exporter en PDF</>
+            )}
+          </button>
+
+          <button
             onClick={openAddTable}
             disabled={tables.length >= 50}
             className="flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-xl transition-all hover:opacity-90 disabled:opacity-40"
-            style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)", color: "white" }}
+            style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.85)", border: "1px solid rgba(255,255,255,0.15)" }}
           >
             <IconPlus /> Table {tables.length >= 50 ? "(50/50)" : ""}
           </button>
