@@ -129,7 +129,7 @@ export default function RsvpResponsesPage() {
 
     setDeletingId(id);
     const { data: { session: currentSession } } = await supabase.auth.getSession();
-    const res = await fetch(`/api/invitations/${invitationId}/rsvp/${id}`, {
+    const res = await fetch(`/api/invitations/${invitation?.slug}/rsvp/${id}`, {
       method: "DELETE",
       headers: currentSession?.access_token ? { Authorization: `Bearer ${currentSession.access_token}` } : {},
     });

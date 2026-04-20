@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-type Params = { invitationId: string; responseId: string };
+type Params = { slug: string; responseId: string };
 
 function getSupabaseAdmin() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -13,9 +13,9 @@ function getSupabaseAdmin() {
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Params }) {
-  const { invitationId, responseId } = params;
+  const { slug, responseId } = params;
+  console.log('[rsvp-delete] DELETE called — slug:', slug, 'responseId:', responseId);
 
-  // Extraire le JWT depuis le header Authorization
   const authHeader = req.headers.get('authorization');
   const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
   if (!token) {
@@ -24,17 +24,15 @@ export async function DELETE(req: NextRequest, { params }: { params: Params }) {
 
   const admin = getSupabaseAdmin();
 
-  // Vérifier le token et récupérer l'utilisateur
   const { data: { user }, error: userErr } = await admin.auth.getUser(token);
   if (userErr || !user) {
     return NextResponse.json({ error: 'Token invalide' }, { status: 401 });
   }
 
-  // Vérifier que l'invitation appartient bien au marié connecté
   const { data: invitation } = await admin
     .from('invitations')
     .select('id, maries!marie_id(user_id)')
-    .eq('id', invitationId)
+    .eq('slug', slug)
     .maybeSingle();
 
   if (!invitation) {
@@ -49,23 +47,22 @@ export async function DELETE(req: NextRequest, { params }: { params: Params }) {
     return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
   }
 
-  // Supprimer d'abord la référence dans wedding_guests
   await admin
     .from('wedding_guests')
     .delete()
     .eq('rsvp_response_id', responseId);
 
-  // Supprimer la réponse RSVP (contrainte sur invitation_id pour sécurité)
   const { error } = await admin
     .from('rsvp_responses')
     .delete()
     .eq('id', responseId)
-    .eq('invitation_id', invitationId);
+    .eq('invitation_id', (invitation as any).id);
 
   if (error) {
     console.error('[rsvp-delete] error:', error.message);
     return NextResponse.json({ error: 'Erreur lors de la suppression' }, { status: 500 });
   }
 
+  console.log('[rsvp-delete] success — responseId:', responseId);
   return NextResponse.json({ ok: true });
 }
