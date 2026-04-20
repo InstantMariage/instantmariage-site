@@ -94,7 +94,8 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
 
   // Auto-add to wedding_guests when guest confirms attendance
   if (presence && rsvpInserted?.id && (invitation as any).marie_id) {
-    supabase.from('wedding_guests').insert({
+    console.log('[rsvp] inserting wedding_guest for marie_id:', (invitation as any).marie_id, 'rsvp_id:', rsvpInserted.id);
+    const { error: guestErr } = await supabase.from('wedding_guests').insert({
       marie_id: (invitation as any).marie_id,
       prenom: String(prenom).slice(0, 100),
       nom: String(nom).slice(0, 100),
@@ -103,9 +104,14 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
       presence_confirmee: true,
       source: 'rsvp',
       rsvp_response_id: rsvpInserted.id,
-    }).then(({ error }) => {
-      if (error) console.error('[rsvp] wedding_guests insert error:', error.message);
     });
+    if (guestErr) {
+      console.error('[rsvp] wedding_guests insert error:', JSON.stringify(guestErr));
+    } else {
+      console.log('[rsvp] wedding_guest inserted successfully');
+    }
+  } else {
+    console.log('[rsvp] skip wedding_guest insert — presence:', presence, 'marie_id:', (invitation as any).marie_id, 'rsvp_id:', rsvpInserted?.id);
   }
 
   // Send email notification to the couple (fire-and-forget)
