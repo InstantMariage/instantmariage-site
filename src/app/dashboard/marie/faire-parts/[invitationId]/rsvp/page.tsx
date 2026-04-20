@@ -128,9 +128,17 @@ export default function RsvpResponsesPage() {
     if (!confirmed) return;
 
     setDeletingId(id);
-    await supabase.from("wedding_guests").delete().eq("rsvp_response_id", id);
-    await supabase.from("rsvp_responses").delete().eq("id", id);
-    setResponses((prev) => prev.filter((r) => r.id !== id));
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    const res = await fetch(`/api/invitations/${invitationId}/rsvp/${id}`, {
+      method: "DELETE",
+      headers: currentSession?.access_token ? { Authorization: `Bearer ${currentSession.access_token}` } : {},
+    });
+    if (res.ok) {
+      setResponses((prev) => prev.filter((r) => r.id !== id));
+    } else {
+      const body = await res.json().catch(() => ({}));
+      alert(body?.error ?? "Erreur lors de la suppression.");
+    }
     setDeletingId(null);
   }
 
