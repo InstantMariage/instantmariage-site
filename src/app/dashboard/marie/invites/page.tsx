@@ -262,6 +262,11 @@ export default function InvitesPage() {
     await loadData(marieId);
   }
 
+  async function updateRelation(guestId: string, relation: Relation) {
+    setGuests((prev) => prev.map((g) => g.id === guestId ? { ...g, relation } : g));
+    await supabase.from("wedding_guests").update({ relation }).eq("id", guestId);
+  }
+
   /* PDF Export — design luxe mariage */
   async function exportPDF() {
     const { jsPDF } = await import("jspdf");
@@ -745,7 +750,14 @@ export default function InvitesPage() {
                     </div>
 
                     {/* Relation */}
-                    <p className="text-xs text-gray-500 truncate">{g.relation}</p>
+                    <select
+                      value={g.relation}
+                      onChange={(e) => updateRelation(g.id, e.target.value as Relation)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-xs text-gray-600 rounded-lg border border-transparent hover:border-pink-200 bg-transparent outline-none focus:border-pink-300 px-1 py-0.5 w-full cursor-pointer"
+                    >
+                      {RELATIONS.map((r) => <option key={r} value={r}>{r}</option>)}
+                    </select>
 
                     {/* Régime */}
                     <span

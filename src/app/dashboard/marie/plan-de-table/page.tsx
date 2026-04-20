@@ -30,6 +30,12 @@ type Guest = {
 };
 
 /* ─── Constants ─── */
+const RELATIONS = [
+  "Famille mariée", "Famille marié", "Amis mariée", "Amis marié",
+  "Amis communs", "Famille commune", "Collègues mariée", "Collègues marié",
+  "Voisins", "Autres",
+] as const;
+
 const REGIME_COLORS: Record<Regime, { bg: string; text: string }> = {
   normal:      { bg: "#4B5563", text: "#fff" },
   vegetarien:  { bg: "#16A34A", text: "#fff" },
@@ -218,6 +224,13 @@ export default function PlanDeTablePage() {
     setPopupGuest(updated);
     setSavingGuest(false);
     setEditGuestOpen(false);
+  }
+
+  /* ── Update relation inline ── */
+  async function updateRelation(guestId: string, relation: string) {
+    setGuests((prev) => prev.map((g) => g.id === guestId ? { ...g, relation } : g));
+    setPopupGuest((prev) => prev?.id === guestId ? { ...prev, relation } : prev);
+    await supabase.from("wedding_guests").update({ relation }).eq("id", guestId);
   }
 
   /* ── Assign guest to table ── */
@@ -711,11 +724,21 @@ export default function PlanDeTablePage() {
                   <p className="text-sm font-bold text-white leading-tight">
                     {popupGuest.prenom} {popupGuest.nom}
                   </p>
-                  {popupGuest.relation && (
-                    <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
-                      {popupGuest.relation}
-                    </p>
-                  )}
+                  <select
+                    value={popupGuest.relation || "Autres"}
+                    onChange={(e) => { e.stopPropagation(); updateRelation(popupGuest.id, e.target.value); }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-xs mt-0.5 rounded outline-none cursor-pointer"
+                    style={{
+                      background: "transparent",
+                      color: "rgba(255,255,255,0.45)",
+                      border: "none",
+                      padding: 0,
+                      appearance: "auto",
+                    }}
+                  >
+                    {RELATIONS.map((r) => <option key={r} value={r} style={{ background: "#1e293b" }}>{r}</option>)}
+                  </select>
                 </div>
               </div>
               <button
@@ -858,14 +881,14 @@ export default function PlanDeTablePage() {
               </div>
               <div>
                 <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: "rgba(255,255,255,0.4)" }}>Relation</label>
-                <input
-                  type="text"
-                  value={editGuestForm.relation}
+                <select
+                  value={editGuestForm.relation || "Autres"}
                   onChange={(e) => setEditGuestForm({ ...editGuestForm, relation: e.target.value })}
-                  placeholder="Famille, ami…"
                   className="w-full px-3 py-2 text-sm rounded-xl outline-none"
                   style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
-                />
+                >
+                  {RELATIONS.map((r) => <option key={r} value={r} style={{ background: "#1e293b" }}>{r}</option>)}
+                </select>
               </div>
               <div>
                 <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: "rgba(255,255,255,0.4)" }}>Régime alimentaire</label>
