@@ -418,6 +418,29 @@ export default function FairePartsPage() {
                           </>
                         )}
                       </div>
+
+                      {/* ── Lien réponses RSVP (si publié) ── */}
+                      {isPublie && (
+                        <div className="px-5 pb-5">
+                          <Link
+                            href={`/dashboard/marie/faire-parts/${inv.id}/rsvp`}
+                            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 hover:opacity-80"
+                            style={{ background: "#FFF0F5", color: "#F06292", border: "1px solid #FECDD3" }}
+                          >
+                            <IconUsers />
+                            Voir les réponses RSVP
+                            {inv.rsvpStats && inv.rsvpStats.total_reponses > 0 && (
+                              <span
+                                className="ml-1 px-2 py-0.5 rounded-full text-xs font-bold"
+                                style={{ background: "#F06292", color: "white" }}
+                              >
+                                {inv.rsvpStats.total_reponses}
+                              </span>
+                            )}
+                          </Link>
+                        </div>
+                      )}
+
                     </div>
                   );
                 })}
