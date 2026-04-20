@@ -228,6 +228,38 @@ export default function FairePartEditorPage() {
           setToast({ type: 'success', message: 'Brouillon chargé — continuez votre faire-part !' });
         }
       } else if (session && templateId) {
+        // Chercher une invitation existante du marié pour pré-remplir le formulaire
+        const { data: marie } = await supabase
+          .from('maries')
+          .select('id')
+          .eq('user_id', session.user.id)
+          .maybeSingle();
+        if (marie) {
+          const { data: existingInv } = await supabase
+            .from('invitations')
+            .select('id, slug, config, rsvp_actif, rsvp_deadline')
+            .eq('marie_id', marie.id)
+            .order('updated_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (existingInv?.config) {
+            const c = existingInv.config as Record<string, string>;
+            setForm((prev) => ({
+              ...prev,
+              prenomMariee: c.prenomMariee ?? prev.prenomMariee,
+              prenomMarie: c.prenomMarie ?? prev.prenomMarie,
+              dateMariage: c.dateMariage ?? prev.dateMariage,
+              lieu: c.lieu ?? prev.lieu,
+              message: c.message ?? prev.message,
+              emailContact: c.emailContact ?? prev.emailContact,
+              rsvpDeadline: existingInv.rsvp_deadline ?? prev.rsvpDeadline,
+            }));
+            setDraftInvitationId(existingInv.id);
+            setInvitationSlug(existingInv.slug);
+            setToast({ type: 'success', message: 'Vos données ont été récupérées depuis votre faire-part existant !' });
+            return;
+          }
+        }
         const key = `faire-part-draft-${templateId}`;
         const saved = localStorage.getItem(key);
         if (saved) {

@@ -122,6 +122,24 @@ const IconTrash = () => (
   </svg>
 );
 
+/* ─────────────────── Templates gallery data ─────────────────── */
+const GALLERY_TEMPLATES = [
+  { id: "elegance-doree", name: "Élégance Dorée", tag: "Populaire", tagColor: { bg: "#FEF3C7", color: "#92400E" }, accent: "#C9A96E", bg: "from-amber-50 via-yellow-50 to-amber-100" },
+  { id: "boheme-champetre", name: "Bohème Champêtre", tag: "Tendance", tagColor: { bg: "#D1FAE5", color: "#065F46" }, accent: "#6B8F71", bg: "from-stone-100 via-green-50 to-emerald-100" },
+  { id: "moderne-minimal", name: "Moderne Minimal", tag: "Nouveau", tagColor: { bg: "#F3F4F6", color: "#6B7280" }, accent: "#1a1a1a", bg: "from-white via-gray-50 to-slate-100" },
+  { id: "luxe-marbre", name: "Luxe Marbré", tag: "Premium", tagColor: { bg: "#FFE4E6", color: "#9F1239" }, accent: "#8B7355", bg: "from-slate-100 via-gray-100 to-zinc-200" },
+  { id: "romantique-floral", name: "Romantique Floral", tag: "Populaire", tagColor: { bg: "#FCE7F3", color: "#9D174D" }, accent: "#F06292", bg: "from-pink-50 via-rose-50 to-fuchsia-50" },
+  { id: "cote-dazur", name: "Côte d'Azur", tag: "Exclusif", tagColor: { bg: "#DBEAFE", color: "#1E40AF" }, accent: "#0284C7", bg: "from-sky-100 via-blue-100 to-cyan-100" },
+  { id: "provence-olivier", name: "Provence Olivier", tag: "Tendance", tagColor: { bg: "#EDE9FE", color: "#5B21B6" }, accent: "#6B7C45", bg: "from-violet-50 via-purple-50 to-lime-50" },
+  { id: "nuit-etoilee", name: "Nuit Étoilée", tag: "Nouveau", tagColor: { bg: "#E0E7FF", color: "#3730A3" }, accent: "#C9A96E", bg: "from-indigo-900 via-violet-900 to-slate-900" },
+];
+
+const IconRefresh = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+  </svg>
+);
+
 /* ─────────────────── Page ─────────────────── */
 export default function FairePartsPage() {
   const router = useRouter();
@@ -131,6 +149,8 @@ export default function FairePartsPage() {
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Invitation | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [showChangeTemplate, setShowChangeTemplate] = useState(false);
+  const [changingTemplate, setChangingTemplate] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -228,6 +248,27 @@ export default function FairePartsPage() {
     setTimeout(() => setCopiedSlug(null), 2000);
   }
 
+  async function handleChangeTemplate(templateSlug: string) {
+    if (invitations.length === 0) return;
+    setChangingTemplate(true);
+    try {
+      const { data: tpl } = await supabase
+        .from("invitation_templates")
+        .select("id")
+        .eq("slug", templateSlug)
+        .maybeSingle();
+      const inv = invitations[0];
+      await supabase
+        .from("invitations")
+        .update({ template_id: tpl?.id ?? null, updated_at: new Date().toISOString() })
+        .eq("id", inv.id);
+      setShowChangeTemplate(false);
+      router.push(`/faire-part/${templateSlug}?draft=${inv.id}`);
+    } finally {
+      setChangingTemplate(false);
+    }
+  }
+
   if (!authChecked) return null;
 
   return (
@@ -256,15 +297,26 @@ export default function FairePartsPage() {
             Créez et partagez votre faire-part digital avec confirmations de présence en ligne
           </p>
 
-          {/* CTA créer */}
-          <Link
-            href="/faire-part"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-sm font-semibold transition-all duration-200 hover:opacity-90 active:scale-95"
-            style={{ background: "white", color: "#e91e8c" }}
-          >
-            <IconPlus />
-            Créer un faire-part
-          </Link>
+          {/* CTA créer ou changer */}
+          {invitations.length > 0 ? (
+            <button
+              onClick={() => setShowChangeTemplate(true)}
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-sm font-semibold transition-all duration-200 hover:opacity-90 active:scale-95"
+              style={{ background: "white", color: "#e91e8c" }}
+            >
+              <IconRefresh />
+              Changer de template
+            </button>
+          ) : (
+            <Link
+              href="/faire-part"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-full text-sm font-semibold transition-all duration-200 hover:opacity-90 active:scale-95"
+              style={{ background: "white", color: "#e91e8c" }}
+            >
+              <IconPlus />
+              Créer un faire-part
+            </Link>
+          )}
         </section>
 
         <div className="max-w-3xl mx-auto px-6 space-y-4 pt-4">
@@ -499,21 +551,97 @@ export default function FairePartsPage() {
                 })}
               </div>
 
-              {/* CTA nouveau faire-part en bas */}
-              <Link
-                href="/faire-part"
+              {/* CTA changer de template en bas */}
+              <button
+                onClick={() => setShowChangeTemplate(true)}
                 className="flex items-center justify-center gap-2 py-4 rounded-3xl text-sm font-semibold transition-all duration-200 hover:opacity-80"
                 style={{ background: "white", color: "#F06292", border: "2px dashed #FECDD3" }}
               >
-                <IconPlus />
-                Créer un nouveau faire-part
-              </Link>
+                <IconRefresh />
+                Changer de template
+              </button>
             </>
           )}
         </div>
       </div>
 
       <Footer />
+
+      {/* ── Modale changer de template ── */}
+      {showChangeTemplate && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+          style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}
+          onClick={(e) => { if (e.target === e.currentTarget && !changingTemplate) setShowChangeTemplate(false); }}
+        >
+          <div
+            className="w-full sm:max-w-xl rounded-t-3xl sm:rounded-3xl flex flex-col max-h-[90vh]"
+            style={{ background: "white", boxShadow: "0 24px 64px rgba(0,0,0,0.2)" }}
+          >
+            {/* Header modale */}
+            <div className="flex items-center justify-between px-6 pt-6 pb-4" style={{ borderBottom: "1px solid #FECDD3" }}>
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">Changer de template</h3>
+                <p className="text-xs text-gray-400 mt-0.5">Vos données (prénoms, date, lieu, message) seront conservées</p>
+              </div>
+              <button
+                onClick={() => setShowChangeTemplate(false)}
+                disabled={changingTemplate}
+                className="w-8 h-8 rounded-full flex items-center justify-center transition-colors hover:bg-gray-100 disabled:opacity-40"
+                style={{ color: "#9CA3AF" }}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Grille templates */}
+            <div className="overflow-y-auto p-5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {GALLERY_TEMPLATES.map((tpl) => {
+                  const isCurrent = invitations[0]?.template?.slug === tpl.id;
+                  return (
+                    <button
+                      key={tpl.id}
+                      onClick={() => !isCurrent && handleChangeTemplate(tpl.id)}
+                      disabled={changingTemplate || isCurrent}
+                      className="relative rounded-2xl overflow-hidden text-left transition-all duration-200 hover:scale-[1.02] hover:shadow-lg disabled:cursor-default"
+                      style={{
+                        border: isCurrent ? "2px solid #e91e8c" : "2px solid #F3F4F6",
+                        opacity: changingTemplate && !isCurrent ? 0.5 : 1,
+                      }}
+                    >
+                      {/* Mini preview */}
+                      <div className={`h-20 bg-gradient-to-br ${tpl.bg} flex items-center justify-center`}>
+                        <p className="text-xs font-bold text-center px-2" style={{ color: tpl.accent, fontFamily: "serif" }}>
+                          {tpl.name.split(" ")[0]}
+                        </p>
+                      </div>
+                      {/* Label */}
+                      <div className="px-3 py-2.5">
+                        <p className="text-xs font-semibold text-gray-800 leading-tight">{tpl.name}</p>
+                        <span
+                          className="inline-block mt-1 text-xs font-medium px-2 py-0.5 rounded-full"
+                          style={{ background: tpl.tagColor.bg, color: tpl.tagColor.color }}
+                        >
+                          {isCurrent ? "Actuel" : tpl.tag}
+                        </span>
+                      </div>
+                      {/* Spinner overlay */}
+                      {changingTemplate && (
+                        <div className="absolute inset-0 flex items-center justify-center" style={{ background: "rgba(255,255,255,0.7)" }}>
+                          <div className="w-5 h-5 border-2 border-gray-200 border-t-transparent rounded-full animate-spin" style={{ borderTopColor: "#F06292" }} />
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Modale de confirmation de suppression ── */}
       {deleteTarget && (
