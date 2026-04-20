@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import RsvpForm from '@/app/invitation/[slug]/RsvpForm';
+import { OrnamentalFrameOverlay } from '@/components/faire-part/OrnamentalFrame';
 
 type Phase =
   | 'idle'
@@ -538,6 +539,9 @@ export default function EleganceDoreeInteractive({
 
           </div>
         )}
+
+        {/* ── ORNAMENTAL FRAME OVERLAY ─────────────────────────────────────── */}
+        <OrnamentalFrameOverlay />
 
         {/* ── LETTER OVERLAY ───────────────────────────────────────────────── */}
         {showLetter && (

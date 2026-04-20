@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { Metadata } from 'next';
 import RsvpForm from './RsvpForm';
 import EleganceDoreeInteractive from '@/components/faire-part/EleganceDoreeInteractive';
+import { OrnamentalFrameWrapper } from '@/components/faire-part/OrnamentalFrame';
 
 export const dynamic = 'force-dynamic';
 
@@ -103,7 +104,8 @@ export default async function InvitationPage({ params }: { params: Params }) {
   const videoUrl = config.video_url ?? invitation.apercu_url ?? null;
 
   return (
-    <main className="min-h-screen bg-white">
+    <OrnamentalFrameWrapper>
+    <main className="bg-white w-full">
       {/* ── Video hero ── */}
       {videoUrl ? (
         <section className="relative w-full overflow-hidden bg-black" style={{ maxHeight: '75vh' }}>
@@ -196,5 +198,6 @@ export default async function InvitationPage({ params }: { params: Params }) {
         </p>
       </footer>
     </main>
+    </OrnamentalFrameWrapper>
   );
 }
