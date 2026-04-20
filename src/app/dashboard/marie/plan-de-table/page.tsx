@@ -115,6 +115,14 @@ export default function PlanDeTablePage() {
   /* Guest popup */
   const [popupGuest, setPopupGuest] = useState<Guest | null>(null);
 
+  /* Edit guest modal */
+  const [editGuestOpen, setEditGuestOpen] = useState(false);
+  const [editGuestForm, setEditGuestForm] = useState<{
+    prenom: string; nom: string; relation: string;
+    regime_alimentaire: Regime; email: string; telephone: string;
+  }>({ prenom: "", nom: "", relation: "", regime_alimentaire: "normal", email: "", telephone: "" });
+  const [savingGuest, setSavingGuest] = useState(false);
+
   /* Drag: guest */
   const [dragGuest, setDragGuest] = useState<{ guestId: string; fromTableId: string | null } | null>(null);
   const [dragOverTable, setDragOverTable] = useState<string | null>(null);
@@ -178,6 +186,38 @@ export default function PlanDeTablePage() {
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus("idle"), 1500);
     }, 400);
+  }
+
+  /* ── Edit guest ── */
+  function openEditGuest(g: Guest) {
+    setEditGuestForm({
+      prenom: g.prenom,
+      nom: g.nom,
+      relation: g.relation ?? "",
+      regime_alimentaire: g.regime_alimentaire,
+      email: g.email ?? "",
+      telephone: g.telephone ?? "",
+    });
+    setEditGuestOpen(true);
+  }
+
+  async function saveGuestEdit() {
+    if (!popupGuest) return;
+    setSavingGuest(true);
+    const patch = {
+      prenom: editGuestForm.prenom.trim(),
+      nom: editGuestForm.nom.trim(),
+      relation: editGuestForm.relation.trim() || null,
+      regime_alimentaire: editGuestForm.regime_alimentaire,
+      email: editGuestForm.email.trim() || null,
+      telephone: editGuestForm.telephone.trim() || null,
+    };
+    await supabase.from("wedding_guests").update(patch).eq("id", popupGuest.id);
+    const updated: Guest = { ...popupGuest, ...patch, relation: patch.relation ?? "" };
+    setGuests((prev) => prev.map((g) => g.id === popupGuest.id ? updated : g));
+    setPopupGuest(updated);
+    setSavingGuest(false);
+    setEditGuestOpen(false);
   }
 
   /* ── Assign guest to table ── */
@@ -436,6 +476,7 @@ export default function PlanDeTablePage() {
                   onDragStart={handleGuestDragStart(g.id, null)}
                   isDragging={dragGuest?.guestId === g.id}
                   compact={false}
+                  onGuestClick={setPopupGuest}
                 />
               ))
             )}
@@ -762,6 +803,123 @@ export default function PlanDeTablePage() {
                 </span>
               </div>
             </div>
+
+            {/* Edit button */}
+            <div className="mt-4 pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+              <button
+                onClick={() => openEditGuest(popupGuest)}
+                className="w-full py-2.5 text-sm font-bold rounded-2xl transition-all hover:opacity-90 flex items-center justify-center gap-2"
+                style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)", color: "white" }}
+              >
+                <IconEdit /> Modifier les infos
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Edit guest modal ── */}
+      {editGuestOpen && popupGuest && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(6px)" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setEditGuestOpen(false); }}
+        >
+          <div
+            className="w-full max-w-sm rounded-3xl p-6"
+            style={{ background: "#1e293b", border: "1px solid rgba(255,255,255,0.1)" }}
+          >
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-base font-bold text-white">Modifier l&apos;invité</h2>
+              <button onClick={() => setEditGuestOpen(false)} className="text-gray-500 hover:text-gray-300"><IconClose /></button>
+            </div>
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: "rgba(255,255,255,0.4)" }}>Prénom</label>
+                  <input
+                    type="text"
+                    value={editGuestForm.prenom}
+                    onChange={(e) => setEditGuestForm({ ...editGuestForm, prenom: e.target.value })}
+                    className="w-full px-3 py-2 text-sm rounded-xl outline-none"
+                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: "rgba(255,255,255,0.4)" }}>Nom</label>
+                  <input
+                    type="text"
+                    value={editGuestForm.nom}
+                    onChange={(e) => setEditGuestForm({ ...editGuestForm, nom: e.target.value })}
+                    className="w-full px-3 py-2 text-sm rounded-xl outline-none"
+                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: "rgba(255,255,255,0.4)" }}>Relation</label>
+                <input
+                  type="text"
+                  value={editGuestForm.relation}
+                  onChange={(e) => setEditGuestForm({ ...editGuestForm, relation: e.target.value })}
+                  placeholder="Famille, ami…"
+                  className="w-full px-3 py-2 text-sm rounded-xl outline-none"
+                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: "rgba(255,255,255,0.4)" }}>Régime alimentaire</label>
+                <select
+                  value={editGuestForm.regime_alimentaire}
+                  onChange={(e) => setEditGuestForm({ ...editGuestForm, regime_alimentaire: e.target.value as Regime })}
+                  className="w-full px-3 py-2 text-sm rounded-xl outline-none"
+                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
+                >
+                  {Object.entries(REGIME_LABELS).map(([k, label]) => (
+                    <option key={k} value={k} style={{ background: "#1e293b" }}>{label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: "rgba(255,255,255,0.4)" }}>Email</label>
+                <input
+                  type="email"
+                  value={editGuestForm.email}
+                  onChange={(e) => setEditGuestForm({ ...editGuestForm, email: e.target.value })}
+                  placeholder="email@exemple.com"
+                  className="w-full px-3 py-2 text-sm rounded-xl outline-none"
+                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: "rgba(255,255,255,0.4)" }}>Téléphone</label>
+                <input
+                  type="tel"
+                  value={editGuestForm.telephone}
+                  onChange={(e) => setEditGuestForm({ ...editGuestForm, telephone: e.target.value })}
+                  placeholder="+33 6 00 00 00 00"
+                  className="w-full px-3 py-2 text-sm rounded-xl outline-none"
+                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
+                />
+              </div>
+              <div className="flex gap-3 pt-1">
+                <button
+                  onClick={() => setEditGuestOpen(false)}
+                  className="flex-1 py-2.5 text-sm font-semibold rounded-xl transition-colors"
+                  style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.6)", border: "1px solid rgba(255,255,255,0.1)" }}
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={saveGuestEdit}
+                  disabled={savingGuest || !editGuestForm.prenom.trim() || !editGuestForm.nom.trim()}
+                  className="flex-1 py-2.5 text-sm font-bold rounded-xl transition-all hover:opacity-90 disabled:opacity-40"
+                  style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)", color: "white" }}
+                >
+                  {savingGuest ? "…" : "Enregistrer"}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -907,7 +1065,8 @@ function GuestChip({
       data-guest-chip="true"
       draggable
       onDragStart={onDragStart}
-      className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl cursor-grab transition-all"
+      onClick={(e) => { e.stopPropagation(); onGuestClick?.(guest); }}
+      className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl cursor-pointer transition-all"
       style={{
         background: isDragging ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.05)",
         border: "1px solid rgba(255,255,255,0.08)",
