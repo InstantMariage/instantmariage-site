@@ -85,60 +85,27 @@ export default async function InvitationPage({ params }: { params: Params }) {
     invitation.rsvp_actif &&
     (!invitation.rsvp_deadline || new Date(invitation.rsvp_deadline) >= new Date());
 
-  // ── Élégance Dorée: carte posée sur fond sombre ──────────────────────────
+  // ── Élégance Dorée: pleine page ──────────────────────────────────────────
   if (templateSlug === 'elegance-doree') {
     return (
-      <div style={{
-        minHeight: '100dvh',
-        background: '#1a1a1a',
-        display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'center',
-        padding: '40px 16px 60px',
-        position: 'relative',
-      }}>
-        {/* Étoiles dorées subtiles sur le fond */}
-        <div aria-hidden style={{ position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
-          {Array.from({ length: 18 }, (_, i) => (
-            <div key={i} style={{
-              position: 'absolute',
-              width: i % 4 === 0 ? 2 : 1.5,
-              height: i % 4 === 0 ? 2 : 1.5,
-              background: '#C9A84C',
-              borderRadius: '50%',
-              left: `${3 + (i * 5.3) % 94}%`,
-              top: `${2 + (i * 7.8) % 96}%`,
-              opacity: 0.04 + (i % 5) * 0.018,
-            }} />
-          ))}
-        </div>
-        {/* Carton d'invitation */}
-        <div
-          className="w-full max-w-[420px] sm:max-w-[480px]"
-          style={{
-            position: 'relative',
-            zIndex: 1,
-            background: 'linear-gradient(180deg, #FFFDF7 0%, #FDF8EE 100%)',
-            borderRadius: 16,
-            border: '1.5px solid #C9A84C',
-            boxShadow: [
-              '0 2px 4px rgba(201,168,76,.12)',
-              '0 8px 32px rgba(0,0,0,.45)',
-              '0 28px 90px rgba(0,0,0,.65)',
-            ].join(', '),
-            overflow: 'hidden',
-          }}
-        >
-          <EleganceDoreeInteractive
-            coupleNames={coupleNames}
-            date={dateFormatted}
-            lieu={lieuMariage ?? ''}
-            message={config.message}
-            rsvpActif={isRsvpOpen}
-            rsvpDeadline={invitation.rsvp_deadline ?? null}
-            rsvpSlug={isRsvpOpen ? invitation.slug : undefined}
-          />
-        </div>
+      <div style={{ position: 'relative' }}>
+        {/* Cadre doré fin à 15px des bords */}
+        <div aria-hidden style={{
+          position: 'fixed',
+          inset: 15,
+          border: '1px solid rgba(201,168,76,0.55)',
+          pointerEvents: 'none',
+          zIndex: 9999,
+        }} />
+        <EleganceDoreeInteractive
+          coupleNames={coupleNames}
+          date={dateFormatted}
+          lieu={lieuMariage ?? ''}
+          message={config.message}
+          rsvpActif={isRsvpOpen}
+          rsvpDeadline={invitation.rsvp_deadline ?? null}
+          rsvpSlug={isRsvpOpen ? invitation.slug : undefined}
+        />
       </div>
     );
   }

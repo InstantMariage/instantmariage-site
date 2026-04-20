@@ -212,7 +212,7 @@ export default function EleganceDoreeInteractive({
         style={{
           position: 'relative',
           width: '100%',
-          minHeight: fixedHeight ? fixedHeight : showEnvelope ? 560 : 0,
+          minHeight: fixedHeight ? fixedHeight : showEnvelope ? '100dvh' : 0,
           height: fixedHeight ? fixedHeight : undefined,
           fontFamily: "'Cormorant Garamond', serif",
         }}
