@@ -318,7 +318,7 @@ export default function CoteAzurInteractive({
 
               {isRevealing && (
                 <div className="ca-r0" style={{ marginBottom: 28 }}>
-                  <svg width="220" height="30" viewBox="0 0 220 30" fill="none">
+                  <svg width="220" height="30" viewBox="0 0 220 30" fill="none" style={{ display: 'block', margin: '0 auto' }}>
                     <line x1="0" y1="15" x2="85" y2="15" stroke="#039BE5" strokeWidth=".5" opacity=".5" />
                     <path d="M92 8 Q110 2 128 8 Q110 15 92 8Z" fill="#039BE5" opacity=".35" />
                     <circle cx="110" cy="15" r="2.5" fill="#039BE5" opacity=".6" />
@@ -342,7 +342,7 @@ export default function CoteAzurInteractive({
 
               {isRevealing && (
                 <div className="ca-r4" style={{ marginBottom: 40 }}>
-                  <svg width="220" height="22" viewBox="0 0 220 22" fill="none">
+                  <svg width="220" height="22" viewBox="0 0 220 22" fill="none" style={{ display: 'block', margin: '0 auto' }}>
                     <line x1="0" y1="11" x2="85" y2="11" stroke="#039BE5" strokeWidth=".5" opacity=".4" />
                     <path d="M90 11 Q100 4 110 11 Q120 18 130 11" stroke="#039BE5" strokeWidth="1" fill="none" opacity=".6" />
                     <line x1="135" y1="11" x2="220" y2="11" stroke="#039BE5" strokeWidth=".5" opacity=".4" />

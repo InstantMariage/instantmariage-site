@@ -310,7 +310,7 @@ export default function RomantiqueFloralInteractive({
 
               {isRevealing && (
                 <div className="rf-r0" style={{ marginBottom: 28 }}>
-                  <svg width="220" height="40" viewBox="0 0 220 40" fill="none">
+                  <svg width="220" height="40" viewBox="0 0 220 40" fill="none" style={{ display: 'block', margin: '0 auto' }}>
                     <line x1="0" y1="20" x2="80" y2="20" stroke="#E91E8C" strokeWidth=".5" opacity=".3" />
                     {[0,1,2,3,4].map(i => (
                       <ellipse key={i} cx={95 + i*8} cy={20 - (i === 2 ? 6 : i % 2 === 0 ? 3 : 0)} rx="5" ry="3" fill="#F48FB1" opacity=".5" transform={`rotate(${i*15 - 30} ${95 + i*8} ${20 - (i === 2 ? 6 : i % 2 === 0 ? 3 : 0)})`} />
@@ -334,7 +334,7 @@ export default function RomantiqueFloralInteractive({
 
               {isRevealing && (
                 <div className="rf-r4" style={{ marginBottom: 40 }}>
-                  <svg width="200" height="22" viewBox="0 0 200 22" fill="none">
+                  <svg width="200" height="22" viewBox="0 0 200 22" fill="none" style={{ display: 'block', margin: '0 auto' }}>
                     <line x1="0" y1="11" x2="80" y2="11" stroke="#F48FB1" strokeWidth=".5" />
                     <path d="M89 5 Q100 1 111 5 Q100 11 89 5Z" fill="#F48FB1" opacity=".6" />
                     <circle cx="100" cy="11" r="2" fill="#E91E8C" opacity=".7" />

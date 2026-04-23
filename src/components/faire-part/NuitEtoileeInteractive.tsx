@@ -334,7 +334,7 @@ export default function NuitEtoileeInteractive({
 
               {isRevealing && (
                 <div className="ne-r0" style={{ marginBottom: 28 }}>
-                  <svg width="220" height="36" viewBox="0 0 220 36" fill="none">
+                  <svg width="220" height="36" viewBox="0 0 220 36" fill="none" style={{ display: 'block', margin: '0 auto' }}>
                     <line x1="0" y1="18" x2="88" y2="18" stroke="#C9A84C" strokeWidth=".5" opacity=".5" />
                     {[100, 110, 120].map((x, i) => (
                       <path key={i} d={`M${x} 12 L${x + 4} 18 L${x} 24 L${x - 4} 18 Z`} fill="none" stroke="#C9A84C" strokeWidth=".8" opacity={.4 + i * .15} />
@@ -358,7 +358,7 @@ export default function NuitEtoileeInteractive({
 
               {isRevealing && (
                 <div className="ne-r4" style={{ marginBottom: 40 }}>
-                  <svg width="200" height="22" viewBox="0 0 200 22" fill="none">
+                  <svg width="200" height="22" viewBox="0 0 200 22" fill="none" style={{ display: 'block', margin: '0 auto' }}>
                     <line x1="0" y1="11" x2="85" y2="11" stroke="#C9A84C" strokeWidth=".5" opacity=".35" />
                     <circle cx="100" cy="11" r="3.5" fill="none" stroke="#C9A84C" strokeWidth=".8" opacity=".6" />
                     <circle cx="100" cy="11" r="1.5" fill="#C9A84C" opacity=".6" />

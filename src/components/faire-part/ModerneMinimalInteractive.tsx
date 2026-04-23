@@ -306,7 +306,7 @@ export default function ModerneMinimalInteractive({
 
               {isRevealing && (
                 <div className="mm-r0" style={{ marginBottom: 36 }}>
-                  <svg width="240" height="28" viewBox="0 0 240 28" fill="none">
+                  <svg width="240" height="28" viewBox="0 0 240 28" fill="none" style={{ display: 'block', margin: '0 auto' }}>
                     <line x1="0" y1="14" x2="96" y2="14" stroke="#1A1A1A" strokeWidth=".5" opacity=".18" />
                     <path d="M100 7 L110 14 L100 21 L90 14 Z" fill="none" stroke="#C9A84C" strokeWidth=".8" opacity=".65" />
                     <path d="M110 14 L120 7 L130 14 L120 21 Z" fill="#C9A84C" opacity=".12" stroke="#C9A84C" strokeWidth=".6" />
@@ -380,7 +380,7 @@ export default function ModerneMinimalInteractive({
 
               {isRevealing && (
                 <div style={{ marginBottom: 64 }}>
-                  <svg width="220" height="20" viewBox="0 0 220 20" fill="none">
+                  <svg width="220" height="20" viewBox="0 0 220 20" fill="none" style={{ display: 'block', margin: '0 auto' }}>
                     <line x1="0" y1="10" x2="90" y2="10" stroke="#1A1A1A" strokeWidth=".5" opacity=".15" />
                     <path d="M94 4 L100 10 L94 16 L88 10 Z" fill="none" stroke="#C9A84C" strokeWidth=".7" opacity=".55" />
                     <circle cx="110" cy="10" r="2.5" fill="none" stroke="#C9A84C" strokeWidth=".7" opacity=".4" />

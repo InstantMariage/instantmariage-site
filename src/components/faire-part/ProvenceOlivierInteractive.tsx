@@ -305,7 +305,7 @@ export default function ProvenceOlivierInteractive({
 
               {isRevealing && (
                 <div className="po-r0" style={{ marginBottom: 28 }}>
-                  <svg width="220" height="36" viewBox="0 0 220 36" fill="none">
+                  <svg width="220" height="36" viewBox="0 0 220 36" fill="none" style={{ display: 'block', margin: '0 auto' }}>
                     <line x1="0" y1="18" x2="80" y2="18" stroke="#7B52D3" strokeWidth=".5" opacity=".4" />
                     <ellipse cx="96" cy="14" rx="8" ry="4" fill="#6B8E4E" opacity=".4" transform="rotate(-20 96 14)" />
                     <ellipse cx="110" cy="20" rx="8" ry="4" fill="#6B8E4E" opacity=".5" transform="rotate(10 110 20)" />
@@ -330,7 +330,7 @@ export default function ProvenceOlivierInteractive({
 
               {isRevealing && (
                 <div className="po-r4" style={{ marginBottom: 40 }}>
-                  <svg width="200" height="24" viewBox="0 0 200 24" fill="none">
+                  <svg width="200" height="24" viewBox="0 0 200 24" fill="none" style={{ display: 'block', margin: '0 auto' }}>
                     <line x1="0" y1="12" x2="72" y2="12" stroke="#7B52D3" strokeWidth=".5" opacity=".35" />
                     <ellipse cx="86" cy="10" rx="8" ry="4" fill="#6B8E4E" opacity=".35" transform="rotate(-15 86 10)" />
                     <ellipse cx="100" cy="14" rx="8" ry="4" fill="#6B8E4E" opacity=".4" />

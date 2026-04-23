@@ -329,7 +329,7 @@ export default function JardinJaponaisInteractive({
 
               {isRevealing && (
                 <div className="jj-r0" style={{ marginBottom: 28 }}>
-                  <svg width="220" height="36" viewBox="0 0 220 36" fill="none">
+                  <svg width="220" height="36" viewBox="0 0 220 36" fill="none" style={{ display: 'block', margin: '0 auto' }}>
                     <line x1="0" y1="18" x2="80" y2="18" stroke="#C62828" strokeWidth=".5" opacity=".3" />
                     {[88, 100, 112, 124, 132].map((x, i) => {
                       const isCenter = i === 2;
@@ -357,7 +357,7 @@ export default function JardinJaponaisInteractive({
 
               {isRevealing && (
                 <div className="jj-r4" style={{ marginBottom: 40 }}>
-                  <svg width="180" height="22" viewBox="0 0 180 22" fill="none">
+                  <svg width="180" height="22" viewBox="0 0 180 22" fill="none" style={{ display: 'block', margin: '0 auto' }}>
                     <line x1="0" y1="11" x2="70" y2="11" stroke="#C62828" strokeWidth=".4" opacity=".25" />
                     <rect x="76" y="6" width="10" height="10" fill="none" stroke="#C62828" strokeWidth=".7" opacity=".5" transform="rotate(45 81 11)" />
                     <line x1="110" y1="11" x2="180" y2="11" stroke="#C62828" strokeWidth=".4" opacity=".25" />

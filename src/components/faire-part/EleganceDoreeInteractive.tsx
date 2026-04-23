@@ -555,7 +555,7 @@ export default function EleganceDoreeInteractive({
               {/* Top ornament */}
               {isRevealing && (
                 <div className="ed-reveal-0" style={{ marginBottom: 28 }}>
-                  <svg width="220" height="36" viewBox="0 0 220 36" fill="none">
+                  <svg width="220" height="36" viewBox="0 0 220 36" fill="none" style={{ display: 'block', margin: '0 auto' }}>
                     <line x1="0" y1="18" x2="90" y2="18" stroke="#C9A84C" strokeWidth=".6" />
                     <path
                       d="M100 10 L110 18 L100 26 M120 10 L110 18 L120 26"
@@ -620,7 +620,7 @@ export default function EleganceDoreeInteractive({
               {/* Diamond divider */}
               {isRevealing && (
                 <div className="ed-reveal-4" style={{ marginBottom: 44 }}>
-                  <svg width="260" height="22" viewBox="0 0 260 22" fill="none">
+                  <svg width="260" height="22" viewBox="0 0 260 22" fill="none" style={{ display: 'block', margin: '0 auto' }}>
                     <line x1="0" y1="11" x2="110" y2="11" stroke="#C9A84C" strokeWidth=".5" />
                     <path d="M120 5 L130 11 L120 17 L110 11 Z" fill="none" stroke="#C9A84C" strokeWidth=".9" />
                     <circle cx="130" cy="11" r="2" fill="#C9A84C" />
@@ -765,7 +765,7 @@ export default function EleganceDoreeInteractive({
               {/* Bottom ornament */}
               {isRevealing && (
                 <div style={{ marginBottom: 72 }}>
-                  <svg width="120" height="32" viewBox="0 0 120 32" fill="none">
+                  <svg width="120" height="32" viewBox="0 0 120 32" fill="none" style={{ display: 'block', margin: '0 auto' }}>
                     <path
                       d="M10 16 Q30 6 60 16 Q90 26 110 16"
                       stroke="#C9A84C"
@@ -833,7 +833,7 @@ export default function EleganceDoreeInteractive({
               {/* Footer */}
               {isComplete && (
                 <div style={{ marginTop: 64, paddingBottom: 40 }}>
-                  <svg width="60" height="20" viewBox="0 0 60 20" fill="none" style={{ marginBottom: 12 }}>
+                  <svg width="60" height="20" viewBox="0 0 60 20" fill="none" style={{ display: 'block', margin: '0 auto 12px' }}>
                     <line x1="0" y1="10" x2="22" y2="10" stroke="#C9A84C" strokeWidth=".5" />
                     <circle cx="30" cy="10" r="3" fill="none" stroke="#C9A84C" strokeWidth=".6" />
                     <line x1="38" y1="10" x2="60" y2="10" stroke="#C9A84C" strokeWidth=".5" />

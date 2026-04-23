@@ -308,7 +308,7 @@ export default function BohemeChampetreInteractive({
 
               {isRevealing && (
                 <div className="bc-r0" style={{ marginBottom: 32 }}>
-                  <svg width="280" height="52" viewBox="0 0 280 52" fill="none">
+                  <svg width="280" height="52" viewBox="0 0 280 52" fill="none" style={{ display: 'block', margin: '0 auto' }}>
                     <line x1="0" y1="26" x2="96" y2="26" stroke="#C4956A" strokeWidth=".5" opacity=".6" />
                     <path d="M108 20 Q120 10 132 18 Q140 10 148 18 Q160 10 172 20" stroke="#9B7A5C" strokeWidth=".9" fill="none" />
                     <path d="M118 16 Q120 8 124 12" stroke="#C4956A" strokeWidth=".7" fill="none" />
@@ -344,7 +344,7 @@ export default function BohemeChampetreInteractive({
 
               {isRevealing && (
                 <div className="bc-r4" style={{ marginBottom: 36 }}>
-                  <svg width="220" height="24" viewBox="0 0 220 24" fill="none">
+                  <svg width="220" height="24" viewBox="0 0 220 24" fill="none" style={{ display: 'block', margin: '0 auto' }}>
                     <line x1="0" y1="12" x2="82" y2="12" stroke="#C4956A" strokeWidth=".5" opacity=".5" />
                     <path d="M88 6 Q100 12 112 6 Q100 0 88 6Z" fill="#C4956A" opacity=".28" />
                     <path d="M108 18 Q120 12 132 18 Q120 24 108 18Z" fill="#C4956A" opacity=".22" />
@@ -370,7 +370,7 @@ export default function BohemeChampetreInteractive({
 
               {isRevealing && message && (
                 <div className="bc-r7" style={{ marginBottom: 44, padding: '22px 28px', background: 'rgba(255,248,238,.6)', borderTop: '.5px solid rgba(196,149,106,.28)', borderBottom: '.5px solid rgba(196,149,106,.28)' }}>
-                  <svg width="20" height="14" viewBox="0 0 20 14" style={{ marginBottom: 10, opacity: .4 }}>
+                  <svg width="20" height="14" viewBox="0 0 20 14" style={{ display: 'block', margin: '0 auto 10px', opacity: .4 }}>
                     <path d="M0 14 L0 8 Q0 0 8 0 L8 4 Q4 4 4 8 L4 14 Z" fill="#9B7A5C" />
                     <path d="M12 14 L12 8 Q12 0 20 0 L20 4 Q16 4 16 8 L16 14 Z" fill="#9B7A5C" />
                   </svg>
@@ -398,7 +398,7 @@ export default function BohemeChampetreInteractive({
 
               {isRevealing && (
                 <div style={{ marginBottom: 60 }}>
-                  <svg width="240" height="40" viewBox="0 0 240 40" fill="none">
+                  <svg width="240" height="40" viewBox="0 0 240 40" fill="none" style={{ display: 'block', margin: '0 auto' }}>
                     <path d="M20 20 Q60 8 120 20 Q180 32 220 20" stroke="#C4956A" strokeWidth=".7" fill="none" opacity=".55" />
                     <path d="M60 15 Q65 8 70 12 Q65 16 60 15Z" fill="#C4956A" opacity=".28" />
                     <path d="M110 18 Q120 10 130 18 Q120 26 110 18Z" fill="#C4956A" opacity=".22" />

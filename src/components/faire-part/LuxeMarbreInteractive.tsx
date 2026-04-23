@@ -308,7 +308,7 @@ export default function LuxeMarbreInteractive({
 
               {isRevealing && (
                 <div className="lm-r0" style={{ marginBottom: 28 }}>
-                  <svg width="220" height="36" viewBox="0 0 220 36" fill="none">
+                  <svg width="220" height="36" viewBox="0 0 220 36" fill="none" style={{ display: 'block', margin: '0 auto' }}>
                     <line x1="0" y1="18" x2="88" y2="18" stroke="#C9A84C" strokeWidth=".6" opacity=".6" />
                     <polygon points="100,10 110,18 100,26 90,18" fill="none" stroke="#C9A84C" strokeWidth=".8" opacity=".8" />
                     <circle cx="110" cy="18" r="2" fill="#C9A84C" />
@@ -332,7 +332,7 @@ export default function LuxeMarbreInteractive({
 
               {isRevealing && (
                 <div className="lm-r4" style={{ marginBottom: 40 }}>
-                  <svg width="260" height="22" viewBox="0 0 260 22" fill="none">
+                  <svg width="260" height="22" viewBox="0 0 260 22" fill="none" style={{ display: 'block', margin: '0 auto' }}>
                     <line x1="0" y1="11" x2="105" y2="11" stroke="#C9A84C" strokeWidth=".5" opacity=".5" />
                     <path d="M115 5 L125 11 L115 17 L105 11 Z" fill="none" stroke="#C9A84C" strokeWidth=".8" />
                     <circle cx="130" cy="11" r="2.5" fill="#C9A84C" opacity=".7" />
