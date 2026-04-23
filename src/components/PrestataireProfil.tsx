@@ -132,8 +132,8 @@ function buildPrestataireFromSupabase(
   const avatar = buildPhotoUrl(p.avatar_url) ?? photos[0] ?? null;
   const activeAbo = p.abonnements?.find((a) => a.statut === "actif") ?? p.abonnements?.[0] ?? null;
   const rawPlan = activeAbo?.plan ?? null;
-  const plan: "pro" | "premium" | null =
-    rawPlan === "pro" ? "pro" : rawPlan === "premium" ? "premium" : null;
+  const plan: "starter" | "pro" | "premium" | null =
+    rawPlan === "starter" ? "starter" : rawPlan === "pro" ? "pro" : rawPlan === "premium" ? "premium" : null;
   return {
     nom: p.nom_entreprise,
     metier: p.categorie,
@@ -270,7 +270,7 @@ type PrestatireData = {
   note: number;
   nbAvis: number;
   verifie: boolean;
-  plan: "pro" | "premium" | null;
+  plan: "starter" | "pro" | "premium" | null;
   prixMin: number | null;
   telephone: string | null;
   email: string | null;
@@ -1940,6 +1940,11 @@ export default function PrestataireProfil({ id }: { id?: string }) {
                       <circle cx="12" cy="12" r="12" fill="#1D9BF0"/>
                       <path d="M7 12.5l3.5 3.5 6.5-7" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
+                  </span>
+                )}
+                {PRESTATAIRE.plan === "starter" && (
+                  <span className="flex-shrink-0 text-xs font-bold px-2.5 py-1 rounded-full shadow-sm bg-white border border-[#F06292] text-[#F06292]">
+                    STARTER
                   </span>
                 )}
                 {PRESTATAIRE.plan === "pro" && (

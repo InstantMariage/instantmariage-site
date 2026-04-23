@@ -200,7 +200,7 @@ function prestataireToDisplay(p: PrestataireRanked): DisplayProvider {
     nouveau: isRecentDate(p.created_at),
     description: p.description || "",
     departement: p.departement || "",
-    plan: p.active_plan && p.active_plan !== "gratuit" && p.active_plan !== "starter" ? p.active_plan : null,
+    plan: p.active_plan && p.active_plan !== "gratuit" ? p.active_plan : null,
     score: p.score,
     sort_score: p.plan_score * 1000 + (p.has_cover ? 100 : 0) + p.completeness_score,
   };
@@ -287,6 +287,11 @@ function ProviderCard({ provider }: { provider: DisplayProvider }) {
           )}
         </div>
         {/* Badge plan abonnement top-right */}
+        {provider.plan === "starter" && (
+          <span className="absolute top-3 right-3 text-xs font-bold px-2.5 py-1 rounded-full shadow-md bg-white border border-[#F06292] text-[#F06292]">
+            STARTER
+          </span>
+        )}
         {provider.plan === "pro" && (
           <span className="absolute top-3 right-3 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-md" style={{ backgroundColor: "#F06292" }}>
             PRO
