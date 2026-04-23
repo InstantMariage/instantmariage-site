@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
     .from("signalements")
     .select(`
       id, motif, description, created_at,
-      prestataires!prestataire_id(id, nom_entreprise),
+      prestataires!prestataire_id(id, nom_entreprise, suspendu),
       users!user_id(email)
     `)
     .order("created_at", { ascending: false });

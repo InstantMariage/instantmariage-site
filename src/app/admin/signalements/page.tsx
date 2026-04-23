@@ -9,9 +9,8 @@ type SignalementRow = {
   motif: string;
   description: string;
   created_at: string;
-  prestataires: { id: string; nom_entreprise: string } | null;
+  prestataires: { id: string; nom_entreprise: string; suspendu: boolean } | null;
   users: { email: string } | null;
-  _suspendu?: boolean;
 };
 
 const MOTIF_LABEL: Record<string, string> = {
@@ -41,6 +40,13 @@ export default function SignalementsAdminPage() {
     if (!res.ok) return;
     const data: SignalementRow[] = await res.json();
     setSignalements(data);
+    setSuspendus(
+      new Set(
+        data
+          .filter((s) => s.prestataires?.suspendu)
+          .map((s) => s.prestataires!.id)
+      )
+    );
     setLoading(false);
   }, []);
 
@@ -108,17 +114,17 @@ export default function SignalementsAdminPage() {
                     <span className="font-semibold text-gray-900 text-sm">
                       {s.prestataires?.nom_entreprise ?? "—"}
                     </span>
+                    {isSuspendu && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200 tracking-wide">
+                        SUSPENDU
+                      </span>
+                    )}
                     <span
                       className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
                       style={{ background: "#FFF0F5", color: "#F06292" }}
                     >
                       {MOTIF_LABEL[s.motif] ?? s.motif}
                     </span>
-                    {isSuspendu && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-600">
-                        Suspendu
-                      </span>
-                    )}
                   </div>
                   <p className="text-sm text-gray-600 line-clamp-2">{s.description}</p>
                   <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
