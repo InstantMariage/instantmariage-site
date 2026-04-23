@@ -21,40 +21,32 @@ export default function FairePartPage() {
       <main className="min-h-screen bg-white pt-20">
 
         {/* Hero */}
-        <section className="relative bg-gradient-to-br from-rose-50 via-pink-50 to-white py-16 md:py-20 overflow-hidden">
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute -top-10 -right-10 w-64 h-64 rounded-full opacity-10" style={{ background: "radial-gradient(circle, #F06292, transparent)" }} />
-            <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full opacity-10" style={{ background: "radial-gradient(circle, #C9A96E, transparent)" }} />
-          </div>
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center relative z-10">
-            <div className="inline-flex items-center gap-2 bg-rose-100 text-rose-600 text-xs font-semibold px-4 py-1.5 rounded-full mb-5">
-              <span>✦</span>
-              <span>8 templates disponibles</span>
-              <span>✦</span>
+        <section className="bg-white py-20 md:py-28 overflow-hidden">
+          <div className="max-w-4xl mx-auto px-6 md:px-8 text-center">
+            <div
+              className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-medium tracking-wider uppercase mb-8"
+              style={{
+                background: "rgba(240, 98, 146, 0.08)",
+                border: "1px solid rgba(240, 98, 146, 0.15)",
+                color: "#F06292",
+              }}
+            >
+              8 TEMPLATES · CAGNOTTE INTÉGRÉE
             </div>
             <h1
-              className="text-4xl md:text-5xl font-bold text-gray-900 mb-4"
-              style={{ fontFamily: "var(--font-playfair), serif" }}
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-medium leading-[1.05] tracking-[-0.02em] mb-6"
+              style={{ fontFamily: "var(--font-playfair), serif", color: "#1a1a1a" }}
             >
-              Vos faire-part de mariage{" "}
-              <span style={{ color: "#F06292" }}>sur-mesure</span>
+              Vos faire-part,{" "}
+              <br className="hidden sm:inline" />
+              personnalisés et animés.
             </h1>
-            <p className="text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed">
-              Choisissez un template, personnalisez-le avec vos informations et partagez une invitation digitale animée à vos proches.
+            <p
+              className="font-normal text-base sm:text-lg md:text-xl leading-relaxed max-w-[640px] mx-auto mb-16 md:mb-20"
+              style={{ color: "#6a6a6a" }}
+            >
+              Créez une invitation digitale unique, partagez-la en un clic, et recevez les réponses et les cadeaux de vos proches au même endroit.
             </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500">
-              {[
-                { icon: "✨", label: "100% personnalisable" },
-                { icon: "📱", label: "Mobile & desktop" },
-                { icon: "🔗", label: "Lien partageable" },
-                { icon: "💌", label: "Confirmations intégrées" },
-              ].map((f) => (
-                <span key={f.label} className="flex items-center gap-1.5">
-                  <span>{f.icon}</span>
-                  <span>{f.label}</span>
-                </span>
-              ))}
-            </div>
           </div>
         </section>
 
