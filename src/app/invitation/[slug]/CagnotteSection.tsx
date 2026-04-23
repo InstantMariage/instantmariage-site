@@ -198,6 +198,7 @@ export default function CagnotteSection({
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium">€</span>
                 </div>
+                <p className="text-xs text-gray-400 mt-2 text-center">2% de frais de service InstantMariage inclus.</p>
               </div>
 
               {/* Identité */}

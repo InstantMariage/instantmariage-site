@@ -793,14 +793,20 @@ export default function FairePartEditorPage() {
                   <div className="space-y-3 pt-1">
                     <div>
                       <label className="block text-xs text-gray-500 mb-1.5 font-medium">Titre de la cagnotte</label>
-                      <input
-                        type="text"
-                        placeholder="Notre voyage de noces"
+                      <select
                         value={cagnotte.titre}
                         onChange={(e) => setCagnotteField('titre', e.target.value)}
                         className={INPUT_CLS}
-                        maxLength={80}
-                      />
+                      >
+                        <option value="">Choisir un titre…</option>
+                        <option value="Notre voyage de noces 🌍">Notre voyage de noces 🌍</option>
+                        <option value="Notre nid d'amour 🏠">Notre nid d&apos;amour 🏠</option>
+                        <option value="Notre lune de miel ✨">Notre lune de miel ✨</option>
+                        <option value="Notre nouvelle vie ensemble 💑">Notre nouvelle vie ensemble 💑</option>
+                        <option value="Notre aventure commence 🚀">Notre aventure commence 🚀</option>
+                        <option value="Participez à notre bonheur 💝">Participez à notre bonheur 💝</option>
+                        <option value="Notre projet de vie 🌟">Notre projet de vie 🌟</option>
+                      </select>
                     </div>
                     <div>
                       <label className="block text-xs text-gray-500 mb-1.5 font-medium">Message personnalisé</label>
@@ -841,6 +847,9 @@ export default function FairePartEditorPage() {
                       />
                       <p className="text-xs text-gray-400 mt-1">Nous virerons les fonds collectés sur ce compte (commission 2%)</p>
                     </div>
+                    <p className="text-xs text-gray-400 italic border-t border-gray-100 pt-3">
+                      InstantMariage prend une commission de 2% sur chaque contribution pour maintenir le service gratuit.
+                    </p>
                   </div>
                 )}
               </FormSection>
