@@ -50,17 +50,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         router.replace("/login");
         return;
       }
-      if (session.user.user_metadata?.role !== "admin") {
+      const { data: userData } = await supabase
+        .from("users")
+        .select("role")
+        .eq("id", session.user.id)
+        .single();
+      if (userData?.role !== "admin") {
         router.replace("/");
         return;
       }
       setAuthChecked(true);
-    });
+    })();
   }, [router]);
 
   if (!authChecked) return null;
