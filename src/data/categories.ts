@@ -97,7 +97,7 @@ export const CATEGORIES: Category[] = [
     hoverBg: "hover:bg-pink-50",
   },
   {
-    name: "Maquilleur",
+    name: "Maquillage",
     icon: "💄",
     count: "540",
     color: "from-fuchsia-50 to-pink-50",

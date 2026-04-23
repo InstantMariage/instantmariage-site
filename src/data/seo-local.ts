@@ -273,7 +273,7 @@ export const METIERS_SEO: MetierSEO[] = [
   { slug: "videaste", nom: "Vidéaste", categorie: "Vidéaste", icon: "🎬", nomPluriel: "vidéastes" },
   { slug: "lieu-de-reception", nom: "Lieu de réception", categorie: "Lieu de réception", icon: "🏛️", nomPluriel: "lieux de réception" },
   { slug: "coiffeur", nom: "Coiffeur", categorie: "Coiffeur", icon: "✂️", nomPluriel: "coiffeurs" },
-  { slug: "maquilleur", nom: "Maquilleur", categorie: "Maquilleur", icon: "💄", nomPluriel: "maquilleurs" },
+  { slug: "maquilleur", nom: "Maquillage", categorie: "Maquillage", icon: "💄", nomPluriel: "artistes maquillage" },
   { slug: "robes-de-mariee", nom: "Robes de mariée", categorie: "Robes de mariée", icon: "", nomPluriel: "boutiques de robes de mariée" },
   { slug: "costumes-smokings", nom: "Costumes & Smokings", categorie: "Costumes & Smokings", icon: "", nomPluriel: "boutiques de costumes et smokings" },
   { slug: "tenues-invites", nom: "Tenues invités", categorie: "Tenues invités", icon: "", nomPluriel: "boutiques de tenues pour invités" },

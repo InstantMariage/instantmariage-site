@@ -131,7 +131,7 @@ export const PROVIDERS: Provider[] = [
   {
     id: 8,
     nom: "Élodie Beauté Mariage",
-    metier: "Coiffeur & Maquilleur",
+    metier: "Coiffeur & Maquillage",
     ville: "Strasbourg",
     region: "Grand Est",
     note: 4.9,

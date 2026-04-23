@@ -79,7 +79,7 @@ const ALL_TASKS: Task[] = [
   { id: "t025", label: "Commander / acheter la robe de mariée", category: "Tenues", priority: "urgent", periodId: "p9" },
   { id: "t026", label: "Choisir et commander les alliances", category: "Bijoux", priority: "urgent", periodId: "p9" },
   { id: "t027", label: "Finaliser la liste d'invités définitive", category: "Invités", priority: "urgent", periodId: "p9" },
-  { id: "t028", label: "Réserver le maquilleur et/ou coiffeur", category: "Beauté", priority: "important", periodId: "p9" },
+  { id: "t028", label: "Réserver le prestataire maquillage et/ou coiffeur", category: "Beauté", priority: "important", periodId: "p9" },
   { id: "t029", label: "Réserver la location de voiture de mariée", category: "Voiture de mariage", priority: "important", periodId: "p9" },
   { id: "t030", label: "Choisir les décorations et centres de table", category: "Décoration", priority: "normal", periodId: "p9" },
   { id: "t031", label: "Choisir les dragées et cadeaux invités", category: "Cadeaux", priority: "normal", periodId: "p9" },
@@ -193,7 +193,7 @@ const ALL_TASKS: Task[] = [
   { id: "t125", label: "Faire un dernier point avec le wedding planner", category: "Organisation", priority: "important", periodId: "p1w" },
 
   // Veille du mariage
-  { id: "t126", label: "Confirmer l'heure avec le coiffeur et maquilleur", category: "Beauté", priority: "urgent", periodId: "pv" },
+  { id: "t126", label: "Confirmer l'heure avec le coiffeur et prestataire maquillage", category: "Beauté", priority: "urgent", periodId: "pv" },
   { id: "t127", label: "Récupérer les fleurs auprès du fleuriste", category: "Décoration", priority: "urgent", periodId: "pv" },
   { id: "t128", label: "Dernière vérification de la salle de réception", category: "Organisation", priority: "urgent", periodId: "pv" },
   { id: "t129", label: "Vérifier que les enveloppes prestataires sont prêtes", category: "Budget", priority: "urgent", periodId: "pv" },

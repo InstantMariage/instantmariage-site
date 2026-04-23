@@ -19,7 +19,7 @@ const metiers = [
   "Fleuriste",
   "Décorateur",
   "Coiffeur",
-  "Maquilleur",
+  "Maquillage",
   "Henna",
   "Lieu de réception",
   "Officiant",

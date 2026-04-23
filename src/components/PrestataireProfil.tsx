@@ -21,7 +21,7 @@ const COUVERTURES: Record<string, string> = {
   "Fleuriste": "https://images.unsplash.com/photo-1487530811015-780780e7f2a2?w=1400&q=80",
   "Wedding Planner": "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=1400&q=80",
   "Traiteur / Restauration": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1400&q=80",
-  "Coiffeur & Maquilleur": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=1400&q=80",
+  "Coiffeur & Maquillage": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=1400&q=80",
   "Pâtissier / Wedding cake": "https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=1400&q=80",
   "Orchestre / Groupe": "https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=1400&q=80",
 };
