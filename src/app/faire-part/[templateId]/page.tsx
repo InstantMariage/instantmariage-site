@@ -845,7 +845,6 @@ export default function FairePartEditorPage() {
                         className={`${INPUT_CLS} font-mono text-xs tracking-wider`}
                         maxLength={34}
                       />
-                      <p className="text-xs text-gray-400 mt-1">Nous virerons les fonds collectés sur ce compte (commission 2%)</p>
                     </div>
                     <p className="text-xs text-gray-400 italic border-t border-gray-100 pt-3">
                       InstantMariage prend une commission de 2% sur chaque contribution pour maintenir le service gratuit.
