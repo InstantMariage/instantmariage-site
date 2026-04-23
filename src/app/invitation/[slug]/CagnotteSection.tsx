@@ -187,16 +187,19 @@ export default function CagnotteSection({
                 </div>
                 <div className="relative">
                   <input
-                    type="number"
-                    min={5}
-                    step={1}
+                    type="text"
+                    inputMode="numeric"
                     placeholder="Autre montant (ex: 75)"
                     value={custom}
-                    onChange={(e) => { setCustom(e.target.value); setMontant(''); }}
-                    className="w-full px-4 py-3 rounded-xl border-2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none transition-all"
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[^0-9]/g, '');
+                      setCustom(val);
+                      setMontant('');
+                    }}
+                    className="w-full pl-4 pr-10 py-3 rounded-xl border-2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none transition-all"
                     style={{ borderColor: custom ? '#e91e8c' : '#f3f4f6' }}
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium">€</span>
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium pointer-events-none">€</span>
                 </div>
                 <p className="text-xs text-gray-400 mt-2 text-center">2% de frais de service InstantMariage inclus.</p>
               </div>
