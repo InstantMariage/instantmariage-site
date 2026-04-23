@@ -21,16 +21,31 @@ export default function FairePartPage() {
       <main className="min-h-screen bg-white pt-20">
 
         {/* Hero */}
-        <section className="bg-white py-20 md:py-28 overflow-hidden">
-          <div className="max-w-4xl mx-auto px-6 md:px-8 text-center">
+        <section
+          className="relative py-20 md:py-28 overflow-hidden"
+          style={{
+            background: "linear-gradient(180deg, #FFF9FB 0%, #FFFFFF 100%)"
+          }}
+        >
+          <div
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+            style={{
+              width: "800px",
+              height: "400px",
+              background: "radial-gradient(ellipse, rgba(240, 98, 146, 0.12) 0%, rgba(240, 98, 146, 0) 70%)",
+              filter: "blur(40px)"
+            }}
+          />
+          <div className="relative z-10 max-w-4xl mx-auto px-6 md:px-8 text-center">
             <div
               className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-medium tracking-wider uppercase mb-8"
               style={{
-                background: "rgba(240, 98, 146, 0.08)",
-                border: "1px solid rgba(240, 98, 146, 0.15)",
+                background: "rgba(240, 98, 146, 0.1)",
+                border: "1px solid rgba(240, 98, 146, 0.2)",
                 color: "#F06292",
               }}
             >
+              <span className="w-1.5 h-1.5 rounded-full mr-2.5" style={{ background: "#F06292" }} />
               8 TEMPLATES · CAGNOTTE INTÉGRÉE
             </div>
             <h1
@@ -39,7 +54,8 @@ export default function FairePartPage() {
             >
               Vos faire-part,{" "}
               <br className="hidden sm:inline" />
-              personnalisés et animés.
+              personnalisés et{" "}
+              <span style={{ color: "#F06292" }}>animés.</span>
             </h1>
             <p
               className="font-normal text-base sm:text-lg md:text-xl leading-relaxed max-w-[640px] mx-auto mb-16 md:mb-20"
