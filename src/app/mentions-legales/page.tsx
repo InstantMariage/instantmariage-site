@@ -26,6 +26,7 @@ export default function MentionsLegales() {
 
       <div className="pt-28 pb-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+
           {/* En-tête */}
           <div className="mb-12">
             <p className="text-rose-400 text-sm font-semibold uppercase tracking-widest mb-3">
@@ -38,7 +39,7 @@ export default function MentionsLegales() {
               Mentions légales
             </h1>
             <p className="text-gray-500 text-sm">
-              Dernière mise à jour : avril 2026
+              Dernière mise à jour : 23 avril 2026
             </p>
           </div>
 
@@ -50,35 +51,49 @@ export default function MentionsLegales() {
                 1. Éditeur du site
               </h2>
               <div className="text-gray-600 space-y-2 text-sm leading-relaxed">
-                <p><strong className="text-gray-800">Nom du site :</strong> InstantMariage.fr</p>
-                <p><strong className="text-gray-800">Directeur de la publication :</strong> Adel Bendjelloul</p>
+                <p><strong className="text-gray-800">Raison sociale :</strong> Mohamed Adel BENDJELLOUL</p>
+                <p><strong className="text-gray-800">Statut :</strong> Entrepreneur individuel (micro-entrepreneur)</p>
+                <p><strong className="text-gray-800">SIRET :</strong> 922 397 195 00012</p>
+                <p><strong className="text-gray-800">Code APE/NAF :</strong> 7021Z – Conseil en relations publiques et communication</p>
+                <p><strong className="text-gray-800">Siège social :</strong> Arc 2000, Bâtiment B, 35 Route des Milles, 13090 Aix-en-Provence</p>
                 <p><strong className="text-gray-800">Adresse e-mail :</strong>{" "}
                   <a href="mailto:contact@instantmariage.fr" className="text-rose-500 hover:underline">
                     contact@instantmariage.fr
                   </a>
                 </p>
-                <p><strong className="text-gray-800">Statut :</strong> Entreprise individuelle / Porteur de projet</p>
+                <p><strong className="text-gray-800">TVA :</strong> TVA non applicable, article 293 B du CGI (franchise en base de TVA)</p>
               </div>
             </section>
 
-            {/* 2. Hébergeur */}
+            {/* 2. Directeur de la publication */}
             <section>
               <h2 className="text-xl font-bold text-gray-900 mb-4 pb-2 border-b border-gray-100">
-                2. Hébergeur
+                2. Directeur de la publication
               </h2>
               <div className="text-gray-600 space-y-2 text-sm leading-relaxed">
-                <p><strong className="text-gray-800">Raison sociale :</strong> Vercel Inc.</p>
-                <p><strong className="text-gray-800">Adresse :</strong> 340 Pine Street, Suite 701, San Francisco, CA 94104, États-Unis</p>
-                <p><strong className="text-gray-800">Site web :</strong>{" "}
-                  <span className="text-gray-600">vercel.com</span>
+                <p>
+                  Mohamed Adel BENDJELLOUL, en qualité d&apos;entrepreneur individuel.
                 </p>
               </div>
             </section>
 
-            {/* 3. Propriété intellectuelle */}
+            {/* 3. Hébergeur */}
             <section>
               <h2 className="text-xl font-bold text-gray-900 mb-4 pb-2 border-b border-gray-100">
-                3. Propriété intellectuelle
+                3. Hébergeur
+              </h2>
+              <div className="text-gray-600 space-y-2 text-sm leading-relaxed">
+                <p><strong className="text-gray-800">Raison sociale :</strong> Vercel Inc.</p>
+                <p><strong className="text-gray-800">Adresse :</strong> 340 S Lemon Ave #4133, Walnut, CA 91789, États-Unis</p>
+                <p><strong className="text-gray-800">Site web :</strong> vercel.com</p>
+                <p><strong className="text-gray-800">Contact :</strong> via vercel.com/help</p>
+              </div>
+            </section>
+
+            {/* 4. Propriété intellectuelle */}
+            <section>
+              <h2 className="text-xl font-bold text-gray-900 mb-4 pb-2 border-b border-gray-100">
+                4. Propriété intellectuelle
               </h2>
               <p className="text-gray-600 text-sm leading-relaxed">
                 L&apos;ensemble du contenu présent sur le site InstantMariage.fr (textes, images, graphismes,
@@ -90,10 +105,10 @@ export default function MentionsLegales() {
               </p>
             </section>
 
-            {/* 4. Responsabilité */}
+            {/* 5. Limitation de responsabilité */}
             <section>
               <h2 className="text-xl font-bold text-gray-900 mb-4 pb-2 border-b border-gray-100">
-                4. Limitation de responsabilité
+                5. Limitation de responsabilité
               </h2>
               <p className="text-gray-600 text-sm leading-relaxed">
                 InstantMariage.fr s&apos;efforce de fournir des informations aussi précises que possible.
@@ -104,49 +119,117 @@ export default function MentionsLegales() {
               </p>
             </section>
 
-            {/* 5. Données personnelles */}
+            {/* 6. Données personnelles / RGPD */}
             <section>
               <h2 className="text-xl font-bold text-gray-900 mb-4 pb-2 border-b border-gray-100">
-                5. Données personnelles
+                6. Données personnelles et RGPD
+              </h2>
+              <div className="text-gray-600 space-y-3 text-sm leading-relaxed">
+                <p>
+                  <strong className="text-gray-800">Responsable du traitement :</strong> Mohamed Adel BENDJELLOUL –{" "}
+                  <a href="mailto:contact@instantmariage.fr" className="text-rose-500 hover:underline">
+                    contact@instantmariage.fr
+                  </a>
+                </p>
+                <p>
+                  <strong className="text-gray-800">Bases légales :</strong> exécution du contrat (art. 6.1.b RGPD)
+                  pour la gestion des comptes et des transactions ; consentement (art. 6.1.a RGPD) pour les
+                  communications marketing.
+                </p>
+                <p>
+                  <strong className="text-gray-800">Durée de conservation :</strong> 3 ans après la dernière
+                  activité du compte, puis anonymisation des données.
+                </p>
+                <p><strong className="text-gray-800">Vos droits (RGPD) :</strong></p>
+                <ul className="list-disc list-inside space-y-1 pl-2">
+                  <li>Droit d&apos;accès (art. 15)</li>
+                  <li>Droit de rectification (art. 16)</li>
+                  <li>Droit à l&apos;effacement (art. 17)</li>
+                  <li>Droit à la limitation du traitement (art. 18)</li>
+                  <li>Droit à la portabilité (art. 20)</li>
+                  <li>Droit d&apos;opposition (art. 21)</li>
+                  <li>Droit de retrait du consentement à tout moment</li>
+                </ul>
+                <p>
+                  Pour exercer ces droits, adressez votre demande accompagnée d&apos;une copie de votre pièce
+                  d&apos;identité à{" "}
+                  <a href="mailto:contact@instantmariage.fr" className="text-rose-500 hover:underline">
+                    contact@instantmariage.fr
+                  </a>.
+                </p>
+                <p>
+                  En cas de réclamation, vous pouvez saisir la Commission Nationale de l&apos;Informatique et
+                  des Libertés (CNIL) : <span className="text-gray-700">www.cnil.fr</span>.
+                </p>
+                <p>
+                  Pour en savoir plus, consultez notre{" "}
+                  <a href="/confidentialite" className="text-rose-500 hover:underline">
+                    Politique de confidentialité
+                  </a>.
+                </p>
+              </div>
+            </section>
+
+            {/* 7. Cookies */}
+            <section>
+              <h2 className="text-xl font-bold text-gray-900 mb-4 pb-2 border-b border-gray-100">
+                7. Cookies
               </h2>
               <p className="text-gray-600 text-sm leading-relaxed">
-                Les informations collectées sur ce site font l&apos;objet d&apos;un traitement informatique
-                destiné à la gestion des utilisateurs et des prestataires inscrits. Conformément au Règlement
-                Général sur la Protection des Données (RGPD) et à la loi Informatique et Libertés du
-                6 janvier 1978 modifiée, vous disposez d&apos;un droit d&apos;accès, de rectification, de
-                suppression et de portabilité de vos données. Pour exercer ces droits, adressez votre demande
-                à{" "}
-                <a href="mailto:contact@instantmariage.fr" className="text-rose-500 hover:underline">
-                  contact@instantmariage.fr
-                </a>.
-                Pour en savoir plus, consultez notre{" "}
-                <a href="/confidentialite" className="text-rose-500 hover:underline">
-                  Politique de confidentialité
-                </a>.
+                Le site InstantMariage.fr utilise des cookies pour améliorer l&apos;expérience utilisateur,
+                mesurer l&apos;audience et sécuriser l&apos;authentification. Lors de votre première visite,
+                un bandeau de consentement vous permet d&apos;accepter ou de refuser les cookies non
+                essentiels. Vous pouvez également configurer votre navigateur pour refuser les cookies à tout
+                moment, étant entendu que certaines fonctionnalités du site pourraient alors ne plus
+                fonctionner correctement.
               </p>
             </section>
 
-            {/* 6. Cookies */}
+            {/* 8. Médiation de la consommation */}
             <section>
               <h2 className="text-xl font-bold text-gray-900 mb-4 pb-2 border-b border-gray-100">
-                6. Cookies
+                8. Médiation de la consommation
               </h2>
-              <p className="text-gray-600 text-sm leading-relaxed">
-                Le site InstantMariage.fr peut utiliser des cookies pour améliorer l&apos;expérience
-                utilisateur, mesurer l&apos;audience et sécuriser l&apos;authentification. Vous pouvez
-                configurer votre navigateur pour refuser les cookies, mais certaines fonctionnalités du site
-                pourraient alors ne pas fonctionner correctement.
-              </p>
+              <div className="text-gray-600 space-y-3 text-sm leading-relaxed">
+                <p>
+                  Conformément aux articles L.616-1 et R.616-1 du code de la consommation, InstantMariage a
+                  mis en place un dispositif de médiation de la consommation. L&apos;entité de médiation
+                  retenue est <strong className="text-gray-800">MEDIATION CONSOMMATION DÉVELOPPEMENT (MED CONSO DEV)</strong>.
+                </p>
+                <p>
+                  <strong className="text-gray-800">Adresse :</strong> Centre d&apos;Affaires Stéphanois SAS,
+                  Immeuble L&apos;Horizon – Esplanade de France, 3 rue J. Constant Milleret, 42000 Saint-Étienne
+                </p>
+                <p>
+                  <strong className="text-gray-800">Site web :</strong>{" "}
+                  <span className="text-gray-700">www.medconsodev.eu</span>
+                </p>
+                <p>
+                  <strong className="text-gray-800">Numéro d&apos;adhérent :</strong>{" "}
+                  <span className="italic text-gray-500">[À compléter — adhésion en cours de validation]</span>
+                </p>
+                <p>
+                  En cas de litige, après avoir tenté une réclamation écrite auprès de nos services restée
+                  sans réponse satisfaisante sous 2 mois, le consommateur peut saisir le médiateur
+                  gratuitement via le site <span className="text-gray-700">medconsodev.eu</span>.
+                </p>
+                <p>
+                  Le consommateur peut également recourir à la plateforme européenne de règlement en ligne
+                  des litiges :{" "}
+                  <span className="text-gray-700">https://ec.europa.eu/consumers/odr</span>
+                </p>
+              </div>
             </section>
 
-            {/* 7. Droit applicable */}
+            {/* 9. Droit applicable */}
             <section>
               <h2 className="text-xl font-bold text-gray-900 mb-4 pb-2 border-b border-gray-100">
-                7. Droit applicable
+                9. Droit applicable
               </h2>
               <p className="text-gray-600 text-sm leading-relaxed">
                 Tout litige en relation avec l&apos;utilisation du site InstantMariage.fr est soumis au droit
-                français. Les tribunaux compétents sont ceux du ressort du domicile de l&apos;éditeur, sauf
+                français. En l&apos;absence de résolution amiable ou par voie de médiation, les tribunaux
+                compétents sont ceux du ressort du Tribunal judiciaire d&apos;Aix-en-Provence, sauf
                 dispositions légales contraires.
               </p>
             </section>
