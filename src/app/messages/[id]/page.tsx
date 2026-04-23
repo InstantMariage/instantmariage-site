@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { SYSTEM_USER_ID } from "@/lib/constants";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
@@ -132,6 +133,7 @@ export default function ConversationPage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [runtimeError, setRuntimeError] = useState<string | null>(null);
+  const [isSystemConv, setIsSystemConv] = useState(false);
 
   const isOtherOnline = false; // Presence désactivée (Realtime supprimé)
   const [isMarie, setIsMarie] = useState(false);
@@ -204,6 +206,22 @@ export default function ConversationPage() {
         const otherId =
           conv.participant1_id === uid ? conv.participant2_id : conv.participant1_id;
         setOtherUserId(otherId);
+
+        // Cas spécial : conversation avec le compte système InstantMariage
+        if (otherId === SYSTEM_USER_ID) {
+          setIsSystemConv(true);
+          setOtherUserName("InstantMariage");
+          setOtherAvatarUrl(null);
+          const { data: myPrest } = await supabase
+            .from("prestataires")
+            .select("nom_entreprise")
+            .eq("user_id", uid)
+            .maybeSingle();
+          if (myPrest) setMyName(myPrest.nom_entreprise);
+          await loadMessages(uid);
+          setLoading(false);
+          return;
+        }
 
         const [{ data: prest }, { data: myPrest }] = await Promise.all([
           supabase
@@ -497,7 +515,16 @@ export default function ConversationPage() {
           {/* Avatar + point de présence */}
           <div className="relative w-9 h-9 flex-shrink-0">
             <div className="relative w-9 h-9 rounded-full select-none overflow-hidden">
-              {otherAvatarUrl ? (
+              {isSystemConv ? (
+                <div
+                  className="w-full h-full flex items-center justify-center"
+                  style={{ background: "#F06292" }}
+                >
+                  <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                  </svg>
+                </div>
+              ) : otherAvatarUrl ? (
                 <Image
                   src={otherAvatarUrl}
                   alt={otherUserName}
@@ -514,16 +541,23 @@ export default function ConversationPage() {
                 </div>
               )}
             </div>
-            <span
-              className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white transition-colors ${
-                isOtherOnline ? "bg-green-400" : "bg-gray-300"
-              }`}
-            />
+            {!isSystemConv && (
+              <span
+                className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white transition-colors ${
+                  isOtherOnline ? "bg-green-400" : "bg-gray-300"
+                }`}
+              />
+            )}
           </div>
 
           {/* Name */}
           <div className="flex-1 min-w-0">
-            {otherPrestaId ? (
+            {isSystemConv ? (
+              <div>
+                <p className="font-semibold text-gray-900 text-sm truncate">InstantMariage</p>
+                <p className="text-[11px] text-gray-400">Compte officiel</p>
+              </div>
+            ) : otherPrestaId ? (
               <Link
                 href={`/prestataires/${otherPrestaId}`}
                 className="font-semibold text-sm truncate block hover:underline"
@@ -660,7 +694,16 @@ export default function ConversationPage() {
                             isLastInRun ? "visible" : "invisible"
                           }`}
                         >
-                          {otherAvatarUrl ? (
+                          {isSystemConv ? (
+                            <div
+                              className="w-full h-full flex items-center justify-center"
+                              style={{ background: "#F06292" }}
+                            >
+                              <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                              </svg>
+                            </div>
+                          ) : otherAvatarUrl ? (
                             <Image
                               src={otherAvatarUrl}
                               alt={otherUserName}
@@ -694,7 +737,7 @@ export default function ConversationPage() {
                             borderRadius: isMe ? radiusMe : radiusOther,
                           }}
                         >
-                          {textContent && <p>{textContent}</p>}
+                          {textContent && <p style={{ whiteSpace: "pre-wrap" }}>{textContent}</p>}
                           {hasAttachment && (
                             <AttachmentDisplay
                               url={msg.attachment_url!}

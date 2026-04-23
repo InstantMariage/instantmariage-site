@@ -6,6 +6,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
+import { SYSTEM_USER_ID } from "@/lib/constants";
 
 interface ConversationItem {
   id: string;
@@ -16,6 +17,7 @@ interface ConversationItem {
   last_message_at: string;
   last_message_is_mine: boolean;
   unread_count: number;
+  is_system: boolean;
 }
 
 function timeAgo(dateStr: string): string {
@@ -63,36 +65,40 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
         conv.participant1_id === uid ? conv.participant2_id : conv.participant1_id;
 
       let displayName = "Utilisateur";
-
       let avatarUrl: string | null = null;
+      const isSystem = otherId === SYSTEM_USER_ID;
 
-      const { data: prest } = await supabase
-        .from("prestataires")
-        .select("nom_entreprise, avatar_url")
-        .eq("user_id", otherId)
-        .maybeSingle();
-
-      if (prest) {
-        displayName = prest.nom_entreprise;
-        avatarUrl = prest.avatar_url ?? null;
+      if (isSystem) {
+        displayName = "InstantMariage";
       } else {
-        const { data: marie } = await supabase
-          .from("maries")
-          .select("prenom_marie1, prenom_marie2")
+        const { data: prest } = await supabase
+          .from("prestataires")
+          .select("nom_entreprise, avatar_url")
           .eq("user_id", otherId)
           .maybeSingle();
 
-        if (marie) {
-          displayName = marie.prenom_marie2
-            ? `${marie.prenom_marie1} & ${marie.prenom_marie2}`
-            : marie.prenom_marie1;
+        if (prest) {
+          displayName = prest.nom_entreprise;
+          avatarUrl = prest.avatar_url ?? null;
         } else {
-          const { data: u } = await supabase
-            .from("users")
-            .select("email")
-            .eq("id", otherId)
+          const { data: marie } = await supabase
+            .from("maries")
+            .select("prenom_marie1, prenom_marie2")
+            .eq("user_id", otherId)
             .maybeSingle();
-          if (u) displayName = u.email.split("@")[0];
+
+          if (marie) {
+            displayName = marie.prenom_marie2
+              ? `${marie.prenom_marie1} & ${marie.prenom_marie2}`
+              : marie.prenom_marie1;
+          } else {
+            const { data: u } = await supabase
+              .from("users")
+              .select("email")
+              .eq("id", otherId)
+              .maybeSingle();
+            if (u) displayName = u.email.split("@")[0];
+          }
         }
       }
 
@@ -120,6 +126,7 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
         last_message_at: lastMsg?.created_at ?? conv.created_at,
         last_message_is_mine: lastMsg?.expediteur_id === uid,
         unread_count: count ?? 0,
+        is_system: isSystem,
       });
     }
 
@@ -318,7 +325,20 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
                         {/* Avatar + point de présence */}
                         <div className="relative w-12 h-12 flex-shrink-0">
                           <div className="relative w-12 h-12 rounded-full select-none overflow-hidden">
-                            {conv.other_avatar_url ? (
+                            {conv.is_system ? (
+                              <div
+                                className="w-full h-full flex items-center justify-center"
+                                style={{ background: "#F06292" }}
+                              >
+                                <svg
+                                  className="w-6 h-6 text-white"
+                                  fill="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                                </svg>
+                              </div>
+                            ) : conv.other_avatar_url ? (
                               <Image
                                 src={conv.other_avatar_url}
                                 alt={conv.other_user_name}
@@ -337,13 +357,15 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
                               </div>
                             )}
                           </div>
-                          <span
-                            className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white transition-colors ${
-                              onlineUsers.has(conv.other_user_id)
-                                ? "bg-green-400"
-                                : "bg-gray-300"
-                            }`}
-                          />
+                          {!conv.is_system && (
+                            <span
+                              className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white transition-colors ${
+                                onlineUsers.has(conv.other_user_id)
+                                  ? "bg-green-400"
+                                  : "bg-gray-300"
+                              }`}
+                            />
+                          )}
                         </div>
 
                         {/* Text */}
