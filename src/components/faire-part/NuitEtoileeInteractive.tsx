@@ -318,6 +318,9 @@ export default function NuitEtoileeInteractive({
         {showLetter && (
           <div style={{
             position: 'relative', width: '100%',
+            minHeight: fixedHeight ? fixedHeight : '100dvh',
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
             background: 'linear-gradient(180deg, #090D22 0%, #0D1135 40%, #090D22 100%)',
             clipPath: letterClip(),
             transition: showLetter ? 'clip-path .55s cubic-bezier(.25,.46,.45,.94)' : 'none',
@@ -327,7 +330,7 @@ export default function NuitEtoileeInteractive({
               <div key={i} style={{ position: 'fixed', left: s.x, top: s.y, width: s.size, height: s.size, borderRadius: '50%', background: i % 7 === 0 ? '#C9A84C' : 'rgba(255,255,255,.7)', animation: `neTwinkle ${s.dur} ${s.delay} ease-in-out infinite`, pointerEvents: 'none', zIndex: 0 }} />
             ))}
 
-            <div style={{ position: 'relative', zIndex: 1, maxWidth: 420, margin: '0 auto', padding: '72px 28px 100px', textAlign: 'center' }}>
+            <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 420, padding: '72px 28px 100px', textAlign: 'center' }}>
 
               {isRevealing && (
                 <div className="ne-r0" style={{ marginBottom: 28 }}>

@@ -294,11 +294,14 @@ export default function ProvenceOlivierInteractive({
         {showLetter && (
           <div style={{
             position: 'relative', width: '100%',
+            minHeight: fixedHeight ? fixedHeight : '100dvh',
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
             background: 'linear-gradient(180deg, #F5F0FA 0%, #EDE3F5 30%, #F5F0FA 100%)',
             clipPath: letterClip(),
             transition: showLetter ? 'clip-path .55s cubic-bezier(.25,.46,.45,.94)' : 'none',
           }}>
-            <div style={{ maxWidth: 420, margin: '0 auto', padding: '72px 28px 100px', textAlign: 'center' }}>
+            <div style={{ width: '100%', maxWidth: 420, padding: '72px 28px 100px', textAlign: 'center' }}>
 
               {isRevealing && (
                 <div className="po-r0" style={{ marginBottom: 28 }}>

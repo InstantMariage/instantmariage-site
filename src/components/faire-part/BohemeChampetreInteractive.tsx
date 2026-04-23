@@ -297,11 +297,14 @@ export default function BohemeChampetreInteractive({
         {showLetter && (
           <div style={{
             position: 'relative', width: '100%',
+            minHeight: fixedHeight ? fixedHeight : '100dvh',
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
             background: 'linear-gradient(180deg, #FDF7EE 0%, #F5EAD8 30%, #FBF4EA 65%, #F0E4CE 100%)',
             clipPath: letterClip(),
             transition: showLetter ? 'clip-path .55s cubic-bezier(.25,.46,.45,.94)' : 'none',
           }}>
-            <div style={{ maxWidth: 440, margin: '0 auto', padding: '80px 32px 108px', textAlign: 'center' }}>
+            <div style={{ width: '100%', maxWidth: 440, padding: '80px 32px 108px', textAlign: 'center' }}>
 
               {isRevealing && (
                 <div className="bc-r0" style={{ marginBottom: 32 }}>
