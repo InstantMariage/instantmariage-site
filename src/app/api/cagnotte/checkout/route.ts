@@ -56,6 +56,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Cagnotte non active' }, { status: 400 });
     }
 
+    // Nettoyage des contributions "pending" de plus de 30 minutes pour cette invitation
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+    await supabase
+      .from('cagnotte_contributions')
+      .delete()
+      .eq('invitation_id', invitationId)
+      .eq('statut', 'pending')
+      .lt('created_at', thirtyMinutesAgo);
+
     const config = (inv.config as Record<string, string>) ?? {};
     const coupleNames = config.coupleNames ?? 'Les mariés';
     const cagnotteTitre = (inv.cagnotte_titre as string) ?? 'Cagnotte mariage';
