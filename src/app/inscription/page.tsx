@@ -96,6 +96,21 @@ export default function InscriptionPage() {
         ? { role: "marie", prenom: mPrenom, nom: mNom, date_mariage: mDate || null }
         : { role: "prestataire", nom_entreprise: pEntreprise, categorie: pMetier, ville: pVille, telephone: pTel };
 
+    const verifyRes = await fetch("/api/inscription/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email,
+        telephone: accountType === "prestataire" ? pTel : undefined,
+      }),
+    });
+    const verifyData = await verifyRes.json();
+    if (!verifyData.allowed) {
+      setLoading(false);
+      setError("Inscription refusée. Pour toute question, contactez contact@instantmariage.fr");
+      return;
+    }
+
     const { data: signUpData, error: authError } = await supabase.auth.signUp({
       email,
       password,
