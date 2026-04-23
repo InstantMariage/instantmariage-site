@@ -587,6 +587,162 @@ export async function sendRsvpNotificationEmail({
   });
 }
 
+// ─── Email 8 : Remerciement contributeur cagnotte ────────────────────────────
+
+export async function sendCagnotteMerciEmail({
+  contributeurEmail,
+  contributeurNom,
+  coupleNames,
+  montantEuros,
+  cagnotteTitre,
+  invitationSlug,
+}: {
+  contributeurEmail: string;
+  contributeurNom: string;
+  coupleNames: string;
+  montantEuros: number;
+  cagnotteTitre: string;
+  invitationSlug: string;
+}) {
+  const content = `
+    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#F06292;letter-spacing:0.5px;text-transform:uppercase;">Merci pour votre cadeau</p>
+    <h1 style="margin:0 0 24px;font-size:26px;font-weight:700;color:#1a1a1a;line-height:1.25;">
+      Votre contribution a bien été reçue&nbsp;🎁
+    </h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#555555;line-height:1.65;">
+      Bonjour ${contributeurNom},<br/>
+      Votre contribution à la cagnotte <strong>${cagnotteTitre}</strong> de <strong>${coupleNames}</strong> a bien été enregistrée.
+    </p>
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#fafafa;border-radius:12px;padding:24px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;width:140px;">Bénéficiaires</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:600;color:#1a1a1a;">${coupleNames}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Cagnotte</td>
+              <td style="padding:6px 0;font-size:14px;color:#333333;">${cagnotteTitre}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Montant</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:600;color:#1a1a1a;">${montantEuros.toFixed(2)}&nbsp;€</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+    ${ctaButton('Voir le faire-part', `${SITE_URL}/invitation/${invitationSlug}`)}
+    ${divider()}
+    <p style="margin:0;font-size:13px;color:#aaaaaa;line-height:1.6;text-align:center;">
+      Merci de partager la joie de ce beau moment avec les mariés&nbsp;💕
+    </p>
+  `;
+
+  const text = [
+    `Bonjour ${contributeurNom},`,
+    '',
+    `Votre contribution de ${montantEuros.toFixed(2)} € à la cagnotte "${cagnotteTitre}" de ${coupleNames} a bien été reçue.`,
+    '',
+    `Voir le faire-part : ${SITE_URL}/invitation/${invitationSlug}`,
+    textFooter(false),
+  ].join('\n');
+
+  return resend.emails.send({
+    from: FROM,
+    to: contributeurEmail,
+    replyTo: REPLY_TO,
+    subject: `Merci pour votre cadeau — ${coupleNames}`,
+    html: baseTemplate(content),
+    text,
+    headers: unsubscribeHeaders,
+  });
+}
+
+// ─── Email 9 : Notification cagnotte aux mariés ───────────────────────────────
+
+export async function sendCagnotteNotifEmail({
+  coupleEmail,
+  coupleNames,
+  contributeurNom,
+  montantEuros,
+  message,
+  totalCollecteEuros,
+}: {
+  coupleEmail: string;
+  coupleNames: string;
+  contributeurNom: string;
+  montantEuros: number;
+  message: string | null;
+  totalCollecteEuros: number;
+}) {
+  const content = `
+    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#F06292;letter-spacing:0.5px;text-transform:uppercase;">Nouveau cadeau reçu</p>
+    <h1 style="margin:0 0 24px;font-size:26px;font-weight:700;color:#1a1a1a;line-height:1.25;">
+      ${contributeurNom} vous a offert un cadeau&nbsp;🎁
+    </h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#555555;line-height:1.65;">
+      Bonjour ${coupleNames},<br/>
+      Vous venez de recevoir une nouvelle contribution à votre cagnotte mariage.
+    </p>
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#fafafa;border-radius:12px;padding:24px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;width:160px;">Contributeur</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:600;color:#1a1a1a;">${contributeurNom}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Montant</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:600;color:#F06292;">${montantEuros.toFixed(2)}&nbsp;€</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Total collecté</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:600;color:#1a1a1a;">${totalCollecteEuros.toFixed(2)}&nbsp;€</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+    ${message ? `
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#fafafa;border-left:3px solid #F06292;border-radius:0 8px 8px 0;padding:16px 20px;">
+          <p style="margin:0 0 6px;font-size:12px;font-weight:600;color:#aaaaaa;text-transform:uppercase;letter-spacing:0.5px;">Message</p>
+          <p style="margin:0;font-size:14px;color:#444444;line-height:1.7;font-style:italic;">&ldquo;${message}&rdquo;</p>
+        </td>
+      </tr>
+    </table>` : ''}
+    ${ctaButton('Voir ma cagnotte', `${SITE_URL}/dashboard/marie/faire-parts`)}
+  `;
+
+  const lines = [
+    `Bonjour ${coupleNames},`,
+    '',
+    `${contributeurNom} vous a offert ${montantEuros.toFixed(2)} € via votre cagnotte mariage.`,
+    `Total collecté : ${totalCollecteEuros.toFixed(2)} €`,
+    ...(message ? ['', `Message : "${message}"`] : []),
+    '',
+    `Voir votre cagnotte : ${SITE_URL}/dashboard/marie/faire-parts`,
+    textFooter(false),
+  ];
+
+  return resend.emails.send({
+    from: FROM,
+    to: coupleEmail,
+    replyTo: REPLY_TO,
+    subject: `🎁 ${contributeurNom} vous a offert ${montantEuros.toFixed(2)} €`,
+    html: baseTemplate(content),
+    text: lines.join('\n'),
+    headers: unsubscribeHeaders,
+  });
+}
+
 // ─── Email 4 : Nouveau prestataire (admin) ────────────────────────────────────
 
 export async function sendNewPrestaireAdminEmail({

@@ -194,6 +194,14 @@ export default function FairePartEditorPage() {
     emailContact: '',
   });
 
+  const [cagnotte, setCagnotte] = useState({
+    active: false,
+    titre: '',
+    message: '',
+    objectif: '',
+    iban: '',
+  });
+
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [showPublishConfirm, setShowPublishConfirm] = useState(false);
@@ -208,7 +216,7 @@ export default function FairePartEditorPage() {
         // Charger le brouillon existant depuis Supabase
         const { data: inv } = await supabase
           .from('invitations')
-          .select('id, slug, config, rsvp_actif, rsvp_deadline')
+          .select('id, slug, config, rsvp_actif, rsvp_deadline, cagnotte_active, cagnotte_titre, cagnotte_message, cagnotte_objectif_cents, cagnotte_iban')
           .eq('id', draftId)
           .maybeSingle();
         if (inv?.config) {
@@ -223,6 +231,13 @@ export default function FairePartEditorPage() {
             emailContact: c.emailContact ?? prev.emailContact,
             rsvpDeadline: inv.rsvp_deadline ?? prev.rsvpDeadline,
           }));
+          setCagnotte({
+            active: (inv as any).cagnotte_active ?? false,
+            titre: (inv as any).cagnotte_titre ?? '',
+            message: (inv as any).cagnotte_message ?? '',
+            objectif: (inv as any).cagnotte_objectif_cents ? String((inv as any).cagnotte_objectif_cents / 100) : '',
+            iban: (inv as any).cagnotte_iban ?? '',
+          });
           setDraftInvitationId(inv.id);
           setInvitationSlug(inv.slug);
           setToast({ type: 'success', message: 'Brouillon chargé — continuez votre faire-part !' });
@@ -237,7 +252,7 @@ export default function FairePartEditorPage() {
         if (marie) {
           const { data: existingInv } = await supabase
             .from('invitations')
-            .select('id, slug, config, rsvp_actif, rsvp_deadline')
+            .select('id, slug, config, rsvp_actif, rsvp_deadline, cagnotte_active, cagnotte_titre, cagnotte_message, cagnotte_objectif_cents, cagnotte_iban')
             .eq('marie_id', marie.id)
             .order('updated_at', { ascending: false })
             .limit(1)
@@ -254,6 +269,13 @@ export default function FairePartEditorPage() {
               emailContact: c.emailContact ?? prev.emailContact,
               rsvpDeadline: existingInv.rsvp_deadline ?? prev.rsvpDeadline,
             }));
+            setCagnotte({
+              active: (existingInv as any).cagnotte_active ?? false,
+              titre: (existingInv as any).cagnotte_titre ?? '',
+              message: (existingInv as any).cagnotte_message ?? '',
+              objectif: (existingInv as any).cagnotte_objectif_cents ? String((existingInv as any).cagnotte_objectif_cents / 100) : '',
+              iban: (existingInv as any).cagnotte_iban ?? '',
+            });
             setDraftInvitationId(existingInv.id);
             setInvitationSlug(existingInv.slug);
             setToast({ type: 'success', message: 'Vos données ont été récupérées depuis votre faire-part existant !' });
@@ -302,6 +324,10 @@ export default function FairePartEditorPage() {
 
   const setField = useCallback((field: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  }, []);
+
+  const setCagnotteField = useCallback((field: keyof typeof cagnotte, value: string | boolean) => {
+    setCagnotte((prev) => ({ ...prev, [field]: value }));
   }, []);
 
   // Derived display values (with fallback for preview)
@@ -364,6 +390,14 @@ export default function FairePartEditorPage() {
         accentColor: template.accentColor,
       };
 
+      const cagnottePayload = {
+        cagnotte_active: cagnotte.active,
+        cagnotte_titre: cagnotte.titre || null,
+        cagnotte_message: cagnotte.message || null,
+        cagnotte_objectif_cents: cagnotte.objectif ? Math.round(parseFloat(cagnotte.objectif) * 100) : null,
+        cagnotte_iban: cagnotte.iban || null,
+      };
+
       let saveErr;
       if (draftInvitationId) {
         // Mise à jour du brouillon existant
@@ -373,6 +407,7 @@ export default function FairePartEditorPage() {
           rsvp_actif: !!form.rsvpDeadline,
           rsvp_deadline: form.rsvpDeadline || null,
           updated_at: new Date().toISOString(),
+          ...cagnottePayload,
         }).eq('id', draftInvitationId);
         saveErr = error;
       } else {
@@ -385,6 +420,7 @@ export default function FairePartEditorPage() {
           rsvp_actif: !!form.rsvpDeadline,
           rsvp_deadline: form.rsvpDeadline || null,
           statut: 'brouillon',
+          ...cagnottePayload,
         });
         saveErr = error;
       }
@@ -439,6 +475,14 @@ export default function FairePartEditorPage() {
         accentColor: template.accentColor,
       };
 
+      const cagnottePayloadPublish = {
+        cagnotte_active: cagnotte.active,
+        cagnotte_titre: cagnotte.titre || null,
+        cagnotte_message: cagnotte.message || null,
+        cagnotte_objectif_cents: cagnotte.objectif ? Math.round(parseFloat(cagnotte.objectif) * 100) : null,
+        cagnotte_iban: cagnotte.iban || null,
+      };
+
       let finalSlug: string | null = null;
 
       if (draftInvitationId) {
@@ -449,6 +493,7 @@ export default function FairePartEditorPage() {
           rsvp_deadline: form.rsvpDeadline || null,
           statut: 'publie',
           updated_at: new Date().toISOString(),
+          ...cagnottePayloadPublish,
         }).eq('id', draftInvitationId);
         if (updateErr) throw updateErr;
 
@@ -481,6 +526,7 @@ export default function FairePartEditorPage() {
           rsvp_actif: !!form.rsvpDeadline,
           rsvp_deadline: form.rsvpDeadline || null,
           statut: 'publie',
+          ...cagnottePayloadPublish,
         });
         if (error) throw error;
       }
@@ -718,6 +764,85 @@ export default function FairePartEditorPage() {
                   />
                   <p className="text-xs text-gray-400 mt-1">Vos invités pourront vous contacter via cet email</p>
                 </div>
+              </FormSection>
+
+              {/* Section 5: Cagnotte mariage */}
+              <FormSection number={5} title="Cagnotte mariage (optionnel)">
+                {/* Toggle */}
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700">Activer la cagnotte</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Vos invités pourront vous offrir un cadeau directement depuis le faire-part</p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={cagnotte.active}
+                    onClick={() => setCagnotteField('active', !cagnotte.active)}
+                    className="relative shrink-0 w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none"
+                    style={{ background: cagnotte.active ? '#F06292' : '#E5E7EB' }}
+                  >
+                    <span
+                      className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200"
+                      style={{ transform: cagnotte.active ? 'translateX(20px)' : 'translateX(0)' }}
+                    />
+                  </button>
+                </div>
+
+                {cagnotte.active && (
+                  <div className="space-y-3 pt-1">
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1.5 font-medium">Titre de la cagnotte</label>
+                      <input
+                        type="text"
+                        placeholder="Notre voyage de noces"
+                        value={cagnotte.titre}
+                        onChange={(e) => setCagnotteField('titre', e.target.value)}
+                        className={INPUT_CLS}
+                        maxLength={80}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1.5 font-medium">Message personnalisé</label>
+                      <textarea
+                        rows={2}
+                        placeholder="Votre présence est notre plus beau cadeau. Si vous souhaitez nous gâter davantage…"
+                        value={cagnotte.message}
+                        onChange={(e) => setCagnotteField('message', e.target.value)}
+                        className={`${INPUT_CLS} resize-none`}
+                        maxLength={300}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1.5 font-medium">Objectif (€) <span className="font-normal text-gray-400">— optionnel</span></label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          min={0}
+                          step={10}
+                          placeholder="2000"
+                          value={cagnotte.objectif}
+                          onChange={(e) => setCagnotteField('objectif', e.target.value)}
+                          className={INPUT_CLS}
+                        />
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400">€</span>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-1">Une barre de progression sera affichée sur votre faire-part</p>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1.5 font-medium">IBAN pour recevoir les fonds</label>
+                      <input
+                        type="text"
+                        placeholder="FR76 XXXX XXXX XXXX XXXX XXXX XXX"
+                        value={cagnotte.iban}
+                        onChange={(e) => setCagnotteField('iban', e.target.value.toUpperCase())}
+                        className={`${INPUT_CLS} font-mono text-xs tracking-wider`}
+                        maxLength={34}
+                      />
+                      <p className="text-xs text-gray-400 mt-1">Nous virerons les fonds collectés sur ce compte (commission 2%)</p>
+                    </div>
+                  </div>
+                )}
               </FormSection>
 
             </div>

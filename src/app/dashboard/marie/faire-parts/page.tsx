@@ -25,6 +25,13 @@ interface RsvpStats {
   nb_personnes: number;
 }
 
+interface CagnotteContribution {
+  contributeur_nom: string;
+  montant_cents: number;
+  message: string | null;
+  created_at: string;
+}
+
 interface Invitation {
   id: string;
   slug: string;
@@ -37,6 +44,11 @@ interface Invitation {
   updated_at: string;
   template: Template | null;
   rsvpStats: RsvpStats | null;
+  cagnotte_active: boolean;
+  cagnotte_titre: string | null;
+  cagnotte_objectif_cents: number | null;
+  cagnotteTotal: number;
+  cagnotteContributions: CagnotteContribution[];
 }
 
 /* ─────────────────── Icônes ─────────────────── */
@@ -177,6 +189,7 @@ export default function FairePartsPage() {
         .from("invitations")
         .select(`
           id, slug, titre, statut, rsvp_actif, rsvp_deadline, apercu_url, created_at, updated_at,
+          cagnotte_active, cagnotte_titre, cagnotte_objectif_cents,
           invitation_templates (id, nom, slug, categorie, plan_requis)
         `)
         .eq("marie_id", marie.id)
@@ -200,6 +213,22 @@ export default function FairePartsPage() {
 
             const tpl = inv.invitation_templates as unknown as Template | null;
 
+            // Cagnotte contributions
+            let cagnotteTotal = 0;
+            let cagnotteContributions: CagnotteContribution[] = [];
+            if ((inv as any).cagnotte_active) {
+              const { data: contribs } = await supabase
+                .from("cagnotte_contributions")
+                .select("contributeur_nom, montant_cents, message, created_at")
+                .eq("invitation_id", inv.id)
+                .eq("statut", "paye")
+                .order("created_at", { ascending: false });
+              if (contribs) {
+                cagnotteContributions = contribs as CagnotteContribution[];
+                cagnotteTotal = contribs.reduce((acc, c) => acc + c.montant_cents, 0);
+              }
+            }
+
             return {
               id: inv.id,
               slug: inv.slug,
@@ -212,6 +241,11 @@ export default function FairePartsPage() {
               updated_at: inv.updated_at,
               template: tpl,
               rsvpStats,
+              cagnotte_active: Boolean((inv as any).cagnotte_active),
+              cagnotte_titre: (inv as any).cagnotte_titre ?? null,
+              cagnotte_objectif_cents: (inv as any).cagnotte_objectif_cents ?? null,
+              cagnotteTotal,
+              cagnotteContributions,
             };
           })
         );
@@ -553,6 +587,81 @@ export default function FairePartsPage() {
                               Placer mes invités par table →
                             </Link>
                           )}
+                        </div>
+                      )}
+
+                      {/* ── Section cagnotte (si active) ── */}
+                      {inv.cagnotte_active && (
+                        <div className="px-5 pb-5">
+                          <div
+                            className="rounded-2xl p-4 space-y-3"
+                            style={{ background: "#FFF0F5", border: "1px solid #FECDD3" }}
+                          >
+                            {/* Header cagnotte */}
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className="text-base">🎁</span>
+                                <p className="text-sm font-semibold text-gray-800">
+                                  {inv.cagnotte_titre ?? "Cagnotte mariage"}
+                                </p>
+                              </div>
+                              <span
+                                className="text-xs font-bold px-2.5 py-1 rounded-full"
+                                style={{ background: "#F06292", color: "white" }}
+                              >
+                                {(inv.cagnotteTotal / 100).toFixed(0)} €
+                              </span>
+                            </div>
+
+                            {/* Barre de progression */}
+                            {inv.cagnotte_objectif_cents && inv.cagnotte_objectif_cents > 0 && (
+                              <div>
+                                <div className="h-2 rounded-full bg-white overflow-hidden">
+                                  <div
+                                    className="h-full rounded-full"
+                                    style={{
+                                      width: `${Math.min(100, Math.round((inv.cagnotteTotal / inv.cagnotte_objectif_cents) * 100))}%`,
+                                      background: "linear-gradient(90deg, #F06292, #e91e8c)",
+                                    }}
+                                  />
+                                </div>
+                                <div className="flex justify-between mt-1">
+                                  <span className="text-xs text-gray-500">{(inv.cagnotteTotal / 100).toFixed(0)} € collectés</span>
+                                  <span className="text-xs text-gray-400">sur {(inv.cagnotte_objectif_cents / 100).toFixed(0)} €</span>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Liste des contributeurs */}
+                            {inv.cagnotteContributions.length === 0 ? (
+                              <p className="text-xs text-gray-400 text-center py-1">
+                                En attente des premiers cadeaux…
+                              </p>
+                            ) : (
+                              <div className="space-y-2 max-h-48 overflow-y-auto">
+                                {inv.cagnotteContributions.map((c, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="flex items-start justify-between gap-3 py-2 border-t first:border-t-0"
+                                    style={{ borderColor: "#FECDD3" }}
+                                  >
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-xs font-semibold text-gray-800 truncate">{c.contributeur_nom}</p>
+                                      {c.message && (
+                                        <p className="text-xs text-gray-500 italic mt-0.5 line-clamp-2">&ldquo;{c.message}&rdquo;</p>
+                                      )}
+                                      <p className="text-xs text-gray-400 mt-0.5">
+                                        {new Date(c.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
+                                      </p>
+                                    </div>
+                                    <span className="shrink-0 text-sm font-bold" style={{ color: "#F06292" }}>
+                                      +{(c.montant_cents / 100).toFixed(0)} €
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       )}
 

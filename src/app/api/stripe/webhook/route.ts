@@ -5,7 +5,7 @@ import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import type { PlanAbonnement } from "@/lib/supabase";
 import { renderInvitationVideo } from "../../../../../lib/remotion-lambda";
-import { sendInvitationConfirmationEmail } from "@/lib/emails";
+import { sendInvitationConfirmationEmail, sendCagnotteMerciEmail, sendCagnotteNotifEmail } from "@/lib/emails";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-03-31.basil",
@@ -130,6 +130,120 @@ async function handleInvitationPayment(
   }
 }
 
+// ── Cagnotte payment handler ──────────────────────────────────────────────────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function handleCagnottePayment(supabase: any, session: Stripe.Checkout.Session) {
+  const stripeSessionId = session.id;
+  const meta = session.metadata ?? {};
+
+  const invitationId = meta.invitation_id ?? null;
+  const marieId = meta.marie_id ?? null;
+  const contributeurNom = meta.contributeur_nom ?? 'Anonyme';
+  const contributeurEmail = meta.contributeur_email ?? '';
+  const montantCents = Number(meta.montant_cents ?? session.amount_total ?? 0);
+
+  // Met à jour la contribution en statut payé
+  const { error: updateErr } = await supabase
+    .from('cagnotte_contributions')
+    .update({ statut: 'paye' })
+    .eq('stripe_session_id', stripeSessionId);
+
+  if (updateErr) {
+    console.error('[webhook/cagnotte] Erreur UPDATE contribution:', updateErr);
+  }
+
+  // Calcule le total collecté pour cet invitation
+  const { data: totaux } = await supabase
+    .from('cagnotte_contributions')
+    .select('montant_cents')
+    .eq('invitation_id', invitationId)
+    .eq('statut', 'paye');
+
+  const totalCents: number = (totaux ?? []).reduce(
+    (acc: number, r: { montant_cents: number }) => acc + r.montant_cents,
+    0
+  );
+
+  // Récupère les infos du faire-part pour les emails
+  let coupleNames = 'Les mariés';
+  let cagnotteTitre = 'Cagnotte mariage';
+  let invitationSlug = '';
+  let coupleEmail = '';
+
+  if (invitationId) {
+    const { data: inv } = await supabase
+      .from('invitations')
+      .select('slug, config, cagnotte_titre')
+      .eq('id', invitationId)
+      .single();
+
+    if (inv) {
+      invitationSlug = inv.slug ?? '';
+      cagnotteTitre = inv.cagnotte_titre ?? cagnotteTitre;
+      const config = (inv.config ?? {}) as Record<string, string>;
+      coupleNames = config.coupleNames ?? coupleNames;
+    }
+  }
+
+  // Email du couple (via mariés → users)
+  if (marieId) {
+    const { data: marie } = await supabase
+      .from('maries')
+      .select('user_id')
+      .eq('id', marieId)
+      .single();
+
+    if (marie?.user_id) {
+      const { data: user } = await supabase
+        .from('users')
+        .select('email')
+        .eq('id', marie.user_id)
+        .single();
+      coupleEmail = user?.email ?? '';
+    }
+  }
+
+  // Email de remerciement au contributeur
+  if (contributeurEmail) {
+    try {
+      await sendCagnotteMerciEmail({
+        contributeurEmail,
+        contributeurNom,
+        coupleNames,
+        montantEuros: montantCents / 100,
+        cagnotteTitre,
+        invitationSlug,
+      });
+    } catch (e) {
+      console.error('[webhook/cagnotte] Erreur email merci:', e);
+    }
+  }
+
+  // Notification aux mariés
+  if (coupleEmail) {
+    try {
+      // Récupère le message de la contribution (depuis la DB car non stocké en metadata)
+      const { data: contrib } = await supabase
+        .from('cagnotte_contributions')
+        .select('message')
+        .eq('stripe_session_id', stripeSessionId)
+        .maybeSingle();
+
+      await sendCagnotteNotifEmail({
+        coupleEmail,
+        coupleNames,
+        contributeurNom,
+        montantEuros: montantCents / 100,
+        message: contrib?.message ?? null,
+        totalCollecteEuros: totalCents / 100,
+      });
+    } catch (e) {
+      console.error('[webhook/cagnotte] Erreur email notif mariés:', e);
+    }
+  }
+}
+
 // Map Price ID → plan name
 const PRICE_TO_PLAN: Record<string, PlanAbonnement> = {
   "price_1TJbkIKKBs85XtqBrD4MvZDu": "starter",
@@ -187,6 +301,12 @@ export async function POST(req: NextRequest) {
       // ── Faire-part : paiement one-time ────────────────────────────────
       if (session.metadata?.product_type === "invitation") {
         await handleInvitationPayment(supabase, session);
+        return NextResponse.json({ received: true });
+      }
+
+      // ── Cagnotte mariage ──────────────────────────────────────────────
+      if (session.metadata?.product_type === "cagnotte") {
+        await handleCagnottePayment(supabase, session);
         return NextResponse.json({ received: true });
       }
 
