@@ -5,6 +5,8 @@ import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ScrollRestorer from "@/components/ScrollRestorer";
+import ProviderCardSEO from "@/components/ProviderCardSEO";
 import {
   parseSlug,
   buildSlug,
@@ -258,6 +260,7 @@ export default async function AnnuaireLocalPage({ params, searchParams }: Props)
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
       <main className="min-h-screen bg-gray-50 overflow-x-hidden">
+        <ScrollRestorer />
         <Header />
 
         {/* Hero SEO */}
@@ -302,7 +305,7 @@ export default async function AnnuaireLocalPage({ params, searchParams }: Props)
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {prestataires.map((p) => (
-                  <ProviderCard key={p.id} p={p} />
+                  <ProviderCardSEO key={p.id} p={p} />
                 ))}
               </div>
             </>

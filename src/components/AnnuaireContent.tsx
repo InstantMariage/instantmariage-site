@@ -252,11 +252,15 @@ function StarRating({ note }: { note: number }) {
   );
 }
 
+function saveScrollPosition() {
+  sessionStorage.setItem("annuaire-scroll-position", String(window.scrollY));
+}
+
 function ProviderCard({ provider }: { provider: DisplayProvider }) {
   return (
     <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md border border-gray-100 transition-all duration-300 group flex flex-col">
       {/* Image */}
-      <Link href={`/prestataires/${provider.id}`} className="relative h-48 overflow-hidden block cursor-pointer">
+      <Link href={`/prestataires/${provider.id}`} onClick={saveScrollPosition} className="relative h-48 overflow-hidden block cursor-pointer">
         {provider.photo ? (
           <Image
             src={provider.photo}
@@ -348,7 +352,7 @@ function ProviderCard({ provider }: { provider: DisplayProvider }) {
             <span className="text-xs text-gray-400">Prix</span>
             <p className="text-sm font-bold text-gray-900">{provider.prixLabel}</p>
           </div>
-          <Link href={`/prestataires/${provider.id}`} className="bg-rose-400 hover:bg-rose-500 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md">
+          <Link href={`/prestataires/${provider.id}`} onClick={saveScrollPosition} className="bg-rose-400 hover:bg-rose-500 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md">
             Voir le profil
           </Link>
         </div>
@@ -449,6 +453,11 @@ export default function AnnuaireContent() {
           setIsDemo(true);
         }
         setLoading(false);
+        const saved = sessionStorage.getItem("annuaire-scroll-position");
+        if (saved) {
+          sessionStorage.removeItem("annuaire-scroll-position");
+          requestAnimationFrame(() => window.scrollTo(0, parseInt(saved, 10)));
+        }
       });
   }, []);
 
