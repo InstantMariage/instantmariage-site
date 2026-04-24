@@ -138,14 +138,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { count: signalements },
         { count: avis },
         { count: abonnements },
-        { count: cagnottes },
+        { count: virements },
+        { count: contributions },
       ] = await Promise.all([
-        supabase.from("prestataires").select("id", { count: "exact", head: true }).eq("verifie", false),
+        supabase.from("prestataires").select("id", { count: "exact", head: true }).gte("created_at", weekAgo.toISOString()),
         supabase.from("maries").select("id", { count: "exact", head: true }).gte("created_at", todayStart.toISOString()),
         supabase.from("signalements").select("id", { count: "exact", head: true }).eq("statut", "en_attente"),
         supabase.from("avis").select("id", { count: "exact", head: true }).eq("statut", "en_attente"),
         supabase.from("abonnements").select("id", { count: "exact", head: true }).gte("created_at", weekAgo.toISOString()),
         supabase.from("invitations").select("id", { count: "exact", head: true }).eq("virement_statut", "demande"),
+        supabase.from("cagnotte_contributions").select("id", { count: "exact", head: true }).eq("statut", "paye").gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()),
       ]);
 
       setBadges({
@@ -154,7 +156,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         signalements: signalements ?? 0,
         avis: avis ?? 0,
         abonnements: abonnements ?? 0,
-        cagnottes: cagnottes ?? 0,
+        cagnottes: (virements ?? 0) + (contributions ?? 0),
       });
     };
 
