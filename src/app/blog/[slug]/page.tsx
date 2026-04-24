@@ -295,7 +295,7 @@ export default async function ArticlePage({
               src={article.image}
               alt={article.titre}
               fill
-              className="object-cover"
+              className="object-top object-cover"
               priority
               sizes="100vw"
             />
