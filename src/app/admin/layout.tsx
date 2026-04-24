@@ -131,6 +131,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+      const lastVisit = (key: string) =>
+        localStorage.getItem(`admin_visited_${key}`) ?? new Date(0).toISOString();
+      const maxDate = (a: string, b: Date) =>
+        a > b.toISOString() ? a : b.toISOString();
 
       const [
         { count: prestataires },
@@ -141,13 +147,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { count: virements },
         { count: contributions },
       ] = await Promise.all([
-        supabase.from("prestataires").select("id", { count: "exact", head: true }).gte("created_at", weekAgo.toISOString()),
-        supabase.from("maries").select("id", { count: "exact", head: true }).gte("created_at", todayStart.toISOString()),
-        supabase.from("signalements").select("id", { count: "exact", head: true }).eq("statut", "en_attente"),
-        supabase.from("avis").select("id", { count: "exact", head: true }).eq("statut", "en_attente"),
-        supabase.from("abonnements").select("id", { count: "exact", head: true }).gte("created_at", weekAgo.toISOString()),
-        supabase.from("invitations").select("id", { count: "exact", head: true }).eq("virement_statut", "demande"),
-        supabase.from("cagnotte_contributions").select("id", { count: "exact", head: true }).eq("statut", "paye").gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()),
+        supabase.from("prestataires").select("id", { count: "exact", head: true }).gte("created_at", maxDate(lastVisit("prestataires"), weekAgo)),
+        supabase.from("maries").select("id", { count: "exact", head: true }).gte("created_at", maxDate(lastVisit("maries"), todayStart)),
+        supabase.from("signalements").select("id", { count: "exact", head: true }).eq("statut", "en_attente").gte("created_at", lastVisit("signalements")),
+        supabase.from("avis").select("id", { count: "exact", head: true }).eq("statut", "en_attente").gte("created_at", lastVisit("avis")),
+        supabase.from("abonnements").select("id", { count: "exact", head: true }).gte("created_at", maxDate(lastVisit("abonnements"), weekAgo)),
+        supabase.from("invitations").select("id", { count: "exact", head: true }).eq("virement_statut", "demande").gte("created_at", lastVisit("cagnottes")),
+        supabase.from("cagnotte_contributions").select("id", { count: "exact", head: true }).eq("statut", "paye").gte("created_at", maxDate(lastVisit("cagnottes"), dayAgo)),
       ]);
 
       setBadges({
@@ -206,6 +212,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 href={item.href}
                 onClick={() => {
                   if (item.badgeKey) {
+                    localStorage.setItem(`admin_visited_${item.badgeKey}`, new Date().toISOString());
                     setBadges(prev => ({ ...prev, [item.badgeKey!]: 0 }));
                   }
                 }}
