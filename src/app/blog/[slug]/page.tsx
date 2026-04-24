@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { createClient } from "@supabase/supabase-js";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 /* ── Types ──────────────────────────────────────────────────── */
 type ContentBlock =
