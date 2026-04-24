@@ -4,11 +4,64 @@ import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { seoArticles, getArticleBySlug, type ContentBlock } from "@/app/blog/articles-data";
+import { createClient } from "@supabase/supabase-js";
+
+export const revalidate = 3600;
+
+/* ── Types ──────────────────────────────────────────────────── */
+type ContentBlock =
+  | { type: "intro"; text: string }
+  | { type: "h2"; text: string }
+  | { type: "h3"; text: string }
+  | { type: "p"; text: string }
+  | { type: "ul"; items: string[] }
+  | { type: "ol"; items: string[] }
+  | { type: "tip"; title: string; text: string }
+  | { type: "quote"; text: string; author?: string }
+  | { type: "table"; headers: string[]; rows: string[][] };
+
+type Article = {
+  id: string;
+  slug: string;
+  titre: string;
+  excerpt: string | null;
+  category: string;
+  content: ContentBlock[];
+  image: string | null;
+  meta_description: string | null;
+  keywords: string | null;
+  read_time: string;
+  auteur: string;
+  statut: string;
+  date_publication: string;
+  nb_vues: number;
+};
+
+/* ── Supabase ───────────────────────────────────────────────── */
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
+
+async function getArticle(slug: string): Promise<Article | null> {
+  const { data } = await getSupabase()
+    .from("articles")
+    .select("*")
+    .eq("slug", slug)
+    .eq("statut", "publie")
+    .single();
+  return data ?? null;
+}
 
 /* ── Static params ─────────────────────────────────────────── */
-export function generateStaticParams() {
-  return seoArticles.map((a) => ({ slug: a.slug }));
+export async function generateStaticParams() {
+  const { data } = await getSupabase()
+    .from("articles")
+    .select("slug")
+    .eq("statut", "publie");
+  return (data ?? []).map((a) => ({ slug: a.slug }));
 }
 
 /* ── Metadata ───────────────────────────────────────────────── */
@@ -18,26 +71,26 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const article = getArticleBySlug(slug);
+  const article = await getArticle(slug);
   if (!article) return { title: "Article introuvable" };
   return {
-    title: `${article.title} – InstantMariage`,
-    description: article.metaDescription,
-    keywords: article.keywords,
+    title: `${article.titre} – InstantMariage`,
+    description: article.meta_description ?? undefined,
+    keywords: article.keywords ?? undefined,
     openGraph: {
-      title: article.title,
-      description: article.metaDescription,
+      title: article.titre,
+      description: article.meta_description ?? undefined,
       url: `https://instantmariage.fr/blog/${article.slug}`,
       siteName: "InstantMariage.fr",
-      images: [{ url: article.image, width: 1200, height: 630, alt: article.title }],
+      images: article.image ? [{ url: article.image, width: 1200, height: 630, alt: article.titre }] : [],
       locale: "fr_FR",
       type: "article",
     },
     twitter: {
       card: "summary_large_image",
-      title: article.title,
-      description: article.metaDescription,
-      images: [article.image],
+      title: article.titre,
+      description: article.meta_description ?? undefined,
+      images: article.image ? [article.image] : [],
     },
   };
 }
@@ -49,7 +102,16 @@ const categoryColors: Record<string, string> = {
   Prestataires: "bg-amber-100 text-amber-700",
   Budget: "bg-green-100 text-green-700",
   Mode: "bg-purple-100 text-purple-700",
+  Conseils: "bg-teal-100 text-teal-700",
 };
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
 
 /* ── Content renderer ───────────────────────────────────────── */
 function renderBlock(block: ContentBlock, idx: number) {
@@ -125,10 +187,7 @@ function renderBlock(block: ContentBlock, idx: number) {
         <div
           key={idx}
           className="rounded-2xl p-5 mb-6 border"
-          style={{
-            backgroundColor: "#FFF5F8",
-            borderColor: "#FBBDD5",
-          }}
+          style={{ backgroundColor: "#FFF5F8", borderColor: "#FBBDD5" }}
         >
           <p className="text-sm font-bold mb-1" style={{ color: "#EC407A" }}>
             💡 {block.title}
@@ -138,10 +197,7 @@ function renderBlock(block: ContentBlock, idx: number) {
       );
     case "quote":
       return (
-        <blockquote
-          key={idx}
-          className="my-8 pl-6 border-l-4 border-rose-300"
-        >
+        <blockquote key={idx} className="my-8 pl-6 border-l-4 border-rose-300">
           <p
             className="text-gray-700 text-lg italic leading-relaxed mb-2"
             style={{ fontFamily: "var(--font-playfair), serif" }}
@@ -168,10 +224,7 @@ function renderBlock(block: ContentBlock, idx: number) {
             </thead>
             <tbody>
               {block.rows.map((row, ri) => (
-                <tr
-                  key={ri}
-                  className={ri % 2 === 0 ? "bg-white" : "bg-rose-50/40"}
-                >
+                <tr key={ri} className={ri % 2 === 0 ? "bg-white" : "bg-rose-50/40"}>
                   {row.map((cell, ci) => (
                     <td key={ci} className="px-5 py-3 text-gray-600 border-b border-gray-50">
                       {cell}
@@ -195,10 +248,15 @@ export default async function ArticlePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const article = getArticleBySlug(slug);
+  const article = await getArticle(slug);
   if (!article) notFound();
 
-  const otherArticles = seoArticles.filter((a) => a.slug !== slug).slice(0, 3);
+  const { data: otherArticles } = await getSupabase()
+    .from("articles")
+    .select("slug, titre, image, read_time")
+    .eq("statut", "publie")
+    .neq("slug", slug)
+    .limit(3);
 
   const isCategoryVendor = article.category === "Prestataires";
 
@@ -208,17 +266,19 @@ export default async function ArticlePage({
 
       {/* ── Hero ────────────────────────────────────────────── */}
       <section className="pt-20">
-        <div
-          className="relative h-72 md:h-96 lg:h-[480px] overflow-hidden"
-        >
-          <Image
-            src={article.image}
-            alt={article.title}
-            fill
-            className="object-cover"
-            priority
-            sizes="100vw"
-          />
+        <div className="relative h-72 md:h-96 lg:h-[480px] overflow-hidden">
+          {article.image ? (
+            <Image
+              src={article.image}
+              alt={article.titre}
+              fill
+              className="object-cover"
+              priority
+              sizes="100vw"
+            />
+          ) : (
+            <div className="w-full h-full bg-rose-100" />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
           {/* Back link */}
@@ -236,7 +296,7 @@ export default async function ArticlePage({
             </Link>
           </div>
 
-          {/* Category badge */}
+          {/* Category + title */}
           <div className="absolute bottom-8 left-4 sm:left-8 right-4 sm:right-8">
             <span className={`inline-block text-xs font-semibold px-3 py-1 rounded-full mb-3 ${categoryColors[article.category] ?? "bg-white/20 text-white"}`}>
               {article.category}
@@ -245,7 +305,7 @@ export default async function ArticlePage({
               className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight max-w-3xl"
               style={{ fontFamily: "var(--font-playfair), serif" }}
             >
-              {article.title}
+              {article.titre}
             </h1>
           </div>
         </div>
@@ -260,13 +320,13 @@ export default async function ArticlePage({
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              {article.date}
+              {formatDate(article.date_publication)}
             </span>
             <span className="flex items-center gap-1.5">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              {article.readTime} de lecture
+              {article.read_time} de lecture
             </span>
             <span className="flex items-center gap-1.5">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -309,16 +369,14 @@ export default async function ArticlePage({
                   <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     <Link
                       href="/inscription"
-                      className="bg-white font-semibold px-7 py-3.5 rounded-full text-sm
-                                 transition-all duration-200 hover:bg-rose-50 shadow-sm"
+                      className="bg-white font-semibold px-7 py-3.5 rounded-full text-sm transition-all duration-200 hover:bg-rose-50 shadow-sm"
                       style={{ color: "#E91E63" }}
                     >
                       Créer mon profil gratuit →
                     </Link>
                     <Link
                       href="/tarifs"
-                      className="border-2 border-white/60 text-white font-semibold px-7 py-3.5 rounded-full text-sm
-                                 transition-all duration-200 hover:bg-white/10"
+                      className="border-2 border-white/60 text-white font-semibold px-7 py-3.5 rounded-full text-sm transition-all duration-200 hover:bg-white/10"
                     >
                       Voir les offres Pro
                     </Link>
@@ -342,16 +400,14 @@ export default async function ArticlePage({
                   <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     <Link
                       href="/annuaire"
-                      className="bg-white font-semibold px-7 py-3.5 rounded-full text-sm
-                                 transition-all duration-200 hover:bg-rose-50 shadow-sm"
+                      className="bg-white font-semibold px-7 py-3.5 rounded-full text-sm transition-all duration-200 hover:bg-rose-50 shadow-sm"
                       style={{ color: "#E91E63" }}
                     >
                       Voir l&apos;annuaire →
                     </Link>
                     <Link
                       href="/inscription"
-                      className="border-2 border-white/60 text-white font-semibold px-7 py-3.5 rounded-full text-sm
-                                 transition-all duration-200 hover:bg-white/10"
+                      className="border-2 border-white/60 text-white font-semibold px-7 py-3.5 rounded-full text-sm transition-all duration-200 hover:bg-white/10"
                     >
                       Créer mon compte
                     </Link>
@@ -383,7 +439,10 @@ export default async function ArticlePage({
                   .filter((b) => b.type === "h2")
                   .map((b, i) =>
                     b.type === "h2" ? (
-                      <p key={i} className="text-sm text-gray-500 leading-snug pl-2 border-l-2 border-gray-100 hover:border-rose-300 hover:text-rose-500 transition-colors cursor-default py-0.5">
+                      <p
+                        key={i}
+                        className="text-sm text-gray-500 leading-snug pl-2 border-l-2 border-gray-100 hover:border-rose-300 hover:text-rose-500 transition-colors cursor-default py-0.5"
+                      >
                         {b.text}
                       </p>
                     ) : null
@@ -392,35 +451,41 @@ export default async function ArticlePage({
             </div>
 
             {/* Other articles */}
-            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
-              <h3
-                className="text-base font-bold text-gray-900 mb-4"
-                style={{ fontFamily: "var(--font-playfair), serif" }}
-              >
-                Articles similaires
-              </h3>
-              <div className="space-y-4">
-                {otherArticles.map((a) => (
-                  <Link key={a.slug} href={`/blog/${a.slug}`} className="flex gap-3 group">
-                    <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
-                      <Image
-                        src={a.image}
-                        alt={a.title}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        sizes="64px"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-800 group-hover:text-rose-500 transition-colors leading-snug line-clamp-2">
-                        {a.title}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1">{a.readTime} de lecture</p>
-                    </div>
-                  </Link>
-                ))}
+            {otherArticles && otherArticles.length > 0 && (
+              <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
+                <h3
+                  className="text-base font-bold text-gray-900 mb-4"
+                  style={{ fontFamily: "var(--font-playfair), serif" }}
+                >
+                  Articles similaires
+                </h3>
+                <div className="space-y-4">
+                  {otherArticles.map((a) => (
+                    <Link key={a.slug} href={`/blog/${a.slug}`} className="flex gap-3 group">
+                      <div className="relative w-16 h-16 rounded-xl overflow-hidden flex-shrink-0">
+                        {a.image ? (
+                          <Image
+                            src={a.image}
+                            alt={a.titre}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            sizes="64px"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-rose-50" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-800 group-hover:text-rose-500 transition-colors leading-snug line-clamp-2">
+                          {a.titre}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">{a.read_time} de lecture</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Mini CTA */}
             <div
