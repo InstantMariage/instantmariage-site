@@ -46,7 +46,7 @@ export default function Hero() {
           src="https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777030776686-pexels-imagestudio-1488312-2.jpg"
           alt="Couple lors de leur mariage"
           fill
-          className="object-cover object-center"
+          className="object-cover object-[30%_center] md:object-center"
           priority
           sizes="100vw"
         />
