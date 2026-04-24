@@ -86,13 +86,13 @@ export default async function BlogPage() {
                 className="group bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col"
               >
                 {/* Image */}
-                <div className="relative w-full aspect-[16/9] overflow-hidden">
+                <div className="relative w-full aspect-[3/2] overflow-hidden rounded-t-2xl">
                   {article.image ? (
                     <Image
                       src={article.image}
                       alt={article.titre}
                       fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                   ) : (
