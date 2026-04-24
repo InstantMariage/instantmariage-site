@@ -23,7 +23,7 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
     return NextResponse.json({ error: 'Corps de la requête invalide' }, { status: 400 });
   }
 
-  const { prenom, nom, email, telephone, presence, nb_personnes, regime_alimentaire, message } = body;
+  const { prenom, nom, email, telephone, presence, nb_personnes, regime_alimentaire, message, accompagnants_prenoms: rawAccompagnants } = body;
 
   if (!prenom || !nom || !email || typeof presence !== 'boolean') {
     return NextResponse.json({ error: 'Champs obligatoires manquants' }, { status: 400 });
@@ -34,6 +34,13 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
   }
 
   const nbPersonnes = presence ? Math.max(1, Math.min(20, Number(nb_personnes) || 1)) : 0;
+
+  const accompagnantsPrenoms: string[] = Array.isArray(rawAccompagnants)
+    ? (rawAccompagnants as unknown[])
+        .filter((p): p is string => typeof p === 'string' && p.trim().length > 0)
+        .map(p => p.trim().slice(0, 100))
+        .slice(0, 19)
+    : [];
 
   const supabase = getSupabaseAdmin();
 
@@ -83,6 +90,7 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
     telephone: telephone ? String(telephone).slice(0, 50) : null,
     presence,
     nb_personnes: nbPersonnes,
+    accompagnants_prenoms: accompagnantsPrenoms,
     regime_alimentaire: regime_alimentaire ? String(regime_alimentaire).slice(0, 200) : null,
     message: message ? String(message).slice(0, 1000) : null,
     ip_address: ip,
@@ -95,21 +103,38 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
 
   // Auto-add to wedding_guests when guest confirms attendance
   if (presence && rsvpInserted?.id && (invitation as any).marie_id) {
-    console.log('[rsvp] inserting wedding_guest for marie_id:', (invitation as any).marie_id, 'rsvp_id:', rsvpInserted.id);
-    const { error: guestErr } = await supabase.from('wedding_guests').insert({
-      marie_id: (invitation as any).marie_id,
-      prenom: String(prenom).slice(0, 100),
-      nom: String(nom).slice(0, 100),
-      email: String(email).toLowerCase().slice(0, 255),
-      telephone: telephone ? String(telephone).slice(0, 50) : null,
-      presence_confirmee: true,
-      source: 'rsvp',
-      rsvp_response_id: rsvpInserted.id,
-    });
+    const marieId = (invitation as any).marie_id;
+    const prenomStr = String(prenom).slice(0, 100);
+    const nomStr = String(nom).slice(0, 100);
+
+    const guestRows = [
+      {
+        marie_id: marieId,
+        prenom: prenomStr,
+        nom: nomStr,
+        email: String(email).toLowerCase().slice(0, 255),
+        telephone: telephone ? String(telephone).slice(0, 50) : null,
+        presence_confirmee: true,
+        source: 'rsvp',
+        rsvp_response_id: rsvpInserted.id,
+      },
+      ...accompagnantsPrenoms.map(prenomAccomp => ({
+        marie_id: marieId,
+        prenom: prenomAccomp,
+        nom: `(avec ${prenomStr} ${nomStr})`,
+        email: null as null,
+        telephone: null as null,
+        presence_confirmee: true,
+        source: 'rsvp_accompagnant',
+        rsvp_response_id: rsvpInserted.id,
+      })),
+    ];
+
+    const { error: guestErr } = await supabase.from('wedding_guests').insert(guestRows);
     if (guestErr) {
       console.error('[rsvp] wedding_guests insert error:', JSON.stringify(guestErr));
     } else {
-      console.log('[rsvp] wedding_guest inserted successfully');
+      console.log(`[rsvp] ${guestRows.length} invité(s) insérés (1 principal + ${accompagnantsPrenoms.length} accompagnants)`);
     }
   } else {
     console.log('[rsvp] skip wedding_guest insert — presence:', presence, 'marie_id:', (invitation as any).marie_id, 'rsvp_id:', rsvpInserted?.id);

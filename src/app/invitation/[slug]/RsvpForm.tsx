@@ -31,11 +31,20 @@ const INITIAL: FormState = {
 
 export default function RsvpForm({ slug, couleurPrimaire }: Props) {
   const [form, setForm] = useState<FormState>(INITIAL);
+  const [accompagnantsPrenoms, setAccompagnantsPrenoms] = useState<string[]>([]);
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
 
   function update(field: keyof FormState, value: string | number) {
     setForm(prev => ({ ...prev, [field]: value }));
+  }
+
+  function handleNbPersonnes(n: number) {
+    update('nb_personnes', n);
+    setAccompagnantsPrenoms(prev => {
+      const slots = Math.max(0, n - 1);
+      return Array.from({ length: slots }, (_, i) => prev[i] ?? '');
+    });
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -56,6 +65,7 @@ export default function RsvpForm({ slug, couleurPrimaire }: Props) {
           telephone: form.telephone.trim() || null,
           presence: form.presence === 'oui',
           nb_personnes: form.presence === 'oui' ? form.nb_personnes : 0,
+          accompagnants_prenoms: accompagnantsPrenoms.filter(p => p.trim() !== ''),
           regime_alimentaire: form.regime_alimentaire.trim() || null,
           message: form.message.trim() || null,
         }),
@@ -180,12 +190,37 @@ export default function RsvpForm({ slug, couleurPrimaire }: Props) {
           <select
             className={inputClass}
             value={form.nb_personnes}
-            onChange={e => update('nb_personnes', Number(e.target.value))}
+            onChange={e => handleNbPersonnes(Number(e.target.value))}
           >
             {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
               <option key={n} value={n}>{n} {n === 1 ? 'personne' : 'personnes'}</option>
             ))}
           </select>
+        </div>
+      )}
+
+      {/* Prénoms accompagnants */}
+      {form.presence === 'oui' && accompagnantsPrenoms.length > 0 && (
+        <div className="space-y-3">
+          <label className={labelClass}>
+            Prénoms des accompagnants{' '}
+            <span className="text-gray-400 normal-case font-normal">(facultatif)</span>
+          </label>
+          {accompagnantsPrenoms.map((val, i) => (
+            <div key={i} className="transition-all duration-200">
+              <input
+                type="text"
+                className={inputClass}
+                placeholder={`Prénom de l'accompagnant ${i + 1}`}
+                value={val}
+                onChange={e => {
+                  const next = [...accompagnantsPrenoms];
+                  next[i] = e.target.value;
+                  setAccompagnantsPrenoms(next);
+                }}
+              />
+            </div>
+          ))}
         </div>
       )}
 

@@ -90,7 +90,7 @@ export default function CagnotteSection({
       {/* Bouton flottant */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-5 py-3.5 rounded-full text-sm font-bold text-white shadow-xl transition-all duration-200 hover:scale-105 active:scale-95"
+        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 px-5 py-3.5 rounded-full text-sm font-bold text-white shadow-xl transition-all duration-200 hover:scale-105 active:scale-95"
         style={{ background: 'linear-gradient(135deg, #F06292 0%, #e91e8c 100%)', boxShadow: '0 8px 24px rgba(233,30,140,0.4)' }}
       >
         <span className="text-base">🎁</span>
