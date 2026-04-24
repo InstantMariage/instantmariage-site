@@ -48,6 +48,8 @@ interface Invitation {
   cagnotte_active: boolean;
   cagnotte_titre: string | null;
   cagnotte_objectif_cents: number | null;
+  cagnotte_iban: string | null;
+  virement_statut: string;
   cagnotteTotal: number;
   cagnotteContributions: CagnotteContribution[];
 }
@@ -165,11 +167,16 @@ export default function FairePartsPage() {
   const [showChangeTemplate, setShowChangeTemplate] = useState(false);
   const [changingTemplate, setChangingTemplate] = useState(false);
   const [cagnotteModal, setCagnotteModal] = useState<{
+    invitationId: string;
     titre: string;
     contributions: CagnotteContribution[];
     totalCents: number;
     objectifCents: number;
+    iban: string | null;
+    virementStatut: string;
   } | null>(null);
+  const [demandeEnCours, setDemandeEnCours] = useState(false);
+  const [demandeEnvoyee, setDemandeEnvoyee] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -196,7 +203,7 @@ export default function FairePartsPage() {
         .from("invitations")
         .select(`
           id, slug, titre, statut, rsvp_actif, rsvp_deadline, apercu_url, created_at, updated_at,
-          cagnotte_active, cagnotte_titre, cagnotte_objectif_cents,
+          cagnotte_active, cagnotte_titre, cagnotte_objectif_cents, cagnotte_iban, virement_statut,
           invitation_templates (id, nom, slug, categorie, plan_requis)
         `)
         .eq("marie_id", marie.id)
@@ -251,6 +258,8 @@ export default function FairePartsPage() {
               cagnotte_active: Boolean((inv as any).cagnotte_active),
               cagnotte_titre: (inv as any).cagnotte_titre ?? null,
               cagnotte_objectif_cents: (inv as any).cagnotte_objectif_cents ?? null,
+              cagnotte_iban: (inv as any).cagnotte_iban ?? null,
+              virement_statut: (inv as any).virement_statut ?? "non_demande",
               cagnotteTotal,
               cagnotteContributions,
             };
@@ -317,6 +326,36 @@ export default function FairePartsPage() {
       router.push(`/faire-part/${templateSlug}?draft=${inv.id}`);
     } finally {
       setChangingTemplate(false);
+    }
+  }
+
+  async function demanderVirement() {
+    if (!cagnotteModal) return;
+    setDemandeEnCours(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const res = await fetch("/api/cagnotte/demande-virement", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ invitation_id: cagnotteModal.invitationId }),
+      });
+      if (res.ok) {
+        setDemandeEnvoyee(true);
+        setCagnotteModal((prev) => prev ? { ...prev, virementStatut: "demande" } : null);
+        setInvitations((prev) =>
+          prev.map((inv) =>
+            inv.id === cagnotteModal.invitationId
+              ? { ...inv, virement_statut: "demande" }
+              : inv
+          )
+        );
+      }
+    } finally {
+      setDemandeEnCours(false);
     }
   }
 
@@ -603,14 +642,19 @@ export default function FairePartsPage() {
                           <div
                             className="rounded-2xl p-4 space-y-3 cursor-pointer transition-shadow hover:shadow-md"
                             style={{ background: "#FFF0F5", border: "1px solid #FECDD3" }}
-                            onClick={() =>
+                            onClick={() => {
+                              setDemandeEnCours(false);
+                              setDemandeEnvoyee(false);
                               setCagnotteModal({
+                                invitationId: inv.id,
                                 titre: inv.cagnotte_titre ?? "Cagnotte mariage",
                                 contributions: inv.cagnotteContributions,
                                 totalCents: inv.cagnotteTotal,
                                 objectifCents: inv.cagnotte_objectif_cents ?? 0,
-                              })
-                            }
+                                iban: inv.cagnotte_iban,
+                                virementStatut: inv.virement_statut,
+                              });
+                            }}
                           >
                             {/* Header cagnotte */}
                             <div className="flex items-center justify-between">
@@ -778,13 +822,32 @@ export default function FairePartsPage() {
 
             {/* Footer */}
             <div className="mt-5 pt-4 border-t border-gray-100">
-              <a
-                href={`mailto:contact@instantmariage.fr?subject=${encodeURIComponent("Demande de virement cagnotte - " + cagnotteModal.titre)}`}
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full text-sm font-semibold transition-all duration-200 hover:opacity-90 active:scale-95"
-                style={{ border: "2px solid #F06292", color: "#F06292", background: "white" }}
-              >
-                Demander le virement
-              </a>
+              {cagnotteModal.virementStatut === "vire" ? (
+                <p className="text-center text-sm font-semibold text-emerald-600">
+                  ✓ Virement effectué
+                </p>
+              ) : demandeEnvoyee ? (
+                <p className="text-center text-sm font-semibold text-emerald-600">
+                  ✓ Demande envoyée ! Nous vous contacterons sous 48h
+                </p>
+              ) : cagnotteModal.virementStatut === "demande" ? (
+                <button
+                  disabled
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full text-sm font-semibold opacity-50 cursor-not-allowed"
+                  style={{ border: "2px solid #F06292", color: "#F06292", background: "white" }}
+                >
+                  Demande en cours...
+                </button>
+              ) : (
+                <button
+                  onClick={demanderVirement}
+                  disabled={demandeEnCours}
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full text-sm font-semibold transition-all duration-200 hover:opacity-90 active:scale-95 disabled:opacity-60"
+                  style={{ border: "2px solid #F06292", color: "#F06292", background: "white" }}
+                >
+                  {demandeEnCours ? "Envoi en cours..." : "Demander le virement"}
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { calculerCommission, tauxCommission } from "./cagnotte-utils";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -740,6 +741,93 @@ export async function sendCagnotteNotifEmail({
     html: baseTemplate(content),
     text: lines.join('\n'),
     headers: unsubscribeHeaders,
+  });
+}
+
+// ─── Email 10 : Demande de virement cagnotte (admin) ─────────────────────────
+
+export async function sendDemandeVirementEmail({
+  cagnotteTitre,
+  coupleNom,
+  totalCents,
+  iban,
+  invitationId,
+}: {
+  cagnotteTitre: string;
+  coupleNom: string;
+  totalCents: number;
+  iban: string | null;
+  invitationId: string;
+}) {
+  const adminEmail = process.env.ADMIN_EMAIL ?? "contact@instantmariage.fr";
+  const commission = calculerCommission(totalCents);
+  const netCents = totalCents - commission;
+  const taux = tauxCommission(totalCents);
+
+  const content = `
+    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#F06292;letter-spacing:0.5px;text-transform:uppercase;">Demande de virement</p>
+    <h1 style="margin:0 0 24px;font-size:26px;font-weight:700;color:#1a1a1a;line-height:1.25;">
+      Demande de virement cagnotte
+    </h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#555555;line-height:1.65;">
+      Un couple vient de demander le virement de leur cagnotte mariage.
+    </p>
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#fafafa;border-radius:12px;padding:24px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;width:180px;">Couple</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:600;color:#1a1a1a;">${coupleNom}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Cagnotte</td>
+              <td style="padding:6px 0;font-size:14px;color:#333333;">${cagnotteTitre}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Total collecté</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:600;color:#1a1a1a;">${(totalCents / 100).toFixed(2)}&nbsp;€</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Commission (${taux})</td>
+              <td style="padding:6px 0;font-size:14px;color:#E53935;">−${(commission / 100).toFixed(2)}&nbsp;€</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Net à virer</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:700;color:#16a34a;">${(netCents / 100).toFixed(2)}&nbsp;€</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">IBAN</td>
+              <td style="padding:6px 0;font-size:13px;font-family:monospace;color:${iban ? "#1a1a1a" : "#aaaaaa"};">${iban ?? "Non renseigné"}</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+    ${ctaButton("Gérer les cagnottes", `${SITE_URL}/admin/cagnottes`)}
+  `;
+
+  const text = [
+    `Demande de virement cagnotte — InstantMariage.fr`,
+    "",
+    `Couple : ${coupleNom}`,
+    `Cagnotte : ${cagnotteTitre}`,
+    `Total collecté : ${(totalCents / 100).toFixed(2)} €`,
+    `Commission (${taux}) : −${(commission / 100).toFixed(2)} €`,
+    `Net à virer : ${(netCents / 100).toFixed(2)} €`,
+    `IBAN : ${iban ?? "Non renseigné"}`,
+    "",
+    `Gérer les cagnottes : ${SITE_URL}/admin/cagnottes`,
+    textFooter(),
+  ].join("\n");
+
+  return resend.emails.send({
+    from: FROM,
+    to: adminEmail,
+    subject: `[Virement] ${coupleNom} — ${(netCents / 100).toFixed(2)} € à virer`,
+    html: baseTemplate(content),
+    text,
   });
 }
 
