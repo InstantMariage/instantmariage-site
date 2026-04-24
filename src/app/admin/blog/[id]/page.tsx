@@ -286,14 +286,12 @@ export default function BlogEditorPage() {
     });
 
     if (res.ok) {
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
       if (isNew) {
-        const data = await res.json();
-        router.replace(`/admin/blog/${data.id}`);
+        await res.json();
       } else {
         setForm((prev) => ({ ...prev, statut: targetStatut ?? prev.statut }));
       }
+      router.push("/admin/blog");
     }
     setSaving(false);
   }
