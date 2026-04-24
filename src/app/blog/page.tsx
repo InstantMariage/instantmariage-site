@@ -86,7 +86,7 @@ export default async function BlogPage() {
                 className="group bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col"
               >
                 {/* Image */}
-                <div className="relative h-52 overflow-hidden">
+                <div className="relative w-full aspect-[16/9] overflow-hidden">
                   {article.image ? (
                     <Image
                       src={article.image}
