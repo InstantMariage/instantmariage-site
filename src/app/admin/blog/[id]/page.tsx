@@ -690,13 +690,18 @@ function BlockEditor({
       {/* Block inputs */}
       <div className="p-4 space-y-3">
         {(block.type === "intro" || block.type === "h2" || block.type === "h3" || block.type === "p") && (
-          <textarea
-            value={block.text}
-            onChange={(e) => onChange({ text: e.target.value })}
-            rows={block.type === "p" ? 4 : 2}
-            placeholder={block.type === "intro" ? "Paragraphe d'introduction…" : block.type === "p" ? "Contenu du paragraphe…" : "Titre…"}
-            className={baseInput}
-          />
+          <>
+            <textarea
+              value={block.text}
+              onChange={(e) => onChange({ text: e.target.value })}
+              rows={block.type === "p" ? 4 : 2}
+              placeholder={block.type === "intro" ? "Paragraphe d'introduction…" : block.type === "p" ? "Contenu du paragraphe…" : "Titre…"}
+              className={baseInput}
+            />
+            {(block.type === "p" || block.type === "intro") && (
+              <p className="text-xs text-gray-400 mt-1">Lien : [texte affiché](/url-interne) ou [texte](https://site-externe.com)</p>
+            )}
+          </>
         )}
 
         {(block.type === "ul" || block.type === "ol") && (

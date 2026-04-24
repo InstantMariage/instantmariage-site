@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/Header";
@@ -113,6 +114,28 @@ function formatDate(iso: string): string {
   });
 }
 
+/* ── Inline link parser ─────────────────────────────────────── */
+function parseInlineLinks(text: string): React.ReactNode {
+  const parts: React.ReactNode[] = [];
+  const regex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  let last = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > last) parts.push(text.slice(last, match.index));
+    const [, label, href] = match;
+    const cls = "text-rose-500 hover:underline font-medium";
+    if (href.startsWith("/")) {
+      parts.push(<Link key={match.index} href={href} className={cls}>{label}</Link>);
+    } else {
+      parts.push(<a key={match.index} href={href} target="_blank" rel="noopener noreferrer" className={cls}>{label}</a>);
+    }
+    last = match.index + match[0].length;
+  }
+  if (last < text.length) parts.push(text.slice(last));
+  return parts.length === 1 ? parts[0] : parts;
+}
+
 /* ── Content renderer ───────────────────────────────────────── */
 function renderBlock(block: ContentBlock, idx: number) {
   switch (block.type) {
@@ -123,7 +146,7 @@ function renderBlock(block: ContentBlock, idx: number) {
           className="text-lg md:text-xl text-gray-600 leading-relaxed font-medium border-l-4 pl-5 py-1 mb-8"
           style={{ borderColor: "#F06292" }}
         >
-          {block.text}
+          {parseInlineLinks(block.text)}
         </p>
       );
     case "h2":
@@ -149,7 +172,7 @@ function renderBlock(block: ContentBlock, idx: number) {
     case "p":
       return (
         <p key={idx} className="text-gray-600 leading-relaxed mb-5 text-base md:text-[17px]">
-          {block.text}
+          {parseInlineLinks(block.text)}
         </p>
       );
     case "ul":
@@ -192,7 +215,7 @@ function renderBlock(block: ContentBlock, idx: number) {
           <p className="text-sm font-bold mb-1" style={{ color: "#EC407A" }}>
             💡 {block.title}
           </p>
-          <p className="text-gray-600 text-sm leading-relaxed">{block.text}</p>
+          <p className="text-gray-600 text-sm leading-relaxed">{parseInlineLinks(block.text)}</p>
         </div>
       );
     case "quote":
@@ -202,7 +225,7 @@ function renderBlock(block: ContentBlock, idx: number) {
             className="text-gray-700 text-lg italic leading-relaxed mb-2"
             style={{ fontFamily: "var(--font-playfair), serif" }}
           >
-            &ldquo;{block.text}&rdquo;
+            &ldquo;{parseInlineLinks(block.text)}&rdquo;
           </p>
           {block.author && (
             <cite className="text-sm text-gray-400 not-italic">— {block.author}</cite>
