@@ -133,8 +133,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
       const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-      const lastVisit = (key: string) =>
-        localStorage.getItem(`admin_visited_${key}`) ?? new Date(0).toISOString();
+      const lastVisit = (key: string) => {
+        const stored = localStorage.getItem(`admin_visited_${key}`);
+        if (!stored) return new Date(0).toISOString();
+        return new Date(stored).toISOString(); // force UTC ISO format
+      };
       const maxDate = (a: string, b: Date) =>
         a > b.toISOString() ? a : b.toISOString();
 
@@ -212,7 +215,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 href={item.href}
                 onClick={() => {
                   if (item.badgeKey) {
-                    localStorage.setItem(`admin_visited_${item.badgeKey}`, new Date().toISOString());
+                    localStorage.setItem(`admin_visited_${item.badgeKey}`, new Date(Date.now()).toISOString());
                     setBadges(prev => ({ ...prev, [item.badgeKey!]: 0 }));
                   }
                 }}
