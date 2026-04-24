@@ -147,21 +147,12 @@ export default function Hero() {
         </div>
 
         {/* Stats */}
-        <div className="flex flex-wrap justify-center gap-8 mt-8 pt-8 border-t border-white/20">
-          {[
-            { value: "100+", label: "Prestataires vérifiés" },
-            { value: "500+", label: "Mariages organisés" },
-          ].map((stat) => (
-            <div key={stat.label} className="text-center">
-              <div
-                className="text-2xl md:text-3xl font-bold text-white"
-                style={{ fontFamily: "var(--font-playfair), serif" }}
-              >
-                {stat.value}
-              </div>
-              <div className="text-white/70 text-sm mt-1">{stat.label}</div>
-            </div>
-          ))}
+        <div className="flex flex-wrap justify-center items-center gap-3 mt-8 pt-8 border-t border-white/20">
+          <span className="text-white/70 text-sm">Partout en France</span>
+          <span className="text-white/40 text-sm">•</span>
+          <span className="text-white/70 text-sm">Profils vérifiés</span>
+          <span className="text-white/40 text-sm">•</span>
+          <span className="text-white/70 text-sm">Gratuit pour les mariés</span>
         </div>
       </div>
 
