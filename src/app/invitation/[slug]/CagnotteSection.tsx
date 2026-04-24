@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { tauxCommission } from '@/lib/cagnotte-utils';
 import { useSearchParams } from 'next/navigation';
 
 interface CagnotteSectionProps {
@@ -201,7 +202,9 @@ export default function CagnotteSection({
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium pointer-events-none">€</span>
                 </div>
-                <p className="text-xs text-gray-400 mt-2 text-center">2% de frais de service InstantMariage inclus.</p>
+                <p className="text-xs text-gray-400 mt-2 text-center">
+                  {tauxCommission(totalCents)} de frais de service InstantMariage inclus (parmi les moins chers du marché).
+                </p>
               </div>
 
               {/* Identité */}

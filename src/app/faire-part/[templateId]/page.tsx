@@ -847,7 +847,7 @@ export default function FairePartEditorPage() {
                       />
                     </div>
                     <p className="text-xs text-gray-400 italic border-t border-gray-100 pt-3">
-                      InstantMariage prend une commission de 2% sur chaque contribution pour maintenir le service gratuit.
+                      InstantMariage prélève 5% de frais de service sur les contributions (3,5% au-delà de 2 000€ collectés) — parmi les tarifs les plus bas du marché (Leetchi : 6%, Le Pot Commun : 4%).
                     </p>
                   </div>
                 )}

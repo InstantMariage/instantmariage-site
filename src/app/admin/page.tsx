@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { calculerCommission } from "@/lib/cagnotte-utils";
 
 type Stats = {
   nbPrestataires: number;
   nbMaries: number;
   nbFaireParts: number;
   totalCagnotteCents: number;
+  commissionCents: number;
 };
 
 export default function AdminDashboardPage() {
@@ -26,13 +28,20 @@ export default function AdminDashboardPage() {
         supabase.from("invitations").select("*", { count: "exact", head: true }),
         supabase
           .from("cagnotte_contributions")
-          .select("montant_cents")
+          .select("montant_cents, invitation_id")
           .eq("statut", "paye"),
       ]);
 
-      const totalCagnotteCents = (contributions ?? []).reduce(
-        (sum, c) => sum + (c.montant_cents ?? 0),
-        0
+      const rows = contributions ?? [];
+      const totalCagnotteCents = rows.reduce((sum, c) => sum + (c.montant_cents ?? 0), 0);
+
+      const totauxParCagnotte = new Map<string, number>();
+      for (const c of rows) {
+        const prev = totauxParCagnotte.get(c.invitation_id) ?? 0;
+        totauxParCagnotte.set(c.invitation_id, prev + (c.montant_cents ?? 0));
+      }
+      const commissionCents = Array.from(totauxParCagnotte.values()).reduce(
+        (sum, total) => sum + calculerCommission(total), 0
       );
 
       setStats({
@@ -40,6 +49,7 @@ export default function AdminDashboardPage() {
         nbMaries: nbMaries ?? 0,
         nbFaireParts: nbFaireParts ?? 0,
         totalCagnotteCents,
+        commissionCents,
       });
     }
     load();
@@ -48,8 +58,6 @@ export default function AdminDashboardPage() {
   if (!stats) {
     return <div className="text-sm text-gray-400">Chargement…</div>;
   }
-
-  const commissionCents = Math.round(stats.totalCagnotteCents * 0.02);
 
   const cards = [
     {
@@ -100,8 +108,8 @@ export default function AdminDashboardPage() {
       ),
     },
     {
-      label: "Revenus commission (2 %)",
-      value: (commissionCents / 100).toLocaleString("fr-FR", {
+      label: "Revenus commission (5 % / 3,5 %)",
+      value: (stats.commissionCents / 100).toLocaleString("fr-FR", {
         style: "currency",
         currency: "EUR",
       }),
