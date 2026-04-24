@@ -14,6 +14,7 @@ type PrestatairRow = {
   ville: string | null;
   categorie: string;
   verifie: boolean;
+  mis_en_avant: boolean;
   cover_url: string | null;
   photos: string[] | null;
   description: string | null;
@@ -57,6 +58,7 @@ export default function PrestatairesAdminPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [toggling, setToggling] = useState<string | null>(null);
+  const [togglingFeatured, setTogglingFeatured] = useState<string | null>(null);
 
   useEffect(() => {
     load();
@@ -66,7 +68,7 @@ export default function PrestatairesAdminPage() {
     const { data } = await supabase
       .from("prestataires")
       .select(
-        `id, nom_entreprise, ville, categorie, verifie,
+        `id, nom_entreprise, ville, categorie, verifie, mis_en_avant,
          cover_url, photos, description, telephone, site_web, instagram, prix_depart, created_at,
          users!user_id(email),
          abonnements!prestataire_id(plan, statut)`
@@ -74,6 +76,23 @@ export default function PrestatairesAdminPage() {
       .order("created_at", { ascending: false });
     setPrestataires((data as unknown as PrestatairRow[]) ?? []);
     setLoading(false);
+  }
+
+  async function toggleFeatured(id: string, current: boolean) {
+    setTogglingFeatured(id);
+    const { data: { session } } = await supabase.auth.getSession();
+    await fetch(`/api/admin/prestataires/${id}/featured`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session?.access_token ?? ""}`,
+      },
+      body: JSON.stringify({ mis_en_avant: !current }),
+    });
+    setPrestataires((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, mis_en_avant: !current } : p))
+    );
+    setTogglingFeatured(null);
   }
 
   async function toggleVerifie(id: string, current: boolean) {
@@ -211,17 +230,31 @@ export default function PrestatairesAdminPage() {
                     {new Date(p.created_at).toLocaleDateString("fr-FR")}
                   </td>
                   <td className="px-5 py-4 whitespace-nowrap">
-                    <button
-                      onClick={() => toggleVerifie(p.id, p.verifie)}
-                      disabled={toggling === p.id}
-                      className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors disabled:opacity-50 ${
-                        p.verifie
-                          ? "bg-red-50 hover:bg-red-100 text-red-600"
-                          : "bg-emerald-50 hover:bg-emerald-100 text-emerald-700"
-                      }`}
-                    >
-                      {toggling === p.id ? "…" : p.verifie ? "Retirer" : "Vérifier"}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => toggleFeatured(p.id, p.mis_en_avant)}
+                        disabled={togglingFeatured === p.id}
+                        title={p.mis_en_avant ? "Retirer de la mise en avant" : "Mettre en avant"}
+                        className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors disabled:opacity-50 ${
+                          p.mis_en_avant
+                            ? "bg-amber-50 hover:bg-amber-100 text-amber-600"
+                            : "bg-gray-50 hover:bg-amber-50 text-gray-400 hover:text-amber-500"
+                        }`}
+                      >
+                        {togglingFeatured === p.id ? "…" : p.mis_en_avant ? "★ Retirer" : "☆ Avant"}
+                      </button>
+                      <button
+                        onClick={() => toggleVerifie(p.id, p.verifie)}
+                        disabled={toggling === p.id}
+                        className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors disabled:opacity-50 ${
+                          p.verifie
+                            ? "bg-red-50 hover:bg-red-100 text-red-600"
+                            : "bg-emerald-50 hover:bg-emerald-100 text-emerald-700"
+                        }`}
+                      >
+                        {toggling === p.id ? "…" : p.verifie ? "Retirer" : "Vérifier"}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );
