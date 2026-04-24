@@ -1,3 +1,5 @@
+export const revalidate = 60;
+
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 
