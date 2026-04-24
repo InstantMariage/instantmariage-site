@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
@@ -147,6 +147,10 @@ export default function BlogEditorPage() {
   const [saving, setSaving] = useState(false);
   const [slugManual, setSlugManual] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [sizeWarning, setSizeWarning] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   /* Load existing article */
   useEffect(() => {
@@ -187,6 +191,31 @@ export default function BlogEditorPage() {
       void res; // res not used — loading done via supabase directly
     })();
   }, [id, isNew]);
+
+  /* Image upload to Supabase Storage bucket "blog" */
+  async function handleImageUpload(file: File) {
+    setSizeWarning(file.size > 5 * 1024 * 1024);
+    setUploading(true);
+    setUploadError(null);
+
+    const cleanName = file.name
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-zA-Z0-9._-]/g, "-")
+      .toLowerCase();
+    const fileName = `${Date.now()}-${cleanName}`;
+
+    const { error } = await supabase.storage.from("blog").upload(fileName, file);
+    if (error) {
+      setUploadError("Upload échoué : " + error.message);
+      setUploading(false);
+      return;
+    }
+
+    const { data: { publicUrl } } = supabase.storage.from("blog").getPublicUrl(fileName);
+    setForm((prev) => ({ ...prev, image: publicUrl }));
+    setUploading(false);
+  }
 
   /* Auto-slug from title */
   const setTitre = useCallback((v: string) => {
@@ -408,16 +437,50 @@ export default function BlogEditorPage() {
             />
           </div>
 
-          {/* Image URL */}
+          {/* Image de couverture */}
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1.5">Image (URL)</label>
-            <input
-              type="url"
-              value={form.image}
-              onChange={(e) => setForm((prev) => ({ ...prev, image: e.target.value }))}
-              placeholder="https://images.unsplash.com/…"
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-rose-300"
-            />
+            <label className="block text-xs font-medium text-gray-500 mb-1.5">Image de couverture</label>
+            <div className="flex gap-2">
+              <input
+                type="url"
+                value={form.image}
+                onChange={(e) => setForm((prev) => ({ ...prev, image: e.target.value }))}
+                placeholder="https://images.unsplash.com/…"
+                className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-rose-300"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="flex items-center gap-1.5 text-sm font-medium text-rose-500 border border-rose-300 hover:bg-rose-50 disabled:opacity-50 px-3 py-2 rounded-xl transition-colors whitespace-nowrap"
+              >
+                {uploading ? (
+                  <span className="w-4 h-4 border-2 border-rose-400 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  "📁"
+                )}
+                {uploading ? "Upload…" : "Uploader"}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleImageUpload(file);
+                  e.target.value = "";
+                }}
+              />
+            </div>
+            {sizeWarning && (
+              <p className="text-xs text-amber-600 mt-1">
+                ⚠️ Image &gt; 5 MB — pensez à la compresser pour de meilleures performances.
+              </p>
+            )}
+            {uploadError && (
+              <p className="text-xs text-red-500 mt-1">{uploadError}</p>
+            )}
             {form.image && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={form.image} alt="preview" className="mt-2 h-24 w-full object-cover rounded-xl" />
