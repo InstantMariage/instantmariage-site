@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { supabase } from "@/lib/supabase";
+import { calculerCommission, tauxCommission } from "@/lib/cagnotte-utils";
 
 /* ─────────────────── Types ─────────────────── */
 type Statut = "brouillon" | "publie" | "archive";
@@ -163,6 +164,12 @@ export default function FairePartsPage() {
   const [deleting, setDeleting] = useState(false);
   const [showChangeTemplate, setShowChangeTemplate] = useState(false);
   const [changingTemplate, setChangingTemplate] = useState(false);
+  const [cagnotteModal, setCagnotteModal] = useState<{
+    titre: string;
+    contributions: CagnotteContribution[];
+    totalCents: number;
+    objectifCents: number;
+  } | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -594,8 +601,16 @@ export default function FairePartsPage() {
                       {inv.cagnotte_active && (
                         <div className="px-5 pb-5">
                           <div
-                            className="rounded-2xl p-4 space-y-3"
+                            className="rounded-2xl p-4 space-y-3 cursor-pointer transition-shadow hover:shadow-md"
                             style={{ background: "#FFF0F5", border: "1px solid #FECDD3" }}
+                            onClick={() =>
+                              setCagnotteModal({
+                                titre: inv.cagnotte_titre ?? "Cagnotte mariage",
+                                contributions: inv.cagnotteContributions,
+                                totalCents: inv.cagnotteTotal,
+                                objectifCents: inv.cagnotte_objectif_cents ?? 0,
+                              })
+                            }
                           >
                             {/* Header cagnotte */}
                             <div className="flex items-center justify-between">
@@ -632,33 +647,16 @@ export default function FairePartsPage() {
                               </div>
                             )}
 
-                            {/* Liste des contributeurs */}
+                            {/* CTA contributions */}
                             {inv.cagnotteContributions.length === 0 ? (
                               <p className="text-xs text-gray-400 text-center py-1">
                                 En attente des premiers cadeaux…
                               </p>
                             ) : (
-                              <div className="space-y-2 max-h-48 overflow-y-auto">
-                                {inv.cagnotteContributions.map((c, idx) => (
-                                  <div
-                                    key={idx}
-                                    className="flex items-start justify-between gap-3 py-2 border-t first:border-t-0"
-                                    style={{ borderColor: "#FECDD3" }}
-                                  >
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-xs font-semibold text-gray-800 truncate">{c.contributeur_nom}</p>
-                                      {c.message && (
-                                        <p className="text-xs text-gray-500 italic mt-0.5 line-clamp-2">&ldquo;{c.message}&rdquo;</p>
-                                      )}
-                                      <p className="text-xs text-gray-400 mt-0.5">
-                                        {new Date(c.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
-                                      </p>
-                                    </div>
-                                    <span className="shrink-0 text-sm font-bold" style={{ color: "#F06292" }}>
-                                      +{(c.montant_cents / 100).toFixed(0)} €
-                                    </span>
-                                  </div>
-                                ))}
+                              <div className="flex items-center justify-center">
+                                <span className="text-xs font-semibold" style={{ color: "#F06292" }}>
+                                  Voir les {inv.cagnotteContributions.length} contribution{inv.cagnotteContributions.length > 1 ? "s" : ""} →
+                                </span>
                               </div>
                             )}
                           </div>
@@ -674,6 +672,123 @@ export default function FairePartsPage() {
           )}
         </div>
       </div>
+
+      {/* ── Modal cagnotte ── */}
+      {cagnotteModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.5)" }}
+          onClick={() => setCagnotteModal(null)}
+        >
+          <div
+            className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🎁</span>
+                <h2 className="text-base font-bold text-gray-900">{cagnotteModal.titre}</h2>
+              </div>
+              <button
+                onClick={() => setCagnotteModal(null)}
+                className="p-1.5 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Résumé + barre de progression */}
+            <div className="rounded-xl p-4 mb-4 space-y-2" style={{ background: "#FFF0F5", border: "1px solid #FECDD3" }}>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Total collecté</span>
+                <span className="text-sm font-bold" style={{ color: "#e91e8c" }}>
+                  {(cagnotteModal.totalCents / 100).toFixed(0)} €
+                </span>
+              </div>
+              {cagnotteModal.objectifCents > 0 && (
+                <>
+                  <div className="h-2 rounded-full bg-white overflow-hidden">
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${Math.min(100, Math.round((cagnotteModal.totalCents / cagnotteModal.objectifCents) * 100))}%`,
+                        background: "linear-gradient(90deg, #F06292, #e91e8c)",
+                      }}
+                    />
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-xs text-gray-400">sur {(cagnotteModal.objectifCents / 100).toFixed(0)} € objectif</span>
+                    <span className="text-xs text-gray-400">
+                      {Math.min(100, Math.round((cagnotteModal.totalCents / cagnotteModal.objectifCents) * 100))}%
+                    </span>
+                  </div>
+                </>
+              )}
+              <div className="pt-1 border-t" style={{ borderColor: "#FECDD3" }}>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-500">
+                    Net après commission ({tauxCommission(cagnotteModal.totalCents)})
+                  </span>
+                  <span className="text-xs font-semibold text-gray-700">
+                    {((cagnotteModal.totalCents - calculerCommission(cagnotteModal.totalCents)) / 100).toFixed(0)} €
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Liste des contributions */}
+            <div className="overflow-y-auto" style={{ maxHeight: "240px" }}>
+              {cagnotteModal.contributions.length === 0 ? (
+                <p className="text-sm text-gray-400 text-center py-6">
+                  Aucune contribution pour l&apos;instant.<br />
+                  <span className="text-xs">Partagez votre faire-part !</span>
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {cagnotteModal.contributions.map((c, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-start justify-between gap-3 pb-3 border-b last:border-b-0"
+                      style={{ borderColor: "#F3F4F6" }}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-800">{c.contributeur_nom}</p>
+                        {c.message && (
+                          <p className="text-xs text-gray-500 italic mt-0.5">&ldquo;{c.message}&rdquo;</p>
+                        )}
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {new Date(c.created_at).toLocaleDateString("fr-FR", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })}
+                        </p>
+                      </div>
+                      <span className="shrink-0 text-sm font-bold" style={{ color: "#F06292" }}>
+                        +{(c.montant_cents / 100).toFixed(0)} €
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="mt-5 pt-4 border-t border-gray-100">
+              <a
+                href={`mailto:contact@instantmariage.fr?subject=${encodeURIComponent("Demande de virement cagnotte - " + cagnotteModal.titre)}`}
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full text-sm font-semibold transition-all duration-200 hover:opacity-90 active:scale-95"
+                style={{ border: "2px solid #F06292", color: "#F06292", background: "white" }}
+              >
+                Demander le virement
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
 
