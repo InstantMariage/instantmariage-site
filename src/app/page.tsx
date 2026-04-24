@@ -65,8 +65,8 @@ export default function Home() {
       <Header />
       <Hero />
       <HowItWorks />
-      <VendorBanner />
       <FeaturedProviders />
+      <VendorBanner />
       <FreeTools />
       <Testimonials />
       <Footer />
