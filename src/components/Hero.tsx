@@ -39,7 +39,7 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-8">
       {/* Background image with overlay */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -65,7 +65,7 @@ export default function Hero() {
         {/* Badge */}
         <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/30 text-white text-sm font-medium px-4 py-2 rounded-full mb-8">
           <span className="text-gold-300">✦</span>
-          <span>La plateforme #1 des prestataires mariage en France</span>
+          <span>La nouvelle façon d&apos;organiser son mariage</span>
           <span className="text-gold-300">✦</span>
         </div>
 
