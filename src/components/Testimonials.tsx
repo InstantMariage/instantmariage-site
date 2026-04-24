@@ -53,12 +53,11 @@ export default function Testimonials() {
         <div className="mt-14 bg-white rounded-2xl shadow-card p-6 md:p-8">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-6 text-center">
             {[
-              { value: "500+", label: "Mariages organisés", icon: "💍" },
-              { value: "100+", label: "Prestataires vérifiés", icon: "✅" },
-              { value: "100%", label: "Avis authentiques", icon: "🛡️" },
+              { value: "🇫🇷", label: "Partout en France" },
+              { value: "✅", label: "Profils vérifiés" },
+              { value: "💝", label: "Gratuit pour les mariés" },
             ].map((badge) => (
               <div key={badge.label} className="flex flex-col items-center">
-                <span className="text-2xl mb-2">{badge.icon}</span>
                 <p
                   className="text-2xl md:text-3xl font-bold text-gray-900"
                   style={{ fontFamily: "var(--font-playfair), serif" }}

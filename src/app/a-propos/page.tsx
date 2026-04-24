@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 };
 
 const stats = [
-  { value: "100+", label: "Prestataires référencés", icon: "🤝" },
+  { value: "50+", label: "Prestataires référencés", icon: "🤝" },
   { value: "🚀", label: "En plein lancement", icon: "" },
   { value: "13", label: "Régions couvertes", icon: "🇫🇷" },
   { value: "Nouveau", label: "Satisfaction client", icon: "⭐" },
@@ -203,7 +203,7 @@ export default function APropos() {
               {
                 icon: "🔍",
                 title: "Trouvez",
-                desc: "Accédez à 100+ prestataires vérifiés en quelques clics.",
+                desc: "Accédez à des prestataires vérifiés partout en France en quelques clics.",
               },
               {
                 icon: "💬",

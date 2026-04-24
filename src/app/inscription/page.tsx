@@ -344,7 +344,7 @@ export default function InscriptionPage() {
                 Rejoignez InstantMariage
               </h1>
               <p className="text-gray-500 text-lg font-light">
-                Gratuit · Sans engagement · 100+ membres
+                Gratuit · Sans engagement · Rejoignez notre communauté
               </p>
             </div>
           )}
