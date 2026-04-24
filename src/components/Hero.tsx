@@ -43,7 +43,7 @@ export default function Hero() {
       {/* Background image with overlay */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="https://images.unsplash.com/photo-1519741497674-611481863552?w=1920&q=80"
+          src="https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777030776686-pexels-imagestudio-1488312-2.jpg"
           alt="Couple lors de leur mariage"
           fill
           className="object-cover object-center"
