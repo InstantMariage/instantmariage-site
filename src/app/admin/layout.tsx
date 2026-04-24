@@ -204,6 +204,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={() => {
+                  if (item.badgeKey) {
+                    setBadges(prev => ({ ...prev, [item.badgeKey!]: 0 }));
+                  }
+                }}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
                 style={
                   isActive
