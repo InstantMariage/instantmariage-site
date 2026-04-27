@@ -100,6 +100,8 @@ const IconStar = () => (
   </svg>
 );
 
+const SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000001";
+
 type ConversationItem = {
   id: string;
   other_name: string;
@@ -301,7 +303,9 @@ function DashboardPrestataire() {
             ]);
 
             let displayName = "Utilisateur";
-            if (marie) {
+            if (otherId === SYSTEM_USER_ID) {
+              displayName = "InstantMariage";
+            } else if (marie) {
               displayName = marie.prenom_marie2
                 ? `${marie.prenom_marie1} & ${marie.prenom_marie2}`
                 : marie.prenom_marie1;
