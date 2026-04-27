@@ -5,7 +5,7 @@ import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import type { PlanAbonnement } from "@/lib/supabase";
 import { renderInvitationVideo } from "../../../../../lib/remotion-lambda";
-import { sendInvitationConfirmationEmail, sendCagnotteMerciEmail, sendCagnotteNotifEmail } from "@/lib/emails";
+import { sendInvitationConfirmationEmail, sendCagnotteMerciEmail, sendCagnotteNotifEmail, sendCommandeCadreEmail } from "@/lib/emails";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-03-31.basil",
@@ -331,6 +331,59 @@ export async function POST(req: NextRequest) {
         if (error) {
           console.error("[webhook/qrcode_template] Erreur UPDATE maries:", error);
         }
+        return NextResponse.json({ received: true });
+      }
+
+      // ── Cadre physique ────────────────────────────────────────────
+      if (session.metadata?.product_type === "cadre_physique") {
+        const marieId = session.metadata?.marie_id;
+        const templateId = session.metadata?.template_id;
+        const adresseJson = session.metadata?.adresse_livraison ?? "{}";
+
+        if (!marieId || !templateId) {
+          console.error("[webhook/cadre_physique] Metadata manquante");
+          return NextResponse.json({ received: true });
+        }
+
+        // Met à jour qrcode_template_achete si pas encore acheté
+        const { data: marie } = await supabase
+          .from("maries")
+          .select("prenom_marie1, prenom_marie2, qrcode_template_achete")
+          .eq("id", marieId)
+          .single();
+
+        if (marie && !marie.qrcode_template_achete) {
+          await supabase
+            .from("maries")
+            .update({ qrcode_template_achete: templateId })
+            .eq("id", marieId);
+        }
+
+        // Envoie l'email admin
+        let adresse: Record<string, string> = {};
+        try { adresse = JSON.parse(adresseJson); } catch { /* ignore */ }
+
+        const coupleNames = marie
+          ? marie.prenom_marie2
+            ? `${marie.prenom_marie1} & ${marie.prenom_marie2}`
+            : marie.prenom_marie1
+          : "Couple";
+
+        try {
+          await sendCommandeCadreEmail({
+            coupleNames,
+            templateId,
+            adresse: adresse.adresse ?? "",
+            codePostal: adresse.codePostal ?? "",
+            ville: adresse.ville ?? "",
+            telephone: adresse.telephone ?? "",
+            dateMariage: adresse.dateMariage ?? "",
+            marieId,
+          });
+        } catch (emailErr) {
+          console.error("[webhook/cadre_physique] Erreur email admin:", emailErr);
+        }
+
         return NextResponse.json({ received: true });
       }
 

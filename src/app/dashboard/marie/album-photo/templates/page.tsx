@@ -1021,6 +1021,7 @@ function TemplatesPageContent() {
 
           {/* Main layout */}
           {albumSlug && (
+            <>
             <div className="grid lg:grid-cols-5 gap-10 items-start">
 
               {/* ── Left: selector + action ─── */}
@@ -1124,49 +1125,58 @@ function TemplatesPageContent() {
                   </div>
                 )}
 
-                {/* Action button */}
+                {/* Action buttons */}
                 {isUnlocked ? (
-                  <button
-                    onClick={downloadPDF}
-                    disabled={downloading || !qrDataUrl}
-                    className="w-full py-3.5 rounded-2xl text-sm font-semibold transition-all disabled:opacity-50"
-                    style={{ background: "#1a1a1a", color: "#fff" }}
-                  >
-                    {downloading ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        Génération PDF…
-                      </span>
-                    ) : (
-                      "Télécharger en PDF"
-                    )}
-                  </button>
+                  <div className="space-y-3">
+                    <button
+                      onClick={downloadPDF}
+                      disabled={downloading || !qrDataUrl}
+                      className="w-full py-3.5 rounded-2xl text-sm font-semibold transition-all disabled:opacity-50"
+                      style={{ background: "#F06292", color: "#fff" }}
+                    >
+                      {downloading ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Génération PDF…
+                        </span>
+                      ) : (
+                        "📄 Format digital — 9,90€"
+                      )}
+                    </button>
+                    <Link
+                      href={`/dashboard/marie/album-photo/commander-cadre?template=${selectedTemplate}`}
+                      className="w-full py-3.5 rounded-2xl text-sm font-semibold block text-center transition-all"
+                      style={{ background: "#1a1a1a", color: "#fff" }}
+                    >
+                      🖼️ Cadre livré chez vous — 39,90€
+                    </Link>
+                  </div>
                 ) : (
-                  <div>
+                  <div className="space-y-3">
                     <button
                       onClick={handleCheckout}
                       disabled={paying}
                       className="w-full py-3.5 rounded-2xl text-sm font-semibold transition-all disabled:opacity-50"
-                      style={{
-                        background: selectedConfig.accent,
-                        color:
-                          selectedTemplate === "nuit-romantique" ||
-                          selectedTemplate === "elegance-doree"
-                            ? "#1a1a1a"
-                            : "#fff",
-                      }}
+                      style={{ background: "#F06292", color: "#fff" }}
                     >
                       {paying ? (
                         <span className="flex items-center justify-center gap-2">
-                          <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                          <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                           Redirection…
                         </span>
                       ) : (
-                        `Choisir ce template — 9,90€`
+                        "📄 Format digital — 9,90€"
                       )}
                     </button>
-                    <p className="text-xs text-gray-400 text-center mt-2.5">
-                      Paiement unique · Accès illimité 12 mois · Tous les designs
+                    <Link
+                      href={`/dashboard/marie/album-photo/commander-cadre?template=${selectedTemplate}`}
+                      className="w-full py-3.5 rounded-2xl text-sm font-semibold block text-center transition-all"
+                      style={{ background: "#1a1a1a", color: "#fff" }}
+                    >
+                      🖼️ Cadre livré chez vous — 39,90€
+                    </Link>
+                    <p className="text-xs text-gray-400 text-center">
+                      Format digital : accès illimité 12 mois · Cadre : livraison 5–7 jours
                     </p>
                   </div>
                 )}
@@ -1213,6 +1223,142 @@ function TemplatesPageContent() {
               </div>
 
             </div>
+
+            {/* ── Table mockup section ── */}
+            <div className="mt-20">
+              <div className="text-center mb-6">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">
+                  Visualisez votre cadre sur votre table
+                </p>
+                <p className="text-sm text-gray-400">
+                  Cadre blanc 15×20 cm + carte QR Code imprimée · livraison 5–7 jours ouvrés
+                </p>
+              </div>
+
+              <div
+                className="relative rounded-3xl overflow-hidden"
+                style={{
+                  backgroundImage:
+                    "url(https://images.pexels.com/photos/1024993/pexels-photo-1024993.jpeg)",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center 30%",
+                  height: 460,
+                }}
+              >
+                <div
+                  className="absolute inset-0"
+                  style={{ background: "rgba(0,0,0,0.18)" }}
+                />
+
+                {/* White frame with template */}
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%) rotate(-1.8deg)",
+                    width: 190,
+                    height: 253,
+                    background: "#ffffff",
+                    borderRadius: 3,
+                    padding: 10,
+                    boxShadow:
+                      "0 30px 80px rgba(0,0,0,0.5), 0 8px 24px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.6)",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      overflow: "hidden",
+                      position: "relative",
+                      borderRadius: 1,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: A4_W,
+                        height: A4_H,
+                        transform: `scale(${170 / A4_W})`,
+                        transformOrigin: "top left",
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                      }}
+                    >
+                      <TemplateContent
+                        id={selectedTemplate}
+                        names={names}
+                        qrDataUrl={qrDataUrl}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Label badge */}
+                <div
+                  className="absolute bottom-5 left-1/2"
+                  style={{ transform: "translateX(-50%)" }}
+                >
+                  <span
+                    className="text-xs font-medium px-4 py-2 rounded-full whitespace-nowrap"
+                    style={{
+                      background: "rgba(255,255,255,0.92)",
+                      color: "#555",
+                      backdropFilter: "blur(8px)",
+                    }}
+                  >
+                    Posé sur votre table de mariage · Se met à jour en temps réel
+                  </span>
+                </div>
+              </div>
+
+              {/* 2 buttons under mockup */}
+              <div className="flex flex-col sm:flex-row gap-3 mt-6 max-w-lg mx-auto">
+                {isUnlocked ? (
+                  <button
+                    onClick={downloadPDF}
+                    disabled={downloading || !qrDataUrl}
+                    className="flex-1 py-3.5 rounded-2xl text-sm font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    style={{ background: "#F06292", color: "#fff" }}
+                  >
+                    {downloading ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Génération…
+                      </>
+                    ) : (
+                      "📄 Format digital — 9,90€"
+                    )}
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleCheckout}
+                    disabled={paying}
+                    className="flex-1 py-3.5 rounded-2xl text-sm font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    style={{ background: "#F06292", color: "#fff" }}
+                  >
+                    {paying ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Redirection…
+                      </>
+                    ) : (
+                      "📄 Format digital — 9,90€"
+                    )}
+                  </button>
+                )}
+                <Link
+                  href={`/dashboard/marie/album-photo/commander-cadre?template=${selectedTemplate}`}
+                  className="flex-1 py-3.5 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 text-center transition-all"
+                  style={{ background: "#1a1a1a", color: "#fff" }}
+                >
+                  🖼️ Cadre livré chez vous — 39,90€
+                </Link>
+              </div>
+            </div>
+
+            </>
           )}
 
         </div>

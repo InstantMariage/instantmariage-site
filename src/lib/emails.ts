@@ -938,6 +938,125 @@ export async function sendNewDocumentEmail({
   });
 }
 
+// ─── Email 12 : Commande cadre physique (admin) ──────────────────────────────
+
+export async function sendCommandeCadreEmail({
+  coupleNames,
+  templateId,
+  adresse,
+  codePostal,
+  ville,
+  telephone,
+  dateMariage,
+  marieId,
+}: {
+  coupleNames: string;
+  templateId: string;
+  adresse: string;
+  codePostal: string;
+  ville: string;
+  telephone: string;
+  dateMariage: string;
+  marieId: string;
+}) {
+  const adminEmail = process.env.ADMIN_EMAIL ?? "contact@instantmariage.fr";
+
+  const TEMPLATE_LABELS: Record<string, string> = {
+    "elegance-doree": "Élégance Dorée",
+    "boheme-rose": "Bohème Rose",
+    "moderne-minimaliste": "Moderne Minimaliste",
+    "nuit-romantique": "Nuit Romantique",
+  };
+  const templateLabel = TEMPLATE_LABELS[templateId] ?? templateId;
+
+  const content = `
+    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#F06292;letter-spacing:0.5px;text-transform:uppercase;">Action requise — Nouvelle commande cadre</p>
+    <h1 style="margin:0 0 24px;font-size:26px;font-weight:700;color:#1a1a1a;line-height:1.25;">
+      Préparer et expédier la commande
+    </h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#555555;line-height:1.65;">
+      Un couple vient de commander un cadre physique avec carte QR Code imprimée.
+    </p>
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#fafafa;border-radius:12px;padding:24px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;width:160px;">Couple</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:600;color:#1a1a1a;">${coupleNames}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Template</td>
+              <td style="padding:6px 0;font-size:14px;color:#333333;">${templateLabel}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Date du mariage</td>
+              <td style="padding:6px 0;font-size:14px;color:#333333;">${dateMariage}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Téléphone</td>
+              <td style="padding:6px 0;font-size:14px;color:#333333;">${telephone}</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#FFF8F0;border-left:3px solid #F06292;border-radius:0 8px 8px 0;padding:16px 20px;">
+          <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#F06292;text-transform:uppercase;letter-spacing:0.5px;">Adresse de livraison</p>
+          <p style="margin:0;font-size:15px;font-weight:600;color:#1a1a1a;line-height:1.8;">
+            ${adresse}<br/>
+            ${codePostal} ${ville}
+          </p>
+        </td>
+      </tr>
+    </table>
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#F0FDF4;border-left:3px solid #10B981;border-radius:0 8px 8px 0;padding:16px 20px;">
+          <p style="margin:0 0 4px;font-size:12px;font-weight:700;color:#10B981;text-transform:uppercase;letter-spacing:0.5px;">Produit à expédier</p>
+          <p style="margin:0;font-size:14px;color:#1a1a1a;line-height:1.6;">
+            Cadre blanc 15×20 cm + carte QR Code imprimée (design&nbsp;: ${templateLabel})<br/>
+            <span style="color:#555;font-size:13px;">Délai : 5–7 jours ouvrés · Livraison incluse</span>
+          </p>
+        </td>
+      </tr>
+    </table>
+    ${ctaButton("Voir le dashboard admin", `${SITE_URL}/admin`)}
+  `;
+
+  const text = [
+    `[Commande cadre] Action requise — InstantMariage.fr`,
+    "",
+    `Couple : ${coupleNames}`,
+    `Template : ${templateLabel}`,
+    `Date du mariage : ${dateMariage}`,
+    `Téléphone : ${telephone}`,
+    "",
+    `Adresse de livraison :`,
+    adresse,
+    `${codePostal} ${ville}`,
+    "",
+    `Produit : Cadre blanc 15×20 cm + carte QR Code imprimée`,
+    `Délai : 5–7 jours ouvrés · Livraison incluse`,
+    "",
+    `Marie ID : ${marieId}`,
+    textFooter(),
+  ].join("\n");
+
+  return resend.emails.send({
+    from: FROM,
+    to: adminEmail,
+    subject: `[Cadre] Nouvelle commande — ${coupleNames} · ${ville}`,
+    html: baseTemplate(content),
+    text,
+  });
+}
+
 // ─── Email 4 : Nouveau prestataire (admin) ────────────────────────────────────
 
 export async function sendNewPrestaireAdminEmail({
