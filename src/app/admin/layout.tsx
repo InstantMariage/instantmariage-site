@@ -33,6 +33,16 @@ const NAV: NavItem[] = [
     ),
   },
   {
+    href: "/admin/documents",
+    label: "Documents",
+    badgeKey: "documents",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    ),
+  },
+  {
     href: "/admin/prestataires",
     label: "Prestataires",
     badgeKey: "prestataires",
@@ -160,6 +170,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { count: virements },
         { count: contributions },
         { count: blog },
+        { count: documents },
       ] = await Promise.all([
         supabase.from("prestataires").select("id", { count: "exact", head: true }).gte("created_at", maxDate(lastVisit("prestataires"), weekAgo)),
         supabase.from("maries").select("id", { count: "exact", head: true }).gte("created_at", maxDate(lastVisit("maries"), todayStart)),
@@ -169,6 +180,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         supabase.from("invitations").select("id", { count: "exact", head: true }).eq("virement_statut", "demande").gte("created_at", lastVisit("cagnottes")),
         supabase.from("cagnotte_contributions").select("id", { count: "exact", head: true }).eq("statut", "paye").gte("created_at", maxDate(lastVisit("cagnottes"), dayAgo)),
         supabase.from("articles").select("id", { count: "exact", head: true }).eq("statut", "brouillon"),
+        supabase.from("documents_prestataire").select("id", { count: "exact", head: true }).gte("created_at", lastVisit("documents")),
       ]);
 
       setBadges({
@@ -179,6 +191,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         abonnements: abonnements ?? 0,
         cagnottes: (virements ?? 0) + (contributions ?? 0),
         blog: blog ?? 0,
+        documents: documents ?? 0,
       });
     };
 
