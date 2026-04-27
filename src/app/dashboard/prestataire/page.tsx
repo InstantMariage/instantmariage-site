@@ -245,10 +245,38 @@ function DashboardPrestataire() {
           }
         }
       } else {
+        // FIX BUG #2 — Profil absent (cas OAuth sans création) : création silencieuse + rechargement
         const meta = session.user.user_metadata;
-        setNomEntreprise(meta?.nom_entreprise || session.user.email?.split("@")[0] || "");
-        setCategorie(meta?.categorie || "");
-        setVille(meta?.ville || "");
+        const nomEntreprise =
+          meta?.full_name || meta?.name || meta?.nom_entreprise ||
+          session.user.email?.split("@")[0] || "Mon entreprise";
+
+        await fetch("/api/inscription/prestataire", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: session.user.id,
+            nom_entreprise: nomEntreprise,
+            categorie: meta?.categorie || "Autre",
+            ville: meta?.ville || "",
+            telephone: meta?.telephone || "",
+          }),
+        }).catch(() => {});
+
+        const { data: created } = await supabase
+          .from("prestataires")
+          .select("id, nom_entreprise, categorie, ville, verifie, code_parrainage")
+          .eq("user_id", session.user.id)
+          .maybeSingle();
+
+        if (created) {
+          setNomEntreprise(created.nom_entreprise || "");
+          setVerifie(created.verifie ?? false);
+          setPrestataireId(created.id);
+          setCategorie(created.categorie || "");
+          setVille(created.ville || "");
+          if (created.code_parrainage) setCodeParrainage(created.code_parrainage);
+        }
       }
 
       // Charger les conversations

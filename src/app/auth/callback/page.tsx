@@ -46,7 +46,8 @@ function AuthCallbackContent() {
         return;
       }
 
-      // Flux OAuth (Google, etc.)
+      // ── Flux OAuth (Google, etc.) ──────────────────────────────────────────
+
       if (!code) {
         setStatus("Erreur : paramètre manquant.");
         setTimeout(() => router.push("/login?error=oauth_failed"), 2000);
@@ -64,19 +65,72 @@ function AuthCallbackContent() {
       const user = data.session.user;
       let role = user.user_metadata?.role as string | undefined;
 
-      // Inscription via Google : on récupère le rôle choisi avant l'OAuth
+      // FIX BUG #3 — Récupère le rôle depuis localStorage si absent du metadata
       if (!role) {
         const intendedRole = localStorage.getItem("oauth_intended_role");
         if (intendedRole === "marie" || intendedRole === "prestataire") {
           role = intendedRole;
           await supabase.auth.updateUser({ data: { role } });
         }
-        localStorage.removeItem("oauth_intended_role");
+      }
+      localStorage.removeItem("oauth_intended_role");
+
+      // FIX BUG #3 — Si toujours pas de rôle : renvoie choisir plutôt qu'assigner par défaut
+      if (!role) {
+        router.push("/inscription?oauth=true");
+        return;
       }
 
+      // FIX BUG #1 — Crée le profil s'il n'existe pas encore en base
+      setStatus("Finalisation de votre compte…");
+
       if (role === "prestataire") {
+        const { data: existing } = await supabase
+          .from("prestataires")
+          .select("id")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (!existing) {
+          const nomEntreprise =
+            user.user_metadata?.full_name ||
+            user.user_metadata?.name ||
+            user.email?.split("@")[0] ||
+            "Mon entreprise";
+
+          await fetch("/api/inscription/prestataire", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_id: user.id,
+              nom_entreprise: nomEntreprise,
+              categorie: "Autre",
+            }),
+          });
+        }
+
         router.push("/dashboard/prestataire");
       } else {
+        const { data: existing } = await supabase
+          .from("maries")
+          .select("id")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (!existing) {
+          const fullName = user.user_metadata?.full_name || user.user_metadata?.name || "";
+          const prenomMarie1 = fullName.split(" ")[0] || "Prénom";
+
+          await fetch("/api/inscription/marie", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_id: user.id,
+              prenom_marie1: prenomMarie1,
+            }),
+          });
+        }
+
         router.push("/dashboard/marie");
       }
     };
