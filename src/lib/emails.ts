@@ -1136,3 +1136,195 @@ export async function sendNewPrestaireAdminEmail({
     headers: unsubscribeHeaders,
   });
 }
+
+// ─── Email 13 : Commande chevalet physique (admin) ────────────────────────────
+
+export async function sendCommandeChevaletEmail({
+  coupleNames,
+  adresse,
+  codePostal,
+  ville,
+  telephone,
+  dateMariage,
+  marieId,
+}: {
+  coupleNames: string;
+  adresse: string;
+  codePostal: string;
+  ville: string;
+  telephone: string;
+  dateMariage: string;
+  marieId: string;
+}) {
+  const adminEmail = process.env.ADMIN_EMAIL ?? "contact@instantmariage.fr";
+
+  const content = `
+    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#6366F1;letter-spacing:0.5px;text-transform:uppercase;">Action requise — Nouvelle commande chevalet</p>
+    <h1 style="margin:0 0 24px;font-size:26px;font-weight:700;color:#1a1a1a;line-height:1.25;">
+      Préparer et expédier la commande
+    </h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#555555;line-height:1.65;">
+      Un couple vient de commander un chevalet cartonné premium avec carte QR Code.
+    </p>
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#fafafa;border-radius:12px;padding:24px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;width:160px;">Couple</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:600;color:#1a1a1a;">${coupleNames}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Date du mariage</td>
+              <td style="padding:6px 0;font-size:14px;color:#333333;">${dateMariage}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Téléphone</td>
+              <td style="padding:6px 0;font-size:14px;color:#333333;">${telephone}</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#FFF8F0;border-left:3px solid #6366F1;border-radius:0 8px 8px 0;padding:16px 20px;">
+          <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#6366F1;text-transform:uppercase;letter-spacing:0.5px;">Adresse de livraison</p>
+          <p style="margin:0;font-size:15px;font-weight:600;color:#1a1a1a;line-height:1.8;">
+            ${adresse}<br/>
+            ${codePostal} ${ville}
+          </p>
+        </td>
+      </tr>
+    </table>
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#F0FDF4;border-left:3px solid #10B981;border-radius:0 8px 8px 0;padding:16px 20px;">
+          <p style="margin:0 0 4px;font-size:12px;font-weight:700;color:#10B981;text-transform:uppercase;letter-spacing:0.5px;">Produit à expédier</p>
+          <p style="margin:0;font-size:14px;color:#1a1a1a;line-height:1.6;">
+            Chevalet cartonné premium + carte QR Code imprimée<br/>
+            <span style="color:#555;font-size:13px;">Délai : 5–7 jours ouvrés · Livraison incluse · 19,90 €</span>
+          </p>
+        </td>
+      </tr>
+    </table>
+    ${ctaButton("Voir les commandes admin", `${SITE_URL}/admin/commandes`)}
+  `;
+
+  const text = [
+    `[Commande chevalet] Action requise — InstantMariage.fr`,
+    "",
+    `Couple : ${coupleNames}`,
+    `Date du mariage : ${dateMariage}`,
+    `Téléphone : ${telephone}`,
+    "",
+    `Adresse de livraison :`,
+    adresse,
+    `${codePostal} ${ville}`,
+    "",
+    `Produit : Chevalet cartonné premium + carte QR Code`,
+    `Délai : 5–7 jours ouvrés · Livraison incluse · 19,90 €`,
+    "",
+    `Marie ID : ${marieId}`,
+    textFooter(),
+  ].join("\n");
+
+  return resend.emails.send({
+    from: FROM,
+    to: adminEmail,
+    subject: `[Chevalet] Nouvelle commande — ${coupleNames} · ${ville}`,
+    html: baseTemplate(content),
+    text,
+  });
+}
+
+// ─── Email 14 : Commande expédiée (marié) ─────────────────────────────────────
+
+export async function sendCommandeExpedieeEmail({
+  userEmail,
+  coupleNames,
+  produit,
+  nomDestinataire,
+  adresse,
+  codePostal,
+  ville,
+  numeroSuivi,
+}: {
+  userEmail: string;
+  coupleNames: string;
+  produit: string;
+  nomDestinataire: string;
+  adresse: string;
+  codePostal: string;
+  ville: string;
+  numeroSuivi: string;
+}) {
+  const produitLabel = produit === "cadre" ? "Cadre QR Code" : produit === "chevalet" ? "Chevalet QR Code" : "Votre commande";
+  const suivi = `https://www.laposte.fr/outils/suivre-vos-envois?code=${encodeURIComponent(numeroSuivi)}`;
+
+  const content = `
+    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#10B981;letter-spacing:0.5px;text-transform:uppercase;">Votre commande est en route !</p>
+    <h1 style="margin:0 0 24px;font-size:26px;font-weight:700;color:#1a1a1a;line-height:1.25;">
+      ${produitLabel} expédié
+    </h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#555555;line-height:1.65;">
+      Bonjour ${coupleNames},<br/><br/>
+      Bonne nouvelle ! Votre <strong>${produitLabel}</strong> vient d'être expédié. Vous le recevrez sous 2–3 jours ouvrés.
+    </p>
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#F0FDF4;border-left:3px solid #10B981;border-radius:0 8px 8px 0;padding:20px 24px;">
+          <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#10B981;text-transform:uppercase;letter-spacing:0.5px;">Numéro de suivi Colissimo</p>
+          <p style="margin:0;font-size:22px;font-weight:700;color:#1a1a1a;font-family:monospace;letter-spacing:0.08em;">${numeroSuivi}</p>
+        </td>
+      </tr>
+    </table>
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#fafafa;border-radius:12px;padding:20px;">
+          <p style="margin:0 0 8px;font-size:12px;font-weight:700;color:#aaaaaa;text-transform:uppercase;letter-spacing:0.5px;">Adresse de livraison</p>
+          <p style="margin:0;font-size:14px;color:#333333;line-height:1.8;">
+            ${nomDestinataire}<br/>
+            ${adresse}<br/>
+            ${codePostal} ${ville}
+          </p>
+        </td>
+      </tr>
+    </table>
+    ${ctaButton("Suivre ma livraison Colissimo", suivi)}
+    <p style="margin:24px 0 0;font-size:13px;color:#888888;line-height:1.6;text-align:center;">
+      Des questions ? Répondez à cet email ou contactez-nous sur <a href="mailto:contact@instantmariage.fr" style="color:#F06292;">contact@instantmariage.fr</a>
+    </p>
+  `;
+
+  const text = [
+    `[InstantMariage] Votre commande est expédiée !`,
+    "",
+    `Bonjour ${coupleNames},`,
+    "",
+    `Votre ${produitLabel} vient d'être expédié.`,
+    "",
+    `Numéro de suivi Colissimo : ${numeroSuivi}`,
+    `Suivre sur laposte.fr : ${suivi}`,
+    "",
+    `Adresse de livraison :`,
+    `${nomDestinataire}`,
+    `${adresse}`,
+    `${codePostal} ${ville}`,
+    "",
+    textFooter(),
+  ].join("\n");
+
+  return resend.emails.send({
+    from: FROM,
+    to: userEmail,
+    subject: `Votre ${produitLabel} est en route ! Suivi : ${numeroSuivi}`,
+    html: baseTemplate(content),
+    text,
+  });
+}

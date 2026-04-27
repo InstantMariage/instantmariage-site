@@ -5,7 +5,7 @@ import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import type { PlanAbonnement } from "@/lib/supabase";
 import { renderInvitationVideo } from "../../../../../lib/remotion-lambda";
-import { sendInvitationConfirmationEmail, sendCagnotteMerciEmail, sendCagnotteNotifEmail, sendCommandeCadreEmail } from "@/lib/emails";
+import { sendInvitationConfirmationEmail, sendCagnotteMerciEmail, sendCagnotteNotifEmail, sendCommandeCadreEmail, sendCommandeChevaletEmail } from "@/lib/emails";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-03-31.basil",
@@ -369,6 +369,21 @@ export async function POST(req: NextRequest) {
             : marie.prenom_marie1
           : "Couple";
 
+        await supabase.from("commandes").insert({
+          marie_id: marieId,
+          produit: "cadre",
+          template_id: templateId,
+          montant: 39.90,
+          nom_destinataire: `${adresse.prenom ?? ""} ${adresse.nom ?? ""}`.trim() || null,
+          adresse: adresse.adresse ?? "",
+          code_postal: adresse.codePostal ?? "",
+          ville: adresse.ville ?? "",
+          telephone: adresse.telephone ?? "",
+          date_mariage: adresse.dateMariage || null,
+          stripe_session_id: session.id,
+          statut: "recue",
+        });
+
         try {
           await sendCommandeCadreEmail({
             coupleNames,
@@ -382,6 +397,62 @@ export async function POST(req: NextRequest) {
           });
         } catch (emailErr) {
           console.error("[webhook/cadre_physique] Erreur email admin:", emailErr);
+        }
+
+        return NextResponse.json({ received: true });
+      }
+
+      // ── Chevalet physique ──────────────────────────────────────────────
+      if (session.metadata?.product_type === "chevalet_physique") {
+        const marieId = session.metadata?.marie_id;
+        const adresseJson = session.metadata?.adresse_livraison ?? "{}";
+
+        if (!marieId) {
+          console.error("[webhook/chevalet_physique] marie_id manquant");
+          return NextResponse.json({ received: true });
+        }
+
+        const { data: marie } = await supabase
+          .from("maries")
+          .select("prenom_marie1, prenom_marie2")
+          .eq("id", marieId)
+          .single();
+
+        let adresse: Record<string, string> = {};
+        try { adresse = JSON.parse(adresseJson); } catch { /* ignore */ }
+
+        const coupleNames = marie
+          ? marie.prenom_marie2
+            ? `${marie.prenom_marie1} & ${marie.prenom_marie2}`
+            : marie.prenom_marie1
+          : "Couple";
+
+        await supabase.from("commandes").insert({
+          marie_id: marieId,
+          produit: "chevalet",
+          montant: 19.90,
+          nom_destinataire: `${adresse.prenom ?? ""} ${adresse.nom ?? ""}`.trim() || null,
+          adresse: adresse.adresse ?? "",
+          code_postal: adresse.codePostal ?? "",
+          ville: adresse.ville ?? "",
+          telephone: adresse.telephone ?? "",
+          date_mariage: adresse.dateMariage || null,
+          stripe_session_id: session.id,
+          statut: "recue",
+        });
+
+        try {
+          await sendCommandeChevaletEmail({
+            coupleNames,
+            adresse: adresse.adresse ?? "",
+            codePostal: adresse.codePostal ?? "",
+            ville: adresse.ville ?? "",
+            telephone: adresse.telephone ?? "",
+            dateMariage: adresse.dateMariage ?? "",
+            marieId,
+          });
+        } catch (emailErr) {
+          console.error("[webhook/chevalet_physique] Erreur email admin:", emailErr);
         }
 
         return NextResponse.json({ received: true });

@@ -180,12 +180,12 @@ export default function Header() {
               <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-rose-400 group-hover:w-full transition-all duration-200" />
             </Link>
 
-            {/* Faire-part */}
+            {/* Boutique */}
             <Link
-              href="/faire-part"
+              href="/boutique"
               className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors duration-200 relative group py-2"
             >
-              Faire-part
+              Boutique
               <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-rose-400 group-hover:w-full transition-all duration-200" />
             </Link>
 
@@ -393,11 +393,11 @@ export default function Header() {
               Annuaire prestataires
             </Link>
             <Link
-              href="/faire-part"
+              href="/boutique"
               className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
               onClick={() => setMobileOpen(false)}
             >
-              Faire-part
+              Boutique
             </Link>
             {user?.role !== "marie" && (
               <Link
