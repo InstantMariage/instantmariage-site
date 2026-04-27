@@ -43,6 +43,15 @@ const NAV: NavItem[] = [
     ),
   },
   {
+    href: "/admin/upsell",
+    label: "Upsell",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5" />
+      </svg>
+    ),
+  },
+  {
     href: "/admin/prestataires",
     label: "Prestataires",
     badgeKey: "prestataires",

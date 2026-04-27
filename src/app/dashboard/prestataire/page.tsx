@@ -159,6 +159,7 @@ function DashboardPrestataire() {
   const [nbFilleuls, setNbFilleuls] = useState(0);
   const [moisGagnes, setMoisGagnes] = useState(0);
   const [copiedCode, setCopiedCode] = useState(false);
+  const [showUpsellBanner, setShowUpsellBanner] = useState(false);
 
   useEffect(() => {
     if (searchParams.get("success") === "true") {
@@ -180,7 +181,7 @@ function DashboardPrestataire() {
       // Récupérer profil prestataire
       const { data: prestataire } = await supabase
         .from("prestataires")
-        .select("id, nom_entreprise, categorie, ville, avatar_url, photos, description, telephone, site_web, note_moyenne, nb_avis, verifie, code_parrainage")
+        .select("id, nom_entreprise, categorie, ville, avatar_url, photos, description, telephone, site_web, note_moyenne, nb_avis, verifie, code_parrainage, show_upsell_banner")
         .eq("user_id", session.user.id)
         .single();
 
@@ -224,6 +225,7 @@ function DashboardPrestataire() {
 
         // Stats parrainage
         if (prestataire.code_parrainage) setCodeParrainage(prestataire.code_parrainage);
+        setShowUpsellBanner(prestataire.show_upsell_banner ?? false);
         if (parrainagesData) {
           setNbFilleuls(parrainagesData.length);
           setMoisGagnes(parrainagesData.reduce((s: number, p: { mois_offerts: number }) => s + p.mois_offerts, 0));
@@ -508,6 +510,49 @@ function DashboardPrestataire() {
             </div>
           </div>
         </div>
+
+        {/* Bannière upsell contextuelle — activée par l'admin depuis /admin/upsell */}
+        {showUpsellBanner && plan !== "premium" && (
+          <div
+            className="px-4 py-4"
+            style={{ background: "linear-gradient(90deg, #7C3AED 0%, #6D28D9 100%)" }}
+          >
+            <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div>
+                <p className="text-white font-bold text-sm sm:text-base leading-snug">
+                  🚀 Passez au plan {PLAN_CONFIG[plan].upgradeLabel?.replace("Passer ", "").replace(" →", "")} — débloque de nouvelles fonctionnalités !
+                </p>
+                <p className="text-purple-200 text-xs sm:text-sm mt-0.5">
+                  {plan === "gratuit" && "Accédez aux devis, à la messagerie prioritaire et boostez votre visibilité."}
+                  {plan === "starter" && "Factures, contrats illimités et statistiques avancées inclus."}
+                  {plan === "pro" && "Badge Premium, profil mis en avant et support dédié."}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <Link
+                  href="/tarifs"
+                  className="bg-white text-purple-700 font-bold text-sm px-5 py-2 rounded-full hover:bg-purple-50 transition-all duration-200 shadow-md"
+                >
+                  {PLAN_CONFIG[plan].upgradeLabel ?? "Voir les plans"}
+                </Link>
+                <button
+                  onClick={async () => {
+                    setShowUpsellBanner(false);
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (!session) return;
+                    fetch("/api/prestataire/dismiss-banner", {
+                      method: "PATCH",
+                      headers: { Authorization: `Bearer ${session.access_token}` },
+                    }).catch(() => {});
+                  }}
+                  className="text-purple-200 hover:text-white text-sm font-medium transition-colors px-2"
+                >
+                  Plus tard
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Banner Pro — visible uniquement pour les plans gratuit et starter */}
         {(plan === "gratuit" || plan === "starter") && (
