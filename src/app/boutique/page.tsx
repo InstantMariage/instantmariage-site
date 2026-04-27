@@ -267,13 +267,12 @@ export default function BoutiquePage() {
             className="text-4xl sm:text-5xl font-bold text-gray-900 mb-5 leading-tight"
             style={{ fontFamily: "Georgia, serif" }}
           >
-            Des souvenirs gravés
+            Collectez toutes les photos
             <br />
-            <span style={{ color: "#F06292" }}>pour toujours</span>
+            <span style={{ color: "#F06292" }}>de votre mariage — automatiquement</span>
           </h1>
           <p className="text-lg text-gray-500 leading-relaxed max-w-xl mx-auto">
-            Personnalisez vos supports QR Code et recevez-les chez vous. Posez-les le jour J,
-            collectez chaque souvenir de vos invités.
+            Vos invités scannent, leurs photos arrivent directement dans votre album. Sans application. Sans effort.
           </p>
         </div>
       </section>
@@ -444,10 +443,10 @@ export default function BoutiquePage() {
                   className="font-bold text-gray-900 mb-2 leading-snug"
                   style={{ fontFamily: "Georgia, serif", fontSize: "clamp(1.4rem, 3vw, 1.8rem)" }}
                 >
-                  Cadre QR Code personnalisé
+                  500+ photos de votre mariage, collectées automatiquement
                 </h2>
                 <p className="text-sm mb-8" style={{ color: "#9CA3AF" }}>
-                  4 designs élégants • Livraison 5–7 jours
+                  Posez le cadre à l'entrée ou sur la table d'honneur. Vos invités scannent et partagent leurs photos instantanément. Vous récupérez tout dans votre album privé.
                 </p>
 
                 {/* Price */}
@@ -537,19 +536,19 @@ export default function BoutiquePage() {
               {
                 icon: <CadreIcon />,
                 step: "1",
-                title: "Choisissez votre design",
+                title: "Posez-le sur votre table d'honneur",
                 desc: "4 designs élégants — sélectionnez le template qui correspond à votre décoration et la couleur de cadre.",
               },
               {
                 icon: <PersonIcon />,
                 step: "2",
-                title: "On personnalise avec vos prénoms",
+                title: "Ils partagent leurs photos en 10 secondes, sans application",
                 desc: "Votre QR Code et vos prénoms sont imprimés sur mesure selon le design de votre album.",
               },
               {
                 icon: <TruckIcon />,
                 step: "3",
-                title: "Recevez chez vous et posez le jour J",
+                title: "500+ photos dans votre album privé, téléchargeables en un clic",
                 desc: "Livraison en 5–7 jours ouvrés. Il ne reste plus qu'à poser sur vos tables le matin du mariage.",
               },
             ].map((item) => (
