@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, FormEvent } from "react";
 import { supabase } from "@/lib/supabase";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -43,6 +43,26 @@ type MonthStat = {
   month: string; // "Jan", "Fév", etc.
   ca: number;
   count: number;
+};
+
+type PromoCode = {
+  id: string;
+  code: string;
+  coupon: {
+    percent_off: number | null;
+    amount_off: number | null;
+    currency: string | null;
+    name: string | null;
+  };
+  expires_at: number | null;
+  times_redeemed: number;
+};
+
+type PromoForm = {
+  code: string;
+  reduction: string;
+  type: "percent" | "fixed";
+  expiresAt: string;
 };
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -439,42 +459,159 @@ function StatsTab() {
 // ─── Onglet Produits ──────────────────────────────────────────────────────────
 
 const PRODUITS = [
-  { id: "cadre", label: "Cadre QR Code", prix: "39,90€", actif: true },
-  { id: "template_digital", label: "Template Digital", prix: "9,90€", actif: true },
-  { id: "chevalet", label: "Chevalet QR Code", prix: "19,90€", actif: false },
+  { id: "cadre", label: "Cadre QR Code", actif: true },
+  { id: "template_digital", label: "Template Digital", actif: true },
+  { id: "chevalet", label: "Chevalet QR Code", actif: false },
 ];
 
 function ProduitsTab() {
+  const [prices, setPrices] = useState<Record<string, number>>({});
+  const [editing, setEditing] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
+  const [savingProduit, setSavingProduit] = useState<string | null>(null);
+  const [savedProduit, setSavedProduit] = useState<string | null>(null);
+  const [loadingPrices, setLoadingPrices] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch("/api/admin/boutique/prix", {
+        headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
+      });
+      const json = await res.json();
+      if (json.data) {
+        const map: Record<string, number> = {};
+        for (const row of json.data) map[row.produit] = row.prix;
+        setPrices(map);
+      }
+      setLoadingPrices(false);
+    })();
+  }, []);
+
+  function startEdit(produitId: string) {
+    setEditing(produitId);
+    setEditValue(String(prices[produitId] ?? ""));
+  }
+
+  function cancelEdit() {
+    setEditing(null);
+    setEditValue("");
+  }
+
+  async function handleSavePrix() {
+    if (!editing) return;
+    const prix = parseFloat(editValue.replace(",", "."));
+    if (isNaN(prix) || prix <= 0) return;
+    setSavingProduit(editing);
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch("/api/admin/boutique/prix", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session?.access_token ?? ""}`,
+      },
+      body: JSON.stringify({ produit: editing, nouveauPrix: prix }),
+    });
+    if (res.ok) {
+      const produit = editing;
+      setPrices((prev) => ({ ...prev, [produit]: prix }));
+      setEditing(null);
+      setSavedProduit(produit);
+      setTimeout(() => setSavedProduit(null), 2500);
+    }
+    setSavingProduit(null);
+  }
+
+  if (loadingPrices) {
+    return (
+      <div className="flex items-center justify-center h-32">
+        <div className="w-5 h-5 border-2 rounded-full animate-spin" style={{ borderColor: "#F06292", borderTopColor: "transparent" }} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4 max-w-xl">
-      {PRODUITS.map((p) => (
-        <div key={p.id} className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="font-semibold text-gray-900 text-sm">{p.label}</p>
-            <p className="text-xs text-gray-400 mt-0.5">{p.prix}</p>
+      {PRODUITS.map((p) => {
+        const currentPrix = prices[p.id];
+        const isEditing = editing === p.id;
+        const isSaving = savingProduit === p.id;
+        const wasSaved = savedProduit === p.id;
+
+        return (
+          <div key={p.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="p-5 flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-gray-900 text-sm">{p.label}</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {currentPrix !== undefined
+                    ? `${currentPrix.toFixed(2).replace(".", ",")} €`
+                    : "—"}
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full"
+                  style={
+                    p.actif
+                      ? { background: "#D1FAE5", color: "#059669" }
+                      : { background: "#F3F4F6", color: "#9CA3AF" }
+                  }
+                >
+                  {p.actif ? "Actif" : "Bientôt"}
+                </span>
+                <button
+                  onClick={() => (isEditing ? cancelEdit() : startEdit(p.id))}
+                  className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 transition-colors"
+                  style={
+                    wasSaved
+                      ? { color: "#059669", borderColor: "#D1FAE5", background: "#F0FDF4" }
+                      : isEditing
+                      ? { color: "#6B7280", background: "#F9FAFB" }
+                      : { color: "#374151" }
+                  }
+                >
+                  {wasSaved ? "Enregistré ✓" : isEditing ? "Annuler" : "Modifier le prix"}
+                </button>
+              </div>
+            </div>
+
+            {isEditing && (
+              <div className="px-5 pb-5 pt-4 border-t border-gray-100 bg-gray-50">
+                <p className="text-xs font-medium text-gray-500 mb-2">Nouveau prix (€)</p>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSavePrix()}
+                    className="flex-1 px-3 py-2 rounded-xl text-sm border border-gray-200 focus:outline-none focus:border-gray-400"
+                    placeholder="Ex: 39.90"
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleSavePrix}
+                    disabled={isSaving}
+                    className="px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50"
+                    style={{ background: "#1a1a1a" }}
+                  >
+                    {isSaving ? (
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        …
+                      </span>
+                    ) : (
+                      "Enregistrer"
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-          <div className="flex items-center gap-3">
-            <span
-              className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full"
-              style={
-                p.actif
-                  ? { background: "#D1FAE5", color: "#059669" }
-                  : { background: "#F3F4F6", color: "#9CA3AF" }
-              }
-            >
-              {p.actif ? "Actif" : "Bientôt"}
-            </span>
-            <button
-              disabled
-              className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-400 cursor-not-allowed"
-              title="Bientôt disponible"
-            >
-              Modifier le prix
-            </button>
-          </div>
-        </div>
-      ))}
-      <p className="text-xs text-gray-400 mt-2 px-1">La modification des prix sera disponible prochainement.</p>
+        );
+      })}
     </div>
   );
 }
@@ -482,18 +619,223 @@ function ProduitsTab() {
 // ─── Onglet Codes promo ───────────────────────────────────────────────────────
 
 function CodesPromoTab() {
+  const [codes, setCodes] = useState<PromoCode[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState<PromoForm>({ code: "", reduction: "", type: "percent", expiresAt: "" });
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [disabling, setDisabling] = useState<string | null>(null);
+
+  const fetchCodes = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch("/api/admin/boutique/codes-promo", {
+      headers: { Authorization: `Bearer ${session?.access_token ?? ""}` },
+    });
+    const json = await res.json();
+    if (json.data) setCodes(json.data);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { fetchCodes(); }, [fetchCodes]);
+
+  async function handleCreate(e: FormEvent) {
+    e.preventDefault();
+    if (!form.code.trim() || !form.reduction) return;
+    setCreating(true);
+    setCreateError(null);
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch("/api/admin/boutique/codes-promo", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session?.access_token ?? ""}`,
+      },
+      body: JSON.stringify({
+        code: form.code.trim().toUpperCase(),
+        reduction: parseFloat(form.reduction),
+        type: form.type,
+        expiresAt: form.expiresAt || null,
+      }),
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      setCreateError(json.error ?? "Erreur lors de la création");
+    } else {
+      setForm({ code: "", reduction: "", type: "percent", expiresAt: "" });
+      await fetchCodes();
+    }
+    setCreating(false);
+  }
+
+  async function handleDisable(id: string) {
+    setDisabling(id);
+    const { data: { session } } = await supabase.auth.getSession();
+    await fetch("/api/admin/boutique/codes-promo", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session?.access_token ?? ""}`,
+      },
+      body: JSON.stringify({ id }),
+    });
+    setCodes((prev) => prev.filter((c) => c.id !== id));
+    setDisabling(null);
+  }
+
+  function formatDiscount(c: PromoCode) {
+    if (c.coupon.percent_off) return `-${c.coupon.percent_off}%`;
+    if (c.coupon.amount_off) return `-${(c.coupon.amount_off / 100).toFixed(2).replace(".", ",")} €`;
+    return "—";
+  }
+
   return (
-    <div className="flex flex-col items-center justify-center py-24 text-center">
-      <div
-        className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
-        style={{ background: "#FFF0F5" }}
-      >
-        <svg className="w-7 h-7" style={{ color: "#F06292" }} fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 14.25l6-6m4.5-3.493V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0c1.1.128 1.907 1.077 1.907 2.185zM9.75 9h.008v.008H9.75V9zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 4.5h.008v.008h-.008V13.5zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-        </svg>
+    <div className="max-w-xl space-y-8">
+
+      {/* Formulaire création */}
+      <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+        <h3 className="text-sm font-semibold text-gray-800 mb-5">Créer un code promo</h3>
+        <form onSubmit={handleCreate} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1.5">Code</label>
+              <input
+                type="text"
+                value={form.code}
+                onChange={(e) => setForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))}
+                placeholder="Ex: SENAS10"
+                className="w-full px-3 py-2 rounded-xl text-sm border border-gray-200 focus:outline-none focus:border-gray-400 font-mono"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                Réduction {form.type === "percent" ? "(%)" : "(€)"}
+              </label>
+              <input
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={form.reduction}
+                onChange={(e) => setForm((f) => ({ ...f, reduction: e.target.value }))}
+                placeholder={form.type === "percent" ? "Ex: 10" : "Ex: 5"}
+                className="w-full px-3 py-2 rounded-xl text-sm border border-gray-200 focus:outline-none focus:border-gray-400"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1.5">Type</label>
+              <div className="flex rounded-xl border border-gray-200 overflow-hidden text-xs">
+                {(["percent", "fixed"] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, type: v }))}
+                    className="flex-1 py-2 px-2 transition-all"
+                    style={
+                      form.type === v
+                        ? { background: "#1a1a1a", color: "#fff" }
+                        : { color: "#6B7280" }
+                    }
+                  >
+                    {v === "percent" ? "Pourcentage" : "Montant fixe"}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                Expiration <span className="text-gray-400">(optionnel)</span>
+              </label>
+              <input
+                type="date"
+                value={form.expiresAt}
+                onChange={(e) => setForm((f) => ({ ...f, expiresAt: e.target.value }))}
+                className="w-full px-3 py-2 rounded-xl text-sm border border-gray-200 focus:outline-none focus:border-gray-400"
+              />
+            </div>
+          </div>
+
+          {createError && <p className="text-xs text-red-500">{createError}</p>}
+
+          <button
+            type="submit"
+            disabled={creating}
+            className="w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50"
+            style={{ background: "#1a1a1a" }}
+          >
+            {creating ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Création en cours…
+              </span>
+            ) : (
+              "Créer le code"
+            )}
+          </button>
+        </form>
       </div>
-      <p className="text-lg font-semibold text-gray-800">Bientôt disponible</p>
-      <p className="text-sm text-gray-400 mt-2 max-w-xs">Gérez vos codes promo Stripe directement depuis le dashboard admin.</p>
+
+      {/* Liste des codes actifs */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm font-semibold text-gray-800">Codes actifs</p>
+          <button
+            onClick={fetchCodes}
+            className="text-xs text-gray-400 hover:text-gray-600 transition-colors border border-gray-200 px-3 py-1.5 rounded-lg"
+          >
+            Actualiser
+          </button>
+        </div>
+
+        {loading ? (
+          <div className="flex items-center justify-center h-20">
+            <div className="w-5 h-5 border-2 rounded-full animate-spin" style={{ borderColor: "#F06292", borderTopColor: "transparent" }} />
+          </div>
+        ) : codes.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 text-center">
+            <p className="text-sm text-gray-400">Aucun code promo actif</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {codes.map((c) => (
+              <div
+                key={c.id}
+                className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm flex items-center justify-between"
+              >
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span className="font-mono text-sm font-semibold text-gray-900 bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-200">
+                    {c.code}
+                  </span>
+                  <span
+                    className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                    style={{ background: "#FFF0F5", color: "#E91E8C" }}
+                  >
+                    {formatDiscount(c)}
+                  </span>
+                  {c.expires_at && (
+                    <span className="text-xs text-gray-400">
+                      exp. {new Date(c.expires_at * 1000).toLocaleDateString("fr-FR")}
+                    </span>
+                  )}
+                  {c.times_redeemed > 0 && (
+                    <span className="text-xs text-gray-400">{c.times_redeemed}× utilisé</span>
+                  )}
+                </div>
+                <button
+                  onClick={() => handleDisable(c.id)}
+                  disabled={disabling === c.id}
+                  className="ml-3 shrink-0 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-red-200 hover:text-red-500 transition-colors disabled:opacity-40"
+                >
+                  {disabling === c.id ? "…" : "Désactiver"}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
