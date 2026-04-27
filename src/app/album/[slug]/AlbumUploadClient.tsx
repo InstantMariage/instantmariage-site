@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import Image from "next/image";
+import { supabase } from "@/lib/supabase";
 
 type Props = {
   slug: string;
@@ -15,6 +16,12 @@ type FileItem = {
   preview: string | null;
   isVideo: boolean;
 };
+
+const ALLOWED_TYPES = [
+  "image/jpeg", "image/png", "image/webp", "image/heic", "image/heif",
+  "video/mp4", "video/quicktime", "video/webm",
+];
+const MAX_SIZE = 52_428_800; // 50 Mo
 
 function formatDateFr(d: string) {
   return new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
@@ -64,38 +71,71 @@ export default function AlbumUploadClient({ slug, prenom1, prenom2, dateMariage 
     setProgress(0);
     setErrors([]);
 
-    const fd = new FormData();
-    files.forEach((f) => fd.append("files", f.file));
-    if (prenom.trim()) fd.append("uploade_par", prenom.trim());
+    const errs: string[] = [];
+    let uploaded = 0;
 
-    // Simule la progression pendant l'upload
-    const interval = setInterval(() => {
-      setProgress((p) => Math.min(p + 4, 90));
-    }, 200);
+    for (let i = 0; i < files.length; i++) {
+      const { file, isVideo } = files[i];
 
-    try {
-      const res = await fetch(`/api/album/${slug}/upload`, {
-        method: "POST",
-        body: fd,
-      });
-      clearInterval(interval);
-      setProgress(100);
-
-      const json = await res.json();
-      if (json.errors?.length) setErrors(json.errors);
-      if (json.uploaded?.length > 0) {
-        setDone(true);
-        files.forEach((f) => { if (f.preview) URL.revokeObjectURL(f.preview); });
-        setFiles([]);
-      } else if (!json.uploaded?.length) {
-        setErrors((prev) => [...prev, "Aucun fichier n'a pu être envoyé."]);
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        errs.push(`${file.name} : type non autorisé (${file.type})`);
+        continue;
       }
-    } catch {
-      clearInterval(interval);
-      setErrors(["Une erreur réseau s'est produite. Réessayez."]);
-    } finally {
-      setUploading(false);
+      if (file.size > MAX_SIZE) {
+        errs.push(`${file.name} : fichier trop volumineux (max 50 Mo)`);
+        continue;
+      }
+
+      const ext = file.name.split(".").pop() ?? "bin";
+      const uid = crypto.randomUUID();
+      const storagePath = `${slug}/${uid}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("album-mariage")
+        .upload(storagePath, file, { cacheControl: "3600", upsert: false });
+
+      if (uploadError) {
+        errs.push(`${file.name} : erreur upload`);
+        continue;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("album-mariage")
+        .getPublicUrl(storagePath);
+
+      const res = await fetch(`/api/album/${slug}/save-photo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url: publicUrl,
+          type: isVideo ? "video" : "photo",
+          nom_fichier: file.name,
+          taille_fichier: file.size,
+          uploade_par: prenom.trim() || null,
+        }),
+      });
+
+      if (!res.ok) {
+        errs.push(`${file.name} : erreur enregistrement`);
+        continue;
+      }
+
+      uploaded++;
+      setProgress(Math.round(((i + 1) / files.length) * 100));
     }
+
+    setErrors(errs);
+
+    if (uploaded > 0) {
+      setProgress(100);
+      setDone(true);
+      files.forEach((f) => { if (f.preview) URL.revokeObjectURL(f.preview); });
+      setFiles([]);
+    } else if (!errs.length) {
+      setErrors(["Aucun fichier n'a pu être envoyé."]);
+    }
+
+    setUploading(false);
   };
 
   if (done) {
