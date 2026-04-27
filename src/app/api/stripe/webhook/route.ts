@@ -5,7 +5,7 @@ import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import type { PlanAbonnement } from "@/lib/supabase";
 import { renderInvitationVideo } from "../../../../../lib/remotion-lambda";
-import { sendInvitationConfirmationEmail, sendCagnotteMerciEmail, sendCagnotteNotifEmail, sendCommandeCadreEmail, sendCommandeChevaletEmail } from "@/lib/emails";
+import { sendInvitationConfirmationEmail, sendCagnotteMerciEmail, sendCagnotteNotifEmail, sendCommandeCadreEmail, sendCommandeChevaletEmail, sendTemplateDigitalEmail } from "@/lib/emails";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-03-31.basil",
@@ -321,16 +321,41 @@ export async function POST(req: NextRequest) {
         const expireAt = new Date(
           Date.now() + 365 * 24 * 60 * 60 * 1000
         ).toISOString();
-        const { error } = await supabase
+
+        const { data: marie, error } = await supabase
           .from("maries")
           .update({
             qrcode_template_achete: templateId,
             qrcode_template_expire_at: expireAt,
           })
-          .eq("id", marieId);
+          .eq("id", marieId)
+          .select("prenom_marie1, prenom_marie2")
+          .single();
         if (error) {
           console.error("[webhook/qrcode_template] Erreur UPDATE maries:", error);
         }
+
+        const coupleNames = marie
+          ? marie.prenom_marie2
+            ? `${marie.prenom_marie1} & ${marie.prenom_marie2}`
+            : marie.prenom_marie1
+          : "Couple";
+
+        await supabase.from("commandes").insert({
+          marie_id: marieId,
+          produit: "template_digital",
+          template_id: templateId,
+          montant: 9.90,
+          stripe_session_id: session.id,
+          statut: "recue",
+        });
+
+        try {
+          await sendTemplateDigitalEmail({ coupleNames, templateId, marieId });
+        } catch (emailErr) {
+          console.error("[webhook/qrcode_template] Erreur email admin:", emailErr);
+        }
+
         return NextResponse.json({ received: true });
       }
 

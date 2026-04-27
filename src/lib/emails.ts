@@ -1328,3 +1328,92 @@ export async function sendCommandeExpedieeEmail({
     text,
   });
 }
+
+// ─── Email 15 : Nouvelle vente template digital (admin) ───────────────────────
+
+export async function sendTemplateDigitalEmail({
+  coupleNames,
+  templateId,
+  marieId,
+}: {
+  coupleNames: string;
+  templateId: string;
+  marieId: string;
+}) {
+  const adminEmail = process.env.ADMIN_EMAIL ?? "contact@instantmariage.fr";
+
+  const TEMPLATE_LABELS: Record<string, string> = {
+    "elegance-doree": "Élégance Dorée",
+    "boheme-rose": "Bohème Rose",
+    "moderne-minimaliste": "Moderne Minimaliste",
+    "nuit-romantique": "Nuit Romantique",
+  };
+  const templateLabel = TEMPLATE_LABELS[templateId] ?? templateId;
+  const dateVente = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+
+  const content = `
+    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#7C3AED;letter-spacing:0.5px;text-transform:uppercase;">Nouvelle vente — Produit digital</p>
+    <h1 style="margin:0 0 24px;font-size:26px;font-weight:700;color:#1a1a1a;line-height:1.25;">
+      💳 Template Digital — 9,90€
+    </h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#555555;line-height:1.65;">
+      Un couple vient d'acheter un template digital. Aucune action requise, l'accès est automatique.
+    </p>
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#fafafa;border-radius:12px;padding:24px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;width:160px;">Couple</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:600;color:#1a1a1a;">${coupleNames}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Template acheté</td>
+              <td style="padding:6px 0;font-size:14px;color:#333333;">${templateLabel}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Date de vente</td>
+              <td style="padding:6px 0;font-size:14px;color:#333333;">${dateVente}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Montant</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:700;color:#7C3AED;">9,90 €</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#F5F3FF;border-left:3px solid #7C3AED;border-radius:0 8px 8px 0;padding:16px 20px;">
+          <p style="margin:0;font-size:13px;color:#555555;line-height:1.6;">
+            Produit digital — <strong>pas d'expédition</strong>. L'accès au template est activé automatiquement pour le couple.
+          </p>
+        </td>
+      </tr>
+    </table>
+  `;
+
+  const text = [
+    `[InstantMariage] 💳 Nouvelle vente — Template Digital 9,90€`,
+    "",
+    `Couple : ${coupleNames}`,
+    `Template : ${templateLabel}`,
+    `Date : ${dateVente}`,
+    `Montant : 9,90 €`,
+    "",
+    `Produit digital — aucune expédition requise.`,
+    "",
+    textFooter(),
+  ].join("\n");
+
+  return resend.emails.send({
+    from: FROM,
+    to: adminEmail,
+    subject: `💳 Nouvelle vente — Template Digital 9,90€ — ${coupleNames}`,
+    html: baseTemplate(content),
+    text,
+  });
+}
