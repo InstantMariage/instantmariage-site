@@ -107,90 +107,133 @@ export default function BoutiquePage() {
         </div>
       </section>
 
+      {/* Mockup photo de table pleine largeur */}
+      <section className="relative w-full overflow-hidden" style={{ minHeight: 480 }}>
+        <img
+          src="https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777309466350-pexels-jonathanborba-19870049.jpg"
+          alt="Table de mariage"
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ objectPosition: "center 40%" }}
+        />
+        {/* Overlay sombre léger pour lisibilité */}
+        <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.18)" }} />
+
+        {/* Cadre posé sur la table */}
+        <div
+          className="absolute"
+          style={{
+            left: "38%",
+            top: "50%",
+            transform: "translate(-50%, -50%) rotate(-3deg)",
+            width: 160,
+            height: 220,
+            background: "#FAFAF8",
+            border: "8px solid #1C1C1E",
+            boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
+            display: "flex",
+            alignItems: "stretch",
+            justifyContent: "stretch",
+          }}
+        >
+          {/* Intérieur du cadre */}
+          <div
+            style={{
+              flex: 1,
+              border: "1.5px solid #C9A84C",
+              margin: 8,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 9,
+              background: "#FAFAF8",
+            }}
+          >
+            <p style={{ fontSize: 7, color: "#C9A84C", letterSpacing: "0.32em", textTransform: "uppercase", fontFamily: "Georgia, serif" }}>
+              Mariage de
+            </p>
+            <p style={{ fontSize: 14, fontWeight: "bold", color: "#1C1C1E", fontFamily: "Georgia, serif", textAlign: "center", lineHeight: 1.35 }}>
+              Marina & Adel
+            </p>
+            <div style={{ width: 50, height: 1, background: "#C9A84C" }} />
+            {/* QR Code fictif */}
+            <div
+              style={{
+                width: 64,
+                height: 64,
+                border: "2px solid #C9A84C",
+                padding: 4,
+                background: "#fff",
+                display: "grid",
+                gridTemplateColumns: "repeat(6, 1fr)",
+                gap: 1.8,
+              }}
+            >
+              {Array.from({ length: 36 }).map((_, i) => (
+                <div
+                  key={i}
+                  style={{
+                    background: [0,1,2,6,12,13,14,7,11,17,18,23,24,25,29,30,35,3,8,27,32,20,21].includes(i) ? "#1C1C1E" : "#fff",
+                    borderRadius: 0.5,
+                  }}
+                />
+              ))}
+            </div>
+            <p style={{ fontSize: 5.5, color: "#999", letterSpacing: "0.12em", textTransform: "uppercase", textAlign: "center", lineHeight: 1.5, paddingInline: 6 }}>
+              Scannez pour<br />partager vos photos
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Products */}
       <section className="py-16 px-4">
         <div className="max-w-5xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-2 gap-8 items-stretch">
 
             {/* Cadre */}
-            <div className="rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-              {/* Mockup */}
+            <div
+              className="rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+              style={{ background: "#fff", border: "1px solid #EBEBEB", display: "flex", flexDirection: "column" }}
+            >
+              {/* Mockup visuel */}
               <div
-                className="relative h-64 flex items-center justify-center"
-                style={{
-                  background: "linear-gradient(135deg, #F5F0E8 0%, #EDE5D4 100%)",
-                }}
+                className="flex items-center justify-center"
+                style={{ background: "linear-gradient(135deg, #F5F0E8 0%, #EDE5D4 100%)", height: 200 }}
               >
-                {/* Cadre CSS */}
                 <div
-                  className="relative"
                   style={{
-                    width: 130,
-                    height: 170,
-                    background: "#FFFFFF",
-                    borderRadius: 4,
-                    padding: 8,
-                    boxShadow: "0 20px 60px rgba(0,0,0,0.2), 0 4px 15px rgba(0,0,0,0.1)",
+                    width: 100,
+                    height: 136,
+                    background: "#FAFAF8",
+                    border: "6px solid #1C1C1E",
+                    boxShadow: "0 12px 36px rgba(0,0,0,0.28)",
                     transform: "rotate(-2deg)",
+                    display: "flex",
+                    alignItems: "stretch",
+                    justifyContent: "stretch",
                   }}
                 >
-                  <div
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      border: "1.5px solid #C9A84C",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 8,
-                      background: "#FAFAF8",
-                    }}
-                  >
-                    <p style={{ fontSize: 7, color: "#C9A84C", letterSpacing: "0.3em", textTransform: "uppercase", fontFamily: "Georgia, serif" }}>Mariage de</p>
-                    <p style={{ fontSize: 11, fontWeight: "bold", color: "#1a1a1a", fontFamily: "Georgia, serif", textAlign: "center", lineHeight: 1.3 }}>Léa & Thomas</p>
-                    <div style={{ width: 40, height: 1, background: "#C9A84C" }} />
-                    <div
-                      style={{
-                        width: 52,
-                        height: 52,
-                        border: "2px solid #C9A84C",
-                        padding: 3,
-                        background: "#fff",
-                        display: "grid",
-                        gridTemplateColumns: "repeat(5, 1fr)",
-                        gap: 1.5,
-                      }}
-                    >
+                  <div style={{ flex: 1, border: "1px solid #C9A84C", margin: 5, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5 }}>
+                    <p style={{ fontSize: 5, color: "#C9A84C", letterSpacing: "0.28em", textTransform: "uppercase", fontFamily: "Georgia, serif" }}>Mariage de</p>
+                    <p style={{ fontSize: 8, fontWeight: "bold", color: "#1C1C1E", fontFamily: "Georgia, serif", textAlign: "center" }}>Marina & Adel</p>
+                    <div style={{ width: 28, height: 1, background: "#C9A84C" }} />
+                    <div style={{ width: 36, height: 36, border: "1.5px solid #C9A84C", padding: 2, background: "#fff", display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 1.2 }}>
                       {Array.from({ length: 25 }).map((_, i) => (
-                        <div
-                          key={i}
-                          style={{
-                            background: [0,1,5,6,10,14,15,18,19,20,24].includes(i) ? "#1a1a1a" : "#fff",
-                            borderRadius: 0.5,
-                          }}
-                        />
+                        <div key={i} style={{ background: [0,1,5,6,10,14,15,18,19,20,24].includes(i) ? "#1C1C1E" : "#fff", borderRadius: 0.5 }} />
                       ))}
                     </div>
-                    <p style={{ fontSize: 5, color: "#aaa", letterSpacing: "0.15em", textTransform: "uppercase" }}>instantmariage.fr</p>
+                    <p style={{ fontSize: 4, color: "#bbb", letterSpacing: "0.12em", textTransform: "uppercase" }}>instantmariage.fr</p>
                   </div>
                 </div>
-
-                {/* Badge livraison */}
-                <span
-                  className="absolute top-4 right-4 text-xs font-semibold px-2.5 py-1 rounded-full"
-                  style={{ background: "#F0FDF4", color: "#10B981" }}
-                >
-                  Livraison 5–7 jours
-                </span>
               </div>
 
               {/* Content */}
-              <div className="p-7">
+              <div className="p-7" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
                 <h2 className="text-xl font-bold text-gray-900 mb-2" style={{ fontFamily: "Georgia, serif" }}>
                   Cadre QR Code — Partagez vos photos
                 </h2>
-                <p className="text-sm text-gray-500 leading-relaxed mb-5">
+                <p className="text-sm text-gray-500 leading-relaxed mb-5" style={{ flex: 1 }}>
                   Cadre blanc 15×20 cm avec votre carte QR Code personnalisée. Posez-le sur chaque
                   table et collectez tous les souvenirs de vos invités.
                 </p>
@@ -204,7 +247,7 @@ export default function BoutiquePage() {
                 <Link
                   href={getCadreHref()}
                   className="block w-full text-center py-3.5 rounded-2xl text-sm font-semibold transition-all"
-                  style={{ background: "#1a1a1a", color: "#fff" }}
+                  style={{ background: "#F06292", color: "#fff" }}
                 >
                   Commander le cadre
                 </Link>
@@ -212,85 +255,55 @@ export default function BoutiquePage() {
             </div>
 
             {/* Chevalet */}
-            <div className="rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-              {/* Mockup */}
+            <div
+              className="rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+              style={{ background: "#fff", border: "1px solid #EBEBEB", display: "flex", flexDirection: "column" }}
+            >
+              {/* Mockup visuel */}
               <div
-                className="relative h-64 flex items-center justify-center"
-                style={{
-                  background: "linear-gradient(135deg, #F0F4FF 0%, #E8F0FF 100%)",
-                }}
+                className="flex items-center justify-center"
+                style={{ background: "linear-gradient(135deg, #F0F4FF 0%, #E8F0FF 100%)", height: 200 }}
               >
-                {/* Chevalet CSS : tent card / A-frame */}
-                <div
-                  style={{
-                    position: "relative",
-                    transform: "rotate(1.5deg)",
-                  }}
-                >
-                  {/* Corps du chevalet */}
+                <div style={{ position: "relative", transform: "rotate(1.5deg)" }}>
                   <div
                     style={{
                       width: 140,
-                      height: 110,
-                      background: "#FFFFFF",
-                      borderRadius: 6,
-                      padding: 10,
-                      boxShadow: "0 20px 60px rgba(0,0,0,0.18), 0 4px 15px rgba(0,0,0,0.08)",
+                      height: 108,
+                      background: "#fff",
+                      borderRadius: 5,
+                      padding: 9,
+                      boxShadow: "0 12px 36px rgba(0,0,0,0.16)",
+                      border: "1px solid #E0E0E0",
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "center",
                       justifyContent: "center",
-                      gap: 6,
-                      border: "1px solid #E8E8E8",
+                      gap: 5,
                     }}
                   >
-                    <p style={{ fontSize: 7, color: "#6366F1", letterSpacing: "0.3em", textTransform: "uppercase", fontFamily: "Georgia, serif" }}>Mariage de</p>
-                    <p style={{ fontSize: 10, fontWeight: "bold", color: "#1a1a1a", fontFamily: "Georgia, serif", textAlign: "center", lineHeight: 1.3 }}>Sophie & Marc</p>
-                    <div
-                      style={{
-                        width: 44,
-                        height: 44,
-                        border: "2px solid #6366F1",
-                        padding: 2,
-                        background: "#fff",
-                        display: "grid",
-                        gridTemplateColumns: "repeat(5, 1fr)",
-                        gap: 1.2,
-                      }}
-                    >
+                    <p style={{ fontSize: 6, color: "#C9A84C", letterSpacing: "0.28em", textTransform: "uppercase", fontFamily: "Georgia, serif" }}>Mariage de</p>
+                    <p style={{ fontSize: 9, fontWeight: "bold", color: "#1C1C1E", fontFamily: "Georgia, serif", textAlign: "center" }}>Marina & Adel</p>
+                    <div style={{ width: 36, height: 36, border: "1.5px solid #C9A84C", padding: 2, background: "#fff", display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 1 }}>
                       {Array.from({ length: 25 }).map((_, i) => (
-                        <div
-                          key={i}
-                          style={{
-                            background: [0,1,4,5,8,12,16,20,21,23,24].includes(i) ? "#6366F1" : "#fff",
-                            borderRadius: 0.5,
-                          }}
-                        />
+                        <div key={i} style={{ background: [0,1,4,5,8,12,16,20,21,23,24].includes(i) ? "#1C1C1E" : "#fff", borderRadius: 0.5 }} />
                       ))}
                     </div>
-                    <p style={{ fontSize: 5, color: "#aaa", letterSpacing: "0.15em", textTransform: "uppercase" }}>instantmariage.fr</p>
+                    <p style={{ fontSize: 4.5, color: "#bbb", letterSpacing: "0.12em", textTransform: "uppercase" }}>instantmariage.fr</p>
                   </div>
-                  {/* Pied du chevalet */}
-                  <div style={{ display: "flex", justifyContent: "space-between", padding: "0 20px" }}>
-                    <div style={{ width: 2, height: 16, background: "#D1D5DB", borderRadius: 1, transform: "rotate(15deg)", transformOrigin: "top center" }} />
-                    <div style={{ width: 2, height: 16, background: "#D1D5DB", borderRadius: 1, transform: "rotate(-15deg)", transformOrigin: "top center" }} />
+                  {/* Pieds du chevalet */}
+                  <div style={{ display: "flex", justifyContent: "space-between", padding: "0 22px" }}>
+                    <div style={{ width: 2, height: 18, background: "#D1D5DB", borderRadius: 1, transform: "rotate(14deg)", transformOrigin: "top center" }} />
+                    <div style={{ width: 2, height: 18, background: "#D1D5DB", borderRadius: 1, transform: "rotate(-14deg)", transformOrigin: "top center" }} />
                   </div>
                 </div>
-
-                <span
-                  className="absolute top-4 right-4 text-xs font-semibold px-2.5 py-1 rounded-full"
-                  style={{ background: "#F0FDF4", color: "#10B981" }}
-                >
-                  Livraison 5–7 jours
-                </span>
               </div>
 
               {/* Content */}
-              <div className="p-7">
+              <div className="p-7" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
                 <h2 className="text-xl font-bold text-gray-900 mb-2" style={{ fontFamily: "Georgia, serif" }}>
                   Chevalet QR Code — Élégant et compact
                 </h2>
-                <p className="text-sm text-gray-500 leading-relaxed mb-5">
+                <p className="text-sm text-gray-500 leading-relaxed mb-5" style={{ flex: 1 }}>
                   Chevalet cartonné premium avec votre carte QR Code. Plus léger qu'un cadre,
                   aussi élégant. Idéal pour les petites tables.
                 </p>
@@ -304,7 +317,7 @@ export default function BoutiquePage() {
                 <Link
                   href={getChevaletHref()}
                   className="block w-full text-center py-3.5 rounded-2xl text-sm font-semibold transition-all"
-                  style={{ background: "#6366F1", color: "#fff" }}
+                  style={{ background: "#F06292", color: "#fff" }}
                 >
                   Commander le chevalet
                 </Link>
