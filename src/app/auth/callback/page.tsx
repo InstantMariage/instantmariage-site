@@ -49,8 +49,8 @@ function AuthCallbackContent() {
       // ── Flux OAuth (Google, etc.) ──────────────────────────────────────────
 
       if (!code) {
-        setStatus("Erreur : paramètre manquant.");
-        setTimeout(() => router.push("/login?error=oauth_failed"), 2000);
+        setStatus("Redirection en cours...");
+        router.push("/inscription?message=Veuillez+choisir+votre+type+de+compte+et+reconnecter+avec+Google");
         return;
       }
 
