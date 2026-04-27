@@ -337,6 +337,12 @@ export default function AlbumPhotoDashboard() {
                       </svg>
                     </button>
                   </div>
+                  <Link
+                    href="/dashboard/marie/album-photo/templates"
+                    className="w-full py-2 rounded-xl text-xs font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors text-center block"
+                  >
+                    Personnaliser ma carte
+                  </Link>
                 </div>
               )}
             </div>

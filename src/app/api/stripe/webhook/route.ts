@@ -310,6 +310,30 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ received: true });
       }
 
+      // ── Template QR Code marié ────────────────────────────────────
+      if (session.metadata?.product_type === "qrcode_template") {
+        const marieId = session.metadata?.marie_id;
+        const templateId = session.metadata?.template_id;
+        if (!marieId || !templateId) {
+          console.error("[webhook/qrcode_template] Metadata manquante");
+          return NextResponse.json({ received: true });
+        }
+        const expireAt = new Date(
+          Date.now() + 365 * 24 * 60 * 60 * 1000
+        ).toISOString();
+        const { error } = await supabase
+          .from("maries")
+          .update({
+            qrcode_template_achete: templateId,
+            qrcode_template_expire_at: expireAt,
+          })
+          .eq("id", marieId);
+        if (error) {
+          console.error("[webhook/qrcode_template] Erreur UPDATE maries:", error);
+        }
+        return NextResponse.json({ received: true });
+      }
+
       const prestataireId = session.metadata?.prestataire_id;
       const subscriptionId = session.subscription as string;
       const customerId = session.customer as string;
