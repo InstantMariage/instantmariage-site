@@ -44,6 +44,21 @@ export default function MessagesAdminPage() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const preselectUserId = params.get("userId");
+    const preselectName = params.get("name");
+    if (preselectUserId && preselectName) {
+      setRecipient({
+        user_id: preselectUserId,
+        display_name: decodeURIComponent(preselectName),
+        email: "",
+        type: "prestataire",
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     if (recipient) {
       setResults([]);
       return;

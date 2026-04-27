@@ -685,6 +685,11 @@ export default function DocumentsPage() {
       setDocsThisMonth((prev) => prev + 1);
       setSavedMessage("Document sauvegardé !");
       setTimeout(() => setSavedMessage(""), 3000);
+      fetch("/api/admin/notify-document", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prestataireId: prestataire.id }),
+      }).catch(() => {});
     } finally {
       setSaving(false);
     }

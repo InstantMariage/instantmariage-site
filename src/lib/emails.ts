@@ -831,6 +831,113 @@ export async function sendDemandeVirementEmail({
   });
 }
 
+// ─── Email 11 : Nouveau document prestataire (admin) ─────────────────────────
+
+export async function sendNewDocumentEmail({
+  prestataireName,
+  prestataireId,
+  type,
+  montantTTC,
+  plan,
+}: {
+  prestataireName: string;
+  prestataireId: string;
+  type: "devis" | "facture" | "contrat";
+  montantTTC: number | null;
+  plan: string;
+}) {
+  const adminEmail = process.env.ADMIN_EMAIL ?? "contact@instantmariage.fr";
+
+  const TYPE_LABELS = { devis: "devis", facture: "facture", contrat: "contrat" };
+  const typeLabel = TYPE_LABELS[type];
+
+  const PLAN_COLORS: Record<string, { bg: string; text: string }> = {
+    gratuit: { bg: "#F3F4F6", text: "#6B7280" },
+    starter: { bg: "#EFF6FF", text: "#3B82F6" },
+    pro:     { bg: "#F5F3FF", text: "#8B5CF6" },
+    premium: { bg: "#FFFBEB", text: "#D97706" },
+  };
+  const planColor = PLAN_COLORS[plan] ?? PLAN_COLORS.gratuit;
+  const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
+  const isUpgradable = plan === "gratuit" || plan === "starter";
+
+  const content = `
+    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#F06292;letter-spacing:0.5px;text-transform:uppercase;">Nouveau document généré</p>
+    <h1 style="margin:0 0 24px;font-size:26px;font-weight:700;color:#1a1a1a;line-height:1.25;">
+      Nouveau ${typeLabel} généré
+    </h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#555555;line-height:1.65;">
+      Un prestataire vient de générer un ${typeLabel} via son dashboard.
+    </p>
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#fafafa;border-radius:12px;padding:24px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;width:140px;">Prestataire</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:600;color:#1a1a1a;">${prestataireName}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Plan actuel</td>
+              <td style="padding:6px 0;">
+                <span style="display:inline-block;padding:2px 10px;border-radius:100px;font-size:12px;font-weight:700;background:${planColor.bg};color:${planColor.text};">
+                  ${planLabel}
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Type</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:600;color:#1a1a1a;">${typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1)}</td>
+            </tr>
+            ${montantTTC !== null ? `
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Montant TTC</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:600;color:#1a1a1a;">${montantTTC.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €</td>
+            </tr>` : ""}
+          </table>
+        </td>
+      </tr>
+    </table>
+    ${isUpgradable ? `
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#FFFBEB;border-left:3px solid #F59E0B;border-radius:0 8px 8px 0;padding:16px 20px;">
+          <p style="margin:0 0 4px;font-size:12px;font-weight:700;color:#D97706;text-transform:uppercase;letter-spacing:0.5px;">Opportunité d'upgrade</p>
+          <p style="margin:0;font-size:14px;color:#78350F;line-height:1.6;">
+            Ce prestataire est actif — c'est le bon moment pour lui proposer un abonnement supérieur.
+          </p>
+        </td>
+      </tr>
+    </table>` : ""}
+    ${ctaButton("Voir les prestataires", `${SITE_URL}/admin/prestataires`)}
+  `;
+
+  const text = [
+    `Nouveau ${typeLabel} généré — InstantMariage.fr`,
+    "",
+    `Prestataire : ${prestataireName} (ID: ${prestataireId})`,
+    `Plan : ${planLabel}`,
+    `Type : ${typeLabel}`,
+    ...(montantTTC !== null ? [`Montant TTC : ${montantTTC.toFixed(2)} €`] : []),
+    "",
+    ...(isUpgradable
+      ? ["→ Ce prestataire est actif — bon moment pour proposer un upgrade.", ""]
+      : []),
+    `Voir les prestataires : ${SITE_URL}/admin/prestataires`,
+    textFooter(),
+  ].join("\n");
+
+  return resend.emails.send({
+    from: FROM,
+    to: adminEmail,
+    subject: `📄 Nouveau ${typeLabel} — ${prestataireName}`,
+    html: baseTemplate(content),
+    text,
+  });
+}
+
 // ─── Email 4 : Nouveau prestataire (admin) ────────────────────────────────────
 
 export async function sendNewPrestaireAdminEmail({
