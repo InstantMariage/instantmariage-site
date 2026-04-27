@@ -42,26 +42,10 @@ function TruckIcon() {
 }
 
 const TEMPLATES = [
-  {
-    id: "elegance-doree",
-    name: "Élégance Dorée",
-    url: "https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777311248762-img_1741.jpg",
-  },
-  {
-    id: "boheme-rose",
-    name: "Bohème Rose",
-    url: "https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777311228438-img_1742.jpg",
-  },
-  {
-    id: "moderne-minimaliste",
-    name: "Moderne Minimaliste",
-    url: "https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777311208591-img_1743.jpg",
-  },
-  {
-    id: "nuit-romantique",
-    name: "Nuit Romantique",
-    url: "https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777311265519-img_1744-2.jpg",
-  },
+  { id: "elegance-doree", name: "Élégance Dorée", bgColor: "#FAF8F4" },
+  { id: "boheme-rose", name: "Bohème Rose", bgColor: "#FDF0F0" },
+  { id: "moderne-minimaliste", name: "Moderne Minimaliste", bgColor: "#FFFFFF" },
+  { id: "nuit-romantique", name: "Nuit Romantique", bgColor: "#1C1C1E" },
 ];
 
 const FRAME_COLORS = [
@@ -91,26 +75,26 @@ function EleganceOverlay({ names, qrDataUrl }: { names: string; qrDataUrl: strin
   return (
     <div style={{
       position: "absolute", inset: 0,
-      background: "rgba(250,250,248,0.84)",
+      background: "#FAF8F4",
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
       fontFamily: "Georgia, 'Times New Roman', serif",
     }}>
-      <div style={{ position: "absolute", inset: 8, border: "1.5px solid rgba(201,168,76,0.85)", pointerEvents: "none" }} />
-      {[{ top: 6, left: 6 }, { top: 6, right: 6 }, { bottom: 6, left: 6 }, { bottom: 6, right: 6 }].map((pos, i) => (
-        <div key={i} style={{ position: "absolute", ...pos as React.CSSProperties, color: "#C9A84C", fontSize: 12, lineHeight: 1, userSelect: "none" }}>✦</div>
+      <div style={{ position: "absolute", inset: 12, border: "1.5px solid rgba(201,168,76,0.85)", pointerEvents: "none" }} />
+      {[{ top: 8, left: 8 }, { top: 8, right: 8 }, { bottom: 8, left: 8 }, { bottom: 8, right: 8 }].map((pos, i) => (
+        <div key={i} style={{ position: "absolute", ...pos as React.CSSProperties, color: "#C9A84C", fontSize: 16, lineHeight: 1, userSelect: "none" }}>✦</div>
       ))}
-      <p style={{ fontSize: 9, letterSpacing: "0.3em", color: "#C9A84C", textTransform: "uppercase", marginBottom: 8, fontStyle: "italic" }}>Mariage de</p>
-      <p style={{ fontSize: 17, fontWeight: "bold", color: "#1a1a1a", lineHeight: 1.2, textAlign: "center", padding: "0 20px", marginBottom: 4 }}>{names}</p>
-      <div style={{ width: 40, height: 1, background: "#C9A84C", margin: "10px auto 12px" }} />
+      <p style={{ fontSize: 11, letterSpacing: "0.3em", color: "#C9A84C", textTransform: "uppercase", marginBottom: 10, fontStyle: "italic" }}>Mariage de</p>
+      <p style={{ fontSize: 22, fontWeight: "bold", color: "#1a1a1a", lineHeight: 1.2, textAlign: "center", padding: "0 24px", marginBottom: 6 }}>{names}</p>
+      <div style={{ width: 50, height: 1, background: "#C9A84C", margin: "12px auto 16px" }} />
       {qrDataUrl ? (
-        <div style={{ border: "2.5px solid #C9A84C", padding: 5, background: "#fff" }}>
+        <div style={{ border: "2.5px solid #C9A84C", padding: 6, background: "#fff" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={qrDataUrl} width={80} height={80} alt="QR" style={{ display: "block" }} />
+          <img src={qrDataUrl} width={110} height={110} alt="QR" style={{ display: "block" }} />
         </div>
       ) : (
-        <div style={{ width: 90, height: 90, border: "2.5px solid #C9A84C", background: "#f5f0e8" }} />
+        <div style={{ width: 122, height: 122, border: "2.5px solid #C9A84C", background: "#f5f0e8" }} />
       )}
-      <p style={{ fontSize: 7, color: "#C9A84C", letterSpacing: "0.2em", textTransform: "uppercase", marginTop: 12 }}>instantmariage.fr</p>
+      <p style={{ fontSize: 9, color: "#C9A84C", letterSpacing: "0.2em", textTransform: "uppercase", marginTop: 16 }}>instantmariage.fr</p>
     </div>
   );
 }
@@ -119,22 +103,22 @@ function BohemeOverlay({ names, qrDataUrl }: { names: string; qrDataUrl: string 
   return (
     <div style={{
       position: "absolute", inset: 0,
-      background: "rgba(253,246,240,0.84)",
+      background: "#FDF0F0",
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
       fontFamily: "Georgia, 'Times New Roman', serif",
     }}>
-      <p style={{ fontSize: 10, color: "#F06292", fontStyle: "italic", marginBottom: 8, letterSpacing: "0.05em" }}>Mariage de</p>
-      <p style={{ fontSize: 20, color: "#F06292", fontWeight: "bold", fontStyle: "italic", lineHeight: 1.2, textAlign: "center", padding: "0 20px", marginBottom: 8 }}>{names}</p>
-      <div style={{ width: 40, height: 2, borderRadius: 2, background: "linear-gradient(90deg, #F06292, #ffb6c1)", margin: "0 auto 14px" }} />
+      <p style={{ fontSize: 13, color: "#F06292", fontStyle: "italic", marginBottom: 10, letterSpacing: "0.05em" }}>Mariage de</p>
+      <p style={{ fontSize: 26, color: "#F06292", fontWeight: "bold", fontStyle: "italic", lineHeight: 1.2, textAlign: "center", padding: "0 24px", marginBottom: 10 }}>{names}</p>
+      <div style={{ width: 50, height: 2, borderRadius: 2, background: "linear-gradient(90deg, #F06292, #ffb6c1)", margin: "0 auto 18px" }} />
       {qrDataUrl ? (
-        <div style={{ background: "rgba(253,232,240,0.96)", borderRadius: 12, padding: 8 }}>
+        <div style={{ background: "#FDE8F0", borderRadius: 14, padding: 10 }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={qrDataUrl} width={80} height={80} alt="QR" style={{ display: "block" }} />
+          <img src={qrDataUrl} width={110} height={110} alt="QR" style={{ display: "block" }} />
         </div>
       ) : (
-        <div style={{ width: 96, height: 96, background: "#FDE8F0", borderRadius: 12 }} />
+        <div style={{ width: 130, height: 130, background: "#FDE8F0", borderRadius: 14 }} />
       )}
-      <p style={{ fontSize: 8, color: "#F06292", letterSpacing: "0.12em", marginTop: 12, fontStyle: "italic" }}>instantmariage.fr</p>
+      <p style={{ fontSize: 10, color: "#F06292", letterSpacing: "0.12em", marginTop: 16, fontStyle: "italic" }}>instantmariage.fr</p>
     </div>
   );
 }
@@ -143,21 +127,21 @@ function ModerneOverlay({ names, qrDataUrl }: { names: string; qrDataUrl: string
   return (
     <div style={{
       position: "absolute", inset: 0,
-      background: "rgba(255,255,255,0.88)",
+      background: "#FFFFFF",
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
       fontFamily: "system-ui, -apple-system, sans-serif",
     }}>
-      <div style={{ position: "absolute", top: 22, left: 18, right: 18, height: 2, background: "#111" }} />
-      <div style={{ position: "absolute", bottom: 22, left: 18, right: 18, height: 2, background: "#111" }} />
-      <p style={{ fontSize: 8, letterSpacing: "0.45em", color: "#444", textTransform: "uppercase", marginBottom: 14, fontWeight: 400 }}>MARIAGE DE</p>
-      <p style={{ fontSize: 15, fontWeight: 300, color: "#111", letterSpacing: "0.1em", marginBottom: 16, textTransform: "uppercase", lineHeight: 1.3, textAlign: "center", padding: "0 18px" }}>{names.toUpperCase()}</p>
+      <div style={{ position: "absolute", top: 28, left: 22, right: 22, height: 2, background: "#111" }} />
+      <div style={{ position: "absolute", bottom: 28, left: 22, right: 22, height: 2, background: "#111" }} />
+      <p style={{ fontSize: 10, letterSpacing: "0.45em", color: "#444", textTransform: "uppercase", marginBottom: 18, fontWeight: 400 }}>MARIAGE DE</p>
+      <p style={{ fontSize: 20, fontWeight: 300, color: "#111", letterSpacing: "0.1em", marginBottom: 20, textTransform: "uppercase", lineHeight: 1.3, textAlign: "center", padding: "0 22px" }}>{names.toUpperCase()}</p>
       {qrDataUrl ? (
         /* eslint-disable-next-line @next/next/no-img-element */
-        <img src={qrDataUrl} width={86} height={86} alt="QR" style={{ display: "block" }} />
+        <img src={qrDataUrl} width={116} height={116} alt="QR" style={{ display: "block" }} />
       ) : (
-        <div style={{ width: 86, height: 86, background: "#f0f0f0" }} />
+        <div style={{ width: 116, height: 116, background: "#f0f0f0" }} />
       )}
-      <p style={{ fontSize: 7, color: "#999", letterSpacing: "0.35em", marginTop: 14, textTransform: "uppercase" }}>INSTANTMARIAGE.FR</p>
+      <p style={{ fontSize: 9, color: "#999", letterSpacing: "0.35em", marginTop: 18, textTransform: "uppercase" }}>INSTANTMARIAGE.FR</p>
     </div>
   );
 }
@@ -166,26 +150,26 @@ function NuitOverlay({ names, qrDataUrl }: { names: string; qrDataUrl: string | 
   return (
     <div style={{
       position: "absolute", inset: 0,
-      background: "rgba(28,28,30,0.84)",
+      background: "#1C1C1E",
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
       fontFamily: "Georgia, 'Times New Roman', serif",
     }}>
-      <div style={{ position: "absolute", inset: 8, border: "1px solid rgba(201,168,76,0.6)", pointerEvents: "none" }} />
-      {[{ top: 6, left: 6 }, { top: 6, right: 6 }, { bottom: 6, left: 6 }, { bottom: 6, right: 6 }].map((pos, i) => (
-        <div key={i} style={{ position: "absolute", ...pos as React.CSSProperties, color: "#C9A84C", fontSize: 11, lineHeight: 1, userSelect: "none" }}>✦</div>
+      <div style={{ position: "absolute", inset: 12, border: "1px solid rgba(201,168,76,0.6)", pointerEvents: "none" }} />
+      {[{ top: 8, left: 8 }, { top: 8, right: 8 }, { bottom: 8, left: 8 }, { bottom: 8, right: 8 }].map((pos, i) => (
+        <div key={i} style={{ position: "absolute", ...pos as React.CSSProperties, color: "#C9A84C", fontSize: 16, lineHeight: 1, userSelect: "none" }}>✦</div>
       ))}
-      <p style={{ fontSize: 9, letterSpacing: "0.3em", color: "#C9A84C", textTransform: "uppercase", marginBottom: 8, fontStyle: "italic" }}>Mariage de</p>
-      <p style={{ fontSize: 17, fontWeight: "bold", color: "#C9A84C", lineHeight: 1.2, textAlign: "center", padding: "0 20px", marginBottom: 4 }}>{names}</p>
-      <div style={{ width: 40, height: 1, background: "#C9A84C", margin: "10px auto 14px" }} />
+      <p style={{ fontSize: 11, letterSpacing: "0.3em", color: "#C9A84C", textTransform: "uppercase", marginBottom: 10, fontStyle: "italic" }}>Mariage de</p>
+      <p style={{ fontSize: 22, fontWeight: "bold", color: "#C9A84C", lineHeight: 1.2, textAlign: "center", padding: "0 24px", marginBottom: 6 }}>{names}</p>
+      <div style={{ width: 50, height: 1, background: "#C9A84C", margin: "12px auto 16px" }} />
       {qrDataUrl ? (
-        <div style={{ background: "#fff", padding: 6 }}>
+        <div style={{ background: "#fff", padding: 7 }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={qrDataUrl} width={78} height={78} alt="QR" style={{ display: "block" }} />
+          <img src={qrDataUrl} width={108} height={108} alt="QR" style={{ display: "block" }} />
         </div>
       ) : (
-        <div style={{ width: 90, height: 90, background: "#2c2c2e" }} />
+        <div style={{ width: 122, height: 122, background: "#2c2c2e" }} />
       )}
-      <p style={{ fontSize: 7, color: "rgba(201,168,76,0.8)", letterSpacing: "0.2em", textTransform: "uppercase", marginTop: 12 }}>instantmariage.fr</p>
+      <p style={{ fontSize: 9, color: "rgba(201,168,76,0.8)", letterSpacing: "0.2em", textTransform: "uppercase", marginTop: 16 }}>instantmariage.fr</p>
     </div>
   );
 }
@@ -333,45 +317,26 @@ export default function BoutiquePage() {
               {/* Slider — 55% */}
               <div
                 className="relative flex-none w-full md:w-[55%]"
-                style={{ minHeight: 460, background: "linear-gradient(145deg, #F5F0E8 0%, #EDE5D4 100%)" }}
+                style={{ height: 500, background: "#F5F0E8" }}
                 onMouseEnter={() => { isPausedRef.current = true; }}
                 onMouseLeave={() => { isPausedRef.current = false; }}
               >
-                {/* Frame + images + overlays */}
-                <div className="absolute inset-0 flex items-center justify-center" style={{ padding: "48px 40px 72px" }}>
+                {/* Frame + overlays */}
+                <div className="absolute inset-0 flex items-center justify-center" style={{ padding: "40px 40px 68px" }}>
                   <div
                     style={{
                       border: `12px solid ${frameColor}`,
                       boxShadow: "0 20px 50px rgba(0,0,0,0.3)",
                       borderRadius: 4,
                       position: "relative",
-                      width: "100%",
+                      height: "100%",
                       maxWidth: 280,
-                      aspectRatio: "3 / 4",
+                      width: "100%",
                       overflow: "hidden",
                       transition: "border-color 0.4s ease",
                     }}
                   >
-                    {/* Background images */}
-                    {TEMPLATES.map((tpl, i) => (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
-                        key={i}
-                        src={tpl.url}
-                        alt={tpl.name}
-                        style={{
-                          position: "absolute",
-                          inset: 0,
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          opacity: currentTemplate === i ? 1 : 0,
-                          transition: "opacity 0.8s ease-in-out",
-                        }}
-                      />
-                    ))}
-
-                    {/* Template overlays */}
+                    {/* Template overlays only — no background images */}
                     {TEMPLATES.map((tpl, i) => (
                       <div
                         key={`overlay-${i}`}
