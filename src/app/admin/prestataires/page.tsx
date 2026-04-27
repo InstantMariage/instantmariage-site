@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 
 type AbonnementRow = {
@@ -53,12 +53,36 @@ const PLAN_STYLE: Record<string, { bg: string; text: string }> = {
   gratuit: { bg: "#F9FAFB", text: "#6B7280" },
 };
 
+const PLAN_ORDER: Record<string, number> = {
+  premium: 4, pro: 3, starter: 2, essentiel: 2, gratuit: 1,
+};
+
+function SortIcon({
+  col,
+  sortColumn,
+  sortDirection,
+}: {
+  col: string;
+  sortColumn: string | null;
+  sortDirection: "asc" | "desc";
+}) {
+  if (sortColumn !== col)
+    return <span className="ml-1 text-gray-300 select-none">↕</span>;
+  return (
+    <span className="ml-1 text-gray-500 select-none">
+      {sortDirection === "asc" ? "↑" : "↓"}
+    </span>
+  );
+}
+
 export default function PrestatairesAdminPage() {
   const [prestataires, setPrestataires] = useState<PrestatairRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [toggling, setToggling] = useState<string | null>(null);
   const [togglingFeatured, setTogglingFeatured] = useState<string | null>(null);
+  const [sortColumn, setSortColumn] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
     load();
@@ -80,7 +104,9 @@ export default function PrestatairesAdminPage() {
 
   async function toggleFeatured(id: string, current: boolean) {
     setTogglingFeatured(id);
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     await fetch(`/api/admin/prestataires/${id}/featured`, {
       method: "PATCH",
       headers: {
@@ -107,16 +133,59 @@ export default function PrestatairesAdminPage() {
     setToggling(null);
   }
 
-  const filtered = prestataires.filter(
-    (p) =>
-      !search ||
-      p.nom_entreprise.toLowerCase().includes(search.toLowerCase()) ||
-      (p.ville ?? "").toLowerCase().includes(search.toLowerCase()) ||
-      p.categorie.toLowerCase().includes(search.toLowerCase()) ||
-      (p.users?.email ?? "").toLowerCase().includes(search.toLowerCase())
-  );
+  function handleSort(col: string) {
+    if (sortColumn === col) {
+      setSortDirection((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortColumn(col);
+      setSortDirection("desc");
+    }
+  }
+
+  const filtered = useMemo(() => {
+    const base = prestataires.filter(
+      (p) =>
+        !search ||
+        p.nom_entreprise.toLowerCase().includes(search.toLowerCase()) ||
+        (p.ville ?? "").toLowerCase().includes(search.toLowerCase()) ||
+        p.categorie.toLowerCase().includes(search.toLowerCase()) ||
+        (p.users?.email ?? "").toLowerCase().includes(search.toLowerCase())
+    );
+    if (!sortColumn) return base;
+    return [...base].sort((a, b) => {
+      let cmp = 0;
+      switch (sortColumn) {
+        case "nom":
+          cmp = a.nom_entreprise.localeCompare(b.nom_entreprise, "fr");
+          break;
+        case "categorie":
+          cmp = a.categorie.localeCompare(b.categorie, "fr");
+          break;
+        case "plan":
+          cmp =
+            (PLAN_ORDER[activePlan(a.abonnements)] ?? 0) -
+            (PLAN_ORDER[activePlan(b.abonnements)] ?? 0);
+          break;
+        case "completude":
+          cmp = profileScore(a) - profileScore(b);
+          break;
+        case "verifie":
+          cmp = (a.verifie ? 1 : 0) - (b.verifie ? 1 : 0);
+          break;
+        case "inscription":
+          cmp =
+            new Date(a.created_at).getTime() -
+            new Date(b.created_at).getTime();
+          break;
+      }
+      return sortDirection === "asc" ? cmp : -cmp;
+    });
+  }, [prestataires, search, sortColumn, sortDirection]);
 
   if (loading) return <div className="text-sm text-gray-400">Chargement…</div>;
+
+  const thClass =
+    "text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap cursor-pointer select-none hover:text-gray-700";
 
   return (
     <div>
@@ -137,23 +206,29 @@ export default function PrestatairesAdminPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100">
-              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                Prestataire
+              <th onClick={() => handleSort("nom")} className={thClass}>
+                Prestataire{" "}
+                <SortIcon col="nom" sortColumn={sortColumn} sortDirection={sortDirection} />
               </th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                Catégorie
+              <th onClick={() => handleSort("categorie")} className={thClass}>
+                Catégorie{" "}
+                <SortIcon col="categorie" sortColumn={sortColumn} sortDirection={sortDirection} />
               </th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                Plan
+              <th onClick={() => handleSort("plan")} className={thClass}>
+                Plan{" "}
+                <SortIcon col="plan" sortColumn={sortColumn} sortDirection={sortDirection} />
               </th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                Complétude
+              <th onClick={() => handleSort("completude")} className={thClass}>
+                Complétude{" "}
+                <SortIcon col="completude" sortColumn={sortColumn} sortDirection={sortDirection} />
               </th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                Vérifié
+              <th onClick={() => handleSort("verifie")} className={thClass}>
+                Vérifié{" "}
+                <SortIcon col="verifie" sortColumn={sortColumn} sortDirection={sortDirection} />
               </th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                Inscription
+              <th onClick={() => handleSort("inscription")} className={thClass}>
+                Inscription{" "}
+                <SortIcon col="inscription" sortColumn={sortColumn} sortDirection={sortDirection} />
               </th>
               <th className="px-5 py-3" />
             </tr>
@@ -234,14 +309,22 @@ export default function PrestatairesAdminPage() {
                       <button
                         onClick={() => toggleFeatured(p.id, p.mis_en_avant)}
                         disabled={togglingFeatured === p.id}
-                        title={p.mis_en_avant ? "Retirer de la mise en avant" : "Mettre en avant"}
+                        title={
+                          p.mis_en_avant
+                            ? "Retirer de la mise en avant"
+                            : "Mettre en avant"
+                        }
                         className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors disabled:opacity-50 ${
                           p.mis_en_avant
                             ? "bg-amber-50 hover:bg-amber-100 text-amber-600"
                             : "bg-gray-50 hover:bg-amber-50 text-gray-400 hover:text-amber-500"
                         }`}
                       >
-                        {togglingFeatured === p.id ? "…" : p.mis_en_avant ? "★ Retirer" : "☆ Avant"}
+                        {togglingFeatured === p.id
+                          ? "…"
+                          : p.mis_en_avant
+                          ? "★ Retirer"
+                          : "☆ Avant"}
                       </button>
                       <button
                         onClick={() => toggleVerifie(p.id, p.verifie)}
@@ -252,7 +335,11 @@ export default function PrestatairesAdminPage() {
                             : "bg-emerald-50 hover:bg-emerald-100 text-emerald-700"
                         }`}
                       >
-                        {toggling === p.id ? "…" : p.verifie ? "Retirer" : "Vérifier"}
+                        {toggling === p.id
+                          ? "…"
+                          : p.verifie
+                          ? "Retirer"
+                          : "Vérifier"}
                       </button>
                     </div>
                   </td>

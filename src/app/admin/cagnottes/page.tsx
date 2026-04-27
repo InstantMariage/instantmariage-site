@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 
 type ContributionRow = {
@@ -30,6 +30,11 @@ type CagnotteRow = {
   }[];
 };
 
+const VIREMENT_ORDER: Record<string, number> = {
+  vire: 2,
+  demande: 1,
+};
+
 function formatEur(cents: number) {
   return (cents / 100).toLocaleString("fr-FR", {
     style: "currency",
@@ -57,6 +62,30 @@ function VirementBadge({ statut }: { statut: string }) {
   );
 }
 
+function SortIcon({
+  col,
+  sortColumn,
+  sortDirection,
+}: {
+  col: string;
+  sortColumn: string | null;
+  sortDirection: "asc" | "desc";
+}) {
+  if (sortColumn !== col)
+    return <span className="ml-1 text-gray-300 select-none">↕</span>;
+  return (
+    <span className="ml-1 text-gray-500 select-none">
+      {sortDirection === "asc" ? "↑" : "↓"}
+    </span>
+  );
+}
+
+function totalPaye(c: CagnotteRow): number {
+  return (c.cagnotte_contributions ?? [])
+    .filter((x) => x.statut === "paye")
+    .reduce((sum, x) => sum + x.montant_cents, 0);
+}
+
 export default function CagnottesAdminPage() {
   const [cagnottes, setCagnottes] = useState<CagnotteRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,6 +94,8 @@ export default function CagnottesAdminPage() {
   const [loadingContribs, setLoadingContribs] = useState(false);
   const [updating, setUpdating] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [sortColumn, setSortColumn] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
     loadCagnottes();
@@ -96,7 +127,11 @@ export default function CagnottesAdminPage() {
     setCagnottes((prev) =>
       prev.map((c) =>
         c.id === id
-          ? { ...c, virement_statut: "vire", virement_date: new Date().toISOString() }
+          ? {
+              ...c,
+              virement_statut: "vire",
+              virement_date: new Date().toISOString(),
+            }
           : c
       )
     );
@@ -118,6 +153,48 @@ export default function CagnottesAdminPage() {
     setLoadingContribs(false);
   }
 
+  function handleSort(col: string) {
+    if (sortColumn === col) {
+      setSortDirection((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortColumn(col);
+      setSortDirection("desc");
+    }
+  }
+
+  const sorted = useMemo(() => {
+    if (!sortColumn) return cagnottes;
+    return [...cagnottes].sort((a, b) => {
+      let cmp = 0;
+      switch (sortColumn) {
+        case "mariage":
+          cmp = (a.maries?.prenom_marie1 ?? "").localeCompare(
+            b.maries?.prenom_marie1 ?? "",
+            "fr"
+          );
+          break;
+        case "titre":
+          cmp = (a.cagnotte_titre ?? "").localeCompare(
+            b.cagnotte_titre ?? "",
+            "fr"
+          );
+          break;
+        case "collecte":
+          cmp = totalPaye(a) - totalPaye(b);
+          break;
+        case "iban":
+          cmp = (a.cagnotte_iban ? 1 : 0) - (b.cagnotte_iban ? 1 : 0);
+          break;
+        case "virement":
+          cmp =
+            (VIREMENT_ORDER[a.virement_statut] ?? 0) -
+            (VIREMENT_ORDER[b.virement_statut] ?? 0);
+          break;
+      }
+      return sortDirection === "asc" ? cmp : -cmp;
+    });
+  }, [cagnottes, sortColumn, sortDirection]);
+
   const selectedRow = cagnottes.find((c) => c.id === selectedId);
   const totalContribs = contributions.reduce(
     (sum, c) => sum + c.montant_cents,
@@ -125,6 +202,9 @@ export default function CagnottesAdminPage() {
   );
 
   if (loading) return <div className="text-sm text-gray-400">Chargement…</div>;
+
+  const thClass =
+    "text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap cursor-pointer select-none hover:text-gray-700";
 
   return (
     <div>
@@ -141,56 +221,68 @@ export default function CagnottesAdminPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100">
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                  Mariage
+                <th onClick={() => handleSort("mariage")} className={thClass}>
+                  Mariage{" "}
+                  <SortIcon col="mariage" sortColumn={sortColumn} sortDirection={sortDirection} />
                 </th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                  Titre
+                <th onClick={() => handleSort("titre")} className={thClass}>
+                  Titre{" "}
+                  <SortIcon col="titre" sortColumn={sortColumn} sortDirection={sortDirection} />
                 </th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                  Collecté
+                <th onClick={() => handleSort("collecte")} className={thClass}>
+                  Collecté{" "}
+                  <SortIcon col="collecte" sortColumn={sortColumn} sortDirection={sortDirection} />
                 </th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                  IBAN
+                <th onClick={() => handleSort("iban")} className={thClass}>
+                  IBAN{" "}
+                  <SortIcon col="iban" sortColumn={sortColumn} sortDirection={sortDirection} />
                 </th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                  Virement
+                <th onClick={() => handleSort("virement")} className={thClass}>
+                  Virement{" "}
+                  <SortIcon col="virement" sortColumn={sortColumn} sortDirection={sortDirection} />
                 </th>
                 <th className="px-5 py-3" />
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {cagnottes.map((c) => {
-                const totalPaye = (c.cagnotte_contributions ?? [])
-                  .filter((x) => x.statut === "paye")
-                  .reduce((sum, x) => sum + x.montant_cents, 0);
+              {sorted.map((c) => {
+                const total = totalPaye(c);
                 return (
                   <tr key={c.id} className="hover:bg-gray-50/40">
                     <td className="px-5 py-4">
                       <p className="font-medium text-gray-900">
                         {c.maries?.prenom_marie1 ?? "—"}
-                        {c.maries?.prenom_marie2 ? ` & ${c.maries.prenom_marie2}` : ""}
+                        {c.maries?.prenom_marie2
+                          ? ` & ${c.maries.prenom_marie2}`
+                          : ""}
                       </p>
                       {c.maries?.date_mariage && (
                         <p className="text-xs text-gray-400">
-                          {new Date(c.maries.date_mariage).toLocaleDateString("fr-FR", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })}
+                          {new Date(c.maries.date_mariage).toLocaleDateString(
+                            "fr-FR",
+                            {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            }
+                          )}
                         </p>
                       )}
                     </td>
                     <td className="px-5 py-4 text-gray-600">
-                      {c.cagnotte_titre ?? <span className="text-gray-400 italic">Sans titre</span>}
+                      {c.cagnotte_titre ?? (
+                        <span className="text-gray-400 italic">Sans titre</span>
+                      )}
                     </td>
                     <td className="px-5 py-4 font-semibold text-emerald-600 tabular-nums">
-                      {formatEur(totalPaye)}
+                      {formatEur(total)}
                     </td>
                     <td className="px-5 py-4 max-w-[220px]">
                       {c.cagnotte_iban ? (
                         <div className="flex items-start gap-2">
-                          <span className="font-mono text-xs text-gray-500 break-all">{c.cagnotte_iban}</span>
+                          <span className="font-mono text-xs text-gray-500 break-all">
+                            {c.cagnotte_iban}
+                          </span>
                           <button
                             onClick={() => {
                               navigator.clipboard.writeText(c.cagnotte_iban!);
@@ -201,10 +293,22 @@ export default function CagnottesAdminPage() {
                             title="Copier l'IBAN"
                           >
                             {copiedId === c.id ? (
-                              <span className="text-xs text-emerald-500 font-medium whitespace-nowrap">✓ Copié</span>
+                              <span className="text-xs text-emerald-500 font-medium whitespace-nowrap">
+                                ✓ Copié
+                              </span>
                             ) : (
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" />
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={1.5}
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"
+                                />
                               </svg>
                             )}
                           </button>
@@ -229,7 +333,7 @@ export default function CagnottesAdminPage() {
                         >
                           Voir contributions
                         </button>
-                        {c.virement_statut !== "vire" && totalPaye > 0 && (
+                        {c.virement_statut !== "vire" && total > 0 && (
                           <button
                             onClick={() => marquerVire(c.id)}
                             disabled={updating === c.id}
@@ -253,7 +357,9 @@ export default function CagnottesAdminPage() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col">
             <div className="px-6 py-4 border-b border-gray-100 flex items-start justify-between gap-4">
               <div>
-                <h3 className="font-bold text-gray-900">Contributions détaillées</h3>
+                <h3 className="font-bold text-gray-900">
+                  Contributions détaillées
+                </h3>
                 {selectedRow && (
                   <p className="text-sm text-gray-500 mt-0.5">
                     {selectedRow.maries?.prenom_marie1}
@@ -268,15 +374,27 @@ export default function CagnottesAdminPage() {
                 onClick={() => setSelectedId(null)}
                 className="text-gray-400 hover:text-gray-600 mt-0.5"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
 
             <div className="overflow-y-auto flex-1">
               {loadingContribs ? (
-                <div className="p-8 text-sm text-gray-400 text-center">Chargement…</div>
+                <div className="p-8 text-sm text-gray-400 text-center">
+                  Chargement…
+                </div>
               ) : contributions.length === 0 ? (
                 <div className="p-8 text-sm text-gray-400 text-center">
                   Aucune contribution payée.
@@ -315,10 +433,14 @@ export default function CagnottesAdminPage() {
                           {formatEur(contrib.montant_cents)}
                         </td>
                         <td className="px-5 py-3 text-gray-500 max-w-[200px] truncate">
-                          {contrib.message ?? <span className="text-gray-300">—</span>}
+                          {contrib.message ?? (
+                            <span className="text-gray-300">—</span>
+                          )}
                         </td>
                         <td className="px-5 py-3 text-gray-400 text-xs whitespace-nowrap">
-                          {new Date(contrib.created_at).toLocaleDateString("fr-FR")}
+                          {new Date(contrib.created_at).toLocaleDateString(
+                            "fr-FR"
+                          )}
                         </td>
                       </tr>
                     ))}

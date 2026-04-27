@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 
 type AbonnementRow = {
@@ -25,6 +25,10 @@ const PLAN_STYLE: Record<string, { bg: string; text: string }> = {
 
 const PLAN_LABELS = ["Tous", "starter", "pro", "premium"];
 
+const PLAN_ORDER: Record<string, number> = {
+  premium: 4, pro: 3, starter: 2, essentiel: 2, gratuit: 1,
+};
+
 function formatEur(prix: number | null) {
   if (prix == null) return "—";
   return prix.toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
@@ -40,12 +44,36 @@ async function getToken(): Promise<string> {
   return data.session?.access_token ?? "";
 }
 
+function SortIcon({
+  col,
+  sortColumn,
+  sortDirection,
+}: {
+  col: string;
+  sortColumn: string | null;
+  sortDirection: "asc" | "desc";
+}) {
+  if (sortColumn !== col)
+    return <span className="ml-1 text-gray-300 select-none">↕</span>;
+  return (
+    <span className="ml-1 text-gray-500 select-none">
+      {sortDirection === "asc" ? "↑" : "↓"}
+    </span>
+  );
+}
+
 export default function AbonnementsAdminPage() {
   const [abonnements, setAbonnements] = useState<AbonnementRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [planFilter, setPlanFilter] = useState("Tous");
   const [acting, setActing] = useState<string | null>(null);
-  const [feedback, setFeedback] = useState<{ id: string; msg: string; ok: boolean } | null>(null);
+  const [feedback, setFeedback] = useState<{
+    id: string;
+    msg: string;
+    ok: boolean;
+  } | null>(null);
+  const [sortColumn, setSortColumn] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
     load();
@@ -65,39 +93,113 @@ export default function AbonnementsAdminPage() {
   }
 
   async function offrirMois(id: string) {
-    if (!confirm("Offrir 1 mois gratuit ? Un crédit sera ajouté sur la prochaine facture Stripe.")) return;
+    if (
+      !confirm(
+        "Offrir 1 mois gratuit ? Un crédit sera ajouté sur la prochaine facture Stripe."
+      )
+    )
+      return;
     setActing(id + "-credit");
     const token = await getToken();
     const res = await fetch("/api/admin/abonnements/credit", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify({ abonnementId: id }),
     });
     const json = await res.json();
     setActing(null);
-    setFeedback({ id, msg: json.ok ? "Crédit ajouté !" : json.error ?? "Erreur", ok: !!json.ok });
+    setFeedback({
+      id,
+      msg: json.ok ? "Crédit ajouté !" : json.error ?? "Erreur",
+      ok: !!json.ok,
+    });
     setTimeout(() => setFeedback(null), 3000);
   }
 
   async function annuler(id: string) {
-    if (!confirm("Annuler cet abonnement à la fin de la période en cours ?")) return;
+    if (
+      !confirm(
+        "Annuler cet abonnement à la fin de la période en cours ?"
+      )
+    )
+      return;
     setActing(id + "-cancel");
     const token = await getToken();
     const res = await fetch("/api/admin/abonnements/cancel", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify({ abonnementId: id }),
     });
     const json = await res.json();
     setActing(null);
-    setFeedback({ id, msg: json.ok ? "Annulé à la prochaine échéance." : json.error ?? "Erreur", ok: !!json.ok });
+    setFeedback({
+      id,
+      msg: json.ok
+        ? "Annulé à la prochaine échéance."
+        : json.error ?? "Erreur",
+      ok: !!json.ok,
+    });
     setTimeout(() => setFeedback(null), 4000);
   }
 
-  const filtered =
-    planFilter === "Tous" ? abonnements : abonnements.filter((a) => a.plan === planFilter);
+  function handleSort(col: string) {
+    if (sortColumn === col) {
+      setSortDirection((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortColumn(col);
+      setSortDirection("desc");
+    }
+  }
+
+  const filtered = useMemo(() => {
+    const base =
+      planFilter === "Tous"
+        ? abonnements
+        : abonnements.filter((a) => a.plan === planFilter);
+    if (!sortColumn) return base;
+    return [...base].sort((a, b) => {
+      let cmp = 0;
+      switch (sortColumn) {
+        case "prestataire":
+          cmp = (a.prestataires?.nom_entreprise ?? "").localeCompare(
+            b.prestataires?.nom_entreprise ?? "",
+            "fr"
+          );
+          break;
+        case "plan":
+          cmp = (PLAN_ORDER[a.plan] ?? 0) - (PLAN_ORDER[b.plan] ?? 0);
+          break;
+        case "debut":
+          cmp =
+            new Date(a.date_debut).getTime() -
+            new Date(b.date_debut).getTime();
+          break;
+        case "renouvellement": {
+          if (!a.date_fin && !b.date_fin) { cmp = 0; break; }
+          if (!a.date_fin) return 1;
+          if (!b.date_fin) return -1;
+          cmp =
+            new Date(a.date_fin).getTime() - new Date(b.date_fin).getTime();
+          break;
+        }
+        case "montant":
+          cmp = (a.prix ?? 0) - (b.prix ?? 0);
+          break;
+      }
+      return sortDirection === "asc" ? cmp : -cmp;
+    });
+  }, [abonnements, planFilter, sortColumn, sortDirection]);
 
   if (loading) return <div className="text-sm text-gray-400">Chargement…</div>;
+
+  const thClass =
+    "text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap cursor-pointer select-none hover:text-gray-700";
 
   return (
     <div>
@@ -127,17 +229,35 @@ export default function AbonnementsAdminPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100">
-              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Prestataire</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Plan</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Début</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Renouvellement</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Montant/mois</th>
+              <th onClick={() => handleSort("prestataire")} className={thClass}>
+                Prestataire{" "}
+                <SortIcon col="prestataire" sortColumn={sortColumn} sortDirection={sortDirection} />
+              </th>
+              <th onClick={() => handleSort("plan")} className={thClass}>
+                Plan{" "}
+                <SortIcon col="plan" sortColumn={sortColumn} sortDirection={sortDirection} />
+              </th>
+              <th onClick={() => handleSort("debut")} className={thClass}>
+                Début{" "}
+                <SortIcon col="debut" sortColumn={sortColumn} sortDirection={sortDirection} />
+              </th>
+              <th onClick={() => handleSort("renouvellement")} className={thClass}>
+                Renouvellement{" "}
+                <SortIcon col="renouvellement" sortColumn={sortColumn} sortDirection={sortDirection} />
+              </th>
+              <th onClick={() => handleSort("montant")} className={thClass}>
+                Montant/mois{" "}
+                <SortIcon col="montant" sortColumn={sortColumn} sortDirection={sortDirection} />
+              </th>
               <th className="px-5 py-3" />
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
             {filtered.map((a) => {
-              const style = PLAN_STYLE[a.plan] ?? { bg: "#F9FAFB", text: "#6B7280" };
+              const style = PLAN_STYLE[a.plan] ?? {
+                bg: "#F9FAFB",
+                text: "#6B7280",
+              };
               const isFeedback = feedback?.id === a.id;
               return (
                 <tr key={a.id} className="hover:bg-gray-50/40">
@@ -181,11 +301,16 @@ export default function AbonnementsAdminPage() {
                           disabled={acting === a.id + "-credit"}
                           className="text-xs px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-medium transition-colors disabled:opacity-50 whitespace-nowrap"
                         >
-                          {acting === a.id + "-credit" ? "…" : "Offrir 1 mois gratuit"}
+                          {acting === a.id + "-credit"
+                            ? "…"
+                            : "Offrir 1 mois gratuit"}
                         </button>
                         <button
                           onClick={() => annuler(a.id)}
-                          disabled={acting === a.id + "-cancel" || !a.stripe_subscription_id}
+                          disabled={
+                            acting === a.id + "-cancel" ||
+                            !a.stripe_subscription_id
+                          }
                           className="text-xs px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 font-medium transition-colors disabled:opacity-50 whitespace-nowrap"
                         >
                           {acting === a.id + "-cancel" ? "…" : "Annuler"}
@@ -200,7 +325,8 @@ export default function AbonnementsAdminPage() {
         </table>
         {filtered.length === 0 && (
           <div className="p-10 text-center text-sm text-gray-400">
-            Aucun abonnement actif{planFilter !== "Tous" ? ` pour le plan ${planFilter}` : ""}.
+            Aucun abonnement actif
+            {planFilter !== "Tous" ? ` pour le plan ${planFilter}` : ""}.
           </div>
         )}
       </div>
