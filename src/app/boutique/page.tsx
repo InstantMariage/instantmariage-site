@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
@@ -31,6 +31,31 @@ function TruckIcon() {
   );
 }
 
+const TEMPLATES = [
+  {
+    name: "Élégance Dorée",
+    url: "https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777311248762-img_1741.jpg",
+  },
+  {
+    name: "Bohème Rose",
+    url: "https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777311228438-img_1742.jpg",
+  },
+  {
+    name: "Moderne Minimaliste",
+    url: "https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777311208591-img_1743.jpg",
+  },
+  {
+    name: "Nuit Romantique",
+    url: "https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777311265519-img_1744-2.jpg",
+  },
+];
+
+const FRAME_COLORS = [
+  { color: "#1C1C1E", label: "Noir", isLight: false },
+  { color: "#F5F5F5", label: "Blanc", isLight: true },
+  { color: "#C9A84C", label: "Doré", isLight: false },
+];
+
 const TESTIMONIALS = [
   {
     name: "Sophie & Thomas",
@@ -55,12 +80,24 @@ const TESTIMONIALS = [
 export default function BoutiquePage() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const [currentTemplate, setCurrentTemplate] = useState(0);
+  const [frameColor, setFrameColor] = useState("#1C1C1E");
+  const isPausedRef = useRef(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsLoggedIn(!!session);
     });
   }, [router]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (!isPausedRef.current) {
+        setCurrentTemplate((prev) => (prev + 1) % TEMPLATES.length);
+      }
+    }, 3000);
+    return () => clearInterval(timer);
+  }, []);
 
   function getCadreHref() {
     if (isLoggedIn === null) return "#";
@@ -121,73 +158,178 @@ export default function BoutiquePage() {
 
       {/* Products */}
       <section className="py-16 px-4">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-8 items-stretch">
+        <div className="max-w-5xl mx-auto space-y-8">
 
-            {/* Cadre */}
-            <div
-              className="rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-              style={{ background: "#fff", border: "1px solid #EBEBEB", display: "flex", flexDirection: "column" }}
-            >
-              {/* Mockup visuel */}
+          {/* === Cadre QR Code — Slider interactif === */}
+          <div
+            className="rounded-2xl overflow-hidden"
+            style={{
+              border: "1px solid #EBEBEB",
+              background: "#fff",
+              boxShadow: "0 4px 24px rgba(0,0,0,0.07)",
+            }}
+          >
+            <div className="flex flex-col md:flex-row">
+
+              {/* Slider — 55% */}
               <div
-                className="flex items-center justify-center"
-                style={{ background: "linear-gradient(135deg, #F5F0E8 0%, #EDE5D4 100%)", height: 200 }}
+                className="relative flex-none w-full md:w-[55%]"
+                style={{ minHeight: 460, background: "linear-gradient(145deg, #F5F0E8 0%, #EDE5D4 100%)" }}
+                onMouseEnter={() => { isPausedRef.current = true; }}
+                onMouseLeave={() => { isPausedRef.current = false; }}
               >
-                <div
-                  style={{
-                    width: 100,
-                    height: 136,
-                    background: "#FAFAF8",
-                    border: "6px solid #1C1C1E",
-                    boxShadow: "0 12px 36px rgba(0,0,0,0.28)",
-                    transform: "rotate(-2deg)",
-                    display: "flex",
-                    alignItems: "stretch",
-                    justifyContent: "stretch",
-                  }}
-                >
-                  <div style={{ flex: 1, border: "1px solid #C9A84C", margin: 5, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5 }}>
-                    <p style={{ fontSize: 5, color: "#C9A84C", letterSpacing: "0.28em", textTransform: "uppercase", fontFamily: "Georgia, serif" }}>Mariage de</p>
-                    <p style={{ fontSize: 8, fontWeight: "bold", color: "#1C1C1E", fontFamily: "Georgia, serif", textAlign: "center" }}>Marina & Adel</p>
-                    <div style={{ width: 28, height: 1, background: "#C9A84C" }} />
-                    <div style={{ width: 36, height: 36, border: "1.5px solid #C9A84C", padding: 2, background: "#fff", display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 1.2 }}>
-                      {Array.from({ length: 25 }).map((_, i) => (
-                        <div key={i} style={{ background: [0,1,5,6,10,14,15,18,19,20,24].includes(i) ? "#1C1C1E" : "#fff", borderRadius: 0.5 }} />
-                      ))}
-                    </div>
-                    <p style={{ fontSize: 4, color: "#bbb", letterSpacing: "0.12em", textTransform: "uppercase" }}>instantmariage.fr</p>
+                {/* Frame + images */}
+                <div className="absolute inset-0 flex items-center justify-center" style={{ padding: "48px 40px 72px" }}>
+                  <div
+                    style={{
+                      border: `12px solid ${frameColor}`,
+                      boxShadow: "0 20px 50px rgba(0,0,0,0.3)",
+                      borderRadius: 4,
+                      position: "relative",
+                      width: "100%",
+                      maxWidth: 280,
+                      aspectRatio: "3 / 4",
+                      overflow: "hidden",
+                      transition: "border-color 0.4s ease",
+                    }}
+                  >
+                    {TEMPLATES.map((tpl, i) => (
+                      <img
+                        key={i}
+                        src={tpl.url}
+                        alt={tpl.name}
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          opacity: currentTemplate === i ? 1 : 0,
+                          transition: "opacity 0.8s ease-in-out",
+                        }}
+                      />
+                    ))}
                   </div>
+                </div>
+
+                {/* Template name */}
+                <div
+                  className="absolute left-0 right-0 text-center"
+                  style={{ bottom: 40 }}
+                >
+                  <span
+                    className="text-xs font-medium"
+                    style={{ color: "#9CA3AF", letterSpacing: "0.06em" }}
+                  >
+                    {TEMPLATES[currentTemplate].name}
+                  </span>
+                </div>
+
+                {/* Dots */}
+                <div
+                  className="absolute left-0 right-0 flex justify-center gap-2"
+                  style={{ bottom: 18 }}
+                >
+                  {TEMPLATES.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCurrentTemplate(i)}
+                      aria-label={`Template ${i + 1}`}
+                      style={{
+                        width: currentTemplate === i ? 20 : 8,
+                        height: 8,
+                        borderRadius: 4,
+                        background: currentTemplate === i ? "#F06292" : "#D1D5DB",
+                        border: "none",
+                        cursor: "pointer",
+                        padding: 0,
+                        transition: "all 0.3s ease",
+                      }}
+                    />
+                  ))}
                 </div>
               </div>
 
-              {/* Content */}
-              <div className="p-7" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-                <h2 className="text-xl font-bold text-gray-900 mb-2" style={{ fontFamily: "Georgia, serif" }}>
-                  Cadre QR Code — Partagez vos photos
+              {/* Info — 45% */}
+              <div
+                className="flex-none w-full md:w-[45%] flex flex-col justify-center"
+                style={{ padding: "40px 36px" }}
+              >
+                {/* Badge */}
+                <span
+                  className="inline-flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full self-start mb-5"
+                  style={{ background: "#FDE8F0", color: "#F06292", letterSpacing: "0.02em" }}
+                >
+                  Bestseller 🔥
+                </span>
+
+                <h2
+                  className="font-bold text-gray-900 mb-2 leading-snug"
+                  style={{ fontFamily: "Georgia, serif", fontSize: "clamp(1.4rem, 3vw, 1.8rem)" }}
+                >
+                  Cadre QR Code personnalisé
                 </h2>
-                <p className="text-sm text-gray-500 leading-relaxed mb-5" style={{ flex: 1 }}>
-                  Cadre blanc 15×20 cm avec votre carte QR Code personnalisée. Posez-le sur chaque
-                  table et collectez tous les souvenirs de vos invités.
+                <p className="text-sm mb-8" style={{ color: "#9CA3AF" }}>
+                  4 designs élégants • Livraison 5–7 jours
                 </p>
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <span className="text-2xl font-bold text-gray-900">39,90 €</span>
-                    <span className="text-sm text-gray-400 ml-1">TTC</span>
-                  </div>
-                  <span className="text-xs text-gray-400">Livraison incluse</span>
+
+                {/* Price */}
+                <div className="mb-8">
+                  <span className="font-bold text-gray-900" style={{ fontSize: "2.5rem", lineHeight: 1 }}>
+                    39,90€
+                  </span>
+                  <span className="text-sm ml-2" style={{ color: "#9CA3AF" }}>
+                    TTC livraison incluse
+                  </span>
                 </div>
+
+                {/* Color picker */}
+                <div className="mb-8">
+                  <p
+                    className="text-xs font-semibold uppercase mb-3"
+                    style={{ color: "#9CA3AF", letterSpacing: "0.1em" }}
+                  >
+                    Couleur du cadre
+                  </p>
+                  <div className="flex gap-3 items-center">
+                    {FRAME_COLORS.map((fc) => (
+                      <button
+                        key={fc.color}
+                        onClick={() => setFrameColor(fc.color)}
+                        title={fc.label}
+                        aria-label={`Cadre ${fc.label}`}
+                        style={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: "50%",
+                          background: fc.color,
+                          outline: frameColor === fc.color ? "3px solid #F06292" : "3px solid transparent",
+                          outlineOffset: 3,
+                          border: fc.isLight ? "1.5px solid #D1D5DB" : "1.5px solid transparent",
+                          cursor: "pointer",
+                          transition: "outline 0.2s ease, transform 0.15s ease",
+                          transform: frameColor === fc.color ? "scale(1.15)" : "scale(1)",
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* CTA */}
                 <Link
                   href={getCadreHref()}
-                  className="block w-full text-center py-3.5 rounded-2xl text-sm font-semibold transition-all"
-                  style={{ background: "#F06292", color: "#fff" }}
+                  className="block w-full text-center rounded-2xl font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"
+                  style={{ background: "#F06292", fontSize: 15, padding: "16px 0" }}
                 >
-                  Commander le cadre
+                  Commander le cadre →
                 </Link>
               </div>
-            </div>
 
-            {/* Chevalet */}
+            </div>
+          </div>
+
+          {/* === Chevalet === */}
+          <div className="grid md:grid-cols-2 gap-8 items-stretch">
             <div
               className="rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
               style={{ background: "#fff", border: "1px solid #EBEBEB", display: "flex", flexDirection: "column" }}
@@ -256,8 +398,8 @@ export default function BoutiquePage() {
                 </Link>
               </div>
             </div>
-
           </div>
+
         </div>
       </section>
 
