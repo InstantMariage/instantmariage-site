@@ -27,6 +27,7 @@
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
     "next": "14.2.35",
+    "qrcode": "^1.5.4",
     "react": "^18",
     "react-dom": "^18",
     "remotion": "^4.0.448",
@@ -35,6 +36,7 @@
   },
   "devDependencies": {
     "@types/node": "^20",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
