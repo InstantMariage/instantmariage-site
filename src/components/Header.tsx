@@ -9,16 +9,16 @@ import { supabase } from "@/lib/supabase";
 
 const outils = [
   {
+    label: "Faire-parts animés",
+    icon: "💌",
+    href: "/dashboard/marie/faire-parts",
+    desc: "Créez vos invitations animées",
+  },
+  {
     label: "Invités & Plan de table",
     icon: "🪑",
     href: "/dashboard/marie/invites",
     desc: "Gérez vos invités et votre plan de table",
-  },
-  {
-    label: "Rétroplanning",
-    icon: "📅",
-    href: "/dashboard/marie/retroplanning",
-    desc: "Planifiez chaque étape",
   },
   {
     label: "Budget mariage",
@@ -27,10 +27,22 @@ const outils = [
     desc: "Suivez vos dépenses",
   },
   {
+    label: "Rétroplanning",
+    icon: "📅",
+    href: "/dashboard/marie/retroplanning",
+    desc: "Planifiez chaque étape",
+  },
+  {
     label: "Checklist",
     icon: "✅",
     href: "/dashboard/marie/checklist",
     desc: "Ne rien oublier",
+  },
+  {
+    label: "Album photo collaboratif",
+    icon: "📸",
+    href: "/dashboard/marie/album-photo",
+    desc: "Partagez vos photos avec vos invités",
   },
 ];
 
