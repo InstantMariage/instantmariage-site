@@ -10,7 +10,6 @@ import Footer from "@/components/Footer";
 import { supabase } from "@/lib/supabase";
 
 const SITE_URL = "https://instantmariage.fr";
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 
 type Photo = {
   id: string;
@@ -34,6 +33,14 @@ function slugFromPrenoms(p1: string, p2: string | null): string {
   return `${base}-${suffix}`;
 }
 
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
 export default function AlbumPhotoDashboard() {
   const router = useRouter();
   const [authChecked, setAuthChecked] = useState(false);
@@ -46,13 +53,13 @@ export default function AlbumPhotoDashboard() {
 
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [photosLoaded, setPhotosLoaded] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const albumUrl = albumSlug ? `${SITE_URL}/album/${albumSlug}` : null;
 
-  // Génère le QR code dès que le slug est disponible
   useEffect(() => {
     if (!albumUrl) return;
     QRCode.toDataURL(albumUrl, {
@@ -62,7 +69,6 @@ export default function AlbumPhotoDashboard() {
     }).then(setQrDataUrl);
   }, [albumUrl]);
 
-  // Auth + chargement
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) { router.replace("/login"); return; }
@@ -84,7 +90,6 @@ export default function AlbumPhotoDashboard() {
     });
   }, [router]);
 
-  // Charger les photos quand l'album existe
   const loadPhotos = useCallback(async (mid: string) => {
     const { data } = await supabase
       .from("album_photos")
@@ -99,6 +104,19 @@ export default function AlbumPhotoDashboard() {
     if (marieId && albumSlug) loadPhotos(marieId);
     else setPhotosLoaded(true);
   }, [marieId, albumSlug, loadPhotos]);
+
+  // Keyboard navigation for lightbox
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxIndex(null);
+      if (e.key === "ArrowLeft") setLightboxIndex((i) => (i !== null && i > 0 ? i - 1 : i));
+      if (e.key === "ArrowRight")
+        setLightboxIndex((i) => (i !== null && i < photos.length - 1 ? i + 1 : i));
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [lightboxIndex, photos.length]);
 
   const createAlbum = async () => {
     if (!marieId) return;
@@ -121,7 +139,6 @@ export default function AlbumPhotoDashboard() {
     setAlbumActif(actif);
   };
 
-  // Génère et télécharge la carte QR Code sur canvas
   const downloadCard = useCallback(async () => {
     if (!qrDataUrl || !prenom1) return;
     const canvas = document.createElement("canvas");
@@ -130,24 +147,20 @@ export default function AlbumPhotoDashboard() {
     canvas.height = H;
     const ctx = canvas.getContext("2d")!;
 
-    // Fond blanc
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, W, H);
 
-    // Bandeau rose en haut
     const grad = ctx.createLinearGradient(0, 0, W, 0);
     grad.addColorStop(0, "#F06292");
     grad.addColorStop(1, "#e91e8c");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, W, 120);
 
-    // Logo texte dans le bandeau
     ctx.fillStyle = "#ffffff";
     ctx.font = "bold 28px system-ui, sans-serif";
     ctx.textAlign = "center";
     ctx.fillText("InstantMariage", W / 2, 72);
 
-    // Titre "Mariage de …"
     const names = prenom2 ? `${prenom1} & ${prenom2}` : prenom1;
     ctx.fillStyle = "#1a1a1a";
     ctx.font = "bold 32px Georgia, serif";
@@ -156,7 +169,6 @@ export default function AlbumPhotoDashboard() {
     ctx.fillStyle = "#e91e8c";
     ctx.fillText(names, W / 2, 230);
 
-    // QR Code
     const qrImg = new window.Image();
     await new Promise<void>((resolve) => {
       qrImg.onload = () => resolve();
@@ -173,16 +185,13 @@ export default function AlbumPhotoDashboard() {
     ctx.restore();
     ctx.drawImage(qrImg, qrX, 286, qrSize, qrSize);
 
-    // Texte bas
     ctx.fillStyle = "#555555";
     ctx.font = "18px system-ui, sans-serif";
     ctx.fillText("Scannez pour partager vos photos !", W / 2, 670);
-
     ctx.fillStyle = "#aaaaaa";
     ctx.font = "14px system-ui, sans-serif";
     ctx.fillText("instantmariage.fr", W / 2, 740);
 
-    // Téléchargement
     const link = document.createElement("a");
     link.download = `album-qrcode-${albumSlug}.png`;
     link.href = canvas.toDataURL("image/png");
@@ -191,256 +200,346 @@ export default function AlbumPhotoDashboard() {
 
   if (!authChecked) return null;
 
+  const albumTitle = prenom2 ? `${prenom1} & ${prenom2}` : prenom1;
+  const currentPhoto = lightboxIndex !== null ? photos[lightboxIndex] : null;
+
   return (
-    <main className="min-h-screen overflow-x-hidden" style={{ background: "#FEF0F5" }}>
-      <Header />
+    <>
+      <main className="min-h-screen bg-white">
+        <Header />
 
-      <div className="pt-20 pb-20">
+        <div className="pt-20 pb-24">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
 
-        {/* Hero */}
-        <section
-          className="max-w-3xl mx-auto px-6 pt-12 pb-10 mb-2 rounded-b-3xl"
-          style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)" }}
-        >
-          <Link href="/dashboard/marie" className="inline-flex items-center gap-1.5 text-xs font-medium mb-4 opacity-80 hover:opacity-100 transition-opacity" style={{ color: "rgba(255,255,255,0.9)" }}>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
-            Dashboard
-          </Link>
-          <div
-            className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
-            style={{ background: "rgba(255,255,255,0.2)" }}
-          >
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-            </svg>
-          </div>
-          <h1 className="text-3xl font-semibold text-white mb-1">Album photo</h1>
-          <p className="text-sm" style={{ color: "rgba(255,255,255,0.8)" }}>
-            Vos invités partagent leurs photos via QR Code, sans inscription
-          </p>
-        </section>
-
-        <div className="max-w-3xl mx-auto px-6 space-y-5 pt-4">
-
-          {/* ── Créer l'album ── */}
-          {!albumSlug && (
-            <section
-              className="rounded-3xl p-8 flex flex-col items-center text-center"
-              style={{ background: "white", border: "1px solid #FECDD3", boxShadow: "0 4px 24px rgba(240,98,146,0.08)" }}
-            >
-              <div
-                className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
-                style={{ background: "#FFF0F5", color: "#F06292" }}
+            {/* Back link */}
+            <div className="pt-10 pb-8">
+              <Link
+                href="/dashboard/marie"
+                className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 transition-colors"
               >
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
-              </div>
-              <h2 className="text-lg font-bold text-gray-900 mb-2">Créez votre album collaboratif</h2>
-              <p className="text-sm text-gray-500 mb-6 leading-relaxed max-w-xs">
-                Générez un QR Code unique à imprimer ou partager. Vos invités y déposent leurs photos sans créer de compte.
-              </p>
-              <button
-                onClick={createAlbum}
-                disabled={creating}
-                className="px-8 py-3.5 rounded-full text-sm font-bold transition-all hover:opacity-80 disabled:opacity-50"
-                style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)", color: "white", boxShadow: "0 8px 24px rgba(240,98,146,0.3)" }}
-              >
-                {creating ? "Création…" : "Créer mon album"}
-              </button>
-            </section>
-          )}
+                Dashboard
+              </Link>
+            </div>
 
-          {/* ── QR Code + contrôles ── */}
-          {albumSlug && (
-            <section
-              className="rounded-3xl overflow-hidden"
-              style={{ background: "white", border: "1px solid #FECDD3", boxShadow: "0 4px 24px rgba(240,98,146,0.08)" }}
-            >
-              {/* Statut */}
-              <div
-                className="flex items-center justify-between px-5 py-4"
-                style={{ borderBottom: "1px solid #FEE2E2" }}
-              >
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-2 h-2 rounded-full"
-                    style={{ background: albumActif ? "#10b981" : "#d1d5db" }}
-                  />
-                  <span className="text-sm font-semibold text-gray-700">
-                    Album {albumActif ? "actif" : "désactivé"}
-                  </span>
-                </div>
-                <button
-                  onClick={() => toggleAlbum(!albumActif)}
-                  className="text-xs font-semibold px-3 py-1.5 rounded-full transition-all"
+            {/* Header row: title + QR code compact box */}
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8 mb-12">
+
+              {/* Left: title + counter */}
+              <div className="flex-1">
+                {albumSlug ? (
+                  <>
+                    <h1
+                      className="text-4xl lg:text-5xl text-gray-900 leading-tight mb-3"
+                      style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontWeight: 400 }}
+                    >
+                      Album de{" "}
+                      <span style={{ fontStyle: "italic" }}>{albumTitle}</span>
+                    </h1>
+                    <p className="text-gray-400 text-base mb-5">
+                      {photos.length === 0
+                        ? "Aucune photo partagée pour l'instant"
+                        : `${photos.length} photo${photos.length > 1 ? "s" : ""} partagée${photos.length > 1 ? "s" : ""} par vos invités`}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-2 h-2 rounded-full"
+                          style={{ background: albumActif ? "#10b981" : "#d1d5db" }}
+                        />
+                        <span className="text-sm text-gray-500">
+                          Album {albumActif ? "actif" : "désactivé"}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => toggleAlbum(!albumActif)}
+                        className="text-xs font-semibold px-3 py-1 rounded-full border transition-colors"
+                        style={
+                          albumActif
+                            ? { borderColor: "#fca5a5", color: "#ef4444", background: "#fef2f2" }
+                            : { borderColor: "#6ee7b7", color: "#059669", background: "#f0fdf4" }
+                        }
+                      >
+                        {albumActif ? "Désactiver" : "Activer"}
+                      </button>
+                      <button
+                        onClick={() => marieId && loadPhotos(marieId)}
+                        className="text-xs text-gray-400 hover:text-gray-600 transition-colors underline underline-offset-2"
+                      >
+                        Actualiser
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h1
+                      className="text-4xl lg:text-5xl text-gray-900 leading-tight mb-3"
+                      style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontWeight: 400 }}
+                    >
+                      Album photo
+                    </h1>
+                    <p className="text-gray-400 text-base">
+                      Créez votre album pour recevoir les photos de vos invités
+                    </p>
+                  </>
+                )}
+              </div>
+
+              {/* Right: QR Code compact */}
+              {albumSlug && (
+                <div
+                  className="flex-shrink-0 rounded-2xl p-5 flex flex-col items-center gap-3 w-full lg:w-auto"
                   style={{
-                    background: albumActif ? "#FEE2E2" : "#D1FAE5",
-                    color: albumActif ? "#ef4444" : "#059669",
+                    background: "#f9fafb",
+                    border: "1px solid #e5e7eb",
+                    minWidth: 200,
+                    maxWidth: 240,
                   }}
                 >
-                  {albumActif ? "Désactiver" : "Activer"}
-                </button>
-              </div>
-
-              {/* QR Code */}
-              <div className="p-6 flex flex-col items-center">
-                {qrDataUrl ? (
-                  <div
-                    className="p-4 rounded-2xl mb-4"
-                    style={{ background: "#FAFAFA", border: "1px solid #F3F4F6" }}
-                  >
-                    <Image src={qrDataUrl} alt="QR Code album" width={200} height={200} />
-                  </div>
-                ) : (
-                  <div className="w-[200px] h-[200px] rounded-2xl flex items-center justify-center mb-4" style={{ background: "#FFF0F5" }}>
-                    <div className="w-6 h-6 border-2 border-gray-200 border-t-transparent rounded-full animate-spin" style={{ borderTopColor: "#F06292" }} />
-                  </div>
-                )}
-
-                {/* Lien */}
-                <div
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl w-full max-w-sm mb-4"
-                  style={{ background: "#FFF0F5" }}
-                >
-                  <span className="text-xs text-gray-500 truncate flex-1 font-mono">{albumUrl}</span>
-                  <button
-                    onClick={() => navigator.clipboard.writeText(albumUrl!)}
-                    className="text-xs font-semibold flex-shrink-0 transition-opacity hover:opacity-70"
-                    style={{ color: "#F06292" }}
-                  >
-                    Copier
-                  </button>
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-3 w-full max-w-sm">
-                  <button
-                    onClick={downloadCard}
-                    disabled={!qrDataUrl}
-                    className="flex-1 py-3 rounded-2xl text-sm font-bold transition-all hover:opacity-80 disabled:opacity-40"
-                    style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)", color: "white" }}
-                  >
-                    Télécharger la carte
-                  </button>
-                  <a
-                    href={albumUrl!}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center px-4 py-3 rounded-2xl text-sm font-semibold transition-all hover:opacity-70"
-                    style={{ background: "#FFF0F5", color: "#F06292", border: "1px solid #FECDD3" }}
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                  </a>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {/* ── Mes photos ── */}
-          {albumSlug && (
-            <section>
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400">
-                  Photos des invités
-                  {photos.length > 0 && (
-                    <span
-                      className="ml-2 px-2 py-0.5 rounded-full text-xs font-bold"
-                      style={{ background: "#FFF0F5", color: "#F06292" }}
+                  {qrDataUrl ? (
+                    <div className="p-2 bg-white rounded-xl border border-gray-100">
+                      <Image
+                        src={qrDataUrl}
+                        alt="QR Code album"
+                        width={140}
+                        height={140}
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      className="w-[140px] h-[140px] rounded-xl bg-gray-100 flex items-center justify-center"
                     >
-                      {photos.length}
-                    </span>
+                      <div className="w-5 h-5 border-2 border-gray-200 border-t-gray-500 rounded-full animate-spin" />
+                    </div>
                   )}
+
+                  <p className="text-xs text-gray-400 font-mono text-center truncate w-full px-1">
+                    {albumUrl?.replace("https://", "")}
+                  </p>
+
+                  <div className="flex gap-2 w-full">
+                    <button
+                      onClick={downloadCard}
+                      disabled={!qrDataUrl}
+                      className="flex-1 py-2 rounded-xl text-xs font-semibold bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-40 transition-colors"
+                    >
+                      Télécharger la carte
+                    </button>
+                    <button
+                      onClick={() => navigator.clipboard.writeText(albumUrl!)}
+                      className="px-3 py-2 rounded-xl text-xs font-semibold border border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors"
+                      title="Copier le lien"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Create album CTA */}
+            {!albumSlug && (
+              <div className="flex flex-col items-center text-center py-24">
+                <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-5">
+                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                  Créez votre album collaboratif
                 </h2>
+                <p className="text-sm text-gray-500 mb-8 max-w-sm leading-relaxed">
+                  Générez un QR Code unique à imprimer ou partager. Vos invités y déposent leurs photos sans créer de compte.
+                </p>
                 <button
-                  onClick={() => marieId && loadPhotos(marieId)}
-                  className="text-xs font-semibold transition-opacity hover:opacity-70"
-                  style={{ color: "#F06292" }}
+                  onClick={createAlbum}
+                  disabled={creating}
+                  className="px-8 py-3 rounded-full text-sm font-semibold bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-50 transition-colors"
                 >
-                  Actualiser
+                  {creating ? "Création…" : "Créer mon album"}
                 </button>
               </div>
+            )}
 
-              <div
-                className="rounded-3xl overflow-hidden"
-                style={{ background: "white", border: "1px solid #FECDD3", boxShadow: "0 4px 24px rgba(240,98,146,0.08)" }}
-              >
+            {/* Photos grid */}
+            {albumSlug && (
+              <>
                 {!photosLoaded ? (
-                  <div className="flex items-center justify-center py-10">
-                    <div className="w-5 h-5 border-2 border-gray-200 border-t-transparent rounded-full animate-spin" style={{ borderTopColor: "#F06292" }} />
+                  <div className="flex items-center justify-center py-24">
+                    <div className="w-6 h-6 border-2 border-gray-200 border-t-gray-700 rounded-full animate-spin" />
                   </div>
                 ) : photos.length === 0 ? (
-                  <div className="flex flex-col items-center text-center p-10">
-                    <div className="w-11 h-11 rounded-2xl flex items-center justify-center mb-3" style={{ background: "#FFF0F5", color: "#F06292" }}>
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                  <div className="flex flex-col items-center text-center py-24">
+                    <div className="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
+                      <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
                       </svg>
                     </div>
-                    <p className="text-sm font-semibold text-gray-700 mb-1">Aucune photo pour l&apos;instant</p>
-                    <p className="text-xs text-gray-400 leading-relaxed">
+                    <p className="text-base font-medium text-gray-700 mb-1">
+                      Aucune photo pour l&apos;instant
+                    </p>
+                    <p className="text-sm text-gray-400 max-w-xs leading-relaxed">
                       Partagez le QR Code à vos invités pour commencer à recevoir des photos
                     </p>
                   </div>
                 ) : (
-                  <>
-                    <div className="p-4 grid grid-cols-3 gap-2">
-                      {photos.map((p) => (
-                        <div key={p.id} className="relative aspect-square rounded-xl overflow-hidden group" style={{ background: "#FFF0F5" }}>
+                  /* Masonry grid */
+                  <div className="columns-1 sm:columns-2 lg:columns-3 gap-2">
+                    {photos.map((p, idx) => (
+                      <div
+                        key={p.id}
+                        className="break-inside-avoid mb-2 group"
+                        style={{ cursor: p.type === "photo" ? "pointer" : "default" }}
+                        onClick={() => p.type === "photo" && setLightboxIndex(idx)}
+                      >
+                        <div
+                          className="relative rounded-lg overflow-hidden"
+                          style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}
+                        >
                           {p.type === "photo" ? (
                             <Image
                               src={p.url}
                               alt={p.nom_fichier ?? "photo"}
-                              fill
-                              className="object-cover"
-                              sizes="(max-width: 768px) 33vw, 200px"
+                              width={800}
+                              height={600}
+                              style={{ width: "100%", height: "auto", display: "block" }}
+                              className="group-hover:scale-[1.02] transition-transform duration-300"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <svg className="w-8 h-8" style={{ color: "#F06292" }} fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                            <div className="w-full aspect-video bg-gray-100 flex items-center justify-center">
+                              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
                               </svg>
                             </div>
                           )}
+
+                          {/* Hover overlay shadow */}
+                          <div
+                            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
+                            style={{ boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.06)" }}
+                          />
+
+                          {/* Uploader badge — always visible at bottom-left */}
                           {p.uploade_par && (
-                            <div className="absolute bottom-0 left-0 right-0 px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: "rgba(0,0,0,0.5)" }}>
-                              <p className="text-white text-xs truncate">{p.uploade_par}</p>
+                            <div
+                              className="absolute bottom-0 left-0 right-0 px-3 py-2"
+                              style={{
+                                background:
+                                  "linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 100%)",
+                              }}
+                            >
+                              <span className="text-white text-xs font-medium">
+                                {p.uploade_par}
+                              </span>
                             </div>
                           )}
                         </div>
-                      ))}
-                    </div>
-
-                    {/* Tout télécharger */}
-                    <div style={{ borderTop: "1px solid #FEE2E2" }}>
-                      <div className="flex items-center justify-between px-5 py-4">
-                        <div>
-                          <p className="text-sm font-semibold text-gray-700">Télécharger tout</p>
-                          <p className="text-xs text-gray-400">Exportez toutes vos photos en ZIP</p>
-                        </div>
-                        <span
-                          className="text-xs font-semibold px-3 py-1.5 rounded-full"
-                          style={{ background: "#F3F4F6", color: "#9CA3AF" }}
-                        >
-                          Bientôt
-                        </span>
                       </div>
-                    </div>
-                  </>
+                    ))}
+                  </div>
                 )}
-              </div>
-            </section>
+              </>
+            )}
+
+          </div>
+        </div>
+
+        <Footer />
+      </main>
+
+      {/* Lightbox */}
+      {currentPhoto !== null && lightboxIndex !== null && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ background: "rgba(0,0,0,0.92)", backdropFilter: "blur(10px)" }}
+          onClick={() => setLightboxIndex(null)}
+        >
+          {/* Close */}
+          <button
+            className="absolute top-5 right-5 w-10 h-10 rounded-full flex items-center justify-center text-white hover:bg-white/10 transition-colors"
+            onClick={() => setLightboxIndex(null)}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Counter */}
+          <div className="absolute top-5 left-1/2 -translate-x-1/2">
+            <span className="text-gray-400 text-sm tabular-nums">
+              {lightboxIndex + 1} / {photos.length}
+            </span>
+          </div>
+
+          {/* Prev */}
+          {lightboxIndex > 0 && (
+            <button
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center text-white hover:bg-white/10 transition-colors"
+              onClick={(e) => { e.stopPropagation(); setLightboxIndex(lightboxIndex - 1); }}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
           )}
 
-        </div>
-      </div>
+          {/* Image container */}
+          <div
+            className="flex flex-col items-center px-16 max-w-5xl w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {currentPhoto.type === "photo" ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={currentPhoto.url}
+                alt={currentPhoto.nom_fichier ?? "photo"}
+                style={{
+                  maxWidth: "90vw",
+                  maxHeight: "78vh",
+                  width: "auto",
+                  height: "auto",
+                  objectFit: "contain",
+                  borderRadius: 8,
+                }}
+              />
+            ) : (
+              <div className="w-64 h-64 bg-gray-800 rounded-lg flex items-center justify-center">
+                <svg className="w-12 h-12 text-gray-500" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
+                </svg>
+              </div>
+            )}
 
-      <Footer />
-      {/* Canvas caché pour la génération de la carte */}
+            {/* Bottom info */}
+            <div className="flex items-center justify-between w-full mt-4 px-1">
+              <span className="text-white text-sm font-medium">
+                {currentPhoto.uploade_par ?? "Invité"}
+              </span>
+              <span className="text-gray-500 text-sm">
+                {formatDate(currentPhoto.created_at)}
+              </span>
+            </div>
+          </div>
+
+          {/* Next */}
+          {lightboxIndex < photos.length - 1 && (
+            <button
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center text-white hover:bg-white/10 transition-colors"
+              onClick={(e) => { e.stopPropagation(); setLightboxIndex(lightboxIndex + 1); }}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
+        </div>
+      )}
+
       <canvas ref={canvasRef} className="hidden" />
-    </main>
+    </>
   );
 }
