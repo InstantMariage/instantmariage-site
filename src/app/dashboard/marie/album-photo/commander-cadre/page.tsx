@@ -163,6 +163,7 @@ function CommanderCadreContent() {
   const isSuccess = searchParams.get("success") === "true";
 
   const [authChecked, setAuthChecked] = useState(false);
+  const [activeTemplate, setActiveTemplate] = useState<TemplateId>(templateId);
   const [frameColor, setFrameColor] = useState<CadreColorHex>(validatedCouleur);
   const [marieId, setMarieId] = useState<string | null>(null);
   const [prenom1, setPrenom1] = useState("");
@@ -222,6 +223,11 @@ function CommanderCadreContent() {
   const innerW = FRAME_W - FRAME_PAD * 2;
   const scale = innerW / A4_W;
 
+  const THUMB_W = 108;
+  const THUMB_H = Math.round(THUMB_W * A4_H / A4_W);
+  const thumbScale = THUMB_W / A4_W;
+  const ALL_TEMPLATE_IDS: TemplateId[] = ["elegance-doree", "boheme-rose", "moderne-minimaliste", "nuit-romantique"];
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!marieId || paying) return;
@@ -236,7 +242,7 @@ function CommanderCadreContent() {
       const res = await fetch("/api/marie/cadre-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ templateId, marieId, adresseLivraison }),
+        body: JSON.stringify({ templateId: activeTemplate, marieId, adresseLivraison }),
       });
       const { url, error: apiError } = await res.json();
       if (apiError) throw new Error(apiError);
@@ -333,7 +339,7 @@ function CommanderCadreContent() {
                 >
                   <div style={{ width: "100%", height: "100%", overflow: "hidden", position: "relative", borderRadius: 1 }}>
                     <div style={{ width: A4_W, height: A4_H, transform: `scale(${scale})`, transformOrigin: "top left", position: "absolute", top: 0, left: 0 }}>
-                      <TemplateMini id={templateId} names={names} qrDataUrl={qrDataUrl} />
+                      <TemplateMini id={activeTemplate} names={names} qrDataUrl={qrDataUrl} />
                     </div>
                   </div>
                 </div>
@@ -369,13 +375,54 @@ function CommanderCadreContent() {
                 </div>
               </div>
 
+              {/* Changer de design */}
+              <div className="rounded-2xl p-5 mb-6" style={{ background: "#FAFAF8", border: "1px solid #EBEBEB" }}>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Changer de design</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {ALL_TEMPLATE_IDS.map((tplId) => (
+                    <button
+                      key={tplId}
+                      onClick={() => setActiveTemplate(tplId)}
+                      aria-label={TEMPLATE_LABELS[tplId]}
+                      style={{
+                        width: THUMB_W,
+                        height: THUMB_H,
+                        overflow: "hidden",
+                        position: "relative",
+                        borderRadius: 6,
+                        outline: activeTemplate === tplId ? "3px solid #F06292" : "3px solid transparent",
+                        outlineOffset: 2,
+                        cursor: "pointer",
+                        background: "none",
+                        border: "none",
+                        padding: 0,
+                        transition: "outline 0.15s ease",
+                      }}
+                    >
+                      <div style={{
+                        width: A4_W,
+                        height: A4_H,
+                        transform: `scale(${thumbScale})`,
+                        transformOrigin: "top left",
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        pointerEvents: "none",
+                      }}>
+                        <TemplateMini id={tplId} names={names} qrDataUrl={qrDataUrl} />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Récapitulatif */}
               <div className="rounded-2xl p-5" style={{ background: "#FAFAF8", border: "1px solid #EBEBEB" }}>
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Récapitulatif</p>
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Design</span>
-                    <span className="font-medium text-gray-900">{TEMPLATE_LABELS[templateId]}</span>
+                    <span className="font-medium text-gray-900">{TEMPLATE_LABELS[activeTemplate]}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Format</span>

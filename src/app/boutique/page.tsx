@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import QRCode from "qrcode";
 import Header from "@/components/Header";
@@ -192,7 +192,6 @@ export default function BoutiquePage() {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [currentTemplate, setCurrentTemplate] = useState(0);
   const [frameColor, setFrameColor] = useState("#1C1C1E");
-  const isPausedRef = useRef(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -233,13 +232,6 @@ export default function BoutiquePage() {
       color: { dark: "#1a1a1a", light: "#ffffff" },
     }).then(setQrDataUrl);
   }, [albumSlug]);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      if (!isPausedRef.current) setCurrentTemplate((prev) => (prev + 1) % TEMPLATES.length);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, []);
 
   const displayNames =
     isLoggedIn && isMarie && prenom1
@@ -318,9 +310,48 @@ export default function BoutiquePage() {
               <div
                 className="relative flex-none w-full md:w-[55%]"
                 style={{ height: 500, background: "#F5F0E8" }}
-                onMouseEnter={() => { isPausedRef.current = true; }}
-                onMouseLeave={() => { isPausedRef.current = false; }}
               >
+                {/* Title */}
+                <div className="absolute left-0 right-0 top-5 text-center" style={{ zIndex: 5 }}>
+                  <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#6B7280" }}>
+                    Choisissez votre design
+                  </p>
+                </div>
+
+                {/* Left arrow */}
+                <button
+                  onClick={() => setCurrentTemplate((prev) => (prev - 1 + TEMPLATES.length) % TEMPLATES.length)}
+                  aria-label="Template précédent"
+                  style={{
+                    position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)",
+                    width: 36, height: 36, borderRadius: "50%",
+                    background: "rgba(255,255,255,0.85)", border: "none", cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.15)", zIndex: 10,
+                  }}
+                >
+                  <svg width={16} height={16} fill="none" stroke="#374151" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+
+                {/* Right arrow */}
+                <button
+                  onClick={() => setCurrentTemplate((prev) => (prev + 1) % TEMPLATES.length)}
+                  aria-label="Template suivant"
+                  style={{
+                    position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
+                    width: 36, height: 36, borderRadius: "50%",
+                    background: "rgba(255,255,255,0.85)", border: "none", cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.15)", zIndex: 10,
+                  }}
+                >
+                  <svg width={16} height={16} fill="none" stroke="#374151" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+
                 {/* Frame + overlays */}
                 <div className="absolute inset-0 flex items-center justify-center" style={{ padding: "40px 40px 68px" }}>
                   <div
