@@ -252,15 +252,16 @@ function StarRating({ note }: { note: number }) {
   );
 }
 
-function saveScrollPosition() {
-  sessionStorage.setItem("annuaire-scroll-position", String(window.scrollY));
+function saveScrollPosition(page: number) {
+  sessionStorage.setItem("annuaire-scroll", String(window.scrollY));
+  sessionStorage.setItem("annuaire-page", String(page));
 }
 
-function ProviderCard({ provider }: { provider: DisplayProvider }) {
+function ProviderCard({ provider, page }: { provider: DisplayProvider; page: number }) {
   return (
     <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md border border-gray-100 transition-all duration-300 group flex flex-col">
       {/* Image */}
-      <Link href={`/prestataires/${provider.id}`} onClick={saveScrollPosition} className="relative h-48 overflow-hidden block cursor-pointer">
+      <Link href={`/prestataires/${provider.id}`} onClick={() => saveScrollPosition(page)} className="relative h-48 overflow-hidden block cursor-pointer">
         {provider.photo ? (
           <Image
             src={provider.photo}
@@ -352,7 +353,7 @@ function ProviderCard({ provider }: { provider: DisplayProvider }) {
             <span className="text-xs text-gray-400">Prix</span>
             <p className="text-sm font-bold text-gray-900">{provider.prixLabel}</p>
           </div>
-          <Link href={`/prestataires/${provider.id}`} onClick={saveScrollPosition} className="bg-rose-400 hover:bg-rose-500 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md">
+          <Link href={`/prestataires/${provider.id}`} onClick={() => saveScrollPosition(page)} className="bg-rose-400 hover:bg-rose-500 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md">
             Voir le profil
           </Link>
         </div>
@@ -453,17 +454,31 @@ export default function AnnuaireContent() {
           setIsDemo(true);
         }
         setLoading(false);
-        const saved = sessionStorage.getItem("annuaire-scroll-position");
-        if (saved) {
-          sessionStorage.removeItem("annuaire-scroll-position");
-          requestAnimationFrame(() => window.scrollTo(0, parseInt(saved, 10)));
-        }
       });
   }, []);
 
+  useEffect(() => {
+    if (!loading) {
+      const saved = sessionStorage.getItem("annuaire-scroll");
+      if (saved) {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            window.scrollTo(0, parseInt(saved, 10));
+            sessionStorage.removeItem("annuaire-scroll");
+            sessionStorage.removeItem("annuaire-page");
+          });
+        });
+      }
+    }
+  }, [loading]);
+
   // UI state
   const [tri, setTri] = useState("pertinence");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(() => {
+    if (typeof window === "undefined") return 1;
+    const saved = sessionStorage.getItem("annuaire-page");
+    return saved ? parseInt(saved, 10) : 1;
+  });
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   // Derived: departements for selected sidebar region
@@ -929,7 +944,7 @@ export default function AnnuaireContent() {
             ) : !loading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                 {paginated.map((provider) => (
-                  <ProviderCard key={provider.id} provider={provider} />
+                  <ProviderCard key={provider.id} provider={provider} page={currentPage} />
                 ))}
               </div>
             ) : (
