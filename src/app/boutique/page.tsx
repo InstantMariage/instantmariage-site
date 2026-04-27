@@ -110,7 +110,7 @@ export default function BoutiquePage() {
       {/* Photo réaliste pleine largeur */}
       <section>
         <img
-          src="https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777310197089-2db5e7dd-0760-4b0b-8cb8-ec4f95e7bc66.png"
+          src="https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777310770358-good.png"
           alt="Exemple de rendu sur une table de mariage"
           style={{ width: "100%", height: 500, objectFit: "cover", objectPosition: "center", display: "block" }}
         />
