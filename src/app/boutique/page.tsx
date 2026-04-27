@@ -107,83 +107,16 @@ export default function BoutiquePage() {
         </div>
       </section>
 
-      {/* Mockup photo de table pleine largeur */}
-      <section className="relative w-full overflow-hidden" style={{ minHeight: 480 }}>
+      {/* Photo réaliste pleine largeur */}
+      <section>
         <img
-          src="https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777309466350-pexels-jonathanborba-19870049.jpg"
-          alt="Table de mariage"
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ objectPosition: "center 40%" }}
+          src="https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777310197089-2db5e7dd-0760-4b0b-8cb8-ec4f95e7bc66.png"
+          alt="Exemple de rendu sur une table de mariage"
+          style={{ width: "100%", height: 500, objectFit: "cover", objectPosition: "center", display: "block" }}
         />
-        {/* Overlay sombre léger pour lisibilité */}
-        <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.18)" }} />
-
-        {/* Cadre posé sur la table */}
-        <div
-          className="absolute"
-          style={{
-            left: "38%",
-            top: "50%",
-            transform: "translate(-50%, -50%) rotate(-3deg)",
-            width: 160,
-            height: 220,
-            background: "#FAFAF8",
-            border: "8px solid #1C1C1E",
-            boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
-            display: "flex",
-            alignItems: "stretch",
-            justifyContent: "stretch",
-          }}
-        >
-          {/* Intérieur du cadre */}
-          <div
-            style={{
-              flex: 1,
-              border: "1.5px solid #C9A84C",
-              margin: 8,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 9,
-              background: "#FAFAF8",
-            }}
-          >
-            <p style={{ fontSize: 7, color: "#C9A84C", letterSpacing: "0.32em", textTransform: "uppercase", fontFamily: "Georgia, serif" }}>
-              Mariage de
-            </p>
-            <p style={{ fontSize: 14, fontWeight: "bold", color: "#1C1C1E", fontFamily: "Georgia, serif", textAlign: "center", lineHeight: 1.35 }}>
-              Marina & Adel
-            </p>
-            <div style={{ width: 50, height: 1, background: "#C9A84C" }} />
-            {/* QR Code fictif */}
-            <div
-              style={{
-                width: 64,
-                height: 64,
-                border: "2px solid #C9A84C",
-                padding: 4,
-                background: "#fff",
-                display: "grid",
-                gridTemplateColumns: "repeat(6, 1fr)",
-                gap: 1.8,
-              }}
-            >
-              {Array.from({ length: 36 }).map((_, i) => (
-                <div
-                  key={i}
-                  style={{
-                    background: [0,1,2,6,12,13,14,7,11,17,18,23,24,25,29,30,35,3,8,27,32,20,21].includes(i) ? "#1C1C1E" : "#fff",
-                    borderRadius: 0.5,
-                  }}
-                />
-              ))}
-            </div>
-            <p style={{ fontSize: 5.5, color: "#999", letterSpacing: "0.12em", textTransform: "uppercase", textAlign: "center", lineHeight: 1.5, paddingInline: 6 }}>
-              Scannez pour<br />partager vos photos
-            </p>
-          </div>
-        </div>
+        <p className="text-center text-xs text-gray-400 py-3">
+          Exemple de rendu sur votre table de mariage
+        </p>
       </section>
 
       {/* Products */}
