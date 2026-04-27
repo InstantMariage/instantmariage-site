@@ -64,15 +64,9 @@ const TESTIMONIALS = [
     stars: 5,
   },
   {
-    name: "Camille & Antoine",
-    date: "Mariés en septembre 2024",
-    text: "On a pris le chevalet pour les petites tables du cocktail. Élégant, discret, efficace. En 20 minutes on avait déjà 50 photos d'invités dans l'album !",
-    stars: 5,
-  },
-  {
     name: "Léa & Julien",
     date: "Mariés en avril 2025",
-    text: "La livraison était rapide et le packaging soigné. Le chevalet s'intègre parfaitement dans notre décoration champêtre. Je recommande à tous les futurs mariés.",
+    text: "La livraison était rapide et le packaging soigné. Le cadre s'intègre parfaitement dans notre décoration champêtre. Je recommande à tous les futurs mariés.",
     stars: 5,
   },
 ];
@@ -104,11 +98,6 @@ export default function BoutiquePage() {
     return isLoggedIn
       ? "/dashboard/marie/album-photo/commander-cadre"
       : "/inscription?redirect=/boutique";
-  }
-
-  function getChevaletHref() {
-    if (isLoggedIn === null) return "#";
-    return isLoggedIn ? "/boutique/chevalet" : "/inscription?redirect=/boutique/chevalet";
   }
 
   return (
@@ -328,77 +317,6 @@ export default function BoutiquePage() {
             </div>
           </div>
 
-          {/* === Chevalet === */}
-          <div className="grid md:grid-cols-2 gap-8 items-stretch">
-            <div
-              className="rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-              style={{ background: "#fff", border: "1px solid #EBEBEB", display: "flex", flexDirection: "column" }}
-            >
-              {/* Mockup visuel */}
-              <div
-                className="flex items-center justify-center"
-                style={{ background: "linear-gradient(135deg, #F0F4FF 0%, #E8F0FF 100%)", height: 200 }}
-              >
-                <div style={{ position: "relative", transform: "rotate(1.5deg)" }}>
-                  <div
-                    style={{
-                      width: 140,
-                      height: 108,
-                      background: "#fff",
-                      borderRadius: 5,
-                      padding: 9,
-                      boxShadow: "0 12px 36px rgba(0,0,0,0.16)",
-                      border: "1px solid #E0E0E0",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 5,
-                    }}
-                  >
-                    <p style={{ fontSize: 6, color: "#C9A84C", letterSpacing: "0.28em", textTransform: "uppercase", fontFamily: "Georgia, serif" }}>Mariage de</p>
-                    <p style={{ fontSize: 9, fontWeight: "bold", color: "#1C1C1E", fontFamily: "Georgia, serif", textAlign: "center" }}>Marina & Adel</p>
-                    <div style={{ width: 36, height: 36, border: "1.5px solid #C9A84C", padding: 2, background: "#fff", display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 1 }}>
-                      {Array.from({ length: 25 }).map((_, i) => (
-                        <div key={i} style={{ background: [0,1,4,5,8,12,16,20,21,23,24].includes(i) ? "#1C1C1E" : "#fff", borderRadius: 0.5 }} />
-                      ))}
-                    </div>
-                    <p style={{ fontSize: 4.5, color: "#bbb", letterSpacing: "0.12em", textTransform: "uppercase" }}>instantmariage.fr</p>
-                  </div>
-                  {/* Pieds du chevalet */}
-                  <div style={{ display: "flex", justifyContent: "space-between", padding: "0 22px" }}>
-                    <div style={{ width: 2, height: 18, background: "#D1D5DB", borderRadius: 1, transform: "rotate(14deg)", transformOrigin: "top center" }} />
-                    <div style={{ width: 2, height: 18, background: "#D1D5DB", borderRadius: 1, transform: "rotate(-14deg)", transformOrigin: "top center" }} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="p-7" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-                <h2 className="text-xl font-bold text-gray-900 mb-2" style={{ fontFamily: "Georgia, serif" }}>
-                  Chevalet QR Code — Élégant et compact
-                </h2>
-                <p className="text-sm text-gray-500 leading-relaxed mb-5" style={{ flex: 1 }}>
-                  Chevalet cartonné premium avec votre carte QR Code. Plus léger qu'un cadre,
-                  aussi élégant. Idéal pour les petites tables.
-                </p>
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <span className="text-2xl font-bold text-gray-900">19,90 €</span>
-                    <span className="text-sm text-gray-400 ml-1">TTC</span>
-                  </div>
-                  <span className="text-xs text-gray-400">Livraison incluse</span>
-                </div>
-                <Link
-                  href={getChevaletHref()}
-                  className="block w-full text-center py-3.5 rounded-2xl text-sm font-semibold transition-all"
-                  style={{ background: "#F06292", color: "#fff" }}
-                >
-                  Commander le chevalet
-                </Link>
-              </div>
-            </div>
-          </div>
 
         </div>
       </section>
@@ -414,8 +332,8 @@ export default function BoutiquePage() {
               {
                 icon: <CadreIcon />,
                 step: "1",
-                title: "Choisissez votre support",
-                desc: "Cadre élégant ou chevalet compact — sélectionnez le produit qui correspond à votre décoration.",
+                title: "Choisissez votre design",
+                desc: "4 designs élégants — sélectionnez le template qui correspond à votre décoration et la couleur de cadre.",
               },
               {
                 icon: <PersonIcon />,
