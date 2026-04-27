@@ -3,6 +3,16 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+}
+
 const ALLOWED_TYPES = [
   "image/jpeg", "image/png", "image/webp", "image/heic", "image/heif",
   "video/mp4", "video/quicktime", "video/webm",
@@ -105,5 +115,5 @@ export async function POST(
     results.push({ url: publicUrl, type: isVideo ? "video" : "photo", nom_fichier: file.name });
   }
 
-  return NextResponse.json({ uploaded: results, errors });
+  return NextResponse.json({ uploaded: results, errors }, { headers: CORS_HEADERS });
 }
