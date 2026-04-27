@@ -2,10 +2,20 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import QRCode from "qrcode";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { supabase } from "@/lib/supabase";
+
+const SITE_URL = "https://instantmariage.fr";
+
+function slugFromPrenoms(p1: string, p2: string | null): string {
+  const clean = (s: string) =>
+    s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, "").slice(0, 12);
+  const suffix = Math.floor(100000 + Math.random() * 900000).toString();
+  const base = p2 ? `${clean(p1)}-${clean(p2)}` : clean(p1);
+  return `${base}-${suffix}`;
+}
 
 function CadreIcon() {
   return (
@@ -33,18 +43,22 @@ function TruckIcon() {
 
 const TEMPLATES = [
   {
+    id: "elegance-doree",
     name: "Élégance Dorée",
     url: "https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777311248762-img_1741.jpg",
   },
   {
+    id: "boheme-rose",
     name: "Bohème Rose",
     url: "https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777311228438-img_1742.jpg",
   },
   {
+    id: "moderne-minimaliste",
     name: "Moderne Minimaliste",
     url: "https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777311208591-img_1743.jpg",
   },
   {
+    id: "nuit-romantique",
     name: "Nuit Romantique",
     url: "https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777311265519-img_1744-2.jpg",
   },
@@ -71,33 +85,188 @@ const TESTIMONIALS = [
   },
 ];
 
+// ── Overlay components ───────────────────────────────────────────────────────
+
+function EleganceOverlay({ names, qrDataUrl }: { names: string; qrDataUrl: string | null }) {
+  return (
+    <div style={{
+      position: "absolute", inset: 0,
+      background: "rgba(250,250,248,0.84)",
+      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+      fontFamily: "Georgia, 'Times New Roman', serif",
+    }}>
+      <div style={{ position: "absolute", inset: 8, border: "1.5px solid rgba(201,168,76,0.85)", pointerEvents: "none" }} />
+      {[{ top: 6, left: 6 }, { top: 6, right: 6 }, { bottom: 6, left: 6 }, { bottom: 6, right: 6 }].map((pos, i) => (
+        <div key={i} style={{ position: "absolute", ...pos as React.CSSProperties, color: "#C9A84C", fontSize: 12, lineHeight: 1, userSelect: "none" }}>✦</div>
+      ))}
+      <p style={{ fontSize: 9, letterSpacing: "0.3em", color: "#C9A84C", textTransform: "uppercase", marginBottom: 8, fontStyle: "italic" }}>Mariage de</p>
+      <p style={{ fontSize: 17, fontWeight: "bold", color: "#1a1a1a", lineHeight: 1.2, textAlign: "center", padding: "0 20px", marginBottom: 4 }}>{names}</p>
+      <div style={{ width: 40, height: 1, background: "#C9A84C", margin: "10px auto 12px" }} />
+      {qrDataUrl ? (
+        <div style={{ border: "2.5px solid #C9A84C", padding: 5, background: "#fff" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={qrDataUrl} width={80} height={80} alt="QR" style={{ display: "block" }} />
+        </div>
+      ) : (
+        <div style={{ width: 90, height: 90, border: "2.5px solid #C9A84C", background: "#f5f0e8" }} />
+      )}
+      <p style={{ fontSize: 7, color: "#C9A84C", letterSpacing: "0.2em", textTransform: "uppercase", marginTop: 12 }}>instantmariage.fr</p>
+    </div>
+  );
+}
+
+function BohemeOverlay({ names, qrDataUrl }: { names: string; qrDataUrl: string | null }) {
+  return (
+    <div style={{
+      position: "absolute", inset: 0,
+      background: "rgba(253,246,240,0.84)",
+      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+      fontFamily: "Georgia, 'Times New Roman', serif",
+    }}>
+      <p style={{ fontSize: 10, color: "#F06292", fontStyle: "italic", marginBottom: 8, letterSpacing: "0.05em" }}>Mariage de</p>
+      <p style={{ fontSize: 20, color: "#F06292", fontWeight: "bold", fontStyle: "italic", lineHeight: 1.2, textAlign: "center", padding: "0 20px", marginBottom: 8 }}>{names}</p>
+      <div style={{ width: 40, height: 2, borderRadius: 2, background: "linear-gradient(90deg, #F06292, #ffb6c1)", margin: "0 auto 14px" }} />
+      {qrDataUrl ? (
+        <div style={{ background: "rgba(253,232,240,0.96)", borderRadius: 12, padding: 8 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={qrDataUrl} width={80} height={80} alt="QR" style={{ display: "block" }} />
+        </div>
+      ) : (
+        <div style={{ width: 96, height: 96, background: "#FDE8F0", borderRadius: 12 }} />
+      )}
+      <p style={{ fontSize: 8, color: "#F06292", letterSpacing: "0.12em", marginTop: 12, fontStyle: "italic" }}>instantmariage.fr</p>
+    </div>
+  );
+}
+
+function ModerneOverlay({ names, qrDataUrl }: { names: string; qrDataUrl: string | null }) {
+  return (
+    <div style={{
+      position: "absolute", inset: 0,
+      background: "rgba(255,255,255,0.88)",
+      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+      fontFamily: "system-ui, -apple-system, sans-serif",
+    }}>
+      <div style={{ position: "absolute", top: 22, left: 18, right: 18, height: 2, background: "#111" }} />
+      <div style={{ position: "absolute", bottom: 22, left: 18, right: 18, height: 2, background: "#111" }} />
+      <p style={{ fontSize: 8, letterSpacing: "0.45em", color: "#444", textTransform: "uppercase", marginBottom: 14, fontWeight: 400 }}>MARIAGE DE</p>
+      <p style={{ fontSize: 15, fontWeight: 300, color: "#111", letterSpacing: "0.1em", marginBottom: 16, textTransform: "uppercase", lineHeight: 1.3, textAlign: "center", padding: "0 18px" }}>{names.toUpperCase()}</p>
+      {qrDataUrl ? (
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img src={qrDataUrl} width={86} height={86} alt="QR" style={{ display: "block" }} />
+      ) : (
+        <div style={{ width: 86, height: 86, background: "#f0f0f0" }} />
+      )}
+      <p style={{ fontSize: 7, color: "#999", letterSpacing: "0.35em", marginTop: 14, textTransform: "uppercase" }}>INSTANTMARIAGE.FR</p>
+    </div>
+  );
+}
+
+function NuitOverlay({ names, qrDataUrl }: { names: string; qrDataUrl: string | null }) {
+  return (
+    <div style={{
+      position: "absolute", inset: 0,
+      background: "rgba(28,28,30,0.84)",
+      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+      fontFamily: "Georgia, 'Times New Roman', serif",
+    }}>
+      <div style={{ position: "absolute", inset: 8, border: "1px solid rgba(201,168,76,0.6)", pointerEvents: "none" }} />
+      {[{ top: 6, left: 6 }, { top: 6, right: 6 }, { bottom: 6, left: 6 }, { bottom: 6, right: 6 }].map((pos, i) => (
+        <div key={i} style={{ position: "absolute", ...pos as React.CSSProperties, color: "#C9A84C", fontSize: 11, lineHeight: 1, userSelect: "none" }}>✦</div>
+      ))}
+      <p style={{ fontSize: 9, letterSpacing: "0.3em", color: "#C9A84C", textTransform: "uppercase", marginBottom: 8, fontStyle: "italic" }}>Mariage de</p>
+      <p style={{ fontSize: 17, fontWeight: "bold", color: "#C9A84C", lineHeight: 1.2, textAlign: "center", padding: "0 20px", marginBottom: 4 }}>{names}</p>
+      <div style={{ width: 40, height: 1, background: "#C9A84C", margin: "10px auto 14px" }} />
+      {qrDataUrl ? (
+        <div style={{ background: "#fff", padding: 6 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={qrDataUrl} width={78} height={78} alt="QR" style={{ display: "block" }} />
+        </div>
+      ) : (
+        <div style={{ width: 90, height: 90, background: "#2c2c2e" }} />
+      )}
+      <p style={{ fontSize: 7, color: "rgba(201,168,76,0.8)", letterSpacing: "0.2em", textTransform: "uppercase", marginTop: 12 }}>instantmariage.fr</p>
+    </div>
+  );
+}
+
+function SliderOverlay({ templateId, names, qrDataUrl }: { templateId: string; names: string; qrDataUrl: string | null }) {
+  if (templateId === "elegance-doree") return <EleganceOverlay names={names} qrDataUrl={qrDataUrl} />;
+  if (templateId === "boheme-rose") return <BohemeOverlay names={names} qrDataUrl={qrDataUrl} />;
+  if (templateId === "moderne-minimaliste") return <ModerneOverlay names={names} qrDataUrl={qrDataUrl} />;
+  return <NuitOverlay names={names} qrDataUrl={qrDataUrl} />;
+}
+
+// ── Main page ────────────────────────────────────────────────────────────────
+
 export default function BoutiquePage() {
-  const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const [isMarie, setIsMarie] = useState(false);
+  const [prenom1, setPrenom1] = useState<string | null>(null);
+  const [prenom2, setPrenom2] = useState<string | null>(null);
+  const [albumSlug, setAlbumSlug] = useState<string | null>(null);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [currentTemplate, setCurrentTemplate] = useState(0);
   const [frameColor, setFrameColor] = useState("#1C1C1E");
   const isPausedRef = useRef(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsLoggedIn(!!session);
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) { setIsLoggedIn(false); return; }
+      setIsLoggedIn(true);
+
+      const { data: marie } = await supabase
+        .from("maries")
+        .select("id, prenom_marie1, prenom_marie2, album_slug")
+        .eq("user_id", session.user.id)
+        .single();
+
+      if (marie) {
+        setIsMarie(true);
+        const p1 = marie.prenom_marie1 ?? null;
+        const p2 = marie.prenom_marie2 ?? null;
+        setPrenom1(p1);
+        setPrenom2(p2);
+
+        let slug = marie.album_slug as string | null;
+        if (!slug && p1) {
+          slug = slugFromPrenoms(p1, p2);
+          await supabase
+            .from("maries")
+            .update({ album_slug: slug, album_actif: true })
+            .eq("id", marie.id);
+        }
+        if (slug) setAlbumSlug(slug);
+      }
     });
-  }, [router]);
+  }, []);
+
+  useEffect(() => {
+    if (!albumSlug) return;
+    QRCode.toDataURL(`${SITE_URL}/album/${albumSlug}`, {
+      width: 200,
+      margin: 2,
+      color: { dark: "#1a1a1a", light: "#ffffff" },
+    }).then(setQrDataUrl);
+  }, [albumSlug]);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      if (!isPausedRef.current) {
-        setCurrentTemplate((prev) => (prev + 1) % TEMPLATES.length);
-      }
+      if (!isPausedRef.current) setCurrentTemplate((prev) => (prev + 1) % TEMPLATES.length);
     }, 3000);
     return () => clearInterval(timer);
   }, []);
 
+  const displayNames =
+    isLoggedIn && isMarie && prenom1
+      ? prenom2 ? `${prenom1} & ${prenom2}` : prenom1
+      : "Prénom1 & Prénom2";
+
   function getCadreHref() {
     if (isLoggedIn === null) return "#";
-    return isLoggedIn
-      ? "/dashboard/marie/album-photo/commander-cadre"
-      : "/inscription?redirect=/boutique";
+    if (!isLoggedIn || !isMarie) return "/inscription?redirect=/boutique";
+    const templateId = TEMPLATES[currentTemplate].id;
+    return `/dashboard/marie/album-photo/commander-cadre?template=${templateId}&couleur=${encodeURIComponent(frameColor)}`;
   }
 
   return (
@@ -135,6 +304,7 @@ export default function BoutiquePage() {
 
       {/* Photo réaliste pleine largeur */}
       <section>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777310770358-good.png"
           alt="Exemple de rendu sur une table de mariage"
@@ -167,7 +337,7 @@ export default function BoutiquePage() {
                 onMouseEnter={() => { isPausedRef.current = true; }}
                 onMouseLeave={() => { isPausedRef.current = false; }}
               >
-                {/* Frame + images */}
+                {/* Frame + images + overlays */}
                 <div className="absolute inset-0 flex items-center justify-center" style={{ padding: "48px 40px 72px" }}>
                   <div
                     style={{
@@ -182,7 +352,9 @@ export default function BoutiquePage() {
                       transition: "border-color 0.4s ease",
                     }}
                   >
+                    {/* Background images */}
                     {TEMPLATES.map((tpl, i) => (
+                      /* eslint-disable-next-line @next/next/no-img-element */
                       <img
                         key={i}
                         src={tpl.url}
@@ -197,6 +369,26 @@ export default function BoutiquePage() {
                           transition: "opacity 0.8s ease-in-out",
                         }}
                       />
+                    ))}
+
+                    {/* Template overlays */}
+                    {TEMPLATES.map((tpl, i) => (
+                      <div
+                        key={`overlay-${i}`}
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          opacity: currentTemplate === i ? 1 : 0,
+                          transition: "opacity 0.8s ease-in-out",
+                          pointerEvents: "none",
+                        }}
+                      >
+                        <SliderOverlay
+                          templateId={tpl.id}
+                          names={displayNames}
+                          qrDataUrl={qrDataUrl}
+                        />
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -304,19 +496,36 @@ export default function BoutiquePage() {
                   </div>
                 </div>
 
+                {/* Prénoms affichés */}
+                {isLoggedIn && isMarie && prenom1 && (
+                  <p className="text-xs mb-6" style={{ color: "#9CA3AF" }}>
+                    Aperçu personnalisé pour{" "}
+                    <span className="font-semibold text-gray-700">{displayNames}</span>
+                  </p>
+                )}
+
                 {/* CTA */}
                 <Link
                   href={getCadreHref()}
                   className="block w-full text-center rounded-2xl font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"
                   style={{ background: "#F06292", fontSize: 15, padding: "16px 0" }}
                 >
-                  Commander le cadre →
+                  {isLoggedIn && isMarie ? "Commander le cadre →" : "Commander →"}
                 </Link>
+
+                {!isLoggedIn && isLoggedIn !== null && (
+                  <p className="text-xs text-center mt-3" style={{ color: "#9CA3AF" }}>
+                    Déjà inscrit ?{" "}
+                    <Link href="/connexion?redirect=/boutique" className="underline" style={{ color: "#F06292" }}>
+                      Connectez-vous
+                    </Link>{" "}
+                    pour voir votre aperçu personnalisé
+                  </p>
+                )}
               </div>
 
             </div>
           </div>
-
 
         </div>
       </section>
@@ -384,7 +593,7 @@ export default function BoutiquePage() {
                     </svg>
                   ))}
                 </div>
-                <p className="text-sm text-gray-600 leading-relaxed mb-5 italic">"{t.text}"</p>
+                <p className="text-sm text-gray-600 leading-relaxed mb-5 italic">&ldquo;{t.text}&rdquo;</p>
                 <div>
                   <p className="text-sm font-semibold text-gray-900">{t.name}</p>
                   <p className="text-xs text-gray-400">{t.date}</p>

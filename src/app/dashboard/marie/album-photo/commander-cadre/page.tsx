@@ -12,6 +12,13 @@ const SITE_URL = "https://instantmariage.fr";
 const A4_W = 595;
 const A4_H = 842;
 
+const CADRE_COLORS = [
+  { color: "#1C1C1E", label: "Noir", isLight: false },
+  { color: "#F5F5F5", label: "Blanc", isLight: true },
+  { color: "#C9A84C", label: "Doré", isLight: false },
+] as const;
+type CadreColorHex = typeof CADRE_COLORS[number]["color"];
+
 type TemplateId =
   | "elegance-doree"
   | "boheme-rose"
@@ -148,9 +155,15 @@ function CommanderCadreContent() {
     ? (rawTemplate as TemplateId)
     : "elegance-doree";
 
+  const rawCouleur = searchParams.get("couleur") ?? "#F5F5F5";
+  const validatedCouleur: CadreColorHex = (CADRE_COLORS.map(c => c.color) as string[]).includes(rawCouleur)
+    ? (rawCouleur as CadreColorHex)
+    : "#F5F5F5";
+
   const isSuccess = searchParams.get("success") === "true";
 
   const [authChecked, setAuthChecked] = useState(false);
+  const [frameColor, setFrameColor] = useState<CadreColorHex>(validatedCouleur);
   const [marieId, setMarieId] = useState<string | null>(null);
   const [prenom1, setPrenom1] = useState("");
   const [prenom2, setPrenom2] = useState<string | null>(null);
@@ -311,10 +324,11 @@ function CommanderCadreContent() {
                     transform: "translate(-50%, -50%) rotate(-1.5deg)",
                     width: FRAME_W,
                     height: FRAME_H,
-                    background: "#ffffff",
+                    background: frameColor,
                     borderRadius: 3,
                     padding: FRAME_PAD,
                     boxShadow: "0 25px 70px rgba(0,0,0,0.45), 0 6px 20px rgba(0,0,0,0.25)",
+                    transition: "background 0.3s ease",
                   }}
                 >
                   <div style={{ width: "100%", height: "100%", overflow: "hidden", position: "relative", borderRadius: 1 }}>
@@ -322,6 +336,36 @@ function CommanderCadreContent() {
                       <TemplateMini id={templateId} names={names} qrDataUrl={qrDataUrl} />
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* Couleur du cadre */}
+              <div className="rounded-2xl p-5 mb-6" style={{ background: "#FAFAF8", border: "1px solid #EBEBEB" }}>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Couleur du cadre</p>
+                <div className="flex gap-3 items-center">
+                  {CADRE_COLORS.map((fc) => (
+                    <button
+                      key={fc.color}
+                      onClick={() => setFrameColor(fc.color)}
+                      title={fc.label}
+                      aria-label={`Cadre ${fc.label}`}
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: "50%",
+                        background: fc.color,
+                        outline: frameColor === fc.color ? "3px solid #F06292" : "3px solid transparent",
+                        outlineOffset: 3,
+                        border: fc.isLight ? "1.5px solid #D1D5DB" : "1.5px solid transparent",
+                        cursor: "pointer",
+                        transition: "outline 0.2s ease, transform 0.15s ease",
+                        transform: frameColor === fc.color ? "scale(1.15)" : "scale(1)",
+                      }}
+                    />
+                  ))}
+                  <span className="text-sm text-gray-500 ml-1">
+                    {CADRE_COLORS.find(c => c.color === frameColor)?.label}
+                  </span>
                 </div>
               </div>
 
@@ -335,7 +379,9 @@ function CommanderCadreContent() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Format</span>
-                    <span className="font-medium text-gray-900">Cadre blanc 15×20 cm</span>
+                    <span className="font-medium text-gray-900">
+                      Cadre {CADRE_COLORS.find(c => c.color === frameColor)?.label.toLowerCase() ?? "blanc"} 15×20 cm
+                    </span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Contenu</span>
