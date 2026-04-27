@@ -339,7 +339,7 @@ export default function AlbumPhotoDashboard() {
                   </div>
                   <Link
                     href="/dashboard/marie/album-photo/templates"
-                    className="w-full py-2 rounded-xl text-xs font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors text-center block"
+                    style={{ background: '#F06292', color: 'white', border: 'none', borderRadius: '12px', padding: '12px 24px', fontWeight: 500, display: 'block', textAlign: 'center' }}
                   >
                     Personnaliser ma carte
                   </Link>
