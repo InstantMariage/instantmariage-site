@@ -3,6 +3,7 @@ import { Playfair_Display, Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import CookieBanner from "@/components/CookieBanner";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import CamilleChatWrapper from "@/components/CamilleChatWrapper";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -92,6 +93,7 @@ export default function RootLayout({
         <GoogleAnalytics />
         {/* Bandeau de consentement cookies */}
         <CookieBanner />
+        <CamilleChatWrapper />
       </body>
     </html>
   );

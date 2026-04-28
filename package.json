@@ -17,6 +17,7 @@
     "entryPoint": "./remotion/index.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.91.1",
     "@remotion/cli": "^4.0.448",
     "@remotion/google-fonts": "^4.0.448",
     "@remotion/lambda": "^4.0.448",
