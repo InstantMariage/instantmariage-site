@@ -87,6 +87,7 @@ const PRODUIT_LABELS: Record<string, string> = {
   cadre: "Cadre 39,90€",
   chevalet: "Chevalet 19,90€",
   template_digital: "Template digital",
+  album_photo: "Album Photo",
 };
 
 const MONTH_NAMES = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Aoû", "Sep", "Oct", "Nov", "Déc"];
@@ -462,6 +463,7 @@ const PRODUITS = [
   { id: "cadre", label: "Cadre QR Code", actif: true },
   { id: "template_digital", label: "Template Digital", actif: true },
   { id: "chevalet", label: "Chevalet QR Code", actif: false },
+  { id: "album_photo", label: "Album Photo (29,90€ – 59,90€)", actif: true },
 ];
 
 function ProduitsTab() {

@@ -1329,6 +1329,231 @@ export async function sendCommandeExpedieeEmail({
   });
 }
 
+// ─── Email 16 : Commande album photo (admin) ─────────────────────────────────
+
+export async function sendAlbumPhotoEmail({
+  coupleNames,
+  format,
+  nbPages,
+  nbPhotos,
+  adresse,
+  codePostal,
+  ville,
+  telephone,
+  marieId,
+  prodigiOrderId,
+}: {
+  coupleNames: string;
+  format: string;
+  nbPages: number;
+  nbPhotos: number;
+  adresse: string;
+  codePostal: string;
+  ville: string;
+  telephone: string;
+  marieId: string;
+  prodigiOrderId: string;
+}) {
+  const adminEmail = process.env.ADMIN_EMAIL ?? "contact@instantmariage.fr";
+  const FORMAT_PRICES: Record<string, string> = {
+    "20": "29,90 €",
+    "30": "39,90 €",
+    "50": "59,90 €",
+  };
+  const prix = FORMAT_PRICES[String(format)] ?? "—";
+
+  const content = `
+    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#F06292;letter-spacing:0.5px;text-transform:uppercase;">Nouvelle commande album photo</p>
+    <h1 style="margin:0 0 24px;font-size:26px;font-weight:700;color:#1a1a1a;line-height:1.25;">
+      📸 Album photo en impression — ${prix}
+    </h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#555555;line-height:1.65;">
+      Un couple vient de commander un album photo imprimé. La commande Prodigi est en cours de traitement automatique.
+    </p>
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#fafafa;border-radius:12px;padding:24px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;width:160px;">Couple</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:600;color:#1a1a1a;">${coupleNames}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Format</td>
+              <td style="padding:6px 0;font-size:14px;color:#333333;">${nbPages} pages — ${nbPhotos} photos</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Montant</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:700;color:#F06292;">${prix}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Prodigi Order ID</td>
+              <td style="padding:6px 0;font-size:12px;font-family:monospace;color:#888888;">${prodigiOrderId}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Téléphone</td>
+              <td style="padding:6px 0;font-size:14px;color:#333333;">${telephone}</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#FFF8F0;border-left:3px solid #F06292;border-radius:0 8px 8px 0;padding:16px 20px;">
+          <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#F06292;text-transform:uppercase;letter-spacing:0.5px;">Adresse de livraison</p>
+          <p style="margin:0;font-size:15px;font-weight:600;color:#1a1a1a;line-height:1.8;">
+            ${adresse}<br/>
+            ${codePostal} ${ville}
+          </p>
+        </td>
+      </tr>
+    </table>
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#F0FDF4;border-left:3px solid #10B981;border-radius:0 8px 8px 0;padding:16px 20px;">
+          <p style="margin:0;font-size:13px;color:#555555;line-height:1.6;">
+            Impression automatique via <strong>Prodigi</strong> — aucune action requise.<br/>
+            Délai : 5–7 jours ouvrés · Couverture rigide A4
+          </p>
+        </td>
+      </tr>
+    </table>
+    ${ctaButton("Voir les commandes", `${SITE_URL}/admin/boutique`)}
+  `;
+
+  const text = [
+    `[Album Photo] Nouvelle commande — InstantMariage.fr`,
+    "",
+    `Couple : ${coupleNames}`,
+    `Format : ${nbPages} pages — ${nbPhotos} photos`,
+    `Montant : ${prix}`,
+    `Prodigi Order ID : ${prodigiOrderId}`,
+    `Téléphone : ${telephone}`,
+    "",
+    `Adresse de livraison :`,
+    adresse,
+    `${codePostal} ${ville}`,
+    "",
+    `Impression automatique via Prodigi — 5–7 jours ouvrés.`,
+    "",
+    `Marie ID : ${marieId}`,
+    textFooter(),
+  ].join("\n");
+
+  return resend.emails.send({
+    from: FROM,
+    to: adminEmail,
+    subject: `📸 Commande album photo — ${coupleNames} · ${ville}`,
+    html: baseTemplate(content),
+    text,
+  });
+}
+
+// ─── Email 17 : Confirmation album photo (marié) ──────────────────────────────
+
+export async function sendAlbumConfirmationEmail({
+  recipientEmail,
+  coupleNames,
+  format,
+  nbPages,
+  adresse,
+  codePostal,
+  ville,
+}: {
+  recipientEmail: string;
+  coupleNames: string;
+  format: string;
+  nbPages: number;
+  adresse: string;
+  codePostal: string;
+  ville: string;
+}) {
+  const FORMAT_PRICES: Record<string, string> = {
+    "20": "29,90 €",
+    "30": "39,90 €",
+    "50": "59,90 €",
+  };
+  const prix = FORMAT_PRICES[String(format)] ?? "—";
+
+  const content = `
+    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#F06292;letter-spacing:0.5px;text-transform:uppercase;">Commande confirmée</p>
+    <h1 style="margin:0 0 24px;font-size:26px;font-weight:700;color:#1a1a1a;line-height:1.25;">
+      Votre album est en cours d&rsquo;impression&nbsp;📸
+    </h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#555555;line-height:1.65;">
+      Bonjour ${coupleNames},<br/>
+      Votre album photo de mariage est en cours d&rsquo;impression. Vous le recevrez sous <strong>5 à 7 jours ouvrés</strong>.
+    </p>
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#fafafa;border-radius:12px;padding:24px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;width:160px;">Album</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:600;color:#1a1a1a;">${nbPages} pages · Couverture rigide A4</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Montant réglé</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:600;color:#1a1a1a;">${prix}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Adresse</td>
+              <td style="padding:6px 0;font-size:14px;color:#333333;">${adresse}, ${codePostal} ${ville}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#aaaaaa;">Délai estimé</td>
+              <td style="padding:6px 0;font-size:14px;font-weight:600;color:#059669;">5–7 jours ouvrés</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+    ${divider()}
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#fafafa;border-left:3px solid #F06292;border-radius:0 8px 8px 0;padding:16px 20px;">
+          <p style="margin:0;font-size:13px;color:#555555;line-height:1.6;">
+            Des questions sur votre commande ? Écrivez-nous à
+            <a href="mailto:contact@instantmariage.fr" style="color:#F06292;text-decoration:none;">contact@instantmariage.fr</a>
+          </p>
+        </td>
+      </tr>
+    </table>
+    ${ctaButton("Mon album photo", `${SITE_URL}/dashboard/marie/album-photo`)}
+  `;
+
+  const text = [
+    `Bonjour ${coupleNames},`,
+    "",
+    `Votre album photo de mariage est en cours d'impression.`,
+    "",
+    `Format : ${nbPages} pages — Couverture rigide A4`,
+    `Montant réglé : ${prix}`,
+    `Livraison : ${adresse}, ${codePostal} ${ville}`,
+    `Délai estimé : 5–7 jours ouvrés`,
+    "",
+    `Des questions ? contact@instantmariage.fr`,
+    "",
+    `Voir votre album : ${SITE_URL}/dashboard/marie/album-photo`,
+    textFooter(true),
+  ].join("\n");
+
+  return resend.emails.send({
+    from: FROM,
+    to: recipientEmail,
+    replyTo: REPLY_TO,
+    subject: `Votre album photo est en cours d'impression — ${coupleNames}`,
+    html: baseTemplate(content),
+    text,
+    headers: unsubscribeHeaders,
+  });
+}
+
 // ─── Email 15 : Nouvelle vente template digital (admin) ───────────────────────
 
 export async function sendTemplateDigitalEmail({

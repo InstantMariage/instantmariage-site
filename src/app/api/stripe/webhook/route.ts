@@ -5,7 +5,8 @@ import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import type { PlanAbonnement } from "@/lib/supabase";
 import { renderInvitationVideo } from "../../../../../lib/remotion-lambda";
-import { sendInvitationConfirmationEmail, sendCagnotteMerciEmail, sendCagnotteNotifEmail, sendCommandeCadreEmail, sendCommandeChevaletEmail, sendTemplateDigitalEmail } from "@/lib/emails";
+import { sendInvitationConfirmationEmail, sendCagnotteMerciEmail, sendCagnotteNotifEmail, sendCommandeCadreEmail, sendCommandeChevaletEmail, sendTemplateDigitalEmail, sendAlbumPhotoEmail, sendAlbumConfirmationEmail } from "@/lib/emails";
+import { generateAlbumPdf } from "@/lib/generate-album-pdf";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-03-31.basil",
@@ -422,6 +423,178 @@ export async function POST(req: NextRequest) {
           });
         } catch (emailErr) {
           console.error("[webhook/cadre_physique] Erreur email admin:", emailErr);
+        }
+
+        return NextResponse.json({ received: true });
+      }
+
+      // ── Album photo (Prodigi) ─────────────────────────────────────────
+      if (session.metadata?.product_type === "album_photo") {
+        const marieId = session.metadata?.marie_id;
+        const commandeId = session.metadata?.commande_id;
+        const format = session.metadata?.format ?? "20";
+
+        if (!marieId || !commandeId) {
+          console.error("[webhook/album_photo] Metadata manquante");
+          return NextResponse.json({ received: true });
+        }
+
+        // Charge le brouillon de commande (contient les photo IDs)
+        const { data: brouillon } = await supabase
+          .from("commandes")
+          .select("photos_selectionnees, nb_pages, adresse, code_postal, ville, telephone, nom_destinataire")
+          .eq("id", commandeId)
+          .single();
+
+        if (!brouillon) {
+          console.error("[webhook/album_photo] Brouillon commande introuvable:", commandeId);
+          return NextResponse.json({ received: true });
+        }
+
+        const photoIds: string[] = Array.isArray(brouillon.photos_selectionnees)
+          ? brouillon.photos_selectionnees
+          : [];
+
+        // Charge les URLs des photos dans l'ordre sélectionné
+        const { data: photos } = await supabase
+          .from("album_photos")
+          .select("id, url")
+          .in("id", photoIds);
+
+        const photosMap: Record<string, string> = {};
+        for (const p of photos ?? []) photosMap[p.id] = p.url;
+        const photoUrls = photoIds
+          .map((id) => photosMap[id])
+          .filter(Boolean) as string[];
+
+        // Récupère les infos du marié
+        const { data: marie } = await supabase
+          .from("maries")
+          .select("prenom_marie1, prenom_marie2, user_id")
+          .eq("id", marieId)
+          .single();
+
+        const coupleNames = marie
+          ? marie.prenom_marie2
+            ? `${marie.prenom_marie1} & ${marie.prenom_marie2}`
+            : marie.prenom_marie1
+          : "Couple";
+
+        // Génère le PDF
+        let pdfUrl = "";
+        try {
+          pdfUrl = await generateAlbumPdf(photoUrls, marieId);
+        } catch (pdfErr) {
+          console.error("[webhook/album_photo] Erreur génération PDF:", pdfErr);
+          // Continuons quand même pour enregistrer la commande
+        }
+
+        // Crée la commande Prodigi
+        let prodigiOrderId = "";
+        if (pdfUrl) {
+          try {
+            const prodigiRes = await fetch("https://api.prodigi.com/v4.0/orders", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-API-Key": process.env.PRODIGI_API_KEY!,
+              },
+              body: JSON.stringify({
+                merchantReference: commandeId,
+                shippingMethod: "Standard",
+                idempotencyKey: commandeId,
+                recipient: {
+                  name: brouillon.nom_destinataire ?? coupleNames,
+                  phoneNumber: brouillon.telephone ?? "",
+                  address: {
+                    line1: brouillon.adresse ?? "",
+                    line2: "",
+                    townOrCity: brouillon.ville ?? "",
+                    stateOrCounty: null,
+                    postalOrZipCode: brouillon.code_postal ?? "",
+                    countryCode: "FR",
+                  },
+                },
+                items: [
+                  {
+                    merchantReference: `album-${commandeId}`,
+                    sku: "BOOK-FE-A4-P-HARD-G",
+                    copies: 1,
+                    sizing: "fillPrintArea",
+                    assets: [
+                      {
+                        printArea: "default",
+                        url: pdfUrl,
+                        pageCount: brouillon.nb_pages ?? Number(format),
+                      },
+                    ],
+                  },
+                ],
+              }),
+            });
+
+            const prodigiData = await prodigiRes.json();
+            prodigiOrderId = prodigiData?.order?.id ?? prodigiData?.id ?? "";
+
+            if (!prodigiRes.ok) {
+              console.error("[webhook/album_photo] Erreur Prodigi:", JSON.stringify(prodigiData));
+            }
+          } catch (prodigiErr) {
+            console.error("[webhook/album_photo] Erreur appel Prodigi:", prodigiErr);
+          }
+        }
+
+        // Met à jour le brouillon en commande réelle
+        await supabase
+          .from("commandes")
+          .update({
+            statut: "en_preparation",
+            stripe_session_id: session.id,
+            prodigi_order_id: prodigiOrderId || null,
+          })
+          .eq("id", commandeId);
+
+        // Email admin
+        try {
+          await sendAlbumPhotoEmail({
+            coupleNames,
+            format,
+            nbPages: brouillon.nb_pages ?? Number(format),
+            nbPhotos: photoUrls.length,
+            adresse: brouillon.adresse ?? "",
+            codePostal: brouillon.code_postal ?? "",
+            ville: brouillon.ville ?? "",
+            telephone: brouillon.telephone ?? "",
+            marieId,
+            prodigiOrderId: prodigiOrderId || "—",
+          });
+        } catch (emailErr) {
+          console.error("[webhook/album_photo] Erreur email admin:", emailErr);
+        }
+
+        // Email confirmation marié
+        if (marie?.user_id) {
+          const { data: user } = await supabase
+            .from("users")
+            .select("email")
+            .eq("id", marie.user_id)
+            .single();
+
+          if (user?.email) {
+            try {
+              await sendAlbumConfirmationEmail({
+                recipientEmail: user.email,
+                coupleNames,
+                format,
+                nbPages: brouillon.nb_pages ?? Number(format),
+                adresse: brouillon.adresse ?? "",
+                codePostal: brouillon.code_postal ?? "",
+                ville: brouillon.ville ?? "",
+              });
+            } catch (emailErr) {
+              console.error("[webhook/album_photo] Erreur email marié:", emailErr);
+            }
+          }
         }
 
         return NextResponse.json({ received: true });
