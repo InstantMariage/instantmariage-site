@@ -199,16 +199,7 @@ export default function AlbumUploadClient({ slug, prenom1, prenom2, dateMariage 
         style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)" }}
       >
         <div className="flex justify-center mb-3">
-          <svg width="44" height="32" viewBox="0 0 44 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M14 28C9 23.5 3 18 3 11C3 7.5 5.5 5 8.5 5C10.5 5 12.5 6.5 14 8C15.5 6.5 17.5 5 19.5 5C22.5 5 25 7.5 25 11C25 18 19 23.5 14 28Z"
-              stroke="white" strokeWidth="2.5" strokeLinejoin="round"
-            />
-            <path
-              d="M22 28C17 23.5 11 18 11 11C11 7.5 13.5 5 16.5 5C18.5 5 20.5 6.5 22 8C23.5 6.5 25.5 5 27.5 5C30.5 5 33 7.5 33 11C33 18 27 23.5 22 28Z"
-              stroke="white" strokeWidth="2.5" strokeLinejoin="round"
-            />
-          </svg>
+          <Image src="/logo.png" alt="InstantMariage" width={60} height={60} style={{ objectFit: "contain" }} />
         </div>
         <h1 className="text-2xl font-bold text-white mt-1">
           Mariage de {title}
