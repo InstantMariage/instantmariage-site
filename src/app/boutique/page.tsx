@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import QRCode from "qrcode";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -184,6 +185,7 @@ function SliderOverlay({ templateId, names, qrDataUrl }: { templateId: string; n
 // ── Main page ────────────────────────────────────────────────────────────────
 
 export default function BoutiquePage() {
+  const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [isMarie, setIsMarie] = useState(false);
   const [prenom1, setPrenom1] = useState<string | null>(null);
@@ -196,6 +198,8 @@ export default function BoutiquePage() {
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) { setIsLoggedIn(false); return; }
+      const role = session.user.user_metadata?.role;
+      if (role === "prestataire") { router.replace("/dashboard/prestataire"); return; }
       setIsLoggedIn(true);
 
       const { data: marie } = await supabase

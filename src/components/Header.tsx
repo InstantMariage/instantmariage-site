@@ -181,6 +181,7 @@ export default function Header() {
             </Link>
 
             {/* Boutique */}
+            {user?.role !== "prestataire" && (
             <Link
               href="/boutique"
               className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors duration-200 relative group py-2"
@@ -188,6 +189,7 @@ export default function Header() {
               Boutique
               <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-rose-400 group-hover:w-full transition-all duration-200" />
             </Link>
+            )}
 
             {/* Outils mariés */}
             {user?.role !== "prestataire" && (
@@ -392,6 +394,7 @@ export default function Header() {
             >
               Annuaire prestataires
             </Link>
+            {user?.role !== "prestataire" && (
             <Link
               href="/boutique"
               className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
@@ -399,6 +402,7 @@ export default function Header() {
             >
               Boutique
             </Link>
+            )}
             {user?.role !== "marie" && (
               <Link
                 href="/tarifs"
