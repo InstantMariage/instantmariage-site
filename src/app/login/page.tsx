@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
-const WEDDING_IMG = "https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777310770358-good.png";
+const WEDDING_IMG = "https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777030776686-pexels-imagestudio-1488312-2.jpg";
 
 export default function LoginPage() {
   const router = useRouter();

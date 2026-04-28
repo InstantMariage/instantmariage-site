@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
-const WEDDING_IMG = "https://images.unsplash.com/photo-1519741497674-611481863552?w=1600&q=95";
+const WEDDING_IMG = "https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777030776686-pexels-imagestudio-1488312-2.jpg";
 
 type AccountType = "marie" | "prestataire" | null;
 
@@ -275,7 +275,7 @@ export default function InscriptionPage() {
             src={WEDDING_IMG}
             alt="Mariage élégant"
             fill
-            className="object-cover"
+            className="object-cover object-top"
             priority
             onError={() => setImgError(true)}
           />
