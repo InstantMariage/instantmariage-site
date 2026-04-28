@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import Image from "next/image";
 import AlbumUploadClient from "./AlbumUploadClient";
 
 function serviceClient() {
@@ -26,7 +27,25 @@ export default async function AlbumPublicPage({
 
   if (!marie) {
     return (
-      <main className="min-h-screen flex items-center justify-center" style={{ background: "#FEF0F5" }}>
+      <>
+        <header
+          className="flex items-center justify-center"
+          style={{ background: "white", borderBottom: "1px solid #f0e4ea", height: "60px" }}
+        >
+          <a href="https://instantmariage.fr" rel="noopener noreferrer" className="flex items-center gap-2">
+            <div style={{ mixBlendMode: "multiply" }} className="flex-shrink-0">
+              <Image src="/logo.png" alt="InstantMariage logo" width={36} height={36} />
+            </div>
+            <span
+              className="text-xl font-bold whitespace-nowrap"
+              style={{ fontFamily: "var(--font-playfair), serif" }}
+            >
+              <span style={{ color: "#F06292" }}>Instant</span>
+              <span className="text-gray-900">Mariage.fr</span>
+            </span>
+          </a>
+        </header>
+        <main className="min-h-[calc(100vh-60px)] flex items-center justify-center" style={{ background: "#FEF0F5" }}>
         <div className="text-center px-6">
           <div
             className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
@@ -40,6 +59,7 @@ export default async function AlbumPublicPage({
           <p className="text-sm text-gray-500">Ce lien est invalide ou l&apos;album n&apos;est plus actif.</p>
         </div>
       </main>
+      </>
     );
   }
 

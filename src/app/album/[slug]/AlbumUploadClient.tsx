@@ -138,9 +138,31 @@ export default function AlbumUploadClient({ slug, prenom1, prenom2, dateMariage 
     setUploading(false);
   };
 
+  const logoHeader = (
+    <header
+      className="flex items-center justify-center"
+      style={{ background: "white", borderBottom: "1px solid #f0e4ea", height: "60px" }}
+    >
+      <a href="https://instantmariage.fr" rel="noopener noreferrer" className="flex items-center gap-2">
+        <div style={{ mixBlendMode: "multiply" }} className="flex-shrink-0">
+          <Image src="/logo.png" alt="InstantMariage logo" width={36} height={36} />
+        </div>
+        <span
+          className="text-xl font-bold whitespace-nowrap"
+          style={{ fontFamily: "var(--font-playfair), serif" }}
+        >
+          <span style={{ color: "#F06292" }}>Instant</span>
+          <span className="text-gray-900">Mariage.fr</span>
+        </span>
+      </a>
+    </header>
+  );
+
   if (done) {
     return (
-      <main className="min-h-screen flex items-center justify-center px-6" style={{ background: "#FEF0F5" }}>
+      <>
+        {logoHeader}
+        <main className="min-h-[calc(100vh-60px)] flex items-center justify-center px-6" style={{ background: "#FEF0F5" }}>
         <div className="text-center max-w-sm">
           <div
             className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5"
@@ -163,11 +185,14 @@ export default function AlbumUploadClient({ slug, prenom1, prenom2, dateMariage 
           </button>
         </div>
       </main>
+      </>
     );
   }
 
   return (
-    <main className="min-h-screen pb-20" style={{ background: "#FEF0F5" }}>
+    <>
+      {logoHeader}
+      <main className="min-h-[calc(100vh-60px)] pb-20" style={{ background: "#FEF0F5" }}>
       {/* Header */}
       <div
         className="px-6 pt-10 pb-8 text-center"
@@ -339,5 +364,6 @@ export default function AlbumUploadClient({ slug, prenom1, prenom2, dateMariage 
         )}
       </div>
     </main>
+    </>
   );
 }
