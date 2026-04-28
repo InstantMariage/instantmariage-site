@@ -14,6 +14,13 @@ const FORMATS: Record<string, { pages: number; label: string; cents: number }> =
   "50": { pages: 50, label: "Album 50 pages", cents: 5990 },
 };
 
+const COVER_OPTIONS: Record<string, { label: string; priceDelta: number }> = {
+  "BOOK-FE-A4-P-HARD-G":    { label: "Rigide glacée",           priceDelta: 0 },
+  "BOOK-FE-A4-P-HARD-M":    { label: "Rigide mate",             priceDelta: 0 },
+  "BOOK-FE-A4-L-LAYFLAT-G": { label: "Layflat (pages à plat)",  priceDelta: 1000 },
+  "BOOK-FE-A4-P-SOFT-G":    { label: "Souple",                  priceDelta: -500 },
+};
+
 function getSupabaseAdmin() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -23,7 +30,7 @@ function getSupabaseAdmin() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { marieId, format, photoIds, adresseLivraison } = await req.json();
+    const { marieId, format, photoIds, adresseLivraison, coverSku, coverTitle, coverDate } = await req.json();
 
     if (!marieId || !format || !Array.isArray(photoIds) || !adresseLivraison) {
       return NextResponse.json({ error: "Données manquantes" }, { status: 400 });
@@ -33,6 +40,10 @@ export async function POST(req: NextRequest) {
     if (!fmt) {
       return NextResponse.json({ error: "Format invalide" }, { status: 400 });
     }
+
+    const resolvedSku = String(coverSku ?? "BOOK-FE-A4-P-HARD-G");
+    const cover = COVER_OPTIONS[resolvedSku] ?? COVER_OPTIONS["BOOK-FE-A4-P-HARD-G"];
+    const totalCents = fmt.cents + cover.priceDelta;
 
     if (photoIds.length === 0) {
       return NextResponse.json({ error: "Aucune photo sélectionnée" }, { status: 400 });
@@ -59,7 +70,7 @@ export async function POST(req: NextRequest) {
       .insert({
         marie_id: marieId,
         produit: "album_photo",
-        montant: fmt.cents / 100,
+        montant: totalCents / 100,
         statut: "brouillon",
         nom_destinataire: `${adresseLivraison.prenom ?? ""} ${adresseLivraison.nom ?? ""}`.trim() || null,
         adresse: adresseLivraison.adresse ?? "",
@@ -68,6 +79,9 @@ export async function POST(req: NextRequest) {
         telephone: adresseLivraison.telephone ?? "",
         nb_pages: fmt.pages,
         photos_selectionnees: photoIds,
+        cover_sku: resolvedSku,
+        cover_title: coverTitle ?? null,
+        cover_date: coverDate ?? null,
       })
       .select("id")
       .single();
@@ -84,6 +98,7 @@ export async function POST(req: NextRequest) {
       marie_id: String(marieId),
       commande_id: String(commande.id),
       format: String(format),
+      cover_sku: resolvedSku,
     };
 
     const session = await stripe.checkout.sessions.create({
@@ -92,10 +107,10 @@ export async function POST(req: NextRequest) {
         {
           price_data: {
             currency: "eur",
-            unit_amount: fmt.cents,
+            unit_amount: totalCents,
             product_data: {
               name: `Album Photo Mariage — ${coupleNames}`,
-              description: `${fmt.label} · Couverture rigide · Livraison incluse · 5–7 jours ouvrés`,
+              description: `${fmt.label} · ${cover.label} · Livraison incluse · 5–7 jours ouvrés`,
             },
           },
           quantity: 1,

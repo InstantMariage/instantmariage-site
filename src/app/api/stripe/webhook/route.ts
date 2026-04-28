@@ -442,7 +442,7 @@ export async function POST(req: NextRequest) {
         // Charge le brouillon de commande (contient les photo IDs)
         const { data: brouillon } = await supabase
           .from("commandes")
-          .select("photos_selectionnees, nb_pages, adresse, code_postal, ville, telephone, nom_destinataire")
+          .select("photos_selectionnees, nb_pages, adresse, code_postal, ville, telephone, nom_destinataire, cover_sku, cover_title, cover_date")
           .eq("id", commandeId)
           .single();
 
@@ -483,7 +483,12 @@ export async function POST(req: NextRequest) {
         // Génère le PDF
         let pdfUrl = "";
         try {
-          pdfUrl = await generateAlbumPdf(photoUrls, marieId);
+          pdfUrl = await generateAlbumPdf(
+            photoUrls,
+            marieId,
+            brouillon.cover_title ?? undefined,
+            brouillon.cover_date ?? undefined
+          );
         } catch (pdfErr) {
           console.error("[webhook/album_photo] Erreur génération PDF:", pdfErr);
           // Continuons quand même pour enregistrer la commande
@@ -518,7 +523,7 @@ export async function POST(req: NextRequest) {
                 items: [
                   {
                     merchantReference: `album-${commandeId}`,
-                    sku: "BOOK-FE-A4-P-HARD-G",
+                    sku: brouillon.cover_sku ?? session.metadata?.cover_sku ?? "BOOK-FE-A4-P-HARD-G",
                     copies: 1,
                     sizing: "fillPrintArea",
                     assets: [

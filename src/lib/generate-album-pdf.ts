@@ -1,4 +1,4 @@
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { createClient } from "@supabase/supabase-js";
 
 function getSupabaseAdmin() {
@@ -17,9 +17,13 @@ const PHOTO_H = 380;
 
 export async function generateAlbumPdf(
   photoUrls: string[],
-  marieId: string
+  marieId: string,
+  coverTitle?: string,
+  coverDate?: string
 ): Promise<string> {
   const pdfDoc = await PDFDocument.create();
+  const serifFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+  const sansFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
   // Embed all images upfront
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -51,6 +55,84 @@ export async function generateAlbumPdf(
       width: iw * scale,
       height: ih * scale,
     });
+  }
+
+  // Cover page: full-bleed image + dark gradient overlay + title/date text
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function drawCoverPage(image: any) {
+    const page = pdfDoc.addPage([PAGE_W, PAGE_H]);
+    const { width: iw, height: ih } = image;
+    const scale = Math.max(PAGE_W / iw, PAGE_H / ih);
+    page.drawImage(image, {
+      x: (PAGE_W - iw * scale) / 2,
+      y: (PAGE_H - ih * scale) / 2,
+      width: iw * scale,
+      height: ih * scale,
+    });
+
+    // Dark overlay at bottom
+    page.drawRectangle({
+      x: 0,
+      y: 0,
+      width: PAGE_W,
+      height: 230,
+      color: rgb(0, 0, 0),
+      opacity: 0.5,
+    });
+
+    let textY = 52;
+
+    if (coverDate) {
+      const sz = 13;
+      const w = sansFont.widthOfTextAtSize(coverDate, sz);
+      page.drawText(coverDate, {
+        x: (PAGE_W - w) / 2,
+        y: textY,
+        size: sz,
+        font: sansFont,
+        color: rgb(1, 1, 1),
+        opacity: 0.85,
+      });
+      textY += 38;
+    }
+
+    if (coverTitle) {
+      const match = coverTitle.match(/^(Mariage de)\s+(.+)$/i);
+      if (match) {
+        const namesSize = 34;
+        const namesText = match[2];
+        const namesW = serifFont.widthOfTextAtSize(namesText, namesSize);
+        page.drawText(namesText, {
+          x: Math.max(MARGIN, (PAGE_W - namesW) / 2),
+          y: textY,
+          size: namesSize,
+          font: serifFont,
+          color: rgb(1, 1, 1),
+        });
+        textY += namesSize + 14;
+
+        const preSize = 13;
+        const preW = sansFont.widthOfTextAtSize(match[1], preSize);
+        page.drawText(match[1], {
+          x: (PAGE_W - preW) / 2,
+          y: textY,
+          size: preSize,
+          font: sansFont,
+          color: rgb(1, 1, 1),
+          opacity: 0.85,
+        });
+      } else {
+        const sz = 28;
+        const w = serifFont.widthOfTextAtSize(coverTitle, sz);
+        page.drawText(coverTitle, {
+          x: Math.max(MARGIN, (PAGE_W - w) / 2),
+          y: textY,
+          size: sz,
+          font: serifFont,
+          color: rgb(1, 1, 1),
+        });
+      }
+    }
   }
 
   // Two-photo page: side-by-side with margins, or single centered if only one image
@@ -101,13 +183,13 @@ export async function generateAlbumPdf(
   if (images.length === 0) {
     pdfDoc.addPage([PAGE_W, PAGE_H]);
   } else if (images.length === 1) {
-    drawFullPage(images[0]);
+    drawCoverPage(images[0]);
   } else if (images.length === 2) {
-    drawFullPage(images[0]);
+    drawCoverPage(images[0]);
     drawFullPage(images[1]);
   } else {
-    // Page 1 — Cover: full bleed
-    drawFullPage(images[0]);
+    // Page 1 — Cover with title overlay
+    drawCoverPage(images[0]);
 
     // Middle pages (2 to N-1): alternate even=full, odd=2-up
     const middle = images.slice(1, images.length - 1);

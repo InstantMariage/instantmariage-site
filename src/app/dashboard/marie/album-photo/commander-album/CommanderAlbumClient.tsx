@@ -30,6 +30,23 @@ const FORMATS: Format[] = [
   { pages: 50, maxPhotos: 74, prix: "59,90 €", prixCents: 5990, label: "50 pages", description: "50 pages · Jusqu'à 74 photos · Couverture rigide A4" },
 ];
 
+type CoverType = {
+  sku: string;
+  label: string;
+  priceDelta: number; // cents
+};
+
+const COVER_TYPES: CoverType[] = [
+  { sku: "BOOK-FE-A4-P-HARD-G", label: "Rigide glacée", priceDelta: 0 },
+  { sku: "BOOK-FE-A4-P-HARD-M", label: "Rigide mate", priceDelta: 0 },
+  { sku: "BOOK-FE-A4-L-LAYFLAT-G", label: "Layflat (pages à plat)", priceDelta: 1000 },
+  { sku: "BOOK-FE-A4-P-SOFT-G", label: "Souple", priceDelta: -500 },
+];
+
+function formatPriceCents(cents: number): string {
+  return (cents / 100).toFixed(2).replace(".", ",") + " €";
+}
+
 type Adresse = {
   prenom: string;
   nom: string;
@@ -55,6 +72,11 @@ export default function CommanderAlbumClient() {
   // Format
   const [formatPages, setFormatPages] = useState<number>(30);
 
+  // Couverture
+  const [coverSku, setCoverSku] = useState("BOOK-FE-A4-P-HARD-G");
+  const [coverTitle, setCoverTitle] = useState("");
+  const [coverDate, setCoverDate] = useState("");
+
   // Adresse
   const [adresse, setAdresse] = useState<Adresse>({
     prenom: "", nom: "", adresse: "", codePostal: "", ville: "", telephone: "",
@@ -69,6 +91,8 @@ export default function CommanderAlbumClient() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const currentFormat = FORMATS.find((f) => f.pages === formatPages) ?? FORMATS[1];
+  const currentCover = COVER_TYPES.find((c) => c.sku === coverSku) ?? COVER_TYPES[0];
+  const totalCents = currentFormat.prixCents + currentCover.priceDelta;
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -76,13 +100,22 @@ export default function CommanderAlbumClient() {
 
       const { data: marie } = await supabase
         .from("maries")
-        .select("id, album_slug")
+        .select("id, album_slug, prenom_marie1, prenom_marie2, date_mariage")
         .eq("user_id", session.user.id)
         .single();
 
       if (!marie?.album_slug) { router.replace("/dashboard/marie/album-photo"); return; }
 
       setMarieId(marie.id);
+
+      // Pré-remplir titre et date couverture
+      const p1 = marie.prenom_marie1 ?? "";
+      const p2 = marie.prenom_marie2 ?? "";
+      setCoverTitle(p2 ? `Mariage de ${p1} & ${p2}` : `Mariage de ${p1}`);
+      if (marie.date_mariage) {
+        const d = new Date(marie.date_mariage);
+        setCoverDate(d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }));
+      }
 
       const { data: photosData } = await supabase
         .from("album_photos")
@@ -157,6 +190,9 @@ export default function CommanderAlbumClient() {
           format: String(formatPages),
           photoIds: selected,
           adresseLivraison: adresse,
+          coverSku,
+          coverTitle,
+          coverDate,
         }),
       });
 
@@ -294,11 +330,84 @@ export default function CommanderAlbumClient() {
                   </div>
                 </section>
 
-                {/* ── Étape 2 : Sélection photos ── */}
+                {/* ── Étape 2 : Type de couverture ── */}
+                <section>
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4">2. Type de couverture</h2>
+                  <div className="flex flex-col gap-3 max-w-xl">
+                    {COVER_TYPES.map((cover) => {
+                      const active = coverSku === cover.sku;
+                      return (
+                        <label
+                          key={cover.sku}
+                          className="flex items-center gap-3 cursor-pointer rounded-2xl p-4 border-2 transition-all"
+                          style={{
+                            borderColor: active ? "#F06292" : "#e5e7eb",
+                            background: active ? "#fff0f5" : "#fff",
+                          }}
+                        >
+                          <input
+                            type="radio"
+                            name="coverType"
+                            value={cover.sku}
+                            checked={active}
+                            onChange={() => setCoverSku(cover.sku)}
+                            className="sr-only"
+                          />
+                          <div
+                            className="w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0"
+                            style={{ borderColor: active ? "#F06292" : "#d1d5db" }}
+                          >
+                            {active && (
+                              <div className="w-2 h-2 rounded-full" style={{ background: "#F06292" }} />
+                            )}
+                          </div>
+                          <span className="flex-1 text-sm font-medium text-gray-900">{cover.label}</span>
+                          <span className="text-sm font-semibold text-gray-600">
+                            {cover.priceDelta === 0
+                              ? "Standard"
+                              : cover.priceDelta > 0
+                                ? `+${cover.priceDelta / 100} €`
+                                : `${cover.priceDelta / 100} €`}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </section>
+
+                {/* ── Étape 3 : Personnalisation couverture ── */}
+                <section>
+                  <h2 className="text-lg font-semibold text-gray-900 mb-1">3. Personnalisation de la couverture</h2>
+                  <p className="text-sm text-gray-400 mb-4">Ces informations apparaîtront sur la page de titre de votre album.</p>
+                  <div className="flex flex-col gap-4 max-w-xl">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Titre de couverture</label>
+                      <input
+                        type="text"
+                        value={coverTitle}
+                        onChange={(e) => setCoverTitle(e.target.value)}
+                        placeholder="Mariage de Sophie & Thomas"
+                        className="w-full px-3 py-2.5 rounded-xl text-sm border border-gray-200 focus:outline-none focus:border-gray-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Date</label>
+                      <input
+                        type="text"
+                        value={coverDate}
+                        onChange={(e) => setCoverDate(e.target.value)}
+                        placeholder="12 juin 2025"
+                        className="w-full px-3 py-2.5 rounded-xl text-sm border border-gray-200 focus:outline-none focus:border-gray-400"
+                      />
+                    </div>
+                  </div>
+                </section>
+
+                {/* ── Étape 4 : Sélection photos ── */}
                 <section>
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-semibold text-gray-900">
-                      2. Sélectionnez vos photos
+                      4. Sélectionnez vos photos
                       <span className="ml-2 text-sm font-normal text-gray-400">
                         ({selected.length}/{currentFormat.maxPhotos})
                       </span>
@@ -357,11 +466,11 @@ export default function CommanderAlbumClient() {
                   </div>
                 </section>
 
-                {/* ── Étape 3 : Ordre (drag & drop) ── */}
+                {/* ── Étape 5 : Ordre (drag & drop) ── */}
                 {selected.length > 0 && (
                   <section>
                     <h2 className="text-lg font-semibold text-gray-900 mb-2">
-                      3. Réorganisez l&apos;ordre des pages
+                      5. Réorganisez l&apos;ordre des pages
                     </h2>
                     <p className="text-sm text-gray-400 mb-4">Glissez-déposez pour changer l&apos;ordre d&apos;impression.</p>
                     <div className="flex flex-wrap gap-2">
@@ -395,9 +504,9 @@ export default function CommanderAlbumClient() {
                   </section>
                 )}
 
-                {/* ── Étape 4 : Adresse ── */}
+                {/* ── Étape 6 : Adresse ── */}
                 <section>
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">4. Adresse de livraison</h2>
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4">6. Adresse de livraison</h2>
                   <div className="grid grid-cols-2 gap-4 max-w-xl">
                     {(
                       [
@@ -465,10 +574,10 @@ export default function CommanderAlbumClient() {
                     <div>
                       <p className="text-sm font-semibold text-gray-900">Album {currentFormat.label}</p>
                       <p className="text-xs text-gray-400 mt-0.5">
-                        {selected.length} photo{selected.length > 1 ? "s" : ""} sélectionnée{selected.length > 1 ? "s" : ""} · Couverture rigide A4 · Livraison incluse
+                        {selected.length} photo{selected.length > 1 ? "s" : ""} · {currentCover.label} · Livraison incluse
                       </p>
                     </div>
-                    <p className="text-2xl font-bold text-gray-900">{currentFormat.prix}</p>
+                    <p className="text-2xl font-bold text-gray-900">{formatPriceCents(totalCents)}</p>
                   </div>
 
                   {checkoutError && (
@@ -487,7 +596,7 @@ export default function CommanderAlbumClient() {
                         Redirection…
                       </span>
                     ) : (
-                      `Commander mon album → ${currentFormat.prix}`
+                      `Commander mon album → ${formatPriceCents(totalCents)}`
                     )}
                   </button>
 
