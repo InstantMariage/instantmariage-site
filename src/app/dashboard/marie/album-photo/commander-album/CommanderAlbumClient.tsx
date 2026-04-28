@@ -21,12 +21,13 @@ type Format = {
   prix: string;
   prixCents: number;
   label: string;
+  description: string;
 };
 
 const FORMATS: Format[] = [
-  { pages: 20, maxPhotos: 10, prix: "29,90 €", prixCents: 2990, label: "20 pages" },
-  { pages: 30, maxPhotos: 20, prix: "39,90 €", prixCents: 3990, label: "30 pages" },
-  { pages: 50, maxPhotos: 30, prix: "59,90 €", prixCents: 5990, label: "50 pages" },
+  { pages: 20, maxPhotos: 29, prix: "29,90 €", prixCents: 2990, label: "20 pages", description: "20 pages · Jusqu'à 29 photos · Couverture rigide A4" },
+  { pages: 30, maxPhotos: 44, prix: "39,90 €", prixCents: 3990, label: "30 pages", description: "30 pages · Jusqu'à 44 photos · Couverture rigide A4" },
+  { pages: 50, maxPhotos: 74, prix: "59,90 €", prixCents: 5990, label: "50 pages", description: "50 pages · Jusqu'à 74 photos · Couverture rigide A4" },
 ];
 
 type Adresse = {
@@ -286,7 +287,7 @@ export default function CommanderAlbumClient() {
                             </span>
                           )}
                           <p className="text-xl font-bold text-gray-900">{f.prix}</p>
-                          <p className="text-xs text-gray-400 mt-1">{f.label} · Couverture rigide A4 · Livraison 5-7 jours</p>
+                          <p className="text-xs text-gray-400 mt-1">{f.description}</p>
                         </button>
                       );
                     })}
