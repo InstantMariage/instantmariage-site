@@ -453,14 +453,14 @@ export default function AlbumPhotoDashboard() {
                         <p className="text-sm text-gray-400 leading-relaxed mb-4" style={{ maxWidth: 210 }}>
                           Téléchargez votre carte et posez-la sur vos tables, dans vos faire-parts ou à l&apos;entrée de la salle
                         </p>
-                        <button
-                          onClick={downloadCard}
-                          disabled={!qrDataUrl}
-                          className="px-5 py-2 rounded-full text-sm font-semibold disabled:opacity-40 transition-colors hover:bg-pink-50"
-                          style={{ border: "2px solid #F06292", color: "#F06292", background: "white" }}
+                        <Link
+                          href="/dashboard/marie/album-photo/templates"
+                          className="px-5 py-2.5 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                          style={{ background: "#F06292" }}
                         >
-                          Télécharger ma carte
-                        </button>
+                          Choisir mon template → 9,90€
+                        </Link>
+                        <p className="text-xs text-gray-400 mt-1.5">4 designs élégants · PDF A4 haute qualité</p>
                       </div>
 
                       {/* Séparateur 1 */}
