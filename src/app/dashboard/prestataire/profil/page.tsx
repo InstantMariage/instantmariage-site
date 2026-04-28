@@ -16,13 +16,15 @@ const PHOTO_LIMITS: Record<PlanAbonnement, number> = {
   starter: 10,
   pro: 30,
   premium: 50,
+  diamond: 50,
 };
 
 const VIDEO_LIMITS: Record<PlanAbonnement, number | null> = {
   gratuit: 0,
   starter: 3,
-  pro: null, // illimité
-  premium: null, // illimité
+  pro: null,
+  premium: null,
+  diamond: null,
 };
 
 type VideoRecord = {

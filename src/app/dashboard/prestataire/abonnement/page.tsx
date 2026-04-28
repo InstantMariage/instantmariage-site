@@ -61,6 +61,7 @@ const PLAN_CONFIG: Record<PlanAbonnement, {
   badgeBg: string;
   badgeColor: string;
   prix: number | null;
+  prixLabel?: string;
   features: string[];
 }> = {
   gratuit: {
@@ -90,6 +91,22 @@ const PLAN_CONFIG: Record<PlanAbonnement, {
     badgeColor: "white",
     prix: 39.90,
     features: ["Tout Pro inclus", "Badge Premium", "Profil en avant-première", "Support dédié"],
+  },
+  diamond: {
+    label: "Diamond 💎",
+    badgeBg: "#1C1C1E",
+    badgeColor: "#C9A84C",
+    prix: null,
+    prixLabel: "1 490€ paiement unique, puis 99,90€/mois",
+    features: [
+      "Tout le pack Premium inclus",
+      "Reportage vidéo 1 journée complète par notre créatrice de contenu",
+      "Article de blog dédié sur InstantMariage.fr",
+      "Diffusion sur nos réseaux sociaux (logo InstantMariage)",
+      "Badge Diamond 💎 exclusif sur votre profil",
+      "Priorité #1 dans les résultats de recherche",
+      "Support prioritaire 7j/7",
+    ],
   },
 };
 
@@ -415,6 +432,13 @@ export default function AbonnementPage() {
                         {planConfig.prix.toFixed(2).replace(".", ",")} €
                       </span>
                       <span className="text-sm text-gray-400 ml-1">/mois</span>
+                    </div>
+                  )}
+                  {planConfig?.prix == null && planConfig?.prixLabel && (
+                    <div className="text-right">
+                      <span className="text-lg font-bold" style={{ color: "#C9A84C" }}>
+                        {planConfig.prixLabel}
+                      </span>
                     </div>
                   )}
                 </div>

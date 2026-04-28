@@ -85,6 +85,27 @@ const plans = [
     priceId: "price_1TJbmfKKBs85XtqBN57D6Z5U",
     recommended: false,
   },
+  {
+    id: "diamond",
+    name: "Diamond 💎",
+    price: 1490,
+    priceAnnual: 1490,
+    period: "",
+    description: "Exclusif & Limité",
+    color: "diamond",
+    features: [
+      "Tout le pack Premium inclus",
+      "Reportage vidéo 1 journée complète par notre créatrice de contenu",
+      "Article de blog dédié sur InstantMariage.fr",
+      "Diffusion sur nos réseaux sociaux (logo InstantMariage)",
+      "Badge Diamond 💎 exclusif sur votre profil",
+      "Priorité #1 dans les résultats de recherche",
+      "Support prioritaire 7j/7",
+    ],
+    cta: "Nous contacter →",
+    priceId: null,
+    recommended: false,
+  },
 ];
 
 const faqItems = [
@@ -297,11 +318,15 @@ export default function TarifsContent() {
       {/* ─── PRICING CARDS ───────────────────────────────────── */}
       <section className="py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-6 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 md:gap-6 items-stretch">
             {plans.filter((p) => p.id !== "gratuit").map((plan) => {
               const displayPrice = annual ? plan.priceAnnual : plan.price;
               const isPro = plan.id === "pro";
               const isGold = plan.id === "premium";
+              const isDiamond = plan.id === "diamond";
+
+              const DIAMOND_MAILTO =
+                "mailto:contact@instantmariage.fr?subject=Pack%20Diamond%20InstantMariage&body=Bonjour%2C%20je%20suis%20int%C3%A9ress%C3%A9(e)%20par%20le%20pack%20Diamond.%0AMon%20nom%20est%20%3A%20%0AMon%20m%C3%A9tier%20%3A%20%0AMa%20ville%20%3A%20";
 
               return (
                 <div
@@ -309,6 +334,8 @@ export default function TarifsContent() {
                   className={`relative flex flex-col rounded-3xl transition-all duration-300 ${
                     isPro
                       ? "shadow-2xl md:scale-105 z-10"
+                      : isDiamond
+                      ? "shadow-2xl hover:-translate-y-1"
                       : "shadow-md hover:shadow-xl hover:-translate-y-1"
                   }`}
                   style={
@@ -317,6 +344,12 @@ export default function TarifsContent() {
                           background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)",
                           border: "2.5px solid #111",
                           boxShadow: "0 0 0 1px #111, 0 20px 60px rgba(0,0,0,0.18)",
+                        }
+                      : isDiamond
+                      ? {
+                          background: "#1C1C1E",
+                          border: "2px solid #C9A84C",
+                          boxShadow: "0 0 0 1px #C9A84C40, 0 20px 60px rgba(201,168,76,0.15)",
                         }
                       : isGold
                       ? {
@@ -329,7 +362,7 @@ export default function TarifsContent() {
                         }
                   }
                 >
-                  {/* Badge recommandé */}
+                  {/* Badge */}
                   {isPro && (
                     <div className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap">
                       <span className="bg-white text-rose-500 text-xs font-bold px-4 py-1.5 rounded-full shadow-lg tracking-wide">
@@ -350,21 +383,43 @@ export default function TarifsContent() {
                       </span>
                     </div>
                   )}
+                  {isDiamond && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                      <span
+                        className="text-xs font-bold px-4 py-1.5 rounded-full shadow-lg tracking-wide"
+                        style={{ background: "#C9A84C", color: "#1C1C1E" }}
+                      >
+                        💎 Exclusif & Limité
+                      </span>
+                    </div>
+                  )}
 
                   <div className="p-8 sm:p-7 flex flex-col flex-1">
                     {/* Plan name & description */}
                     <div className="mb-6">
                       <p
-                        className={`text-xs font-bold uppercase tracking-widest mb-1 ${
-                          isPro ? "text-rose-200" : isGold ? "text-amber-500" : "text-gray-400"
-                        }`}
+                        className="text-xs font-bold uppercase tracking-widest mb-1"
+                        style={
+                          isDiamond
+                            ? { color: "#C9A84C" }
+                            : isPro
+                            ? { color: "rgba(255,255,255,0.7)" }
+                            : isGold
+                            ? { color: "#D97706" }
+                            : { color: "#9CA3AF" }
+                        }
                       >
                         {plan.name}
                       </p>
                       <p
-                        className={`text-sm leading-snug ${
-                          isPro ? "text-rose-100" : "text-gray-500"
-                        }`}
+                        className="text-sm leading-snug"
+                        style={
+                          isDiamond
+                            ? { color: "#C9A84C99" }
+                            : isPro
+                            ? { color: "rgba(255,255,255,0.8)" }
+                            : { color: "#6B7280" }
+                        }
                       >
                         {plan.description}
                       </p>
@@ -372,7 +427,24 @@ export default function TarifsContent() {
 
                     {/* Price */}
                     <div className="mb-7">
-                      {plan.price === 0 ? (
+                      {isDiamond ? (
+                        <div>
+                          <div className="flex items-end gap-1">
+                            <span
+                              className="text-4xl font-extrabold leading-none"
+                              style={{ fontFamily: "var(--font-playfair), serif", color: "#C9A84C" }}
+                            >
+                              1 490€
+                            </span>
+                            <span className="text-sm pb-1.5" style={{ color: "#C9A84C80" }}>
+                              paiement unique
+                            </span>
+                          </div>
+                          <p className="text-xs mt-2" style={{ color: "#C9A84C99" }}>
+                            puis 99,90€/mois après 12 mois
+                          </p>
+                        </div>
+                      ) : plan.price === 0 ? (
                         <div>
                           <span
                             className={`text-5xl font-extrabold ${
@@ -435,24 +507,32 @@ export default function TarifsContent() {
                     </div>
 
                     {/* Features */}
-                    <ul className="space-y-3 flex-1 mb-8">
+                    <ul className="space-y-3 flex-1 mb-4">
                       {plan.features.map((f) => (
                         <li key={f} className="flex items-start gap-2.5">
                           <span
-                            className={`mt-0.5 ${
-                              isPro
-                                ? "text-white"
+                            className="mt-0.5 flex-shrink-0"
+                            style={
+                              isDiamond
+                                ? { color: "#C9A84C" }
+                                : isPro
+                                ? { color: "white" }
                                 : isGold
-                                ? "text-amber-500"
-                                : "text-rose-400"
-                            }`}
+                                ? { color: "#D97706" }
+                                : { color: "#F472B6" }
+                            }
                           >
                             <CheckIcon />
                           </span>
                           <span
-                            className={`text-sm leading-snug ${
-                              isPro ? "text-rose-50" : "text-gray-600"
-                            }`}
+                            className="text-sm leading-snug"
+                            style={
+                              isDiamond
+                                ? { color: "#E5E5E5" }
+                                : isPro
+                                ? { color: "rgba(255,255,255,0.9)" }
+                                : { color: "#4B5563" }
+                            }
                           >
                             {f}
                           </span>
@@ -460,29 +540,46 @@ export default function TarifsContent() {
                       ))}
                     </ul>
 
-                    {/* CTA Button */}
-                    <button
-                      onClick={() => handleSubscribe(plan)}
-                      disabled={loadingPlan === plan.id}
-                      className={`block w-full text-center text-sm font-semibold px-6 py-3.5 rounded-2xl transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed ${
-                        isPro
-                          ? "bg-white text-rose-500 hover:bg-rose-50 shadow-md hover:shadow-lg"
-                          : isGold
-                          ? "text-white hover:opacity-90"
-                          : plan.price === 0
-                          ? "border-2 border-gray-200 text-gray-600 hover:border-rose-300 hover:text-[#F06292]"
-                          : "text-white hover:opacity-90"
-                      }`}
-                      style={
-                        isGold
-                          ? { background: "linear-gradient(135deg, #C9A96E, #A67C52)" }
-                          : !isPro && plan.price > 0
-                          ? { background: "linear-gradient(135deg, #F06292, #e91e8c)" }
-                          : {}
-                      }
-                    >
-                      {loadingPlan === plan.id ? "Chargement…" : plan.cta}
-                    </button>
+                    {/* Note Diamond */}
+                    {isDiamond && (
+                      <p className="text-xs mb-5 leading-relaxed" style={{ color: "#C9A84C60" }}>
+                        Sans prélèvement automatique — vous recevrez un email 30 jours avant expiration
+                      </p>
+                    )}
+
+                    {/* CTA */}
+                    {isDiamond ? (
+                      <a
+                        href={DIAMOND_MAILTO}
+                        className="block w-full text-center text-sm font-semibold px-6 py-3.5 rounded-2xl transition-all duration-200 hover:opacity-90"
+                        style={{ background: "#C9A84C", color: "#1C1C1E" }}
+                      >
+                        {plan.cta}
+                      </a>
+                    ) : (
+                      <button
+                        onClick={() => handleSubscribe(plan)}
+                        disabled={loadingPlan === plan.id}
+                        className={`block w-full text-center text-sm font-semibold px-6 py-3.5 rounded-2xl transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed ${
+                          isPro
+                            ? "bg-white text-rose-500 hover:bg-rose-50 shadow-md hover:shadow-lg"
+                            : isGold
+                            ? "text-white hover:opacity-90"
+                            : plan.price === 0
+                            ? "border-2 border-gray-200 text-gray-600 hover:border-rose-300 hover:text-[#F06292]"
+                            : "text-white hover:opacity-90"
+                        }`}
+                        style={
+                          isGold
+                            ? { background: "linear-gradient(135deg, #C9A96E, #A67C52)" }
+                            : !isPro && plan.price > 0
+                            ? { background: "linear-gradient(135deg, #F06292, #e91e8c)" }
+                            : {}
+                        }
+                      >
+                        {loadingPlan === plan.id ? "Chargement…" : plan.cta}
+                      </button>
+                    )}
                   </div>
                 </div>
               );

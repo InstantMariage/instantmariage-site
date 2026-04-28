@@ -856,10 +856,11 @@ export async function sendNewDocumentEmail({
     starter: { bg: "#EFF6FF", text: "#3B82F6" },
     pro:     { bg: "#F5F3FF", text: "#8B5CF6" },
     premium: { bg: "#FFFBEB", text: "#D97706" },
+    diamond: { bg: "#1C1C1E", text: "#C9A84C" },
   };
   const planColor = PLAN_COLORS[plan] ?? PLAN_COLORS.gratuit;
   const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
-  const isUpgradable = plan === "gratuit" || plan === "starter";
+  const isUpgradable = plan === "gratuit" || plan === "starter" || plan === "pro";
 
   const content = `
     <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#F06292;letter-spacing:0.5px;text-transform:uppercase;">Nouveau document généré</p>
@@ -1548,6 +1549,108 @@ export async function sendAlbumConfirmationEmail({
     to: recipientEmail,
     replyTo: REPLY_TO,
     subject: `Votre album photo est en cours d'impression — ${coupleNames}`,
+    html: baseTemplate(content),
+    text,
+    headers: unsubscribeHeaders,
+  });
+}
+
+// ─── Email Diamond J-30 : Expiration pack Diamond (prestataire) ──────────────
+
+export async function sendDiamondExpirationEmail({
+  recipientEmail,
+  recipientName,
+  prestataireId,
+  expireAt,
+}: {
+  recipientEmail: string;
+  recipientName: string;
+  prestataireId: string;
+  expireAt: string;
+}) {
+  const dateExpiration = new Date(expireAt).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  const DIAMOND_MAILTO =
+    "mailto:contact@instantmariage.fr?subject=Renouvellement%20Pack%20Diamond%20InstantMariage&body=Bonjour%2C%20je%20souhaite%20renouveler%20mon%20pack%20Diamond.%0AMon%20nom%20est%20%3A%20%0AMon%20profil%20%3A%20";
+
+  const features = [
+    "Reportage vidéo professionnel par notre créatrice de contenu",
+    "Article de blog dédié sur InstantMariage.fr",
+    "Diffusion sur nos réseaux sociaux (logo InstantMariage)",
+    "Badge Diamond 💎 exclusif sur votre profil",
+    "Priorité #1 dans les résultats de recherche",
+    "Support prioritaire 7j/7",
+  ];
+
+  const featuresHtml = features
+    .map(
+      (f) =>
+        `<li style="padding:4px 0;font-size:14px;color:#333333;display:flex;align-items:flex-start;gap:8px;">
+          <span style="color:#C9A84C;font-weight:700;flex-shrink:0;">✦</span> ${f}
+        </li>`
+    )
+    .join("");
+
+  const content = `
+    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#C9A84C;letter-spacing:0.5px;text-transform:uppercase;">Pack Diamond 💎</p>
+    <h1 style="margin:0 0 24px;font-size:26px;font-weight:700;color:#1a1a1a;line-height:1.25;">
+      Votre pack Diamond expire dans 30 jours
+    </h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#555555;line-height:1.65;">
+      Bonjour ${recipientName},<br/>
+      Votre pack Diamond expire le <strong>${dateExpiration}</strong>. Pour continuer à bénéficier de vos avantages exclusifs, contactez-nous dès maintenant.
+    </p>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background-color:#1C1C1E;border-radius:12px;padding:24px;border:1px solid #C9A84C40;">
+          <p style="margin:0 0 16px;font-size:13px;font-weight:700;color:#C9A84C;text-transform:uppercase;letter-spacing:0.5px;">Vos avantages Diamond</p>
+          <ul style="margin:0;padding:0;list-style:none;">
+            ${featuresHtml}
+          </ul>
+        </td>
+      </tr>
+    </table>
+    <table cellpadding="0" cellspacing="0" border="0" style="margin:32px auto 0;">
+      <tr>
+        <td align="center" style="background-color:#C9A84C;border-radius:100px;">
+          <a href="${DIAMOND_MAILTO}" style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:700;color:#1C1C1E;text-decoration:none;letter-spacing:0.1px;">
+            Renouveler mon pack Diamond 💎
+          </a>
+        </td>
+      </tr>
+    </table>
+    ${divider()}
+    <p style="margin:0;font-size:13px;color:#aaaaaa;line-height:1.6;text-align:center;">
+      Sans action de votre part, votre profil repassera automatiquement en plan Premium à l&rsquo;expiration.
+    </p>
+  `;
+
+  const text = [
+    `Bonjour ${recipientName},`,
+    "",
+    `Votre pack Diamond expire le ${dateExpiration}.`,
+    "",
+    "Vos avantages Diamond :",
+    ...features.map((f) => `  ✦ ${f}`),
+    "",
+    `Pour renouveler, contactez-nous : contact@instantmariage.fr`,
+    `Sujet : Renouvellement Pack Diamond`,
+    "",
+    `Sans action de votre part, votre profil repassera en plan Premium à l'expiration.`,
+    "",
+    `Voir votre profil : ${SITE_URL}/prestataires/${prestataireId}`,
+    textFooter(true),
+  ].join("\n");
+
+  return resend.emails.send({
+    from: FROM,
+    to: recipientEmail,
+    replyTo: REPLY_TO,
+    subject: `Votre pack Diamond expire dans 30 jours 💎`,
     html: baseTemplate(content),
     text,
     headers: unsubscribeHeaders,

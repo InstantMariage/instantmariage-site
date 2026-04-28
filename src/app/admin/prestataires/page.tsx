@@ -46,6 +46,7 @@ function profileScore(p: PrestatairRow): number {
 }
 
 const PLAN_STYLE: Record<string, { bg: string; text: string }> = {
+  diamond: { bg: "#1C1C1E", text: "#C9A84C" },
   premium: { bg: "#FFF0F5", text: "#F06292" },
   pro: { bg: "#EFF6FF", text: "#3B82F6" },
   starter: { bg: "#F0FDF4", text: "#10B981" },
@@ -54,7 +55,7 @@ const PLAN_STYLE: Record<string, { bg: string; text: string }> = {
 };
 
 const PLAN_ORDER: Record<string, number> = {
-  premium: 4, pro: 3, starter: 2, essentiel: 2, gratuit: 1,
+  diamond: 5, premium: 4, pro: 3, starter: 2, essentiel: 2, gratuit: 1,
 };
 
 function SortIcon({

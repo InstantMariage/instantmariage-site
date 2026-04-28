@@ -68,6 +68,7 @@ const DOC_QUOTA: Record<PlanAbonnement, number | null> = {
   starter: 5,
   pro: null,
   premium: null,
+  diamond: null,
 };
 
 const UPGRADE_INFO: Partial<Record<PlanAbonnement, { label: string; href: string }>> = {

@@ -190,6 +190,7 @@ const PLAN_CONFIG: Record<string, { label: string; color: string; bg: string }> 
   starter: { label: "Starter", color: "#6B7280", bg: "#F9FAFB" },
   pro: { label: "Pro", color: "#3B82F6", bg: "#EFF6FF" },
   premium: { label: "Premium", color: "#D97706", bg: "#FFFBEB" },
+  diamond: { label: "Diamond 💎", color: "#C9A84C", bg: "#1C1C1E" },
 };
 
 function PlanCard({
@@ -411,11 +412,12 @@ export default function StatistiquesAdminPage() {
     const conversionNumerator = aboList.length;
     const conversionRate = totalPrest > 0 ? Math.round((conversionNumerator / totalPrest) * 100) : 0;
 
-    // Plan breakdown (starter / pro / premium)
+    // Plan breakdown (starter / pro / premium / diamond)
     const planBreakdown: PlanBreakdown = {
       starter: { count: 0, mrr: 0 },
       pro: { count: 0, mrr: 0 },
       premium: { count: 0, mrr: 0 },
+      diamond: { count: 0, mrr: 0 },
     };
     aboList.forEach(({ plan, prix }) => {
       if (plan in planBreakdown) {
@@ -515,7 +517,7 @@ export default function StatistiquesAdminPage() {
       <div className="bg-white rounded-xl border border-gray-100 p-6">
         <h3 className="text-sm font-semibold text-gray-700 mb-4">Répartition par plan</h3>
         <div className="flex gap-4">
-          {(["starter", "pro", "premium"] as const).map((plan) => (
+          {(["starter", "pro", "premium", "diamond"] as const).map((plan) => (
             <PlanCard
               key={plan}
               plan={plan}

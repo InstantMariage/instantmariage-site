@@ -75,6 +75,19 @@ const PLAN_CONFIG: Record<PlanAbonnement, PlanConfig> = {
     canAccessContrats: true,
     hasPremiumBadge: false,
     devisLabel: "Illimité",
+    upgradeLabel: "Découvrir Diamond 💎",
+    upgradeHref: "/tarifs",
+  },
+  diamond: {
+    label: "Diamond 💎",
+    badgeColor: "#C9A84C",
+    badgeBg: "#1C1C1E",
+    features: ["Tout Premium inclus", "Reportage vidéo professionnel", "Article de blog dédié", "Priorité #1 recherche"],
+    canAccessDevis: true,
+    canAccessFactures: true,
+    canAccessContrats: true,
+    hasPremiumBadge: false,
+    devisLabel: "Illimité",
     upgradeLabel: null,
     upgradeHref: null,
   },
@@ -512,7 +525,7 @@ function DashboardPrestataire() {
         </div>
 
         {/* Bannière upsell contextuelle — activée par l'admin depuis /admin/upsell */}
-        {showUpsellBanner && plan !== "premium" && (
+        {showUpsellBanner && plan !== "premium" && plan !== "diamond" && (
           <div
             className="px-4 py-4"
             style={{ background: "linear-gradient(90deg, #7C3AED 0%, #6D28D9 100%)" }}
