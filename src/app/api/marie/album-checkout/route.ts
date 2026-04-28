@@ -30,7 +30,8 @@ function getSupabaseAdmin() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { marieId, format, photoIds, adresseLivraison, coverSku, coverTitle, coverDate } = await req.json();
+    const { marieId, format, photoIds, adresseLivraison, coverSku, coverTitle, coverDate, quantite } = await req.json();
+    const qty: number = Math.min(Math.max(Number(quantite) || 1, 1), 3);
 
     if (!marieId || !format || !Array.isArray(photoIds) || !adresseLivraison) {
       return NextResponse.json({ error: "Données manquantes" }, { status: 400 });
@@ -43,7 +44,8 @@ export async function POST(req: NextRequest) {
 
     const resolvedSku = String(coverSku ?? "BOOK-FE-A4-P-HARD-G");
     const cover = COVER_OPTIONS[resolvedSku] ?? COVER_OPTIONS["BOOK-FE-A4-P-HARD-G"];
-    const totalCents = fmt.cents + cover.priceDelta;
+    const unitCents = fmt.cents + cover.priceDelta;
+    const totalCents = unitCents * qty;
 
     if (photoIds.length === 0) {
       return NextResponse.json({ error: "Aucune photo sélectionnée" }, { status: 400 });
@@ -71,6 +73,7 @@ export async function POST(req: NextRequest) {
         marie_id: marieId,
         produit: "album_photo",
         montant: totalCents / 100,
+        quantite: qty,
         statut: "brouillon",
         nom_destinataire: `${adresseLivraison.prenom ?? ""} ${adresseLivraison.nom ?? ""}`.trim() || null,
         adresse: adresseLivraison.adresse ?? "",
@@ -99,6 +102,7 @@ export async function POST(req: NextRequest) {
       commande_id: String(commande.id),
       format: String(format),
       cover_sku: resolvedSku,
+      quantite: String(qty),
     };
 
     const session = await stripe.checkout.sessions.create({
@@ -107,13 +111,13 @@ export async function POST(req: NextRequest) {
         {
           price_data: {
             currency: "eur",
-            unit_amount: totalCents,
+            unit_amount: unitCents,
             product_data: {
               name: `Album Photo Mariage — ${coupleNames}`,
               description: `${fmt.label} · ${cover.label} · Livraison incluse · 5–7 jours ouvrés`,
             },
           },
-          quantity: 1,
+          quantity: qty,
         },
       ],
       success_url: `${origin}/dashboard/marie/album-photo/commander-album?success=true`,

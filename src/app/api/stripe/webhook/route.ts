@@ -433,6 +433,7 @@ export async function POST(req: NextRequest) {
         const marieId = session.metadata?.marie_id;
         const commandeId = session.metadata?.commande_id;
         const format = session.metadata?.format ?? "20";
+        const quantiteCmd = Math.min(Math.max(Number(session.metadata?.quantite) || 1, 1), 3);
 
         if (!marieId || !commandeId) {
           console.error("[webhook/album_photo] Metadata manquante");
@@ -524,7 +525,7 @@ export async function POST(req: NextRequest) {
                   {
                     merchantReference: `album-${commandeId}`,
                     sku: brouillon.cover_sku ?? session.metadata?.cover_sku ?? "BOOK-FE-A4-P-HARD-G",
-                    copies: 1,
+                    copies: quantiteCmd,
                     sizing: "fillPrintArea",
                     assets: [
                       {

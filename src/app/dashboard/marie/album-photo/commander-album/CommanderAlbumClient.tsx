@@ -90,9 +90,13 @@ export default function CommanderAlbumClient() {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
+  // Quantité
+  const [quantite, setQuantite] = useState(1);
+
   const currentFormat = FORMATS.find((f) => f.pages === formatPages) ?? FORMATS[1];
   const currentCover = COVER_TYPES.find((c) => c.sku === coverSku) ?? COVER_TYPES[0];
-  const totalCents = currentFormat.prixCents + currentCover.priceDelta;
+  const unitCents = currentFormat.prixCents + currentCover.priceDelta;
+  const totalCents = unitCents * quantite;
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -193,6 +197,7 @@ export default function CommanderAlbumClient() {
           coverSku,
           coverTitle,
           coverDate,
+          quantite,
         }),
       });
 
@@ -403,11 +408,39 @@ export default function CommanderAlbumClient() {
                   </div>
                 </section>
 
-                {/* ── Étape 4 : Sélection photos ── */}
+                {/* ── Étape 4 : Quantité ── */}
+                <section>
+                  <h2 className="text-lg font-semibold text-gray-900 mb-1">4. Quantité</h2>
+                  <p className="text-sm text-gray-400 mb-4">Commandez plusieurs exemplaires pour offrir à vos proches 🎁</p>
+                  <div className="flex gap-6">
+                    {([
+                      { value: 1, label: "Pour vous" },
+                      { value: 2, label: "+ Parents" },
+                      { value: 3, label: "Famille complète" },
+                    ] as { value: number; label: string }[]).map(({ value, label }) => (
+                      <div key={value} className="flex flex-col items-center gap-1.5">
+                        <button
+                          onClick={() => setQuantite(value)}
+                          className="w-12 h-12 rounded-full text-sm font-bold transition-all"
+                          style={{
+                            background: quantite === value ? "#F06292" : "#fff",
+                            color: quantite === value ? "#fff" : "#374151",
+                            border: `2px solid ${quantite === value ? "#F06292" : "#e5e7eb"}`,
+                          }}
+                        >
+                          {value}
+                        </button>
+                        <span className="text-xs text-gray-400">{label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                {/* ── Étape 5 : Sélection photos ── */}
                 <section>
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-semibold text-gray-900">
-                      4. Sélectionnez vos photos
+                      5. Sélectionnez vos photos
                       <span className="ml-2 text-sm font-normal text-gray-400">
                         ({selected.length}/{currentFormat.maxPhotos})
                       </span>
@@ -466,11 +499,11 @@ export default function CommanderAlbumClient() {
                   </div>
                 </section>
 
-                {/* ── Étape 5 : Ordre (drag & drop) ── */}
+                {/* ── Étape 6 : Ordre (drag & drop) ── */}
                 {selected.length > 0 && (
                   <section>
                     <h2 className="text-lg font-semibold text-gray-900 mb-2">
-                      5. Réorganisez l&apos;ordre des pages
+                      6. Réorganisez l&apos;ordre des pages
                     </h2>
                     <p className="text-sm text-gray-400 mb-4">Glissez-déposez pour changer l&apos;ordre d&apos;impression.</p>
                     <div className="flex flex-wrap gap-2">
@@ -504,9 +537,9 @@ export default function CommanderAlbumClient() {
                   </section>
                 )}
 
-                {/* ── Étape 6 : Adresse ── */}
+                {/* ── Étape 7 : Adresse ── */}
                 <section>
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">6. Adresse de livraison</h2>
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4">7. Adresse de livraison</h2>
                   <div className="grid grid-cols-2 gap-4 max-w-xl">
                     {(
                       [
@@ -576,6 +609,11 @@ export default function CommanderAlbumClient() {
                       <p className="text-xs text-gray-400 mt-0.5">
                         {selected.length} photo{selected.length > 1 ? "s" : ""} · {currentCover.label} · Livraison incluse
                       </p>
+                      {quantite > 1 && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          {quantite} albums × {formatPriceCents(unitCents)} = {formatPriceCents(totalCents)}
+                        </p>
+                      )}
                     </div>
                     <p className="text-2xl font-bold text-gray-900">{formatPriceCents(totalCents)}</p>
                   </div>
