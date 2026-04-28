@@ -166,7 +166,7 @@ export default function AlbumPhotoDashboard() {
   const downloadCard = useCallback(async () => {
     if (!qrDataUrl || !prenom1) return;
     const canvas = document.createElement("canvas");
-    const W = 600, H = 800;
+    const W = 600, H = 700;
     canvas.width = W;
     canvas.height = H;
     const ctx = canvas.getContext("2d")!;
@@ -174,47 +174,24 @@ export default function AlbumPhotoDashboard() {
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, W, H);
 
-    const grad = ctx.createLinearGradient(0, 0, W, 0);
-    grad.addColorStop(0, "#F06292");
-    grad.addColorStop(1, "#e91e8c");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, W, 120);
-
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 28px system-ui, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("InstantMariage", W / 2, 72);
-
     const names = prenom2 ? `${prenom1} & ${prenom2}` : prenom1;
     ctx.fillStyle = "#1a1a1a";
-    ctx.font = "bold 32px Georgia, serif";
-    ctx.fillText(`Mariage de`, W / 2, 180);
-    ctx.font = "bold 40px Georgia, serif";
-    ctx.fillStyle = "#e91e8c";
-    ctx.fillText(names, W / 2, 230);
+    ctx.font = "bold 28px Georgia, serif";
+    ctx.textAlign = "center";
+    ctx.fillText(`Mariage de ${names}`, W / 2, 80);
 
     const qrImg = new window.Image();
     await new Promise<void>((resolve) => {
       qrImg.onload = () => resolve();
       qrImg.src = qrDataUrl;
     });
-    const qrSize = 320;
+    const qrSize = 400;
     const qrX = (W - qrSize) / 2;
-    ctx.save();
-    ctx.shadowColor = "rgba(0,0,0,0.08)";
-    ctx.shadowBlur = 20;
-    ctx.fillStyle = "#ffffff";
-    ctx.roundRect(qrX - 16, 270, qrSize + 32, qrSize + 32, 16);
-    ctx.fill();
-    ctx.restore();
-    ctx.drawImage(qrImg, qrX, 286, qrSize, qrSize);
+    ctx.drawImage(qrImg, qrX, 130, qrSize, qrSize);
 
-    ctx.fillStyle = "#555555";
-    ctx.font = "18px system-ui, sans-serif";
-    ctx.fillText("Scannez pour partager vos photos !", W / 2, 670);
-    ctx.fillStyle = "#aaaaaa";
+    ctx.fillStyle = "#cccccc";
     ctx.font = "14px system-ui, sans-serif";
-    ctx.fillText("instantmariage.fr", W / 2, 740);
+    ctx.fillText("instantmariage.fr", W / 2, 670);
 
     const link = document.createElement("a");
     link.download = `album-qrcode-${albumSlug}.png`;
@@ -346,16 +323,19 @@ export default function AlbumPhotoDashboard() {
                   </p>
 
                   <div className="flex gap-2 w-full">
-                    <button
-                      onClick={downloadCard}
-                      disabled={!qrDataUrl}
-                      className="flex-1 py-2 rounded-xl text-xs font-semibold bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-40 transition-colors"
-                    >
-                      Télécharger la carte
-                    </button>
+                    <div className="flex-1 flex flex-col items-center gap-1">
+                      <button
+                        onClick={downloadCard}
+                        disabled={!qrDataUrl}
+                        className="w-full py-2 rounded-xl text-xs font-semibold bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-40 transition-colors"
+                      >
+                        Télécharger la carte
+                      </button>
+                      <span className="text-xs text-gray-400">Version basique gratuite</span>
+                    </div>
                     <button
                       onClick={() => navigator.clipboard.writeText(albumUrl!)}
-                      className="px-3 py-2 rounded-xl text-xs font-semibold border border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors"
+                      className="px-3 py-2 rounded-xl text-xs font-semibold border border-gray-200 text-gray-600 hover:bg-gray-100 transition-colors self-start"
                       title="Copier le lien"
                     >
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
