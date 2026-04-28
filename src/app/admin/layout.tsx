@@ -130,6 +130,16 @@ const NAV: NavItem[] = [
     ),
   },
   {
+    href: "/admin/diamond",
+    label: "Diamond 💎",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25L12 21 3 8.25 6.75 3h10.5L21 8.25z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 8.25h18M6.75 3l2.25 5.25M17.25 3l-2.25 5.25M12 21l3-12.75M12 21l-3-12.75" />
+      </svg>
+    ),
+  },
+  {
     href: "/admin/statistiques",
     label: "Statistiques",
     icon: (
