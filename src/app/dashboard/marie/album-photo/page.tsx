@@ -412,18 +412,190 @@ export default function AlbumPhotoDashboard() {
                     <div className="w-6 h-6 border-2 border-gray-200 border-t-gray-700 rounded-full animate-spin" />
                   </div>
                 ) : photos.length === 0 ? (
-                  <div className="flex flex-col items-center text-center py-24">
-                    <div className="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-                      <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                      </svg>
+                  <div className="py-12">
+                    <style>{`
+                      @keyframes scanLine {
+                        0%   { top: 12%; }
+                        100% { top: 78%; }
+                      }
+                      @keyframes fadeUp {
+                        from { opacity: 0; transform: translateY(10px); }
+                        to   { opacity: 1; transform: translateY(0); }
+                      }
+                    `}</style>
+
+                    <h2
+                      className="text-2xl text-center mb-2 text-gray-900"
+                      style={{ fontFamily: "Georgia, serif", fontWeight: 400 }}
+                    >
+                      Comment ça marche ?
+                    </h2>
+                    <p className="text-sm text-center text-gray-400 mb-12">
+                      Vos invités partagent leurs photos en 3 secondes
+                    </p>
+
+                    <div className="flex flex-col lg:flex-row lg:items-start">
+
+                      {/* ── Étape 1 ── */}
+                      <div className="flex-1 flex flex-col items-center text-center px-4 lg:px-6">
+                        <span
+                          className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold mb-4"
+                          style={{ background: "#f0fdf4", color: "#059669" }}
+                        >
+                          ✓ Créé automatiquement
+                        </span>
+                        {/* Cadre doré + QR simulé */}
+                        <div
+                          style={{
+                            width: 80, height: 110,
+                            border: "3px solid #C9A84C",
+                            borderRadius: 8,
+                            background: "#fffdf5",
+                            padding: 8,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            marginBottom: 20,
+                          }}
+                        >
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 2, width: "100%", height: "100%" }}>
+                            {[1,1,1,0,1,0, 1,0,1,1,0,1, 1,1,1,0,0,1, 0,1,0,1,1,0, 1,0,1,0,1,1, 0,1,1,1,0,1].map((v, i) => (
+                              <div key={i} style={{ background: v ? "#1a1a1a" : "transparent", borderRadius: 1 }} />
+                            ))}
+                          </div>
+                        </div>
+                        <h3
+                          className="text-gray-900 mb-2"
+                          style={{ fontFamily: "Georgia, serif", fontWeight: 400, fontSize: 16 }}
+                        >
+                          Votre carte QR Code est prête
+                        </h3>
+                        <p className="text-sm text-gray-400 leading-relaxed mb-4" style={{ maxWidth: 210 }}>
+                          Téléchargez votre carte et posez-la sur vos tables, dans vos faire-parts ou à l&apos;entrée de la salle
+                        </p>
+                        <button
+                          onClick={downloadCard}
+                          disabled={!qrDataUrl}
+                          className="px-5 py-2 rounded-full text-sm font-semibold disabled:opacity-40 transition-colors hover:bg-pink-50"
+                          style={{ border: "2px solid #F06292", color: "#F06292", background: "white" }}
+                        >
+                          Télécharger ma carte
+                        </button>
+                      </div>
+
+                      {/* Séparateur 1 */}
+                      <div className="flex items-center justify-center py-4 lg:py-0">
+                        <svg className="hidden lg:block w-5 h-5 text-gray-300" style={{ marginTop: 87 }} fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                        <div className="lg:hidden" style={{ width: 0, height: 32, borderLeft: "2px dashed #e5e7eb" }} />
+                      </div>
+
+                      {/* ── Étape 2 ── */}
+                      <div className="flex-1 flex flex-col items-center text-center px-4 lg:px-6">
+                        <span
+                          className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold mb-4"
+                          style={{ background: "#fff0f5", color: "#F06292" }}
+                        >
+                          📸 400+ photos en moyenne
+                        </span>
+                        {/* iPhone simulé */}
+                        <div
+                          style={{
+                            width: 70, height: 110,
+                            background: "#1f2937",
+                            borderRadius: 14,
+                            padding: "8px 7px 10px",
+                            position: "relative",
+                            overflow: "hidden",
+                            marginBottom: 20,
+                            boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+                          }}
+                        >
+                          <div style={{
+                            background: "#fff", borderRadius: 6,
+                            width: "100%", height: "100%",
+                            position: "relative", overflow: "hidden",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                          }}>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, width: 30, height: 30 }}>
+                              {[1,1,0,1, 1,0,1,0, 0,1,0,1, 1,1,0,0].map((v, i) => (
+                                <div key={i} style={{ background: v ? "#1a1a1a" : "transparent", borderRadius: 0.5 }} />
+                              ))}
+                            </div>
+                            <div style={{
+                              position: "absolute", left: 0, right: 0, height: 2,
+                              background: "#ef4444", opacity: 0.9,
+                              animation: "scanLine 1.5s ease-in-out infinite alternate",
+                            }} />
+                          </div>
+                          <div style={{
+                            position: "absolute", bottom: 5, left: "50%",
+                            transform: "translateX(-50%)",
+                            width: 22, height: 3, borderRadius: 2,
+                            background: "rgba(255,255,255,0.3)",
+                          }} />
+                        </div>
+                        <h3
+                          className="text-gray-900 mb-2"
+                          style={{ fontFamily: "Georgia, serif", fontWeight: 400, fontSize: 16 }}
+                        >
+                          Vos invités scannent sans application
+                        </h3>
+                        <p className="text-sm text-gray-400 leading-relaxed" style={{ maxWidth: 210 }}>
+                          En un scan, ils accèdent à la page de partage et uploadent leurs photos instantanément
+                        </p>
+                      </div>
+
+                      {/* Séparateur 2 */}
+                      <div className="flex items-center justify-center py-4 lg:py-0">
+                        <svg className="hidden lg:block w-5 h-5 text-gray-300" style={{ marginTop: 87 }} fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                        <div className="lg:hidden" style={{ width: 0, height: 32, borderLeft: "2px dashed #e5e7eb" }} />
+                      </div>
+
+                      {/* ── Étape 3 ── */}
+                      <div className="flex-1 flex flex-col items-center text-center px-4 lg:px-6">
+                        <div className="hidden lg:block" style={{ height: 28 }} />
+                        {/* Grille colorée staggered */}
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 5, width: 96, height: 64, marginBottom: 20 }}>
+                          {["#F9A8D4","#FDE68A","#A7F3D0","#BAE6FD","#DDD6FE","#FCA5A5"].map((color, i) => (
+                            <div
+                              key={i}
+                              style={{
+                                background: color,
+                                borderRadius: 5,
+                                opacity: 0,
+                                animation: `fadeUp 0.4s ease forwards ${0.1 + i * 0.1}s`,
+                              }}
+                            />
+                          ))}
+                        </div>
+                        <h3
+                          className="text-gray-900 mb-2"
+                          style={{ fontFamily: "Georgia, serif", fontWeight: 400, fontSize: 16 }}
+                        >
+                          Revivez chaque instant
+                        </h3>
+                        <p className="text-sm text-gray-400 leading-relaxed" style={{ maxWidth: 210 }}>
+                          Toutes les photos de vos invités arrivent ici. Téléchargez tout quand vous voulez.
+                        </p>
+                      </div>
+
                     </div>
-                    <p className="text-base font-medium text-gray-700 mb-1">
-                      Aucune photo pour l&apos;instant
-                    </p>
-                    <p className="text-sm text-gray-400 max-w-xs leading-relaxed">
-                      Partagez le QR Code à vos invités pour commencer à recevoir des photos
-                    </p>
+
+                    {/* CTA */}
+                    <div className="flex flex-col items-center mt-12 gap-3">
+                      <button
+                        onClick={() => setShareModalOpen(true)}
+                        className="px-8 py-4 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                        style={{ background: "#F06292" }}
+                      >
+                        Partager le lien à mes invités 📤
+                      </button>
+                      <p className="text-sm text-gray-400">0 photo partagée pour l&apos;instant</p>
+                    </div>
                   </div>
                 ) : (
                   /* Masonry grid */
