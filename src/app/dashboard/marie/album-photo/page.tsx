@@ -58,6 +58,9 @@ export default function AlbumPhotoDashboard() {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+
+  const [deletePhotoId, setDeletePhotoId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const albumUrl = albumSlug ? `${SITE_URL}/album/${albumSlug}` : null;
@@ -134,6 +137,24 @@ export default function AlbumPhotoDashboard() {
       setAlbumActif(true);
     }
     setCreating(false);
+  };
+
+  const deletePhoto = async () => {
+    if (!deletePhotoId) return;
+    setDeleting(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { setDeleting(false); return; }
+
+    const res = await fetch(`/api/album/photo/${deletePhotoId}`, {
+      method: "DELETE",
+      headers: { authorization: `Bearer ${session.access_token}` },
+    });
+
+    if (res.ok) {
+      setPhotos((prev) => prev.filter((p) => p.id !== deletePhotoId));
+    }
+    setDeletePhotoId(null);
+    setDeleting(false);
   };
 
   const toggleAlbum = async (actif: boolean) => {
@@ -418,6 +439,17 @@ export default function AlbumPhotoDashboard() {
                           className="relative rounded-lg overflow-hidden"
                           style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}
                         >
+                          {/* Delete button */}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setDeletePhotoId(p.id); }}
+                            className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                            style={{ background: "#ef4444" }}
+                            title="Supprimer"
+                          >
+                            <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
                           {p.type === "photo" ? (
                             <Image
                               src={p.url}
@@ -501,6 +533,49 @@ export default function AlbumPhotoDashboard() {
           Commander mon album (TEST)
         </a>
       </div>
+
+      {/* Delete confirmation modal */}
+      {deletePhotoId && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4"
+          style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}
+          onClick={() => !deleting && setDeletePhotoId(null)}
+        >
+          <div
+            className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex flex-col items-center text-center gap-4">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: "#fef2f2" }}>
+                <svg className="w-6 h-6" style={{ color: "#ef4444" }} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-base font-semibold text-gray-900 mb-1">Supprimer cette photo ?</h2>
+                <p className="text-sm text-gray-500">Cette action est irréversible.</p>
+              </div>
+              <div className="flex gap-3 w-full">
+                <button
+                  onClick={() => setDeletePhotoId(null)}
+                  disabled={deleting}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={deletePhoto}
+                  disabled={deleting}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition-colors"
+                  style={{ background: "#ef4444" }}
+                >
+                  {deleting ? "Suppression…" : "Supprimer"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Share modal */}
       {shareModalOpen && albumUrl && (
