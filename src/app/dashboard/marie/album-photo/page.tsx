@@ -476,7 +476,7 @@ export default function AlbumPhotoDashboard() {
                         </span>
                         {/* Photo invité scannant */}
                         <img
-                          src="https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777379291330-img_1801.jpg"
+                          src="https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777381906295-img_1803.jpg"
                           alt="Invité scannant le QR Code"
                           style={{
                             height: 160,
@@ -516,20 +516,18 @@ export default function AlbumPhotoDashboard() {
                       {/* ── Étape 3 ── */}
                       <div className="flex-1 flex flex-col items-center text-center px-4 lg:px-6">
                         <div className="hidden lg:block" style={{ height: 28 }} />
-                        {/* Grille colorée staggered */}
-                        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 5, width: 160, height: 160, marginBottom: 20 }}>
-                          {["#F9A8D4","#FDE68A","#A7F3D0","#BAE6FD","#DDD6FE","#FCA5A5"].map((color, i) => (
-                            <div
-                              key={i}
-                              style={{
-                                background: color,
-                                borderRadius: 5,
-                                opacity: 0,
-                                animation: `fadeUp 0.4s ease forwards ${0.1 + i * 0.1}s`,
-                              }}
-                            />
-                          ))}
-                        </div>
+                        <img
+                          src="https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777382055324-azerty.jpg"
+                          alt="Revivez chaque instant"
+                          style={{
+                            height: 160,
+                            width: "auto",
+                            borderRadius: 12,
+                            objectFit: "cover",
+                            marginBottom: 20,
+                            boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
+                          }}
+                        />
                         <h3
                           className="text-gray-900 mb-2"
                           style={{ fontFamily: "Georgia, serif", fontWeight: 400, fontSize: 16 }}
