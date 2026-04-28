@@ -349,13 +349,15 @@ export default function AlbumPhotoDashboard() {
                   >
                     Personnaliser ma carte
                   </Link>
-                  <button
-                    onClick={() => setShareModalOpen(true)}
-                    className="w-full py-3 rounded-xl text-sm font-semibold border-2 transition-colors"
-                    style={{ borderColor: '#F06292', color: '#F06292', background: 'white' }}
-                  >
-                    Partager l&apos;album
-                  </button>
+                  {photos.length > 0 && (
+                    <button
+                      onClick={() => setShareModalOpen(true)}
+                      className="w-full py-3 rounded-xl text-sm font-semibold border-2 transition-colors"
+                      style={{ borderColor: '#F06292', color: '#F06292', background: 'white' }}
+                    >
+                      Partager l&apos;album
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -491,9 +493,16 @@ export default function AlbumPhotoDashboard() {
                         >
                           Vos invités scannent sans application
                         </h3>
-                        <p className="text-sm text-gray-400 leading-relaxed" style={{ maxWidth: 210 }}>
+                        <p className="text-sm text-gray-400 leading-relaxed mb-4" style={{ maxWidth: 210 }}>
                           En un scan, ils accèdent à la page de partage et uploadent leurs photos instantanément
                         </p>
+                        <button
+                          onClick={() => setShareModalOpen(true)}
+                          className="px-5 py-2.5 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                          style={{ background: "#F06292" }}
+                        >
+                          Partager le lien à mes invités 📤
+                        </button>
                       </div>
 
                       {/* Séparateur 2 */}
@@ -508,7 +517,7 @@ export default function AlbumPhotoDashboard() {
                       <div className="flex-1 flex flex-col items-center text-center px-4 lg:px-6">
                         <div className="hidden lg:block" style={{ height: 28 }} />
                         {/* Grille colorée staggered */}
-                        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 5, width: 96, height: 64, marginBottom: 20 }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 5, width: 160, height: 160, marginBottom: 20 }}>
                           {["#F9A8D4","#FDE68A","#A7F3D0","#BAE6FD","#DDD6FE","#FCA5A5"].map((color, i) => (
                             <div
                               key={i}
@@ -534,17 +543,6 @@ export default function AlbumPhotoDashboard() {
 
                     </div>
 
-                    {/* CTA */}
-                    <div className="flex flex-col items-center mt-12 gap-3">
-                      <button
-                        onClick={() => setShareModalOpen(true)}
-                        className="px-8 py-4 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                        style={{ background: "#F06292" }}
-                      >
-                        Partager le lien à mes invités 📤
-                      </button>
-                      <p className="text-sm text-gray-400">0 photo partagée pour l&apos;instant</p>
-                    </div>
                   </div>
                 ) : (
                   /* Masonry grid */
