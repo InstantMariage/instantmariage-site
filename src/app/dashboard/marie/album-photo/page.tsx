@@ -93,11 +93,12 @@ export default function AlbumPhotoDashboard() {
   }, [router]);
 
   const loadPhotos = useCallback(async (mid: string) => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("album_photos")
       .select("id, url, type, nom_fichier, uploade_par, created_at")
       .eq("marie_id", mid)
       .order("created_at", { ascending: false });
+    console.log("Photos chargées:", data?.length, "Erreur:", error);
     setPhotos((data as Photo[]) ?? []);
     setPhotosLoaded(true);
   }, []);
@@ -201,6 +202,8 @@ export default function AlbumPhotoDashboard() {
   }, [qrDataUrl, prenom1, prenom2, albumSlug]);
 
   if (!authChecked) return null;
+
+  console.log("Render - photos.length:", photos.length, "albumSlug:", albumSlug);
 
   const albumTitle = prenom2 ? `${prenom1} & ${prenom2}` : prenom1;
   const currentPhoto = lightboxIndex !== null ? photos[lightboxIndex] : null;
