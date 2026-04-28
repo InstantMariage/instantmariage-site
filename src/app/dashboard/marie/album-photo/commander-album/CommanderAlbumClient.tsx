@@ -286,9 +286,7 @@ export default function CommanderAlbumClient() {
                             </span>
                           )}
                           <p className="text-xl font-bold text-gray-900">{f.prix}</p>
-                          <p className="text-sm font-semibold text-gray-700 mt-1">{f.label}</p>
-                          <p className="text-xs text-gray-400 mt-1">jusqu&apos;à {f.maxPhotos} photos</p>
-                          <p className="text-xs text-gray-400">Couverture rigide · A4</p>
+                          <p className="text-xs text-gray-400 mt-1">{f.label} · Couverture rigide A4 · Livraison 5-7 jours</p>
                         </button>
                       );
                     })}
