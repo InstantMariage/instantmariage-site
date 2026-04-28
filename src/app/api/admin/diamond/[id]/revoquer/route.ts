@@ -25,12 +25,27 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if (err) return NextResponse.json({ error: err }, { status: 403 });
 
   const supabase = adminClient();
+
+  const { data: current, error: fetchError } = await supabase
+    .from("prestataires")
+    .select("plan_avant_diamond")
+    .eq("id", params.id)
+    .single();
+
+  if (fetchError) return NextResponse.json({ error: fetchError.message }, { status: 500 });
+
+  const planRestore = current.plan_avant_diamond ?? "gratuit";
+
   const { error } = await supabase
     .from("prestataires")
-    .update({ plan: "gratuit", diamond_expire_at: null })
+    .update({
+      plan: planRestore,
+      diamond_expire_at: null,
+      plan_avant_diamond: null,
+    })
     .eq("id", params.id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, plan: planRestore });
 }

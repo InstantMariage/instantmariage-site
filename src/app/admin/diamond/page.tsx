@@ -216,13 +216,12 @@ export default function DiamondAdminPage() {
     setSearchQuery(q);
     setSelectedPresta(null);
     if (q.length < 2) { setSearchResults([]); return; }
-    const { data } = await supabase
-      .from("prestataires")
-      .select("id, nom_entreprise, metier, ville")
-      .ilike("nom_entreprise", `%${q}%`)
-      .neq("plan", "diamond")
-      .limit(8);
-    setSearchResults(data ?? []);
+    const token = await getToken();
+    const res = await fetch(`/api/admin/diamond/search?q=${encodeURIComponent(q)}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const json = await res.json();
+    setSearchResults(json.results ?? []);
   }
 
   async function activerManuellement() {

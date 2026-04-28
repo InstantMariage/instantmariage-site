@@ -20,33 +20,22 @@ async function requireAdmin(req: NextRequest): Promise<string | null> {
   return null;
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest) {
   const err = await requireAdmin(req);
   if (err) return NextResponse.json({ error: err }, { status: 403 });
 
+  const q = req.nextUrl.searchParams.get("q") ?? "";
+  if (q.length < 2) return NextResponse.json({ results: [] });
+
   const supabase = adminClient();
-
-  const { data: current, error: fetchError } = await supabase
+  const { data, error } = await supabase
     .from("prestataires")
-    .select("plan")
-    .eq("id", params.id)
-    .single();
-
-  if (fetchError) return NextResponse.json({ error: fetchError.message }, { status: 500 });
-
-  const expireAt = new Date();
-  expireAt.setFullYear(expireAt.getFullYear() + 1);
-
-  const { error } = await supabase
-    .from("prestataires")
-    .update({
-      plan: "diamond",
-      diamond_expire_at: expireAt.toISOString(),
-      plan_avant_diamond: current.plan !== "diamond" ? current.plan : undefined,
-    })
-    .eq("id", params.id);
+    .select("id, nom_entreprise, metier, ville, plan")
+    .ilike("nom_entreprise", `%${q}%`)
+    .neq("plan", "diamond")
+    .limit(8);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  return NextResponse.json({ ok: true, diamond_expire_at: expireAt.toISOString() });
+  return NextResponse.json({ results: data ?? [] });
 }
