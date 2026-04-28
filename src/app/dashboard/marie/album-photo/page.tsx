@@ -496,6 +496,12 @@ export default function AlbumPhotoDashboard() {
         <Footer />
       </main>
 
+      <div style={{padding: "2rem", textAlign: "center"}}>
+        <a href="/dashboard/marie/album-photo/commander-album" style={{background: "#F06292", color: "white", padding: "1rem 2rem", borderRadius: "9999px"}}>
+          Commander mon album (TEST)
+        </a>
+      </div>
+
       {/* Share modal */}
       {shareModalOpen && albumUrl && (
         <div
