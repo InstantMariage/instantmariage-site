@@ -459,7 +459,7 @@ export default function AlbumPhotoDashboard() {
                 )}
 
                 {/* CTA Commander album */}
-                {albumSlug && photosLoaded && photos.length > 0 && (
+                {photos.length > 0 && (
                   <div className="mt-12 pt-10 border-t border-gray-100 flex flex-col items-center text-center">
                     <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4" style={{ background: "#fff0f5" }}>
                       <svg className="w-6 h-6" style={{ color: "#F06292" }} fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
