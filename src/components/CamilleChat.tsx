@@ -21,6 +21,25 @@ interface Message {
   content: string;
 }
 
+function renderWithLinks(text: string) {
+  const parts = text.split(/(https?:\/\/[^\s]+)/g);
+  return parts.map((part, i) =>
+    /^https?:\/\//.test(part) ? (
+      <a
+        key={i}
+        href={part}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ color: "#F06292", textDecoration: "underline" }}
+      >
+        {part}
+      </a>
+    ) : (
+      part
+    )
+  );
+}
+
 export default function CamilleChat() {
   const [isOpen, setIsOpen] = useState(false);
   const [hasOpened, setHasOpened] = useState(false);
@@ -146,7 +165,7 @@ export default function CamilleChat() {
                   }`}
                   style={msg.role === "user" ? { background: "#F06292" } : undefined}
                 >
-                  {msg.content}
+                  {msg.role === "assistant" ? renderWithLinks(msg.content) : msg.content}
                 </div>
               </div>
             ))}
