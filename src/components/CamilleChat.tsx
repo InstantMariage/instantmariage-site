@@ -87,21 +87,10 @@ export default function CamilleChat() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-[9999] flex flex-col items-end gap-2">
-      {/* Teaser bubble */}
-      {showTeaser && !isOpen && !hasOpened && (
-        <div
-          className="bg-white rounded-2xl rounded-br-sm shadow-lg px-4 py-2 text-sm text-gray-700 border border-gray-100 cursor-pointer animate-fade-in"
-          onClick={openChat}
-        >
-          Besoin d&apos;aide ? 💐
-        </div>
-      )}
-
-      {/* Chat window */}
+    <>
+      {/* Chat window — positionnement séparé du bouton */}
       {isOpen && (
-        <div className="w-[360px] max-w-[calc(100vw-24px)] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-100"
-          style={{ height: "520px" }}>
+        <div className="fixed z-[9999] left-0 right-0 bottom-[70px] h-[70vh] sm:left-auto sm:right-6 sm:bottom-20 sm:w-[360px] sm:h-[520px] bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-100">
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-3" style={{ background: "#F06292" }}>
             <div className="relative w-10 h-10 shrink-0">
@@ -221,28 +210,41 @@ export default function CamilleChat() {
         </div>
       )}
 
-      {/* Floating button */}
-      {!isOpen && (
-        <button
-          onClick={openChat}
-          className="relative w-[60px] h-[60px] rounded-full shadow-lg hover:scale-105 transition-transform focus:outline-none"
-          style={{ background: "#F06292" }}
-          aria-label="Ouvrir le chat avec Camille"
-        >
-          <Image
-            src={AVATAR_URL}
-            alt="Camille"
-            fill
-            className="rounded-full object-cover"
-            unoptimized
-          />
-          {!hasOpened && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-              1
-            </span>
-          )}
-        </button>
-      )}
-    </div>
+      {/* Bouton flottant + teaser — toujours bottom-right */}
+      <div className="fixed bottom-5 right-5 z-[9999] flex flex-col items-end gap-2">
+        {/* Teaser bubble */}
+        {showTeaser && !isOpen && !hasOpened && (
+          <div
+            className="bg-white rounded-2xl rounded-br-sm shadow-lg px-4 py-2 text-sm text-gray-700 border border-gray-100 cursor-pointer animate-fade-in"
+            onClick={openChat}
+          >
+            Besoin d&apos;aide ? 💐
+          </div>
+        )}
+
+        {/* Floating button */}
+        {!isOpen && (
+          <button
+            onClick={openChat}
+            className="relative w-[60px] h-[60px] rounded-full shadow-lg hover:scale-105 transition-transform focus:outline-none"
+            style={{ background: "#F06292" }}
+            aria-label="Ouvrir le chat avec Camille"
+          >
+            <Image
+              src={AVATAR_URL}
+              alt="Camille"
+              fill
+              className="rounded-full object-cover"
+              unoptimized
+            />
+            {!hasOpened && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                1
+              </span>
+            )}
+          </button>
+        )}
+      </div>
+    </>
   );
 }
