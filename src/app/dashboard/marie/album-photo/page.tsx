@@ -424,26 +424,19 @@ export default function AlbumPhotoDashboard() {
                         >
                           ✓ Créé automatiquement
                         </span>
-                        {/* Cadre doré + QR simulé */}
-                        <div
+                        {/* Photo carte QR Code */}
+                        <img
+                          src="https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777379197336-img_1741-2.jpg"
+                          alt="Carte QR Code mariage"
                           style={{
-                            width: 80, height: 110,
-                            border: "3px solid #C9A84C",
-                            borderRadius: 8,
-                            background: "#fffdf5",
-                            padding: 8,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
+                            height: 160,
+                            width: "auto",
+                            borderRadius: 12,
+                            objectFit: "cover",
                             marginBottom: 20,
+                            boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
                           }}
-                        >
-                          <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 2, width: "100%", height: "100%" }}>
-                            {[1,1,1,0,1,0, 1,0,1,1,0,1, 1,1,1,0,0,1, 0,1,0,1,1,0, 1,0,1,0,1,1, 0,1,1,1,0,1].map((v, i) => (
-                              <div key={i} style={{ background: v ? "#1a1a1a" : "transparent", borderRadius: 1 }} />
-                            ))}
-                          </div>
-                        </div>
+                        />
                         <h3
                           className="text-gray-900 mb-2"
                           style={{ fontFamily: "Georgia, serif", fontWeight: 400, fontSize: 16 }}
@@ -479,43 +472,19 @@ export default function AlbumPhotoDashboard() {
                         >
                           📸 400+ photos en moyenne
                         </span>
-                        {/* iPhone simulé */}
-                        <div
+                        {/* Photo invité scannant */}
+                        <img
+                          src="https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777379291330-img_1801.jpg"
+                          alt="Invité scannant le QR Code"
                           style={{
-                            width: 70, height: 110,
-                            background: "#1f2937",
-                            borderRadius: 14,
-                            padding: "8px 7px 10px",
-                            position: "relative",
-                            overflow: "hidden",
+                            height: 160,
+                            width: "auto",
+                            borderRadius: 12,
+                            objectFit: "cover",
                             marginBottom: 20,
-                            boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+                            boxShadow: "0 4px 16px rgba(0,0,0,0.10)",
                           }}
-                        >
-                          <div style={{
-                            background: "#fff", borderRadius: 6,
-                            width: "100%", height: "100%",
-                            position: "relative", overflow: "hidden",
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                          }}>
-                            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 2, width: 30, height: 30 }}>
-                              {[1,1,0,1, 1,0,1,0, 0,1,0,1, 1,1,0,0].map((v, i) => (
-                                <div key={i} style={{ background: v ? "#1a1a1a" : "transparent", borderRadius: 0.5 }} />
-                              ))}
-                            </div>
-                            <div style={{
-                              position: "absolute", left: 0, right: 0, height: 2,
-                              background: "#ef4444", opacity: 0.9,
-                              animation: "scanLine 1.5s ease-in-out infinite alternate",
-                            }} />
-                          </div>
-                          <div style={{
-                            position: "absolute", bottom: 5, left: "50%",
-                            transform: "translateX(-50%)",
-                            width: 22, height: 3, borderRadius: 2,
-                            background: "rgba(255,255,255,0.3)",
-                          }} />
-                        </div>
+                        />
                         <h3
                           className="text-gray-900 mb-2"
                           style={{ fontFamily: "Georgia, serif", fontWeight: 400, fontSize: 16 }}
