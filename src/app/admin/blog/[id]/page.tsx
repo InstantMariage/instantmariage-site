@@ -15,6 +15,8 @@ interface EditorBlock {
   author: string;
   headers: string;
   rows: string;
+  link: string;
+  linkText: string;
 }
 
 interface FormState {
@@ -47,16 +49,21 @@ function toSlug(text: string) {
 }
 
 function emptyBlock(type: BlockType): EditorBlock {
-  return { _id: uid(), type, text: "", title: "", author: "", headers: "", rows: "" };
+  return { _id: uid(), type, text: "", title: "", author: "", headers: "", rows: "", link: "", linkText: "" };
 }
 
 function blocksToJson(blocks: EditorBlock[]) {
   return blocks.map((b) => {
     switch (b.type) {
       case "intro":
+      case "p":
+        return {
+          type: b.type,
+          text: b.text,
+          ...(b.link ? { link: b.link, linkText: b.linkText || "" } : {}),
+        };
       case "h2":
       case "h3":
-      case "p":
         return { type: b.type, text: b.text };
       case "ul":
       case "ol":
@@ -83,9 +90,10 @@ function jsonToBlocks(content: any[]): EditorBlock[] {
     const base = emptyBlock(b.type as BlockType);
     switch (b.type) {
       case "intro":
+      case "p":
+        return { ...base, text: b.text ?? "", link: b.link ?? "", linkText: b.linkText ?? "" };
       case "h2":
       case "h3":
-      case "p":
         return { ...base, text: b.text ?? "" };
       case "ul":
       case "ol":
@@ -699,7 +707,40 @@ function BlockEditor({
               className={baseInput}
             />
             {(block.type === "p" || block.type === "intro") && (
-              <p className="text-xs text-gray-400 mt-1">Lien : [texte affiché](/url-interne) ou [texte](https://site-externe.com)</p>
+              <div className="space-y-2 pt-1 border-t border-gray-100">
+                <p className="text-xs font-medium text-gray-500">Bouton lien (optionnel)</p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={block.link}
+                    onChange={(e) => onChange({ link: e.target.value })}
+                    placeholder="URL : /prestataires ou https://…"
+                    className={`${baseInput} flex-1`}
+                  />
+                  <input
+                    type="text"
+                    value={block.linkText}
+                    onChange={(e) => onChange({ linkText: e.target.value })}
+                    placeholder="Texte du bouton"
+                    className={`${baseInput} w-44`}
+                  />
+                </div>
+                {block.link && (
+                  <a
+                    href={block.link}
+                    target={block.link.startsWith("/") ? "_self" : "_blank"}
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-white pointer-events-none"
+                    style={{ backgroundColor: "#F06292" }}
+                    tabIndex={-1}
+                  >
+                    {block.linkText || block.link}
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                  </a>
+                )}
+              </div>
             )}
           </>
         )}

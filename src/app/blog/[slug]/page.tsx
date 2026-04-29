@@ -11,10 +11,10 @@ export const revalidate = 60;
 
 /* ── Types ──────────────────────────────────────────────────── */
 type ContentBlock =
-  | { type: "intro"; text: string }
+  | { type: "intro"; text: string; link?: string; linkText?: string }
   | { type: "h2"; text: string }
   | { type: "h3"; text: string }
-  | { type: "p"; text: string }
+  | { type: "p"; text: string; link?: string; linkText?: string }
   | { type: "ul"; items: string[] }
   | { type: "ol"; items: string[] }
   | { type: "tip"; title: string; text: string }
@@ -136,18 +136,38 @@ function parseInlineLinks(text: string): React.ReactNode {
   return parts.length === 1 ? parts[0] : parts;
 }
 
+function renderLinkButton(link: string, linkText?: string) {
+  const label = linkText || link;
+  const isInternal = link.startsWith("/");
+  const cls =
+    "inline-flex items-center gap-1.5 mt-4 px-5 py-2.5 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-90";
+  const style = { backgroundColor: "#F06292" };
+  const arrow = (
+    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+    </svg>
+  );
+  return isInternal ? (
+    <Link href={link} className={cls} style={style}>{label}{arrow}</Link>
+  ) : (
+    <a href={link} target="_blank" rel="noopener noreferrer" className={cls} style={style}>{label}{arrow}</a>
+  );
+}
+
 /* ── Content renderer ───────────────────────────────────────── */
 function renderBlock(block: ContentBlock, idx: number) {
   switch (block.type) {
     case "intro":
       return (
-        <p
-          key={idx}
-          className="text-lg md:text-xl text-gray-600 leading-relaxed font-medium border-l-4 pl-5 py-1 mb-8"
-          style={{ borderColor: "#F06292" }}
-        >
-          {parseInlineLinks(block.text)}
-        </p>
+        <div key={idx} className="mb-8">
+          <p
+            className="text-lg md:text-xl text-gray-600 leading-relaxed font-medium border-l-4 pl-5 py-1"
+            style={{ borderColor: "#F06292" }}
+          >
+            {parseInlineLinks(block.text)}
+          </p>
+          {block.link && <div className="pl-5">{renderLinkButton(block.link, block.linkText)}</div>}
+        </div>
       );
     case "h2":
       return (
@@ -171,9 +191,12 @@ function renderBlock(block: ContentBlock, idx: number) {
       );
     case "p":
       return (
-        <p key={idx} className="text-gray-600 leading-relaxed mb-5 text-base md:text-[17px]">
-          {parseInlineLinks(block.text)}
-        </p>
+        <div key={idx} className="mb-5">
+          <p className="text-gray-600 leading-relaxed text-base md:text-[17px]">
+            {parseInlineLinks(block.text)}
+          </p>
+          {block.link && renderLinkButton(block.link, block.linkText)}
+        </div>
       );
     case "ul":
       return (
