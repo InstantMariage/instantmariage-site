@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 
 type AbonnementRow = {
@@ -26,6 +26,9 @@ type PrestatairRow = {
   users: { email: string } | null;
   abonnements: AbonnementRow[];
 };
+
+const OFFRIR_PLANS = ["starter", "pro", "premium", "diamond"] as const;
+type OffrirPlan = (typeof OFFRIR_PLANS)[number];
 
 function activePlan(abonnements: AbonnementRow[]): string {
   return (
@@ -76,6 +79,14 @@ function SortIcon({
   );
 }
 
+type OffrirModal = {
+  prestatireId: string;
+  nom: string;
+  plan: OffrirPlan;
+  acting: boolean;
+  feedback: { msg: string; ok: boolean } | null;
+};
+
 export default function PrestatairesAdminPage() {
   const [prestataires, setPrestataires] = useState<PrestatairRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -84,6 +95,8 @@ export default function PrestatairesAdminPage() {
   const [togglingFeatured, setTogglingFeatured] = useState<string | null>(null);
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [offrirModal, setOffrirModal] = useState<OffrirModal | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     load();
@@ -120,6 +133,40 @@ export default function PrestatairesAdminPage() {
       prev.map((p) => (p.id === id ? { ...p, mis_en_avant: !current } : p))
     );
     setTogglingFeatured(null);
+  }
+
+  async function offrirMois(prestatireId: string, plan: OffrirPlan) {
+    setOffrirModal((m) => m ? { ...m, acting: true, feedback: null } : null);
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch(`/api/admin/prestataires/${prestatireId}/offrir-mois`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session?.access_token ?? ""}`,
+      },
+      body: JSON.stringify({ plan }),
+    });
+    const json = await res.json();
+    setOffrirModal((m) =>
+      m ? { ...m, acting: false, feedback: { msg: json.ok ? `1 mois ${plan.toUpperCase()} offert !` : json.error ?? "Erreur", ok: !!json.ok } } : null
+    );
+    if (json.ok) {
+      // Mettre à jour localement le plan affiché
+      setPrestataires((prev) =>
+        prev.map((p) =>
+          p.id === prestatireId
+            ? {
+                ...p,
+                abonnements: [
+                  { plan, statut: "actif" },
+                  ...p.abonnements.filter((a) => a.statut !== "actif"),
+                ],
+              }
+            : p
+        )
+      );
+      setTimeout(() => setOffrirModal(null), 2000);
+    }
   }
 
   async function toggleVerifie(id: string, current: boolean) {
@@ -308,6 +355,21 @@ export default function PrestatairesAdminPage() {
                   <td className="px-5 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       <button
+                        onClick={() =>
+                          setOffrirModal({
+                            prestatireId: p.id,
+                            nom: p.nom_entreprise,
+                            plan: "pro",
+                            acting: false,
+                            feedback: null,
+                          })
+                        }
+                        className="text-xs px-3 py-1.5 rounded-lg bg-violet-50 hover:bg-violet-100 text-violet-700 font-medium transition-colors whitespace-nowrap"
+                        title="Offrir 1 mois d'abonnement gratuit"
+                      >
+                        Offrir 1 mois
+                      </button>
+                      <button
                         onClick={() => toggleFeatured(p.id, p.mis_en_avant)}
                         disabled={togglingFeatured === p.id}
                         title={
@@ -355,6 +417,74 @@ export default function PrestatairesAdminPage() {
           </div>
         )}
       </div>
+
+      {/* Modal offrir 1 mois */}
+      {offrirModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setOffrirModal(null);
+          }}
+        >
+          <div
+            ref={modalRef}
+            className="bg-white rounded-2xl shadow-xl p-6 w-80 flex flex-col gap-4"
+          >
+            <div>
+              <h3 className="text-base font-bold text-gray-900">Offrir 1 mois gratuit</h3>
+              <p className="text-sm text-gray-500 mt-1 truncate">{offrirModal.nom}</p>
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                Choisir le plan
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {OFFRIR_PLANS.map((p) => (
+                  <button
+                    key={p}
+                    onClick={() =>
+                      setOffrirModal((m) => m ? { ...m, plan: p } : null)
+                    }
+                    className={`text-sm py-2 rounded-lg font-semibold border transition-colors ${
+                      offrirModal.plan === p
+                        ? "border-violet-500 bg-violet-50 text-violet-700"
+                        : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                    }`}
+                  >
+                    {p.charAt(0).toUpperCase() + p.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {offrirModal.feedback && (
+              <p
+                className="text-sm font-medium text-center"
+                style={{ color: offrirModal.feedback.ok ? "#10B981" : "#EF4444" }}
+              >
+                {offrirModal.feedback.msg}
+              </p>
+            )}
+
+            <div className="flex gap-2 mt-1">
+              <button
+                onClick={() => setOffrirModal(null)}
+                className="flex-1 text-sm py-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => offrirMois(offrirModal.prestatireId, offrirModal.plan)}
+                disabled={offrirModal.acting || !!offrirModal.feedback?.ok}
+                className="flex-1 text-sm py-2 rounded-lg bg-violet-600 hover:bg-violet-700 text-white font-semibold transition-colors disabled:opacity-50"
+              >
+                {offrirModal.acting ? "En cours…" : "Confirmer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
