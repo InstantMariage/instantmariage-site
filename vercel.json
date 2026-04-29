@@ -3,6 +3,10 @@
     {
       "path": "/api/admin/send-auto-messages",
       "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/expire-abonnements",
+      "schedule": "0 0 * * *"
     }
   ]
 }
