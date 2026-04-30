@@ -685,6 +685,13 @@ export default function TarifsContent() {
                         {loadingPlan === plan.id ? "Chargement…" : plan.cta}
                       </button>
                     )}
+
+                    {/* Note Pro & Premium */}
+                    {(isPro || isGold) && (
+                      <p className="text-xs mt-3 text-center leading-relaxed text-gray-300">
+                        Sans engagement — annulation à tout moment
+                      </p>
+                    )}
                   </div>
                 </div>
               );
