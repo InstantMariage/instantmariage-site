@@ -168,21 +168,21 @@ export default function BoutiquePage() {
       )}
 
       {/* ── HERO ── */}
-      <section id="hero" style={{ position: 'relative', height: '100svh', minHeight: 620, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', backgroundColor: '#F5F0E8' }}>
+      <section id="hero" style={{ position: 'relative', height: '100svh', minHeight: 620, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', overflow: 'hidden', backgroundColor: '#F5F0E8' }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={`${BASE}/hero.jpg`} alt="Mariage luxe" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(250,250,250,0.18)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)' }} />
 
-        <div style={{ position: 'relative', textAlign: 'center', padding: '0 24px', transition: 'all 1.1s cubic-bezier(0.25,0.46,0.45,0.94)', opacity: heroVisible ? 1 : 0, transform: heroVisible ? 'translateY(0)' : 'translateY(28px)' }}>
-          <h1 className="hero-title" style={{ fontFamily: 'var(--font-cormorant), serif', fontSize: 88, fontWeight: 400, fontStyle: 'italic', color: '#1A1A1A', lineHeight: 1.1, margin: '0 0 20px', letterSpacing: '-0.01em' }}>
+        <div style={{ position: 'relative', textAlign: 'center', padding: '15vh 24px 0', transition: 'all 1.1s cubic-bezier(0.25,0.46,0.45,0.94)', opacity: heroVisible ? 1 : 0, transform: heroVisible ? 'translateY(0)' : 'translateY(28px)' }}>
+          <h1 className="hero-title" style={{ fontFamily: 'var(--font-cormorant), serif', fontSize: 88, fontWeight: 400, fontStyle: 'italic', color: '#FFFFFF', lineHeight: 1.1, margin: '0 0 20px', letterSpacing: '-0.01em' }}>
             La robe de vos rêves<br />vous attend
           </h1>
-          <p className="hero-subtitle" style={{ fontSize: 16, letterSpacing: '0.12em', color: '#1A1A1A', opacity: 0.72, margin: '0 0 40px', fontWeight: 300 }}>
+          <p className="hero-subtitle" style={{ fontSize: 16, letterSpacing: '0.12em', color: '#FFFFFF', opacity: 0.82, margin: '0 0 40px', fontWeight: 300 }}>
             Boutique de robes de mariée sur mesure — Paris 8ème
           </p>
           <button onClick={() => scrollTo('collection')}
-            style={{ backgroundColor: '#1A1A1A', color: '#FAFAFA', border: 'none', cursor: 'pointer', padding: '15px 36px', fontSize: 12, letterSpacing: '0.14em', fontFamily: 'var(--font-dm-sans)', fontWeight: 500, borderRadius: 0, transition: 'all 0.25s' }}
-            onMouseEnter={e => (e.currentTarget.style.opacity = '0.8')}
+            style={{ backgroundColor: '#FFFFFF', color: '#1A1A1A', border: 'none', cursor: 'pointer', padding: '15px 36px', fontSize: 12, letterSpacing: '0.14em', fontFamily: 'var(--font-dm-sans)', fontWeight: 500, borderRadius: 0, transition: 'all 0.25s' }}
+            onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
             onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
           >
             DÉCOUVRIR LA COLLECTION
@@ -191,8 +191,8 @@ export default function BoutiquePage() {
 
         {/* Scroll indicator */}
         <div style={{ position: 'absolute', bottom: 36, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, opacity: heroVisible ? 0.5 : 0, transition: 'opacity 1.4s ease' }}>
-          <span style={{ fontSize: 10, letterSpacing: '0.2em', color: '#1A1A1A' }}>DÉFILER</span>
-          <div style={{ width: 1, height: 36, backgroundColor: '#1A1A1A', animation: 'pulse 2s ease-in-out infinite' }} />
+          <span style={{ fontSize: 10, letterSpacing: '0.2em', color: '#FFFFFF' }}>DÉFILER</span>
+          <div style={{ width: 1, height: 36, backgroundColor: '#FFFFFF', animation: 'pulse 2s ease-in-out infinite' }} />
         </div>
       </section>
 
