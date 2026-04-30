@@ -91,6 +91,32 @@ const PLAN_CONFIG: Record<PlanAbonnement, PlanConfig> = {
     upgradeLabel: null,
     upgradeHref: null,
   },
+  "elite-vitrine": {
+    label: "Elite Vitrine 👑",
+    badgeColor: "white",
+    badgeBg: "linear-gradient(135deg, #7C3AED, #5B21B6)",
+    features: ["Site web pro inclus", "Tout Premium inclus", "Maintenance & mises à jour", "Support prioritaire 7j/7"],
+    canAccessDevis: true,
+    canAccessFactures: true,
+    canAccessContrats: true,
+    hasPremiumBadge: false,
+    devisLabel: "Illimité",
+    upgradeLabel: null,
+    upgradeHref: null,
+  },
+  "elite-shop": {
+    label: "Elite Shop 👑",
+    badgeColor: "white",
+    badgeBg: "linear-gradient(135deg, #7C3AED, #5B21B6)",
+    features: ["Tout Elite Vitrine inclus", "Boutique en ligne complète", "Gestion commandes & stocks", "Dashboard ventes avancé"],
+    canAccessDevis: true,
+    canAccessFactures: true,
+    canAccessContrats: true,
+    hasPremiumBadge: false,
+    devisLabel: "Illimité",
+    upgradeLabel: null,
+    upgradeHref: null,
+  },
 };
 
 // ─── Composants ─────────────────────────────────────────────────────────────

@@ -108,6 +108,33 @@ const PLAN_CONFIG: Record<PlanAbonnement, {
       "Support prioritaire 7j/7",
     ],
   },
+  "elite-vitrine": {
+    label: "Elite Vitrine 👑",
+    badgeBg: "linear-gradient(135deg, #7C3AED, #5B21B6)",
+    badgeColor: "white",
+    prix: 149,
+    features: [
+      "Tout le pack Premium inclus",
+      "Site web professionnel sur mesure créé en 72h",
+      "Nom de domaine personnalisé inclus",
+      "Dashboard : stats visites, formulaires reçus",
+      "Maintenance & mises à jour incluses",
+      "Support prioritaire 7j/7",
+    ],
+  },
+  "elite-shop": {
+    label: "Elite Shop 👑",
+    badgeBg: "linear-gradient(135deg, #7C3AED, #5B21B6)",
+    badgeColor: "white",
+    prix: 199,
+    features: [
+      "Tout Elite Vitrine inclus",
+      "Boutique en ligne complète",
+      "Paiements Stripe intégrés",
+      "Gestion des commandes & stocks",
+      "Dashboard ventes & statistiques avancées",
+    ],
+  },
 };
 
 // ─── Types ────────────────────────────────────────────────────────────────────

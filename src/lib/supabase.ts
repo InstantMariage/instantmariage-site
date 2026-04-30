@@ -61,7 +61,7 @@ export type PrestataireRanked = Prestataire & {
   score: number              // 0–100 (plan_score + completeness_score)
 }
 
-export type PlanAbonnement = 'gratuit' | 'starter' | 'pro' | 'premium' | 'diamond'
+export type PlanAbonnement = 'gratuit' | 'starter' | 'pro' | 'premium' | 'diamond' | 'elite-vitrine' | 'elite-shop'
 
 export type Abonnement = {
   id: string

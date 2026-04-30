@@ -17,6 +17,8 @@ const PHOTO_LIMITS: Record<PlanAbonnement, number> = {
   pro: 30,
   premium: 50,
   diamond: 50,
+  "elite-vitrine": 50,
+  "elite-shop": 50,
 };
 
 const VIDEO_LIMITS: Record<PlanAbonnement, number | null> = {
@@ -25,6 +27,8 @@ const VIDEO_LIMITS: Record<PlanAbonnement, number | null> = {
   pro: null,
   premium: null,
   diamond: null,
+  "elite-vitrine": null,
+  "elite-shop": null,
 };
 
 type VideoRecord = {

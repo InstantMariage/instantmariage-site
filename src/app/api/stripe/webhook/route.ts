@@ -250,11 +250,15 @@ const PRICE_TO_PLAN: Record<string, PlanAbonnement> = {
   "price_1TJbkIKKBs85XtqBrD4MvZDu": "starter",
   "price_1TJblgKKBs85XtqBUD5euLaF": "pro",
   "price_1TJbmfKKBs85XtqBN57D6Z5U": "premium",
+  "price_1TS1eHKKBs85XtqBRcnibPry": "elite-vitrine",
+  "price_1TS1kJKKBs85XtqB2FHvqvCk": "elite-vitrine",
+  "price_1TS1g9KKBs85XtqBFP7t07pC": "elite-shop",
+  "price_1TS1nRKKBs85XtqBiwR5Zbm8": "elite-shop",
 };
 
 // Plans payants → badge vérifié automatique
 function planGrantsVerifie(plan: PlanAbonnement): boolean {
-  return plan === "pro" || plan === "premium";
+  return plan === "pro" || plan === "premium" || plan === "elite-vitrine" || plan === "elite-shop";
 }
 
 // Client Supabase avec service_role (bypass RLS pour les écritures du webhook)

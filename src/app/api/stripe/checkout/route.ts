@@ -12,6 +12,10 @@ const ALLOWED_PRICE_IDS = new Set([
   "price_1TJbkIKKBs85XtqBrD4MvZDu", // Starter 9,90€/mois
   "price_1TJblgKKBs85XtqBUD5euLaF", // Pro 19,90€/mois
   "price_1TJbmfKKBs85XtqBN57D6Z5U", // Premium 39,90€/mois
+  "price_1TS1eHKKBs85XtqBRcnibPry", // Elite Vitrine mensuel
+  "price_1TS1kJKKBs85XtqB2FHvqvCk", // Elite Vitrine annuel
+  "price_1TS1g9KKBs85XtqBFP7t07pC", // Elite Shop mensuel
+  "price_1TS1nRKKBs85XtqBiwR5Zbm8", // Elite Shop annuel
 ]);
 
 function getSupabaseAdmin() {

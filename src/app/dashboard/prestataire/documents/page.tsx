@@ -69,6 +69,8 @@ const DOC_QUOTA: Record<PlanAbonnement, number | null> = {
   pro: null,
   premium: null,
   diamond: null,
+  "elite-vitrine": null,
+  "elite-shop": null,
 };
 
 const UPGRADE_INFO: Partial<Record<PlanAbonnement, { label: string; href: string }>> = {

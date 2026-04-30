@@ -5,6 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
+const ELITE_PRICE_IDS = {
+  vitrine: { monthly: "price_1TS1eHKKBs85XtqBRcnibPry", annual: "price_1TS1kJKKBs85XtqB2FHvqvCk" },
+  shop:    { monthly: "price_1TS1g9KKBs85XtqBFP7t07pC", annual: "price_1TS1nRKKBs85XtqBiwR5Zbm8" },
+};
+
 const plans = [
   {
     id: "gratuit",
@@ -229,8 +234,11 @@ export default function TarifsContent() {
     });
   }, [router]);
 
-  async function handleSubscribe(plan: typeof plans[number]) {
-    if (!plan.priceId) {
+  async function handleSubscribe(plan: typeof plans[number], priceIdOverride?: string, loadingKey?: string) {
+    const effectivePriceId = priceIdOverride ?? plan.priceId;
+    const key = loadingKey ?? plan.id;
+
+    if (!effectivePriceId) {
       router.push("/inscription");
       return;
     }
@@ -241,7 +249,7 @@ export default function TarifsContent() {
       return;
     }
 
-    setLoadingPlan(plan.id);
+    setLoadingPlan(key);
 
     // Abonnement actif → Customer Portal (upgrade/downgrade/annulation/carte)
     if (hasActiveSubscription && prestataireId) {
@@ -270,7 +278,7 @@ export default function TarifsContent() {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId: plan.priceId, prestataireId }),
+        body: JSON.stringify({ priceId: effectivePriceId, prestataireId }),
       });
       const data = await res.json();
       if (data.url) {
@@ -654,13 +662,18 @@ export default function TarifsContent() {
                         {plan.cta}
                       </a>
                     ) : isElite ? (
-                      <Link
-                        href="/contact"
-                        className="block w-full text-center text-sm font-semibold px-4 py-2.5 rounded-2xl transition-all duration-200 hover:opacity-90"
+                      <button
+                        onClick={() => handleSubscribe(
+                          activePlan,
+                          ELITE_PRICE_IDS[eliteMode][annual ? "annual" : "monthly"],
+                          "elite"
+                        )}
+                        disabled={loadingPlan === "elite"}
+                        className="block w-full text-center text-sm font-semibold px-4 py-2.5 rounded-2xl transition-all duration-200 hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
                         style={{ background: "linear-gradient(135deg, #7C3AED, #5B21B6)", color: "#fff" }}
                       >
-                        {plan.cta}
-                      </Link>
+                        {loadingPlan === "elite" ? "Chargement…" : eliteMode === "vitrine" ? "Choisir Elite Vitrine →" : "Choisir Elite Shop →"}
+                      </button>
                     ) : (
                       <button
                         onClick={() => handleSubscribe(plan)}
