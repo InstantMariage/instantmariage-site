@@ -20,6 +20,9 @@ interface FormState {
   nomProfessionnel: string;
   descriptionActivite: string;
   villePrincipale: string;
+  telephone: string;
+  email_contact: string;
+  site_actuel: string;
   template: TemplateId | "";
   couleurPrincipale: string;
   couleurSecondaire: string;
@@ -100,6 +103,9 @@ const INITIAL_FORM: FormState = {
   nomProfessionnel: "",
   descriptionActivite: "",
   villePrincipale: "",
+  telephone: "",
+  email_contact: "",
+  site_actuel: "",
   template: "",
   couleurPrincipale: "#F06292",
   couleurSecondaire: "#7C3AED",
@@ -187,6 +193,9 @@ export default function EliteQuestionnaire() {
           nomProfessionnel:    eliteSite.nom_professionnel || "",
           descriptionActivite: eliteSite.description_activite || "",
           villePrincipale:     eliteSite.ville_principale || "",
+          telephone:           eliteSite.telephone || "",
+          email_contact:       eliteSite.email_contact || session.user.email || "",
+          site_actuel:         eliteSite.site_actuel || "",
           template:            (eliteSite.template || "") as TemplateId | "",
           couleurPrincipale:   eliteSite.couleur_principale || "#F06292",
           couleurSecondaire:   eliteSite.couleur_secondaire || "#7C3AED",
@@ -201,6 +210,7 @@ export default function EliteQuestionnaire() {
           cgvAccepte: eliteSite.cgv_accepte || false,
         });
       } else {
+        setForm(prev => ({ ...prev, email_contact: session.user.email || "" }));
         try {
           const res = await fetch(`/api/elite/domain?prestataire_id=${prestataire.id}`);
           if (res.ok) {
@@ -229,6 +239,12 @@ export default function EliteQuestionnaire() {
       if (!form.typeActivite)           errs.typeActivite     = "Veuillez choisir un type d'activité";
       if (!form.nomProfessionnel.trim()) errs.nomProfessionnel = "Champ obligatoire";
       if (!form.villePrincipale.trim())  errs.villePrincipale  = "Champ obligatoire";
+      if (!form.telephone.trim()) {
+        errs.telephone = "Champ obligatoire";
+      } else if (!/^(\+33|0)[0-9]{9}$/.test(form.telephone.replace(/[\s.\-]/g, ""))) {
+        errs.telephone = "Format invalide (ex : +33 6 00 00 00 00)";
+      }
+      if (!form.email_contact.trim()) errs.email_contact = "Champ obligatoire";
     }
     if (s === 2) {
       if (!form.template) errs.template = "Veuillez choisir un template";
@@ -325,10 +341,13 @@ export default function EliteQuestionnaire() {
         couleur_secondaire:  form.couleurSecondaire,
         logo_url:            logoUrl   || null,
         photos_urls:         photoUrls,
-        instagram:           form.instagram  || null,
-        facebook:            form.facebook   || null,
-        tiktok:              form.tiktok     || null,
-        pinterest:           form.pinterest  || null,
+        telephone:           form.telephone     || null,
+        email_contact:       form.email_contact || null,
+        site_actuel:         form.site_actuel   || null,
+        instagram:           form.instagram     || null,
+        facebook:            form.facebook      || null,
+        tiktok:              form.tiktok        || null,
+        pinterest:           form.pinterest     || null,
         cgv_accepte:         form.cgvAccepte,
         updated_at:          new Date().toISOString(),
       };
@@ -625,6 +644,56 @@ export default function EliteQuestionnaire() {
                 {errors.villePrincipale && (
                   <p className="text-rose-400 text-xs mt-1">{errors.villePrincipale}</p>
                 )}
+              </div>
+
+              {/* Téléphone */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Numéro de téléphone <span className="text-rose-400">*</span>
+                </label>
+                <input
+                  type="tel"
+                  value={form.telephone}
+                  onChange={e => setField("telephone", e.target.value)}
+                  placeholder="+33 6 00 00 00 00"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-200 focus:border-violet-400 text-gray-900 transition-colors"
+                  style={errors.telephone ? { borderColor: "#FCA5A5" } : {}}
+                />
+                {errors.telephone && (
+                  <p className="text-rose-400 text-xs mt-1">{errors.telephone}</p>
+                )}
+              </div>
+
+              {/* Email de contact */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Email de contact professionnel <span className="text-rose-400">*</span>
+                </label>
+                <input
+                  type="email"
+                  value={form.email_contact}
+                  onChange={e => setField("email_contact", e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-200 focus:border-violet-400 text-gray-900 transition-colors"
+                  style={errors.email_contact ? { borderColor: "#FCA5A5" } : {}}
+                />
+                {errors.email_contact && (
+                  <p className="text-rose-400 text-xs mt-1">{errors.email_contact}</p>
+                )}
+              </div>
+
+              {/* Site web actuel */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Site web actuel
+                  <span className="text-gray-400 font-normal ml-1.5">(optionnel)</span>
+                </label>
+                <input
+                  type="url"
+                  value={form.site_actuel}
+                  onChange={e => setField("site_actuel", e.target.value)}
+                  placeholder="https://votre-site-actuel.fr"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-200 focus:border-violet-400 text-gray-900 transition-colors"
+                />
               </div>
             </div>
           )}

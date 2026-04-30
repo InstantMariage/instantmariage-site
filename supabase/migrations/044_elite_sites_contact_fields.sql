@@ -1,0 +1,3 @@
+ALTER TABLE elite_sites ADD COLUMN IF NOT EXISTS telephone TEXT;
+ALTER TABLE elite_sites ADD COLUMN IF NOT EXISTS email_contact TEXT;
+ALTER TABLE elite_sites ADD COLUMN IF NOT EXISTS site_actuel TEXT;
