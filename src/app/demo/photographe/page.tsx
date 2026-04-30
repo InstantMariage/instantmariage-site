@@ -34,13 +34,15 @@ function useInView(threshold = 0.15) {
   return { ref, inView }
 }
 
+const SUPABASE_BASE = 'https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/elite-assets/demo/photographe'
+
 const GALLERY_PHOTOS = [
-  'photo-1519225421980-715cb0215aed',
-  'photo-1511285560929-80b456fea0bc',
-  'photo-1465495976277-4387d4b0b4c6',
-  'photo-1606800052052-a08af7148866',
-  'photo-1583939003579-730e3918a45a',
-  'photo-1591604021695-0c69b7c05981',
+  `${SUPABASE_BASE}/galerie-1.jpg`,
+  `${SUPABASE_BASE}/galerie-2.jpg`,
+  `${SUPABASE_BASE}/galerie-3.jpg`,
+  `${SUPABASE_BASE}/galerie-4.jpg`,
+  `${SUPABASE_BASE}/galerie-5.jpg`,
+  `${SUPABASE_BASE}/galerie-6.jpg`,
 ]
 
 const SERVICES = [
@@ -149,7 +151,7 @@ export default function PhotographePage() {
       <section id="hero" style={{ position: 'relative', height: '100svh', minHeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=80&auto=format&fit=crop"
+          src={`${SUPABASE_BASE}/hero.jpg`}
           alt="Mariage"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
         />
@@ -194,11 +196,11 @@ export default function PhotographePage() {
       {/* ── GALLERY ── */}
       <section id="gallery" style={{ backgroundColor: '#0A0A0A', padding: '0 0 3px' }}>
         <div ref={gallerySection.ref} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 3 }}>
-          {GALLERY_PHOTOS.map((photoId, i) => (
-            <div key={photoId} style={{ overflow: 'hidden', height: 380, opacity: gallerySection.inView ? 1 : 0, transform: gallerySection.inView ? 'translateY(0)' : 'translateY(40px)', transition: `opacity 0.8s ease ${i * 0.1}s, transform 0.8s ease ${i * 0.1}s` }}>
+          {GALLERY_PHOTOS.map((photoUrl, i) => (
+            <div key={photoUrl} style={{ overflow: 'hidden', height: 380, opacity: gallerySection.inView ? 1 : 0, transform: gallerySection.inView ? 'translateY(0)' : 'translateY(40px)', transition: `opacity 0.8s ease ${i * 0.1}s, transform 0.8s ease ${i * 0.1}s` }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`https://images.unsplash.com/${photoId}?w=800&q=80&auto=format&fit=crop`}
+                src={photoUrl}
                 alt={`Photo mariage ${i + 1}`}
                 style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.88)', transition: 'filter 0.5s ease, transform 0.6s ease', cursor: 'pointer' }}
                 onMouseEnter={e => { e.currentTarget.style.filter = 'brightness(1.0)'; e.currentTarget.style.transform = 'scale(1.02)' }}
@@ -223,7 +225,7 @@ export default function PhotographePage() {
               Je crois que chaque mariage est une histoire unique. Mon approche est discrète et authentique — je capture les émotions vraies, les regards complices, les larmes de joie. Sans mise en scène excessive, juste la vie telle qu'elle se déroule.
             </p>
             <div style={{ width: '100%', height: 1, backgroundColor: '#C9A84C', opacity: 0.4, margin: '0 0 28px' }} />
-            <p style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 12, letterSpacing: '0.18em', color: '#0A0A0A', fontWeight: 500 }}>DISPONIBLE POUR 2025 & 2026</p>
+            <p style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 12, letterSpacing: '0.18em', color: '#0A0A0A', fontWeight: 500 }}>DISPONIBLE POUR 2026 & 2027</p>
           </div>
         </div>
       </section>
