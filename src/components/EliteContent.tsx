@@ -24,12 +24,18 @@ async function checkDomainRDAP(domain: string): Promise<boolean> {
     // 200 = domain registered, 404 = available
     return res.status === 404;
   } catch {
-    // network error → treat as unknown, default available for UX
     return true;
   }
 }
 
-function DomainChecker() {
+interface DomainCheckerProps {
+  eliteMode: "vitrine" | "shop";
+  setEliteMode: (mode: "vitrine" | "shop") => void;
+  onCheckout: () => void;
+  loading: boolean;
+}
+
+function DomainChecker({ eliteMode, setEliteMode, onCheckout, loading }: DomainCheckerProps) {
   const [input, setInput] = useState("");
   const [status, setStatus] = useState<DomainStatus>("idle");
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -90,29 +96,60 @@ function DomainChecker() {
         </div>
       )}
 
-      {/* Available */}
+      {/* Available → toggle + checkout */}
       {status === "available" && (
-        <div className="mt-4 rounded-2xl border border-green-200 bg-green-50 px-5 py-4">
-          <p className="text-green-700 font-semibold mb-3">
+        <div className="mt-4 rounded-2xl border border-green-200 bg-green-50 px-5 py-5">
+          <p className="text-green-700 font-semibold mb-4">
             🎉 Ce domaine est disponible ! Réservez-le avec le pack Elite avant qu'il ne soit pris.
           </p>
-          <Link
-            href="/contact"
-            className="inline-block px-5 py-2.5 rounded-xl text-white text-sm font-semibold transition hover:opacity-90"
+          <div className="flex justify-center mb-3">
+            <div className="inline-flex rounded-full overflow-hidden border border-purple-300">
+              <button
+                onClick={() => setEliteMode("vitrine")}
+                className="px-5 py-2 text-sm font-semibold transition-all duration-200"
+                style={
+                  eliteMode === "vitrine"
+                    ? { background: "#5B21B6", color: "#fff" }
+                    : { background: "transparent", color: "#5B21B6" }
+                }
+              >
+                Vitrine — 149€/mois
+              </button>
+              <button
+                onClick={() => setEliteMode("shop")}
+                className="px-5 py-2 text-sm font-semibold transition-all duration-200"
+                style={
+                  eliteMode === "shop"
+                    ? { background: "#5B21B6", color: "#fff" }
+                    : { background: "transparent", color: "#5B21B6" }
+                }
+              >
+                Shop — 199€/mois
+              </button>
+            </div>
+          </div>
+          <button
+            onClick={onCheckout}
+            disabled={loading}
+            className="w-full px-5 py-3 rounded-xl text-white text-sm font-semibold transition hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
             style={{ background: "linear-gradient(135deg, #7C3AED, #5B21B6)" }}
           >
-            Réserver maintenant →
-          </Link>
+            {loading
+              ? "Chargement…"
+              : eliteMode === "vitrine"
+              ? "Choisir Elite Vitrine →"
+              : "Choisir Elite Shop →"}
+          </button>
         </div>
       )}
 
-      {/* Taken */}
+      {/* Taken → suggestions only, no checkout */}
       {status === "taken" && (
         <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-5 py-4">
           <p className="text-red-600 font-semibold mb-3">
             Ce domaine est déjà pris. Voici quelques alternatives :
           </p>
-          <ul className="space-y-2">
+          <ul className="space-y-2 mb-4">
             {suggestions.map((s) => (
               <li key={s} className="flex items-center gap-2 text-sm text-gray-700">
                 <span className="w-2 h-2 rounded-full bg-purple-400 inline-block" />
@@ -122,7 +159,7 @@ function DomainChecker() {
           </ul>
           <Link
             href="/contact"
-            className="mt-3 inline-block px-5 py-2.5 rounded-xl text-white text-sm font-semibold transition hover:opacity-90"
+            className="inline-block px-5 py-2.5 rounded-xl text-white text-sm font-semibold transition hover:opacity-90"
             style={{ background: "linear-gradient(135deg, #7C3AED, #5B21B6)" }}
           >
             Choisir une alternative →
@@ -188,6 +225,10 @@ export default function EliteContent() {
     searchParams.get("plan") === "shop" ? "shop" : "vitrine"
   );
   const [loading, setLoading] = useState(false);
+
+  function scrollToDomainChecker() {
+    document.getElementById("verifier-domaine")?.scrollIntoView({ behavior: "smooth" });
+  }
 
   async function handleCheckout() {
     const redirectParam = encodeURIComponent(`/elite?plan=${eliteMode}`);
@@ -258,43 +299,21 @@ export default function EliteContent() {
             Votre site pro mariage<br />
             <span style={{ color: "#C4B5FD" }}>en 72h — clé en main</span>
           </h1>
-          <p className="text-purple-200 text-lg md:text-xl max-w-xl mx-auto mb-4 leading-relaxed">
+          <p className="text-purple-200 text-lg md:text-xl max-w-xl mx-auto mb-10 leading-relaxed">
             Nom de domaine inclus&nbsp;•&nbsp;Maintenance incluse&nbsp;•&nbsp;Visibilité sur InstantMariage
           </p>
-          {/* Toggle Vitrine / Shop */}
-          <div className="flex justify-center mt-10">
-            <div className="inline-flex rounded-full overflow-hidden border" style={{ borderColor: "rgba(124,58,237,0.5)" }}>
-              <button
-                onClick={() => setEliteMode("vitrine")}
-                className="px-6 py-2.5 text-sm font-semibold transition-all duration-200"
-                style={eliteMode === "vitrine" ? { background: "#5B21B6", color: "#fff" } : { background: "transparent", color: "#C4B5FD" }}
-              >
-                Vitrine — 149€/mois
-              </button>
-              <button
-                onClick={() => setEliteMode("shop")}
-                className="px-6 py-2.5 text-sm font-semibold transition-all duration-200"
-                style={eliteMode === "shop" ? { background: "#5B21B6", color: "#fff" } : { background: "transparent", color: "#C4B5FD" }}
-              >
-                Shop — 199€/mois
-              </button>
-            </div>
-          </div>
-          <div className="flex justify-center mt-4">
-            <button
-              onClick={handleCheckout}
-              disabled={loading}
-              className="px-8 py-4 rounded-2xl font-bold text-base text-white shadow-xl transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed"
-              style={{ background: "linear-gradient(135deg, #7C3AED, #5B21B6)" }}
-            >
-              {loading ? "Chargement…" : eliteMode === "vitrine" ? "Choisir Elite Vitrine →" : "Choisir Elite Shop →"}
-            </button>
-          </div>
+          <button
+            onClick={scrollToDomainChecker}
+            className="px-8 py-4 rounded-2xl font-bold text-base text-white shadow-xl transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5"
+            style={{ background: "linear-gradient(135deg, #7C3AED, #5B21B6)" }}
+          >
+            Vérifier mon domaine →
+          </button>
         </div>
       </section>
 
       {/* ── SECTION 2 — VÉRIFICATEUR DE DOMAINE ───────────── */}
-      <section className="py-16 md:py-20 bg-white">
+      <section id="verifier-domaine" className="py-16 md:py-20 bg-white">
         <div className="max-w-2xl mx-auto px-4 text-center">
           <span
             className="inline-block text-xs font-bold tracking-widest uppercase px-4 py-1.5 rounded-full mb-4"
@@ -311,7 +330,12 @@ export default function EliteContent() {
           <p className="text-gray-500 mb-8 text-base">
             Votre domaine est inclus dans le pack Elite. Vérifiez qu'il est encore libre.
           </p>
-          <DomainChecker />
+          <DomainChecker
+            eliteMode={eliteMode}
+            setEliteMode={setEliteMode}
+            onCheckout={handleCheckout}
+            loading={loading}
+          />
         </div>
       </section>
 
