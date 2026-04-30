@@ -86,6 +86,46 @@ const plans = [
     recommended: false,
   },
   {
+    id: "elite-vitrine",
+    name: "Elite Vitrine",
+    price: 149,
+    priceAnnual: 119,
+    period: "/mois",
+    description: "Votre site professionnel + visibilité maximale",
+    color: "elite",
+    features: [
+      "Tout le pack Premium inclus",
+      "Site web professionnel sur mesure créé en 72h",
+      "Nom de domaine personnalisé inclus",
+      "Dashboard : stats visites, formulaires reçus",
+      "Maintenance & mises à jour incluses",
+      "Profil mis en avant sur InstantMariage",
+      "Support prioritaire 7j/7",
+    ],
+    cta: "Nous contacter →",
+    priceId: null,
+    recommended: false,
+  },
+  {
+    id: "elite-shop",
+    name: "Elite Shop",
+    price: 199,
+    priceAnnual: 159,
+    period: "/mois",
+    description: "Tout Elite Vitrine + boutique en ligne intégrée",
+    color: "elite",
+    features: [
+      "Tout Elite Vitrine inclus",
+      "Boutique en ligne complète",
+      "Paiements Stripe intégrés",
+      "Gestion des commandes & stocks",
+      "Dashboard ventes & statistiques avancées",
+    ],
+    cta: "Nous contacter →",
+    priceId: null,
+    recommended: false,
+  },
+  {
     id: "diamond",
     name: "Diamond 💎",
     price: 1490,
@@ -318,12 +358,15 @@ export default function TarifsContent() {
       {/* ─── PRICING CARDS ───────────────────────────────────── */}
       <section className="py-16 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 md:gap-6 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-6 items-stretch">
             {plans.filter((p) => p.id !== "gratuit").map((plan) => {
               const displayPrice = annual ? plan.priceAnnual : plan.price;
               const isPro = plan.id === "pro";
               const isGold = plan.id === "premium";
               const isDiamond = plan.id === "diamond";
+              const isEliteVitrine = plan.id === "elite-vitrine";
+              const isEliteShop = plan.id === "elite-shop";
+              const isElite = isEliteVitrine || isEliteShop;
 
               const DIAMOND_MAILTO =
                 "mailto:contact@instantmariage.fr?subject=Pack%20Diamond%20InstantMariage&body=Bonjour%2C%20je%20suis%20int%C3%A9ress%C3%A9(e)%20par%20le%20pack%20Diamond.%0AMon%20nom%20est%20%3A%20%0AMon%20m%C3%A9tier%20%3A%20%0AMa%20ville%20%3A%20";
@@ -334,7 +377,7 @@ export default function TarifsContent() {
                   className={`relative flex flex-col rounded-3xl transition-all duration-300 ${
                     isPro
                       ? "shadow-2xl md:scale-105 z-10"
-                      : isDiamond
+                      : isDiamond || isElite
                       ? "shadow-2xl hover:-translate-y-1"
                       : "shadow-md hover:shadow-xl hover:-translate-y-1"
                   }`}
@@ -350,6 +393,12 @@ export default function TarifsContent() {
                           background: "#1C1C1E",
                           border: "2px solid #C9A84C",
                           boxShadow: "0 0 0 1px #C9A84C40, 0 20px 60px rgba(201,168,76,0.15)",
+                        }
+                      : isElite
+                      ? {
+                          background: "linear-gradient(135deg, #150D2E, #1E1040)",
+                          border: "2px solid #7C3AED",
+                          boxShadow: "0 0 0 1px #7C3AED40, 0 20px 60px rgba(124,58,237,0.15)",
                         }
                       : isGold
                       ? {
@@ -383,6 +432,26 @@ export default function TarifsContent() {
                       </span>
                     </div>
                   )}
+                  {isEliteVitrine && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                      <span
+                        className="text-xs font-bold px-4 py-1.5 rounded-full shadow-lg tracking-wide"
+                        style={{ background: "linear-gradient(135deg, #7C3AED, #5B21B6)", color: "#fff" }}
+                      >
+                        👑 Site Pro Inclus
+                      </span>
+                    </div>
+                  )}
+                  {isEliteShop && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                      <span
+                        className="text-xs font-bold px-4 py-1.5 rounded-full shadow-lg tracking-wide"
+                        style={{ background: "linear-gradient(135deg, #7C3AED, #5B21B6)", color: "#fff" }}
+                      >
+                        👑 Site Pro + Boutique
+                      </span>
+                    </div>
+                  )}
                   {isDiamond && (
                     <div className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap">
                       <span
@@ -402,6 +471,8 @@ export default function TarifsContent() {
                         style={
                           isDiamond
                             ? { color: "#C9A84C" }
+                            : isElite
+                            ? { color: "#A78BFA" }
                             : isPro
                             ? { color: "rgba(255,255,255,0.7)" }
                             : isGold
@@ -416,6 +487,8 @@ export default function TarifsContent() {
                         style={
                           isDiamond
                             ? { color: "#C9A84C99" }
+                            : isElite
+                            ? { color: "#A78BFA99" }
                             : isPro
                             ? { color: "rgba(255,255,255,0.8)" }
                             : { color: "#6B7280" }
@@ -463,7 +536,7 @@ export default function TarifsContent() {
                           <div className="flex items-end gap-1">
                             <span
                               className={`text-5xl font-extrabold leading-none ${
-                                isPro ? "text-white" : isGold ? "text-amber-700" : "text-gray-900"
+                                isPro ? "text-white" : isGold ? "text-amber-700" : isElite ? "text-white" : "text-gray-900"
                               }`}
                               style={{ fontFamily: "var(--font-playfair), serif" }}
                             >
@@ -471,7 +544,7 @@ export default function TarifsContent() {
                             </span>
                             <span
                               className={`text-sm pb-1.5 ${
-                                isPro ? "text-rose-200" : "text-gray-400"
+                                isPro ? "text-rose-200" : isElite ? "text-purple-300" : "text-gray-400"
                               }`}
                             >
                               /mois
@@ -480,7 +553,7 @@ export default function TarifsContent() {
                           {annual && (
                             <p
                               className={`text-xs mt-1 ${
-                                isPro ? "text-rose-200" : "text-gray-400"
+                                isPro ? "text-rose-200" : isElite ? "text-purple-300" : "text-gray-400"
                               }`}
                             >
                               Facturé{" "}
@@ -492,11 +565,11 @@ export default function TarifsContent() {
                           {!annual && (
                             <p
                               className={`text-xs mt-1 ${
-                                isPro ? "text-rose-200" : "text-gray-400"
+                                isPro ? "text-rose-200" : isElite ? "text-purple-300" : "text-gray-400"
                               }`}
                             >
                               ou{" "}
-                              <span className="font-semibold" style={isPro ? {} : { color: "#F06292" }}>
+                              <span className="font-semibold" style={isPro ? {} : isElite ? { color: "#A78BFA" } : { color: "#F06292" }}>
                                 {plan.priceAnnual.toFixed(2).replace(".", ",")}€/mois
                               </span>{" "}
                               en annuel
@@ -515,6 +588,8 @@ export default function TarifsContent() {
                             style={
                               isDiamond
                                 ? { color: "#C9A84C" }
+                                : isElite
+                                ? { color: "#A78BFA" }
                                 : isPro
                                 ? { color: "white" }
                                 : isGold
@@ -529,6 +604,8 @@ export default function TarifsContent() {
                             style={
                               isDiamond
                                 ? { color: "#E5E5E5" }
+                                : isElite
+                                ? { color: "#DDD6FE" }
                                 : isPro
                                 ? { color: "rgba(255,255,255,0.9)" }
                                 : { color: "#4B5563" }
@@ -539,6 +616,13 @@ export default function TarifsContent() {
                         </li>
                       ))}
                     </ul>
+
+                    {/* Note Elite */}
+                    {isElite && (
+                      <p className="text-xs mb-5 leading-relaxed" style={{ color: "#A78BFA60" }}>
+                        Sans engagement — résiliation = site hors ligne
+                      </p>
+                    )}
 
                     {/* Note Diamond */}
                     {isDiamond && (
@@ -556,6 +640,14 @@ export default function TarifsContent() {
                       >
                         {plan.cta}
                       </a>
+                    ) : isElite ? (
+                      <Link
+                        href="/contact"
+                        className="block w-full text-center text-sm font-semibold px-6 py-3.5 rounded-2xl transition-all duration-200 hover:opacity-90"
+                        style={{ background: "linear-gradient(135deg, #7C3AED, #5B21B6)", color: "#fff" }}
+                      >
+                        {plan.cta}
+                      </Link>
                     ) : (
                       <button
                         onClick={() => handleSubscribe(plan)}
