@@ -980,8 +980,8 @@ export default function PlanDeTablePage() {
   /* ── Render ── */
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#0f172a" }}>
-        <div className="w-7 h-7 rounded-full border-2 border-gray-600 border-t-pink-400 animate-spin" />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#FAF5FA" }}>
+        <div className="w-7 h-7 rounded-full border-2 border-pink-200 border-t-[#F06292] animate-spin" />
       </div>
     );
   }
@@ -991,31 +991,31 @@ export default function PlanDeTablePage() {
   const unassignedCount = guests.filter((g) => !g.table_id).length;
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden" style={{ background: "#0f172a" }}>
+    <div className="h-screen flex flex-col overflow-hidden" style={{ background: "#FAF5FA" }}>
       {/* ── Top bar ── */}
       <div
         className="flex items-center gap-2 sm:gap-4 px-3 sm:px-5 py-3 flex-shrink-0 z-20"
-        style={{ background: "#1e293b", borderBottom: "1px solid rgba(255,255,255,0.08)" }}
+        style={{ background: "#FFFFFF", borderBottom: "1px solid rgba(240,98,146,0.12)", boxShadow: "0 1px 8px rgba(240,98,146,0.06)" }}
       >
         <Link
           href="/dashboard/marie/invites"
           className="flex items-center gap-1.5 text-sm font-medium transition-opacity hover:opacity-70"
-          style={{ color: "rgba(255,255,255,0.6)" }}
+          style={{ color: "#A890B0" }}
         >
           <IconBack /> <span className="hidden sm:inline">Invités</span>
         </Link>
 
-        <div className="w-px h-4 bg-white/10" />
+        <div className="w-px h-4" style={{ background: "rgba(240,98,146,0.15)" }} />
 
-        <h1 className="text-sm font-bold text-white">Plan de table</h1>
+        <h1 className="text-sm font-bold" style={{ color: "#1E1020" }}>Plan de table</h1>
 
         <div className="flex items-center gap-2 ml-auto">
           {saveStatus !== "idle" && (
             <span
               className="hidden sm:flex text-xs font-medium px-2.5 py-1 rounded-full items-center gap-1.5 transition-all"
               style={{
-                background: saveStatus === "saved" ? "rgba(22,163,74,0.15)" : "rgba(255,255,255,0.08)",
-                color: saveStatus === "saved" ? "#4ADE80" : "rgba(255,255,255,0.5)",
+                background: saveStatus === "saved" ? "rgba(22,163,74,0.1)" : "rgba(0,0,0,0.04)",
+                color: saveStatus === "saved" ? "#16A34A" : "#A890B0",
               }}
             >
               {saveStatus === "saving" ? (
@@ -1026,7 +1026,7 @@ export default function PlanDeTablePage() {
             </span>
           )}
 
-          <span className="text-xs px-2.5 py-1 rounded-full" style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)" }}>
+          <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: "rgba(240,98,146,0.08)", color: "#6E5070" }}>
             {placedGuests}/{totalGuests}
           </span>
 
@@ -1034,7 +1034,7 @@ export default function PlanDeTablePage() {
             onClick={generatePDF}
             disabled={exportingPDF || tables.length === 0}
             className="flex items-center gap-1.5 text-sm font-semibold px-2.5 sm:px-3 py-1.5 rounded-xl transition-all hover:opacity-90 disabled:opacity-40"
-            style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)", color: "white" }}
+            style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)", color: "white", boxShadow: "0 2px 8px rgba(240,98,146,0.3)" }}
           >
             {exportingPDF ? (
               <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin inline-block" />
@@ -1048,7 +1048,7 @@ export default function PlanDeTablePage() {
             onClick={openAddTable}
             disabled={tables.length >= 50}
             className="flex items-center gap-1.5 text-sm font-semibold px-2.5 sm:px-3 py-1.5 rounded-xl transition-all hover:opacity-90 disabled:opacity-40"
-            style={{ background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.85)", border: "1px solid rgba(255,255,255,0.15)" }}
+            style={{ background: "#F8F0F5", color: "#6E5070", border: "1px solid rgba(240,98,146,0.2)" }}
           >
             <IconPlus />
             <span className="hidden sm:inline">Table {tables.length >= 50 ? "(50/50)" : ""}</span>
@@ -1058,7 +1058,7 @@ export default function PlanDeTablePage() {
           <button
             onClick={() => setSidebarOpen((v) => !v)}
             className="hidden items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-xl relative"
-            style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)", border: "1px solid rgba(255,255,255,0.12)" }}
+            style={{ background: "#F8F0F5", color: "#6E5070", border: "1px solid rgba(240,98,146,0.15)" }}
           >
             <IconMenu />
             {unassignedCount > 0 && (
@@ -1082,7 +1082,7 @@ export default function PlanDeTablePage() {
               {guests.length === 0 ? (
                 <div className="flex flex-col items-center py-16 text-center">
                   <span className="text-3xl mb-2">👥</span>
-                  <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>Aucun invité</p>
+                  <p className="text-sm" style={{ color: "#A890B0" }}>Aucun invité</p>
                 </div>
               ) : (
                 guests
@@ -1095,19 +1095,19 @@ export default function PlanDeTablePage() {
                       <div
                         key={g.id}
                         className="flex items-center gap-3 p-3 rounded-2xl"
-                        style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+                        style={{ background: "#FFFFFF", border: "1px solid rgba(240,98,146,0.12)", boxShadow: "0 1px 4px rgba(240,98,146,0.06)" }}
                       >
                         <div
                           className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-                          style={{ background: colors.bg, color: colors.text }}
+                          style={{ background: colors.bg, color: colors.text, boxShadow: `0 2px 6px ${colors.bg}40` }}
                         >
                           {initials}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold truncate" style={{ color: "rgba(255,255,255,0.85)" }}>
+                          <p className="text-sm font-semibold truncate" style={{ color: "#1E1020" }}>
                             {g.prenom} {g.nom}
                           </p>
-                          <p className="text-xs truncate" style={{ color: "rgba(255,255,255,0.35)", fontSize: "10px" }}>
+                          <p className="text-xs truncate" style={{ color: "#A890B0", fontSize: "10px" }}>
                             {g.relation || "—"} · {REGIME_LABELS[g.regime_alimentaire]}
                           </p>
                         </div>
@@ -1116,13 +1116,13 @@ export default function PlanDeTablePage() {
                           onChange={(e) => assignGuestToTable(g.id, e.target.value || null)}
                           className="text-xs rounded-xl px-2 py-1.5 outline-none flex-shrink-0"
                           style={{
-                            background: g.table_id ? "rgba(240,98,146,0.12)" : "rgba(255,255,255,0.07)",
-                            border: `1px solid ${g.table_id ? "rgba(240,98,146,0.3)" : "rgba(255,255,255,0.12)"}`,
-                            color: g.table_id ? "#F06292" : "rgba(255,255,255,0.5)",
+                            background: g.table_id ? "rgba(240,98,146,0.08)" : "#F8F5F8",
+                            border: `1px solid ${g.table_id ? "rgba(240,98,146,0.3)" : "rgba(240,98,146,0.15)"}`,
+                            color: g.table_id ? "#F06292" : "#A890B0",
                             maxWidth: "120px",
                           }}
                         >
-                          <option value="" style={{ background: "#1e293b", color: "rgba(255,255,255,0.7)" }}>Non placé</option>
+                          <option value="">Non placé</option>
                           {tables.map((t) => {
                             const count = guests.filter((gg) => gg.table_id === t.id && gg.id !== g.id).length;
                             const full = count >= t.capacite;
@@ -1131,7 +1131,6 @@ export default function PlanDeTablePage() {
                                 key={t.id}
                                 value={t.id}
                                 disabled={full && g.table_id !== t.id}
-                                style={{ background: "#1e293b", color: full && g.table_id !== t.id ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.85)" }}
                               >
                                 {t.nom}{full && g.table_id !== t.id ? " (complet)" : ""}
                               </option>
@@ -1148,11 +1147,11 @@ export default function PlanDeTablePage() {
               {tables.length === 0 ? (
                 <div className="flex flex-col items-center py-16 text-center">
                   <span className="text-3xl mb-2">🪑</span>
-                  <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.4)" }}>Aucune table</p>
+                  <p className="text-sm mb-4" style={{ color: "#A890B0" }}>Aucune table</p>
                   <button
                     onClick={openAddTable}
                     className="flex items-center gap-2 text-sm font-bold px-4 py-2 rounded-xl"
-                    style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)", color: "white" }}
+                    style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)", color: "white", boxShadow: "0 2px 8px rgba(240,98,146,0.3)" }}
                   >
                     <IconPlus /> Créer une table
                   </button>
@@ -1165,30 +1164,30 @@ export default function PlanDeTablePage() {
                     <div
                       key={table.id}
                       className="rounded-2xl overflow-hidden"
-                      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)" }}
+                      style={{ background: "#FFFFFF", border: "1px solid rgba(240,98,146,0.12)", boxShadow: "0 2px 8px rgba(240,98,146,0.06)" }}
                     >
                       <div
                         className="flex items-center justify-between px-4 py-3"
-                        style={{ borderBottom: tGuests.length > 0 ? "1px solid rgba(255,255,255,0.07)" : "none" }}
+                        style={{ borderBottom: tGuests.length > 0 ? "1px solid rgba(240,98,146,0.08)" : "none" }}
                       >
                         <div>
-                          <p className="text-sm font-bold text-white">{table.nom}</p>
-                          <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+                          <p className="text-sm font-bold" style={{ color: "#1E1020" }}>{table.nom}</p>
+                          <p className="text-xs" style={{ color: "#A890B0" }}>
                             {tGuests.length}/{table.capacite} places
                           </p>
                         </div>
                         <span
-                          className="text-xs px-2.5 py-1 rounded-full"
+                          className="text-xs px-2.5 py-1 rounded-full font-medium"
                           style={{
-                            background: isFull ? "rgba(220,38,38,0.15)" : "rgba(255,255,255,0.08)",
-                            color: isFull ? "#F87171" : "rgba(255,255,255,0.4)",
+                            background: isFull ? "rgba(220,38,38,0.08)" : "rgba(240,98,146,0.08)",
+                            color: isFull ? "#DC2626" : "#6E5070",
                           }}
                         >
                           {isFull ? "Complet" : `${table.capacite - tGuests.length} libre${table.capacite - tGuests.length > 1 ? "s" : ""}`}
                         </span>
                       </div>
                       {tGuests.length === 0 && (
-                        <div className="px-4 py-3 text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>
+                        <div className="px-4 py-3 text-xs" style={{ color: "#C0B0C0" }}>
                           Aucun invité assigné
                         </div>
                       )}
@@ -1199,7 +1198,7 @@ export default function PlanDeTablePage() {
                           <div
                             key={g.id}
                             className="flex items-center gap-3 px-4 py-2.5"
-                            style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+                            style={{ borderBottom: "1px solid rgba(240,98,146,0.06)" }}
                           >
                             <div
                               className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
@@ -1208,17 +1207,17 @@ export default function PlanDeTablePage() {
                               {initials}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs font-semibold truncate" style={{ color: "rgba(255,255,255,0.8)" }}>
+                              <p className="text-xs font-semibold truncate" style={{ color: "#1E1020" }}>
                                 {g.prenom} {g.nom}
                               </p>
-                              <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)", fontSize: "10px" }}>
+                              <p className="text-xs" style={{ color: "#A890B0", fontSize: "10px" }}>
                                 Siège {(g.seat_number ?? 0) + 1}
                               </p>
                             </div>
                             <button
                               onClick={() => assignGuest(g.id, null, null)}
                               className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-colors"
-                              style={{ background: "rgba(220,38,38,0.12)", color: "rgba(220,38,38,0.7)" }}
+                              style={{ background: "rgba(220,38,38,0.08)", color: "rgba(220,38,38,0.7)" }}
                               title="Retirer de la table"
                             >
                               <IconClose />
@@ -1237,34 +1236,34 @@ export default function PlanDeTablePage() {
         {/* Bottom tab bar */}
         <div
           className="flex flex-shrink-0"
-          style={{ background: "#1e293b", borderTop: "1px solid rgba(255,255,255,0.08)" }}
+          style={{ background: "#FFFFFF", borderTop: "1px solid rgba(240,98,146,0.12)", boxShadow: "0 -1px 8px rgba(240,98,146,0.06)" }}
         >
           <button
             onClick={() => setMobileTab("invites")}
             className="flex-1 flex flex-col items-center gap-0.5 py-3 transition-colors"
-            style={{ color: mobileTab === "invites" ? "#F06292" : "rgba(255,255,255,0.4)" }}
+            style={{ color: mobileTab === "invites" ? "#F06292" : "#A890B0" }}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             <span className="text-xs font-semibold">Invités</span>
             {unassignedCount > 0 && (
-              <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.3)" }}>
+              <span style={{ fontSize: "10px", color: "#A890B0" }}>
                 {unassignedCount} non placé{unassignedCount > 1 ? "s" : ""}
               </span>
             )}
           </button>
-          <div style={{ width: "1px", background: "rgba(255,255,255,0.07)", margin: "8px 0" }} />
+          <div style={{ width: "1px", background: "rgba(240,98,146,0.1)", margin: "8px 0" }} />
           <button
             onClick={() => setMobileTab("tables")}
             className="flex-1 flex flex-col items-center gap-0.5 py-3 transition-colors"
-            style={{ color: mobileTab === "tables" ? "#F06292" : "rgba(255,255,255,0.4)" }}
+            style={{ color: mobileTab === "tables" ? "#F06292" : "#A890B0" }}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <rect x="3" y="3" width="18" height="18" rx="2" /><path strokeLinecap="round" d="M3 9h18M3 15h18M9 3v18M15 3v18" />
             </svg>
             <span className="text-xs font-semibold">Tables</span>
-            <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.3)" }}>
+            <span style={{ fontSize: "10px", color: "#A890B0" }}>
               {tables.length} table{tables.length > 1 ? "s" : ""}
             </span>
           </button>
@@ -1293,7 +1292,7 @@ export default function PlanDeTablePage() {
             "transition-transform duration-200 sm:translate-x-0",
             sidebarOpen ? "translate-x-0" : "-translate-x-full",
           ].join(" ")}
-          style={{ background: "#1e293b", borderRight: "1px solid rgba(255,255,255,0.08)" }}
+          style={{ background: "#FFFFFF", borderRight: "1px solid rgba(240,98,146,0.12)", boxShadow: "2px 0 12px rgba(240,98,146,0.06)" }}
           onDragOver={(e) => { e.preventDefault(); setDragOverSidebar(true); }}
           onDragLeave={() => setDragOverSidebar(false)}
           onDrop={handleDropOnSidebar}
@@ -1301,26 +1300,26 @@ export default function PlanDeTablePage() {
           <div
             className="px-4 py-3 flex-shrink-0"
             style={{
-              borderBottom: "1px solid rgba(255,255,255,0.08)",
-              background: dragOverSidebar ? "rgba(240,98,146,0.1)" : "transparent",
+              borderBottom: "1px solid rgba(240,98,146,0.1)",
+              background: dragOverSidebar ? "rgba(240,98,146,0.05)" : "#FAFAFA",
               transition: "background 0.15s",
             }}
           >
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.4)" }}>
+              <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#A890B0" }}>
                 Non placés · {guests.filter((g) => !g.table_id).length}
               </p>
               {/* Close button — mobile only */}
               <button
                 onClick={() => setSidebarOpen(false)}
                 className="sm:hidden w-7 h-7 rounded-full flex items-center justify-center"
-                style={{ background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.4)" }}
+                style={{ background: "#F8F0F5", color: "#A890B0" }}
               >
                 <IconClose />
               </button>
             </div>
             <div className="relative">
-              <span className="absolute left-2.5 top-1/2 -translate-y-1/2" style={{ color: "rgba(255,255,255,0.3)" }}><IconSearch /></span>
+              <span className="absolute left-2.5 top-1/2 -translate-y-1/2" style={{ color: "#C0B0C0" }}><IconSearch /></span>
               <input
                 type="text"
                 placeholder="Rechercher…"
@@ -1328,9 +1327,9 @@ export default function PlanDeTablePage() {
                 onChange={(e) => setSideSearch(e.target.value)}
                 className="w-full pl-7 pr-3 py-1.5 text-xs rounded-lg outline-none"
                 style={{
-                  background: "rgba(255,255,255,0.06)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  color: "rgba(255,255,255,0.8)",
+                  background: "#F8F5F8",
+                  border: "1px solid rgba(240,98,146,0.15)",
+                  color: "#1E1020",
                 }}
               />
             </div>
@@ -1340,7 +1339,7 @@ export default function PlanDeTablePage() {
             {unassignedGuests.length === 0 ? (
               <div className="flex flex-col items-center py-10 text-center px-2">
                 <span className="text-3xl mb-2">🎉</span>
-                <p className="text-xs font-medium" style={{ color: "rgba(255,255,255,0.4)" }}>
+                <p className="text-xs font-medium" style={{ color: "#A890B0" }}>
                   {guests.filter((g) => !g.table_id).length === 0
                     ? "Tous les invités sont placés"
                     : "Aucun résultat"}
@@ -1366,13 +1365,13 @@ export default function PlanDeTablePage() {
             )}
           </div>
 
-          <div className="px-3 py-3 flex-shrink-0" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-            <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "rgba(255,255,255,0.25)" }}>Régimes</p>
+          <div className="px-3 py-3 flex-shrink-0" style={{ borderTop: "1px solid rgba(240,98,146,0.08)", background: "#FAFAFA" }}>
+            <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "#C0B0C0" }}>Régimes</p>
             <div className="space-y-1">
               {Object.entries(REGIME_LABELS).map(([k, label]) => (
                 <div key={k} className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: REGIME_COLORS[k as Regime].bg }} />
-                  <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{label}</span>
+                  <span className="text-xs" style={{ color: "#A890B0" }}>{label}</span>
                 </div>
               ))}
             </div>
@@ -1395,8 +1394,8 @@ export default function PlanDeTablePage() {
               position: "relative",
               minWidth: "3000px",
               minHeight: "2000px",
-              background: "#0f172a",
-              backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)`,
+              background: "#F5EDF5",
+              backgroundImage: `radial-gradient(circle, rgba(240,98,146,0.1) 1px, transparent 1px)`,
               backgroundSize: "32px 32px",
             }}
           >
@@ -1404,18 +1403,18 @@ export default function PlanDeTablePage() {
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-8">
                 <div
                   className="w-20 h-20 rounded-full flex items-center justify-center mb-4"
-                  style={{ border: "2px dashed rgba(255,255,255,0.15)" }}
+                  style={{ border: "2px dashed rgba(240,98,146,0.25)", background: "rgba(240,98,146,0.05)" }}
                 >
                   <span className="text-3xl">🪑</span>
                 </div>
-                <p className="text-base font-bold mb-2" style={{ color: "rgba(255,255,255,0.7)" }}>Aucune table pour l&apos;instant</p>
-                <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.3)" }}>
+                <p className="text-base font-bold mb-2" style={{ color: "#6E5070" }}>Aucune table pour l&apos;instant</p>
+                <p className="text-sm mb-5" style={{ color: "#A890B0" }}>
                   Ajoutez des tables rondes et placez vos invités par glisser-déposer
                 </p>
                 <button
                   onClick={openAddTable}
                   className="flex items-center gap-2 text-sm font-bold px-5 py-2.5 rounded-2xl transition-all hover:opacity-90"
-                  style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)", color: "white" }}
+                  style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)", color: "white", boxShadow: "0 4px 12px rgba(240,98,146,0.35)" }}
                 >
                   <IconPlus /> Créer une table
                 </button>
@@ -1458,34 +1457,40 @@ export default function PlanDeTablePage() {
                         height: TABLE_RADIUS * 2,
                         borderRadius: "50%",
                         background: isTableOver && !isFull
-                          ? "rgba(240,98,146,0.25)"
+                          ? "rgba(240,98,146,0.12)"
                           : isFull
-                          ? "rgba(220,38,38,0.12)"
-                          : "rgba(255,255,255,0.07)",
+                          ? "#FFF5F5"
+                          : "#FFFFFF",
                         border: isTableOver && !isFull
                           ? "2px solid #F06292"
                           : isFull
-                          ? "2px solid rgba(220,38,38,0.4)"
-                          : "2px solid rgba(255,255,255,0.15)",
+                          ? "2px solid rgba(220,38,38,0.35)"
+                          : "2px solid rgba(240,98,146,0.25)",
+                        boxShadow: isTableOver && !isFull
+                          ? "0 0 0 4px rgba(240,98,146,0.15), 0 4px 20px rgba(240,98,146,0.2)"
+                          : isFull
+                          ? "0 4px 16px rgba(220,38,38,0.1)"
+                          : "0 4px 20px rgba(240,98,146,0.15), 0 1px 4px rgba(0,0,0,0.05)",
                         display: "flex",
                         flexDirection: "column",
                         alignItems: "center",
                         justifyContent: "center",
-                        transition: "background 0.15s, border-color 0.15s",
+                        transition: "background 0.15s, border-color 0.15s, box-shadow 0.15s",
                         pointerEvents: "none",
                       }}
                     >
                       <span
                         className="text-xs font-bold text-center px-1 leading-tight"
-                        style={{ color: "rgba(255,255,255,0.85)", maxWidth: TABLE_RADIUS * 2 - 8, fontSize: "11px" }}
+                        style={{ color: "#1E1020", maxWidth: TABLE_RADIUS * 2 - 8, fontSize: "11px" }}
                       >
                         {table.nom}
                       </span>
                       <span
                         className="text-xs mt-0.5"
                         style={{
-                          color: isFull ? "rgba(220,38,38,0.8)" : "rgba(255,255,255,0.35)",
+                          color: isFull ? "#DC2626" : "#A890B0",
                           fontSize: "10px",
+                          fontWeight: "500",
                         }}
                       >
                         {tGuests.length}/{table.capacite}
@@ -1556,11 +1561,12 @@ export default function PlanDeTablePage() {
                                 borderRadius: "50%",
                                 border: isSeatOver
                                   ? "2px solid #F06292"
-                                  : "1.5px dashed rgba(255,255,255,0.15)",
+                                  : "1.5px dashed rgba(240,98,146,0.3)",
                                 background: isSeatOver
-                                  ? "rgba(240,98,146,0.2)"
-                                  : "rgba(255,255,255,0.02)",
-                                transition: "border-color 0.15s, background 0.15s",
+                                  ? "rgba(240,98,146,0.15)"
+                                  : "rgba(240,98,146,0.04)",
+                                boxShadow: isSeatOver ? "0 0 0 3px rgba(240,98,146,0.15)" : undefined,
+                                transition: "border-color 0.15s, background 0.15s, box-shadow 0.15s",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
@@ -1570,7 +1576,7 @@ export default function PlanDeTablePage() {
                                 style={{
                                   fontSize: "9px",
                                   fontWeight: "700",
-                                  color: isSeatOver ? "#F06292" : "rgba(255,255,255,0.2)",
+                                  color: isSeatOver ? "#F06292" : "rgba(240,98,146,0.4)",
                                   userSelect: "none",
                                   lineHeight: 1,
                                 }}
@@ -1599,7 +1605,7 @@ export default function PlanDeTablePage() {
                         data-table-action="true"
                         onClick={(e) => { e.stopPropagation(); openEditTable(table); }}
                         className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
-                        style={{ background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.4)" }}
+                        style={{ background: "#FFFFFF", color: "#A890B0", border: "1px solid rgba(240,98,146,0.15)", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}
                         onMouseDown={(e) => e.stopPropagation()}
                         onTouchStart={(e) => e.stopPropagation()}
                       >
@@ -1609,7 +1615,7 @@ export default function PlanDeTablePage() {
                         data-table-action="true"
                         onClick={(e) => { e.stopPropagation(); deleteTable(table.id); }}
                         className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
-                        style={{ background: "rgba(220,38,38,0.12)", color: "rgba(220,38,38,0.6)" }}
+                        style={{ background: "#FFF0F0", color: "rgba(220,38,38,0.7)", border: "1px solid rgba(220,38,38,0.15)", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}
                         onMouseDown={(e) => e.stopPropagation()}
                         onTouchStart={(e) => e.stopPropagation()}
                       >
@@ -1628,15 +1634,15 @@ export default function PlanDeTablePage() {
       {popupGuest && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: "rgba(0,0,0,0.4)" }}
+          style={{ background: "rgba(0,0,0,0.3)", backdropFilter: "blur(4px)" }}
           onClick={() => setPopupGuest(null)}
         >
           <div
             className="w-full max-w-xs rounded-3xl p-5"
             style={{
-              background: "linear-gradient(145deg, #1e293b, #182032)",
-              border: "1px solid rgba(255,255,255,0.12)",
-              boxShadow: "0 25px 60px rgba(0,0,0,0.5)",
+              background: "#FFFFFF",
+              border: "1px solid rgba(240,98,146,0.15)",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.12), 0 8px 20px rgba(240,98,146,0.1)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -1647,13 +1653,13 @@ export default function PlanDeTablePage() {
                   style={{
                     background: REGIME_COLORS[popupGuest.regime_alimentaire].bg,
                     color: REGIME_COLORS[popupGuest.regime_alimentaire].text,
-                    boxShadow: `0 0 16px ${REGIME_COLORS[popupGuest.regime_alimentaire].bg}60`,
+                    boxShadow: `0 4px 12px ${REGIME_COLORS[popupGuest.regime_alimentaire].bg}50`,
                   }}
                 >
                   {`${popupGuest.prenom[0] ?? ""}${popupGuest.nom[0] ?? ""}`.toUpperCase()}
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-white leading-tight">
+                  <p className="text-sm font-bold leading-tight" style={{ color: "#1E1020" }}>
                     {popupGuest.prenom} {popupGuest.nom}
                   </p>
                   <select
@@ -1663,38 +1669,38 @@ export default function PlanDeTablePage() {
                     className="text-xs mt-0.5 rounded outline-none cursor-pointer"
                     style={{
                       background: "transparent",
-                      color: "rgba(255,255,255,0.45)",
+                      color: "#A890B0",
                       border: "none",
                       padding: 0,
                       appearance: "auto",
                     }}
                   >
-                    {RELATIONS.map((r) => <option key={r} value={r} style={{ background: "#1e293b" }}>{r}</option>)}
+                    {RELATIONS.map((r) => <option key={r} value={r}>{r}</option>)}
                   </select>
                 </div>
               </div>
               <button
                 onClick={() => setPopupGuest(null)}
                 className="w-7 h-7 rounded-full flex items-center justify-center transition-colors flex-shrink-0"
-                style={{ background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.4)" }}
+                style={{ background: "#F8F0F5", color: "#A890B0" }}
               >
                 <IconClose />
               </button>
             </div>
 
-            <div className="h-px mb-4" style={{ background: "rgba(255,255,255,0.07)" }} />
+            <div className="h-px mb-4" style={{ background: "rgba(240,98,146,0.1)" }} />
 
             <div className="space-y-2.5">
               {popupGuest.table_id && (
                 <div className="flex items-center gap-2.5">
-                  <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" style={{ color: "rgba(255,255,255,0.3)" }}>
+                  <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" style={{ color: "#C0B0C0" }}>
                     <circle cx="12" cy="12" r="9" /><path strokeLinecap="round" d="M12 8v4l3 3" />
                   </svg>
-                  <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Place</span>
-                  <span className="text-xs font-semibold ml-auto" style={{ color: "rgba(255,255,255,0.85)" }}>
+                  <span className="text-xs" style={{ color: "#6E5070" }}>Place</span>
+                  <span className="text-xs font-semibold ml-auto" style={{ color: "#1E1020" }}>
                     {tables.find((t) => t.id === popupGuest.table_id)?.nom ?? "—"}
                     {popupGuest.seat_number !== null && (
-                      <span style={{ color: "rgba(255,255,255,0.4)" }}> · siège {popupGuest.seat_number + 1}</span>
+                      <span style={{ color: "#A890B0" }}> · siège {popupGuest.seat_number + 1}</span>
                     )}
                   </span>
                 </div>
@@ -1702,15 +1708,15 @@ export default function PlanDeTablePage() {
 
               <div className="flex items-center gap-2.5">
                 <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: REGIME_COLORS[popupGuest.regime_alimentaire].bg }} />
-                <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Régime</span>
-                <span className="text-xs font-semibold ml-auto" style={{ color: "rgba(255,255,255,0.85)" }}>
+                <span className="text-xs" style={{ color: "#6E5070" }}>Régime</span>
+                <span className="text-xs font-semibold ml-auto" style={{ color: "#1E1020" }}>
                   {REGIME_LABELS[popupGuest.regime_alimentaire]}
                 </span>
               </div>
 
               {popupGuest.email && (
                 <div className="flex items-center gap-2.5">
-                  <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" style={{ color: "rgba(255,255,255,0.3)" }}>
+                  <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" style={{ color: "#C0B0C0" }}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                   <a
@@ -1726,7 +1732,7 @@ export default function PlanDeTablePage() {
 
               {popupGuest.telephone && (
                 <div className="flex items-center gap-2.5">
-                  <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" style={{ color: "rgba(255,255,255,0.3)" }}>
+                  <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" style={{ color: "#C0B0C0" }}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
                   <a
@@ -1741,23 +1747,23 @@ export default function PlanDeTablePage() {
               )}
 
               <div className="flex items-center gap-2.5">
-                <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" style={{ color: "rgba(255,255,255,0.3)" }}>
+                <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24" style={{ color: "#C0B0C0" }}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Présence</span>
+                <span className="text-xs" style={{ color: "#6E5070" }}>Présence</span>
                 <span
                   className="text-xs font-semibold ml-auto px-2 py-0.5 rounded-full"
                   style={{
                     background: popupGuest.presence_confirmee === true
-                      ? "rgba(22,163,74,0.15)"
+                      ? "rgba(22,163,74,0.1)"
                       : popupGuest.presence_confirmee === false
-                      ? "rgba(220,38,38,0.15)"
-                      : "rgba(255,255,255,0.07)",
+                      ? "rgba(220,38,38,0.08)"
+                      : "rgba(240,98,146,0.08)",
                     color: popupGuest.presence_confirmee === true
-                      ? "#4ADE80"
+                      ? "#16A34A"
                       : popupGuest.presence_confirmee === false
-                      ? "#F87171"
-                      : "rgba(255,255,255,0.4)",
+                      ? "#DC2626"
+                      : "#A890B0",
                   }}
                 >
                   {popupGuest.presence_confirmee === true ? "Confirmée" : popupGuest.presence_confirmee === false ? "Déclinée" : "En attente"}
@@ -1765,11 +1771,11 @@ export default function PlanDeTablePage() {
               </div>
             </div>
 
-            <div className="mt-4 pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+            <div className="mt-4 pt-4" style={{ borderTop: "1px solid rgba(240,98,146,0.1)" }}>
               <button
                 onClick={() => openEditGuest(popupGuest)}
                 className="w-full py-2.5 text-sm font-bold rounded-2xl transition-all hover:opacity-90 flex items-center justify-center gap-2"
-                style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)", color: "white" }}
+                style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)", color: "white", boxShadow: "0 4px 12px rgba(240,98,146,0.3)" }}
               >
                 <IconEdit /> Modifier les infos
               </button>
@@ -1782,91 +1788,91 @@ export default function PlanDeTablePage() {
       {editGuestOpen && popupGuest && (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center p-4"
-          style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(6px)" }}
+          style={{ background: "rgba(0,0,0,0.3)", backdropFilter: "blur(6px)" }}
           onClick={(e) => { if (e.target === e.currentTarget) setEditGuestOpen(false); }}
         >
           <div
             className="w-full max-w-sm rounded-3xl p-6"
-            style={{ background: "#1e293b", border: "1px solid rgba(255,255,255,0.1)" }}
+            style={{ background: "#FFFFFF", border: "1px solid rgba(240,98,146,0.15)", boxShadow: "0 20px 60px rgba(0,0,0,0.1), 0 8px 20px rgba(240,98,146,0.1)" }}
           >
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-base font-bold text-white">Modifier l&apos;invité</h2>
-              <button onClick={() => setEditGuestOpen(false)} className="text-gray-500 hover:text-gray-300"><IconClose /></button>
+              <h2 className="text-base font-bold" style={{ color: "#1E1020" }}>Modifier l&apos;invité</h2>
+              <button onClick={() => setEditGuestOpen(false)} className="text-gray-400 hover:text-gray-600"><IconClose /></button>
             </div>
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: "rgba(255,255,255,0.4)" }}>Prénom</label>
+                  <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: "#A890B0" }}>Prénom</label>
                   <input
                     type="text"
                     value={editGuestForm.prenom}
                     onChange={(e) => setEditGuestForm({ ...editGuestForm, prenom: e.target.value })}
                     className="w-full px-3 py-2 text-sm rounded-xl outline-none"
-                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
+                    style={{ background: "#F8F5F8", border: "1px solid rgba(240,98,146,0.15)", color: "#1E1020" }}
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: "rgba(255,255,255,0.4)" }}>Nom</label>
+                  <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: "#A890B0" }}>Nom</label>
                   <input
                     type="text"
                     value={editGuestForm.nom}
                     onChange={(e) => setEditGuestForm({ ...editGuestForm, nom: e.target.value })}
                     className="w-full px-3 py-2 text-sm rounded-xl outline-none"
-                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
+                    style={{ background: "#F8F5F8", border: "1px solid rgba(240,98,146,0.15)", color: "#1E1020" }}
                   />
                 </div>
               </div>
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: "rgba(255,255,255,0.4)" }}>Relation</label>
+                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: "#A890B0" }}>Relation</label>
                 <select
                   value={editGuestForm.relation || "Autres"}
                   onChange={(e) => setEditGuestForm({ ...editGuestForm, relation: e.target.value })}
                   className="w-full px-3 py-2 text-sm rounded-xl outline-none"
-                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
+                  style={{ background: "#F8F5F8", border: "1px solid rgba(240,98,146,0.15)", color: "#1E1020" }}
                 >
-                  {RELATIONS.map((r) => <option key={r} value={r} style={{ background: "#1e293b" }}>{r}</option>)}
+                  {RELATIONS.map((r) => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: "rgba(255,255,255,0.4)" }}>Régime alimentaire</label>
+                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: "#A890B0" }}>Régime alimentaire</label>
                 <select
                   value={editGuestForm.regime_alimentaire}
                   onChange={(e) => setEditGuestForm({ ...editGuestForm, regime_alimentaire: e.target.value as Regime })}
                   className="w-full px-3 py-2 text-sm rounded-xl outline-none"
-                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
+                  style={{ background: "#F8F5F8", border: "1px solid rgba(240,98,146,0.15)", color: "#1E1020" }}
                 >
                   {Object.entries(REGIME_LABELS).map(([k, label]) => (
-                    <option key={k} value={k} style={{ background: "#1e293b" }}>{label}</option>
+                    <option key={k} value={k}>{label}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: "rgba(255,255,255,0.4)" }}>Email</label>
+                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: "#A890B0" }}>Email</label>
                 <input
                   type="email"
                   value={editGuestForm.email}
                   onChange={(e) => setEditGuestForm({ ...editGuestForm, email: e.target.value })}
                   placeholder="email@exemple.com"
                   className="w-full px-3 py-2 text-sm rounded-xl outline-none"
-                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
+                  style={{ background: "#F8F5F8", border: "1px solid rgba(240,98,146,0.15)", color: "#1E1020" }}
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: "rgba(255,255,255,0.4)" }}>Téléphone</label>
+                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: "#A890B0" }}>Téléphone</label>
                 <input
                   type="tel"
                   value={editGuestForm.telephone}
                   onChange={(e) => setEditGuestForm({ ...editGuestForm, telephone: e.target.value })}
                   placeholder="+33 6 00 00 00 00"
                   className="w-full px-3 py-2 text-sm rounded-xl outline-none"
-                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "white" }}
+                  style={{ background: "#F8F5F8", border: "1px solid rgba(240,98,146,0.15)", color: "#1E1020" }}
                 />
               </div>
               <div className="flex gap-3 pt-1">
                 <button
                   onClick={() => setEditGuestOpen(false)}
                   className="flex-1 py-2.5 text-sm font-semibold rounded-xl transition-colors"
-                  style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.6)", border: "1px solid rgba(255,255,255,0.1)" }}
+                  style={{ background: "#F8F5F8", color: "#6E5070", border: "1px solid rgba(240,98,146,0.12)" }}
                 >
                   Annuler
                 </button>
@@ -1874,7 +1880,7 @@ export default function PlanDeTablePage() {
                   onClick={saveGuestEdit}
                   disabled={savingGuest || !editGuestForm.prenom.trim() || !editGuestForm.nom.trim()}
                   className="flex-1 py-2.5 text-sm font-bold rounded-xl transition-all hover:opacity-90 disabled:opacity-40"
-                  style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)", color: "white" }}
+                  style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)", color: "white", boxShadow: "0 4px 12px rgba(240,98,146,0.3)" }}
                 >
                   {savingGuest ? "…" : "Enregistrer"}
                 </button>
@@ -1888,25 +1894,25 @@ export default function PlanDeTablePage() {
       {addTableOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(6px)" }}
+          style={{ background: "rgba(0,0,0,0.3)", backdropFilter: "blur(6px)" }}
           onClick={(e) => { if (e.target === e.currentTarget) setAddTableOpen(false); }}
         >
           <div
             className="w-full max-w-sm rounded-3xl p-6"
-            style={{ background: "#1e293b", border: "1px solid rgba(255,255,255,0.1)" }}
+            style={{ background: "#FFFFFF", border: "1px solid rgba(240,98,146,0.15)", boxShadow: "0 20px 60px rgba(0,0,0,0.1), 0 8px 20px rgba(240,98,146,0.1)" }}
           >
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-base font-bold text-white">
+              <h2 className="text-base font-bold" style={{ color: "#1E1020" }}>
                 {editTableId ? "Modifier la table" : "Nouvelle table"}
               </h2>
-              <button onClick={() => setAddTableOpen(false)} className="text-gray-500 hover:text-gray-300">
+              <button onClick={() => setAddTableOpen(false)} className="text-gray-400 hover:text-gray-600">
                 <IconClose />
               </button>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: "rgba(255,255,255,0.4)" }}>
+                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: "#A890B0" }}>
                   Nom de la table
                 </label>
                 <input
@@ -1915,16 +1921,16 @@ export default function PlanDeTablePage() {
                   onChange={(e) => setTableForm({ ...tableForm, nom: e.target.value })}
                   className="w-full px-3 py-2.5 text-sm rounded-xl outline-none"
                   style={{
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.12)",
-                    color: "white",
+                    background: "#F8F5F8",
+                    border: "1px solid rgba(240,98,146,0.15)",
+                    color: "#1E1020",
                   }}
                   placeholder="Table des mariés"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: "rgba(255,255,255,0.4)" }}>
+                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: "#A890B0" }}>
                   Nombre de places
                 </label>
                 <input
@@ -1935,9 +1941,9 @@ export default function PlanDeTablePage() {
                   onChange={(e) => setTableForm({ ...tableForm, capacite: e.target.value })}
                   className="w-full px-3 py-2.5 text-sm rounded-xl outline-none"
                   style={{
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.12)",
-                    color: "white",
+                    background: "#F8F5F8",
+                    border: "1px solid rgba(240,98,146,0.15)",
+                    color: "#1E1020",
                   }}
                 />
               </div>
@@ -1946,7 +1952,7 @@ export default function PlanDeTablePage() {
                 <button
                   onClick={() => setAddTableOpen(false)}
                   className="flex-1 py-2.5 text-sm font-semibold rounded-xl transition-colors"
-                  style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.6)", border: "1px solid rgba(255,255,255,0.1)" }}
+                  style={{ background: "#F8F5F8", color: "#6E5070", border: "1px solid rgba(240,98,146,0.12)" }}
                 >
                   Annuler
                 </button>
@@ -1954,7 +1960,7 @@ export default function PlanDeTablePage() {
                   onClick={saveTable}
                   disabled={savingTable || !tableForm.nom.trim()}
                   className="flex-1 py-2.5 text-sm font-bold rounded-xl transition-all hover:opacity-90 disabled:opacity-40"
-                  style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)", color: "white" }}
+                  style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)", color: "white", boxShadow: "0 4px 12px rgba(240,98,146,0.3)" }}
                 >
                   {savingTable ? "…" : editTableId ? "Mettre à jour" : "Créer"}
                 </button>
@@ -2014,10 +2020,10 @@ function GuestChip({
           cursor: "grab",
           opacity: isDragging ? 0.3 : 1,
           transition: "opacity 0.15s, box-shadow 0.15s",
-          border: isDropTarget ? "2px solid #F06292" : "2px solid rgba(255,255,255,0.2)",
+          border: isDropTarget ? "2px solid #F06292" : "2px solid rgba(255,255,255,0.25)",
           boxShadow: isDropTarget
             ? "0 0 0 3px rgba(240,98,146,0.4), 0 0 14px rgba(240,98,146,0.4)"
-            : undefined,
+            : `0 2px 6px ${colors.bg}40`,
           userSelect: "none",
           zIndex: 10,
           touchAction: "none",
@@ -2037,8 +2043,9 @@ function GuestChip({
       onClick={(e) => { e.stopPropagation(); onGuestClick?.(guest); }}
       className="flex items-center gap-2.5 px-2.5 py-2.5 rounded-xl cursor-pointer transition-all"
       style={{
-        background: isDragging ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.05)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        background: "#FFFFFF",
+        border: "1px solid rgba(240,98,146,0.1)",
+        boxShadow: isDragging ? "none" : "0 1px 4px rgba(240,98,146,0.08)",
         opacity: isDragging ? 0.4 : 1,
         userSelect: "none",
         touchAction: "none",
@@ -2047,15 +2054,15 @@ function GuestChip({
     >
       <div
         className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-        style={{ background: colors.bg, color: colors.text }}
+        style={{ background: colors.bg, color: colors.text, boxShadow: `0 2px 6px ${colors.bg}40` }}
       >
         {initials || guest.prenom[0]?.toUpperCase()}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold truncate" style={{ color: "rgba(255,255,255,0.8)" }}>
+        <p className="text-xs font-semibold truncate" style={{ color: "#1E1020" }}>
           {guest.prenom} {guest.nom}
         </p>
-        <p className="text-xs truncate" style={{ color: "rgba(255,255,255,0.3)", fontSize: "10px" }}>
+        <p className="text-xs truncate" style={{ color: "#A890B0", fontSize: "10px" }}>
           {REGIME_LABELS[guest.regime_alimentaire]}
         </p>
       </div>
