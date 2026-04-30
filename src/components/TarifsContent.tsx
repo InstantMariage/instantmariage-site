@@ -195,6 +195,7 @@ export default function TarifsContent() {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [prestataireId, setPrestataireId] = useState<string | null>(null);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [eliteMode, setEliteMode] = useState<"vitrine" | "shop">("vitrine");
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -358,15 +359,17 @@ export default function TarifsContent() {
       {/* ─── PRICING CARDS ───────────────────────────────────── */}
       <section className="py-16 md:py-20 bg-white">
         <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-6 gap-6 lg:gap-3 items-stretch">
-            {plans.filter((p) => p.id !== "gratuit").map((plan) => {
-              const displayPrice = annual ? plan.priceAnnual : plan.price;
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-3 items-stretch">
+            {plans.filter((p) => p.id !== "gratuit" && p.id !== "elite-shop").map((plan) => {
               const isPro = plan.id === "pro";
               const isGold = plan.id === "premium";
               const isDiamond = plan.id === "diamond";
               const isEliteVitrine = plan.id === "elite-vitrine";
-              const isEliteShop = plan.id === "elite-shop";
-              const isElite = isEliteVitrine || isEliteShop;
+              const isEliteShop = false;
+              const isElite = isEliteVitrine;
+              const eliteShopData = plans.find(p => p.id === "elite-shop")!;
+              const activePlan = isEliteVitrine ? (eliteMode === "vitrine" ? plan : eliteShopData) : plan;
+              const displayPrice = annual ? activePlan.priceAnnual : activePlan.price;
 
               const DIAMOND_MAILTO =
                 "mailto:contact@instantmariage.fr?subject=Pack%20Diamond%20InstantMariage&body=Bonjour%2C%20je%20suis%20int%C3%A9ress%C3%A9(e)%20par%20le%20pack%20Diamond.%0AMon%20nom%20est%20%3A%20%0AMon%20m%C3%A9tier%20%3A%20%0AMa%20ville%20%3A%20";
@@ -375,6 +378,7 @@ export default function TarifsContent() {
                 <div
                   key={plan.id}
                   className={`relative flex flex-col rounded-3xl transition-all duration-300 ${
+                    plan.id === "starter" ? "hidden" :
                     isPro
                       ? "shadow-2xl lg:shadow-xl"
                       : isDiamond || isElite
@@ -432,23 +436,13 @@ export default function TarifsContent() {
                       </span>
                     </div>
                   )}
-                  {isEliteVitrine && (
+                  {isElite && (
                     <div className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap">
                       <span
                         className="text-xs font-bold px-4 py-1.5 rounded-full shadow-lg tracking-wide"
                         style={{ background: "linear-gradient(135deg, #7C3AED, #5B21B6)", color: "#fff" }}
                       >
-                        👑 Site Pro Inclus
-                      </span>
-                    </div>
-                  )}
-                  {isEliteShop && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                      <span
-                        className="text-xs font-bold px-4 py-1.5 rounded-full shadow-lg tracking-wide"
-                        style={{ background: "linear-gradient(135deg, #7C3AED, #5B21B6)", color: "#fff" }}
-                      >
-                        👑 Site Pro + Boutique
+                        {eliteMode === "vitrine" ? "👑 Site Pro Inclus" : "👑 Site Pro + Boutique"}
                       </span>
                     </div>
                   )}
@@ -464,6 +458,25 @@ export default function TarifsContent() {
                   )}
 
                   <div className="p-6 lg:p-4 flex flex-col flex-1">
+                    {/* Toggle Vitrine / Shop */}
+                    {isElite && (
+                      <div className="flex rounded-full mb-4 overflow-hidden border" style={{ borderColor: "#4C1D95" }}>
+                        <button
+                          onClick={() => setEliteMode("vitrine")}
+                          className="flex-1 text-xs font-semibold px-3 py-1.5 transition-all duration-200"
+                          style={eliteMode === "vitrine" ? { background: "#5B21B6", color: "#fff" } : { background: "transparent", color: "#A78BFA" }}
+                        >
+                          Vitrine 149€
+                        </button>
+                        <button
+                          onClick={() => setEliteMode("shop")}
+                          className="flex-1 text-xs font-semibold px-3 py-1.5 transition-all duration-200"
+                          style={eliteMode === "shop" ? { background: "#5B21B6", color: "#fff" } : { background: "transparent", color: "#A78BFA" }}
+                        >
+                          Shop 199€
+                        </button>
+                      </div>
+                    )}
                     {/* Plan name & description */}
                     <div className="mb-4 lg:mb-3">
                       <p
@@ -480,7 +493,7 @@ export default function TarifsContent() {
                             : { color: "#9CA3AF" }
                         }
                       >
-                        {plan.name}
+                        {isElite ? "ELITE 👑" : plan.name}
                       </p>
                       <p
                         className="text-sm leading-snug"
@@ -494,7 +507,7 @@ export default function TarifsContent() {
                             : { color: "#6B7280" }
                         }
                       >
-                        {plan.description}
+                        {activePlan.description}
                       </p>
                     </div>
 
@@ -570,7 +583,7 @@ export default function TarifsContent() {
                             >
                               ou{" "}
                               <span className="font-semibold" style={isPro ? {} : isElite ? { color: "#A78BFA" } : { color: "#F06292" }}>
-                                {plan.priceAnnual.toFixed(2).replace(".", ",")}€/mois
+                                {activePlan.priceAnnual.toFixed(2).replace(".", ",")}€/mois
                               </span>{" "}
                               en annuel
                             </p>
@@ -581,7 +594,7 @@ export default function TarifsContent() {
 
                     {/* Features */}
                     <ul className="space-y-2 lg:space-y-1.5 flex-1 mb-3">
-                      {plan.features.map((f) => (
+                      {activePlan.features.map((f) => (
                         <li key={f} className="flex items-start gap-2.5">
                           <span
                             className="mt-0.5 flex-shrink-0"
