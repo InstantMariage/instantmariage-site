@@ -234,7 +234,7 @@ export default function TarifsContent() {
     });
   }, [router]);
 
-  async function handleSubscribe(plan: typeof plans[number], priceIdOverride?: string, loadingKey?: string) {
+  async function handleSubscribe(plan: typeof plans[number], priceIdOverride?: string, loadingKey?: string, redirectPath?: string) {
     const effectivePriceId = priceIdOverride ?? plan.priceId;
     const key = loadingKey ?? plan.id;
 
@@ -245,7 +245,7 @@ export default function TarifsContent() {
 
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-      router.push("/login?redirect=/tarifs");
+      router.push(redirectPath ?? "/login?redirect=/tarifs");
       return;
     }
 
@@ -666,7 +666,8 @@ export default function TarifsContent() {
                         onClick={() => handleSubscribe(
                           activePlan,
                           ELITE_PRICE_IDS[eliteMode][annual ? "annual" : "monthly"],
-                          "elite"
+                          "elite",
+                          `/login?redirect=${encodeURIComponent(`/elite?plan=${eliteMode}`)}`
                         )}
                         disabled={loadingPlan === "elite"}
                         className="block w-full text-center text-sm font-semibold px-4 py-2.5 rounded-2xl transition-all duration-200 hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"

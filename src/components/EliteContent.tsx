@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 /* ─── Domain checker ─────────────────────────────────── */
 
@@ -131,6 +133,11 @@ function DomainChecker() {
   );
 }
 
+const ELITE_PRICE_IDS = {
+  vitrine: { monthly: "price_1TS1eHKKBs85XtqBRcnibPry" },
+  shop:    { monthly: "price_1TS1g9KKBs85XtqBFP7t07pC" },
+};
+
 /* ─── Comparatif table data ──────────────────────────── */
 
 const compareRows = [
@@ -175,6 +182,50 @@ const buyoutRows = [
 /* ─── Main component ─────────────────────────────────── */
 
 export default function EliteContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [eliteMode, setEliteMode] = useState<"vitrine" | "shop">(
+    searchParams.get("plan") === "shop" ? "shop" : "vitrine"
+  );
+  const [loading, setLoading] = useState(false);
+
+  async function handleCheckout() {
+    const redirectParam = encodeURIComponent(`/elite?plan=${eliteMode}`);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      router.push(`/login?redirect=${redirectParam}`);
+      return;
+    }
+    setLoading(true);
+    const { data: prestataire } = await supabase
+      .from("prestataires")
+      .select("id")
+      .eq("user_id", session.user.id)
+      .single();
+    if (!prestataire) {
+      router.push("/inscription");
+      setLoading(false);
+      return;
+    }
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ priceId: ELITE_PRICE_IDS[eliteMode].monthly, prestataireId: prestataire.id }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert("Une erreur est survenue. Veuillez réessayer.");
+        setLoading(false);
+      }
+    } catch {
+      alert("Une erreur est survenue. Veuillez réessayer.");
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="pt-20 md:pt-24">
 
@@ -210,24 +261,34 @@ export default function EliteContent() {
           <p className="text-purple-200 text-lg md:text-xl max-w-xl mx-auto mb-4 leading-relaxed">
             Nom de domaine inclus&nbsp;•&nbsp;Maintenance incluse&nbsp;•&nbsp;Visibilité sur InstantMariage
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
-            <Link
-              href="/contact"
-              className="px-8 py-4 rounded-2xl font-bold text-base text-white shadow-xl transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5"
+          {/* Toggle Vitrine / Shop */}
+          <div className="flex justify-center mt-10">
+            <div className="inline-flex rounded-full overflow-hidden border" style={{ borderColor: "rgba(124,58,237,0.5)" }}>
+              <button
+                onClick={() => setEliteMode("vitrine")}
+                className="px-6 py-2.5 text-sm font-semibold transition-all duration-200"
+                style={eliteMode === "vitrine" ? { background: "#5B21B6", color: "#fff" } : { background: "transparent", color: "#C4B5FD" }}
+              >
+                Vitrine — 149€/mois
+              </button>
+              <button
+                onClick={() => setEliteMode("shop")}
+                className="px-6 py-2.5 text-sm font-semibold transition-all duration-200"
+                style={eliteMode === "shop" ? { background: "#5B21B6", color: "#fff" } : { background: "transparent", color: "#C4B5FD" }}
+              >
+                Shop — 199€/mois
+              </button>
+            </div>
+          </div>
+          <div className="flex justify-center mt-4">
+            <button
+              onClick={handleCheckout}
+              disabled={loading}
+              className="px-8 py-4 rounded-2xl font-bold text-base text-white shadow-xl transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed"
               style={{ background: "linear-gradient(135deg, #7C3AED, #5B21B6)" }}
             >
-              Choisir Elite Vitrine&nbsp;149€/mois
-            </Link>
-            <Link
-              href="/contact"
-              className="px-8 py-4 rounded-2xl font-bold text-base shadow-xl transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5"
-              style={{
-                background: "linear-gradient(135deg, #F06292, #e91e8c)",
-                color: "#fff",
-              }}
-            >
-              Choisir Elite Shop&nbsp;199€/mois
-            </Link>
+              {loading ? "Chargement…" : eliteMode === "vitrine" ? "Choisir Elite Vitrine →" : "Choisir Elite Shop →"}
+            </button>
           </div>
         </div>
       </section>
@@ -406,21 +467,31 @@ export default function EliteContent() {
           <p className="text-purple-200 text-lg mb-10">
             Rejoignez les prestataires qui ont choisi InstantMariage Elite
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/contact"
-              className="px-8 py-4 rounded-2xl font-bold text-base text-white shadow-xl transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5"
+          <div className="flex flex-col items-center gap-4">
+            <div className="inline-flex rounded-full overflow-hidden border" style={{ borderColor: "rgba(124,58,237,0.5)" }}>
+              <button
+                onClick={() => setEliteMode("vitrine")}
+                className="px-6 py-2.5 text-sm font-semibold transition-all duration-200"
+                style={eliteMode === "vitrine" ? { background: "#5B21B6", color: "#fff" } : { background: "transparent", color: "#C4B5FD" }}
+              >
+                Vitrine — 149€/mois
+              </button>
+              <button
+                onClick={() => setEliteMode("shop")}
+                className="px-6 py-2.5 text-sm font-semibold transition-all duration-200"
+                style={eliteMode === "shop" ? { background: "#5B21B6", color: "#fff" } : { background: "transparent", color: "#C4B5FD" }}
+              >
+                Shop — 199€/mois
+              </button>
+            </div>
+            <button
+              onClick={handleCheckout}
+              disabled={loading}
+              className="px-8 py-4 rounded-2xl font-bold text-base text-white shadow-xl transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed"
               style={{ background: "linear-gradient(135deg, #7C3AED, #5B21B6)" }}
             >
-              Vitrine&nbsp;149€/mois
-            </Link>
-            <Link
-              href="/contact"
-              className="px-8 py-4 rounded-2xl font-bold text-base shadow-xl transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5"
-              style={{ background: "linear-gradient(135deg, #F06292, #e91e8c)", color: "#fff" }}
-            >
-              Shop&nbsp;199€/mois
-            </Link>
+              {loading ? "Chargement…" : eliteMode === "vitrine" ? "Choisir Elite Vitrine →" : "Choisir Elite Shop →"}
+            </button>
           </div>
         </div>
       </section>

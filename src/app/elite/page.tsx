@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import EliteContent from "@/components/EliteContent";
@@ -33,7 +34,9 @@ export default function ElitePage() {
   return (
     <main className="min-h-screen">
       <Header />
-      <EliteContent />
+      <Suspense fallback={<div className="min-h-screen" />}>
+        <EliteContent />
+      </Suspense>
       <Footer />
     </main>
   );
