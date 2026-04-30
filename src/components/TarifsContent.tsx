@@ -357,8 +357,8 @@ export default function TarifsContent() {
 
       {/* ─── PRICING CARDS ───────────────────────────────────── */}
       <section className="py-16 md:py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-6 items-stretch">
+        <div className="max-w-screen-2xl mx-auto px-2 sm:px-4 lg:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-6 gap-6 lg:gap-3 items-stretch">
             {plans.filter((p) => p.id !== "gratuit").map((plan) => {
               const displayPrice = annual ? plan.priceAnnual : plan.price;
               const isPro = plan.id === "pro";
@@ -376,7 +376,7 @@ export default function TarifsContent() {
                   key={plan.id}
                   className={`relative flex flex-col rounded-3xl transition-all duration-300 ${
                     isPro
-                      ? "shadow-2xl md:scale-105 z-10"
+                      ? "shadow-2xl lg:shadow-xl"
                       : isDiamond || isElite
                       ? "shadow-2xl hover:-translate-y-1"
                       : "shadow-md hover:shadow-xl hover:-translate-y-1"
@@ -463,9 +463,9 @@ export default function TarifsContent() {
                     </div>
                   )}
 
-                  <div className="p-8 sm:p-7 flex flex-col flex-1">
+                  <div className="p-6 lg:p-4 flex flex-col flex-1">
                     {/* Plan name & description */}
-                    <div className="mb-6">
+                    <div className="mb-4 lg:mb-3">
                       <p
                         className="text-xs font-bold uppercase tracking-widest mb-1"
                         style={
@@ -499,12 +499,12 @@ export default function TarifsContent() {
                     </div>
 
                     {/* Price */}
-                    <div className="mb-7">
+                    <div className="mb-5 lg:mb-3">
                       {isDiamond ? (
                         <div>
                           <div className="flex items-end gap-1">
                             <span
-                              className="text-4xl font-extrabold leading-none"
+                              className="text-3xl lg:text-2xl font-extrabold leading-none"
                               style={{ fontFamily: "var(--font-playfair), serif", color: "#C9A84C" }}
                             >
                               1 490€
@@ -520,7 +520,7 @@ export default function TarifsContent() {
                       ) : plan.price === 0 ? (
                         <div>
                           <span
-                            className={`text-5xl font-extrabold ${
+                            className={`text-4xl lg:text-2xl font-extrabold ${
                               isPro ? "text-white" : "text-gray-900"
                             }`}
                             style={{ fontFamily: "var(--font-playfair), serif" }}
@@ -535,7 +535,7 @@ export default function TarifsContent() {
                         <div>
                           <div className="flex items-end gap-1">
                             <span
-                              className={`text-5xl font-extrabold leading-none ${
+                              className={`text-4xl lg:text-2xl font-extrabold leading-none ${
                                 isPro ? "text-white" : isGold ? "text-amber-700" : isElite ? "text-white" : "text-gray-900"
                               }`}
                               style={{ fontFamily: "var(--font-playfair), serif" }}
@@ -580,7 +580,7 @@ export default function TarifsContent() {
                     </div>
 
                     {/* Features */}
-                    <ul className="space-y-3 flex-1 mb-4">
+                    <ul className="space-y-2 lg:space-y-1.5 flex-1 mb-3">
                       {plan.features.map((f) => (
                         <li key={f} className="flex items-start gap-2.5">
                           <span
@@ -600,7 +600,7 @@ export default function TarifsContent() {
                             <CheckIcon />
                           </span>
                           <span
-                            className="text-sm leading-snug"
+                            className="text-sm lg:text-xs leading-snug"
                             style={
                               isDiamond
                                 ? { color: "#E5E5E5" }
@@ -619,14 +619,14 @@ export default function TarifsContent() {
 
                     {/* Note Elite */}
                     {isElite && (
-                      <p className="text-xs mb-5 leading-relaxed" style={{ color: "#A78BFA60" }}>
+                      <p className="text-xs mb-3 leading-relaxed" style={{ color: "#A78BFA60" }}>
                         Sans engagement — résiliation = site hors ligne
                       </p>
                     )}
 
                     {/* Note Diamond */}
                     {isDiamond && (
-                      <p className="text-xs mb-5 leading-relaxed" style={{ color: "#C9A84C60" }}>
+                      <p className="text-xs mb-3 leading-relaxed" style={{ color: "#C9A84C60" }}>
                         Sans prélèvement automatique — vous recevrez un email 30 jours avant expiration
                       </p>
                     )}
@@ -635,7 +635,7 @@ export default function TarifsContent() {
                     {isDiamond ? (
                       <a
                         href={DIAMOND_MAILTO}
-                        className="block w-full text-center text-sm font-semibold px-6 py-3.5 rounded-2xl transition-all duration-200 hover:opacity-90"
+                        className="block w-full text-center text-sm font-semibold px-4 py-2.5 rounded-2xl transition-all duration-200 hover:opacity-90"
                         style={{ background: "#C9A84C", color: "#1C1C1E" }}
                       >
                         {plan.cta}
@@ -643,7 +643,7 @@ export default function TarifsContent() {
                     ) : isElite ? (
                       <Link
                         href="/contact"
-                        className="block w-full text-center text-sm font-semibold px-6 py-3.5 rounded-2xl transition-all duration-200 hover:opacity-90"
+                        className="block w-full text-center text-sm font-semibold px-4 py-2.5 rounded-2xl transition-all duration-200 hover:opacity-90"
                         style={{ background: "linear-gradient(135deg, #7C3AED, #5B21B6)", color: "#fff" }}
                       >
                         {plan.cta}
@@ -652,7 +652,7 @@ export default function TarifsContent() {
                       <button
                         onClick={() => handleSubscribe(plan)}
                         disabled={loadingPlan === plan.id}
-                        className={`block w-full text-center text-sm font-semibold px-6 py-3.5 rounded-2xl transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed ${
+                        className={`block w-full text-center text-sm font-semibold px-4 py-2.5 rounded-2xl transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed ${
                           isPro
                             ? "bg-white text-rose-500 hover:bg-rose-50 shadow-md hover:shadow-lg"
                             : isGold
