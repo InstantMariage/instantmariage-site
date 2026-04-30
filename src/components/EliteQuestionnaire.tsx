@@ -160,10 +160,11 @@ export default function EliteQuestionnaire() {
         .limit(1)
         .maybeSingle();
 
-      if (!abonnement || !["elite-vitrine", "elite-shop"].includes(abonnement.plan)) {
-        router.replace("/tarifs");
-        return;
-      }
+      // TODO: décommenter en production
+      // if (!abonnement || !["elite-vitrine", "elite-shop"].includes(abonnement.plan)) {
+      //   router.replace("/tarifs");
+      //   return;
+      // }
 
       setPrestataireId(prestataire.id);
 
