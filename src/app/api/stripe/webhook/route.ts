@@ -701,13 +701,27 @@ export async function POST(req: NextRequest) {
         console.error("[webhook] Erreur SELECT abonnement:", selectError);
       }
 
-      // Annuler l'ancien abonnement Stripe si différent du nouveau
-      const oldSubId = existing?.stripe_subscription_id;
-      if (oldSubId && oldSubId !== subscriptionId) {
+      // Annule tous les anciens abonnements actifs depuis Stripe directement
+      // (plus robuste que via Supabase : couvre les cas de désynchronisation)
+      if (customerId) {
         try {
-          await stripe.subscriptions.cancel(oldSubId);
-        } catch {
-          // S'il est déjà annulé ou introuvable, on continue sans bloquer
+          const activeSubs = await stripe.subscriptions.list({
+            customer: customerId,
+            status: "active",
+            limit: 10,
+          });
+          for (const sub of activeSubs.data) {
+            if (sub.id !== subscriptionId) {
+              try {
+                await stripe.subscriptions.cancel(sub.id);
+                console.log(`[webhook] Ancien abonnement annulé: ${sub.id}`);
+              } catch {
+                // Déjà annulé ou introuvable, on continue
+              }
+            }
+          }
+        } catch (listErr) {
+          console.error("[webhook] Erreur liste abonnements Stripe:", listErr);
         }
       }
 
@@ -819,13 +833,26 @@ export async function POST(req: NextRequest) {
         console.error("[webhook] Erreur UPDATE abonnement (annulation):", JSON.stringify(error));
       }
 
-      const { error: updatePrestErr } = await supabase
-        .from("prestataires")
-        .update({ abonnement_actif: false, verifie: false })
-        .eq("id", prestataireId);
+      // Vérifie qu'il ne reste pas d'abonnement actif avant de désactiver le prestataire.
+      // Évite la race condition lors d'un upgrade Elite : le deleted event de l'ancien abonnement
+      // ne doit pas écraser le nouvel abonnement Elite déjà activé.
+      const { data: aboActif } = await supabase
+        .from("abonnements")
+        .select("id")
+        .eq("prestataire_id", prestataireId)
+        .eq("statut", "actif")
+        .limit(1)
+        .maybeSingle();
 
-      if (updatePrestErr) {
-        console.error("[webhook] Erreur UPDATE prestataires.abonnement_actif/verifie (annulation):", JSON.stringify(updatePrestErr));
+      if (!aboActif) {
+        const { error: updatePrestErr } = await supabase
+          .from("prestataires")
+          .update({ abonnement_actif: false, verifie: false })
+          .eq("id", prestataireId);
+
+        if (updatePrestErr) {
+          console.error("[webhook] Erreur UPDATE prestataires.abonnement_actif/verifie (annulation):", JSON.stringify(updatePrestErr));
+        }
       }
     }
 
