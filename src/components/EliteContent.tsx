@@ -31,7 +31,7 @@ async function checkDomainRDAP(domain: string): Promise<boolean> {
 interface DomainCheckerProps {
   eliteMode: "vitrine" | "shop";
   setEliteMode: (mode: "vitrine" | "shop") => void;
-  onCheckout: () => void;
+  onCheckout: (domain: string) => void;
   loading: boolean;
 }
 
@@ -129,7 +129,7 @@ function DomainChecker({ eliteMode, setEliteMode, onCheckout, loading }: DomainC
             </div>
           </div>
           <button
-            onClick={onCheckout}
+            onClick={() => onCheckout(input)}
             disabled={loading}
             className="w-full px-5 py-3 rounded-xl text-white text-sm font-semibold transition hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
             style={{ background: "linear-gradient(135deg, #7C3AED, #5B21B6)" }}
@@ -230,7 +230,7 @@ export default function EliteContent() {
     document.getElementById("verifier-domaine")?.scrollIntoView({ behavior: "smooth" });
   }
 
-  async function handleCheckout() {
+  async function handleCheckout(domain: string) {
     const redirectParam = encodeURIComponent(`/elite?plan=${eliteMode}`);
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
@@ -252,7 +252,7 @@ export default function EliteContent() {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId: ELITE_PRICE_IDS[eliteMode].monthly, prestataireId: prestataire.id }),
+        body: JSON.stringify({ priceId: ELITE_PRICE_IDS[eliteMode].monthly, prestataireId: prestataire.id, domain }),
       });
       const data = await res.json();
       if (data.url) {
@@ -509,7 +509,7 @@ export default function EliteContent() {
               </button>
             </div>
             <button
-              onClick={handleCheckout}
+              onClick={() => handleCheckout("")}
               disabled={loading}
               className="px-8 py-4 rounded-2xl font-bold text-base text-white shadow-xl transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed"
               style={{ background: "linear-gradient(135deg, #7C3AED, #5B21B6)" }}

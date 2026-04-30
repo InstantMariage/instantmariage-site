@@ -27,7 +27,7 @@ function getSupabaseAdmin() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { priceId, prestataireId } = await req.json();
+    const { priceId, prestataireId, domain } = await req.json();
 
     if (!priceId || !ALLOWED_PRICE_IDS.has(priceId)) {
       return NextResponse.json({ error: "Price ID invalide" }, { status: 400 });
@@ -62,9 +62,9 @@ export async function POST(req: NextRequest) {
     };
 
     if (prestataireId) {
-      sessionParams.metadata = { prestataire_id: prestataireId };
+      sessionParams.metadata = { prestataire_id: prestataireId, ...(domain ? { domain } : {}) };
       sessionParams.subscription_data = {
-        metadata: { prestataire_id: prestataireId },
+        metadata: { prestataire_id: prestataireId, ...(domain ? { domain } : {}) },
       };
     }
 
