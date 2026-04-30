@@ -339,7 +339,17 @@ export default function EliteQuestionnaire() {
       } else {
         ({ error: dbError } = await supabase.from("elite_sites").insert(payload));
       }
-      if (dbError) throw dbError;
+      if (dbError) {
+        console.error("[elite-sites] Erreur Supabase DB:", {
+          message: dbError.message,
+          code:    dbError.code,
+          details: dbError.details,
+          hint:    dbError.hint,
+          full:    dbError,
+          payload,
+        });
+        throw dbError;
+      }
       setUploadProgress(92);
 
       // Admin notification — best-effort, silent fail if table doesn't exist
@@ -356,7 +366,16 @@ export default function EliteQuestionnaire() {
       setUploadProgress(100);
       setSubmitted(true);
     } catch (err) {
-      console.error("[elite-questionnaire]", err);
+      const e = err as Record<string, unknown>;
+      console.error("[elite-questionnaire] Erreur complète:", {
+        message:    e?.message,
+        code:       e?.code,
+        details:    e?.details,
+        hint:       e?.hint,
+        status:     e?.status,
+        statusCode: e?.statusCode,
+        raw:        err,
+      });
       setErrors(prev => ({ ...prev, submit: "Une erreur est survenue. Veuillez réessayer." }));
     } finally {
       setSubmitting(false);
