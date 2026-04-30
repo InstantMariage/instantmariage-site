@@ -84,6 +84,10 @@ function AuthCallbackContent() {
       // FIX BUG #1 — Crée le profil s'il n'existe pas encore en base
       setStatus("Finalisation de votre compte…");
 
+      const oauthRedirect = localStorage.getItem("oauth_redirect_after_login");
+      localStorage.removeItem("oauth_redirect_after_login");
+      const postLoginDest = oauthRedirect?.startsWith("/") ? oauthRedirect : null;
+
       if (role === "prestataire") {
         const { data: existing } = await supabase
           .from("prestataires")
@@ -109,7 +113,7 @@ function AuthCallbackContent() {
           });
         }
 
-        router.push("/dashboard/prestataire");
+        router.push(postLoginDest ?? "/dashboard/prestataire");
       } else {
         const { data: existing } = await supabase
           .from("maries")
@@ -131,7 +135,7 @@ function AuthCallbackContent() {
           });
         }
 
-        router.push("/dashboard/marie");
+        router.push(postLoginDest ?? "/dashboard/marie");
       }
     };
 

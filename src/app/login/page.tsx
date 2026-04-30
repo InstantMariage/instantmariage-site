@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 const WEDDING_IMG = "https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777030776686-pexels-imagestudio-1488312-2.jpg";
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectAfterLogin = searchParams.get("redirect");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -19,6 +21,9 @@ export default function LoginPage() {
   const [showGoogleHint, setShowGoogleHint] = useState(false);
 
   const handleGoogleLogin = async () => {
+    if (redirectAfterLogin?.startsWith("/")) {
+      localStorage.setItem("oauth_redirect_after_login", redirectAfterLogin);
+    }
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: "https://instantmariage.fr/auth/callback" },
@@ -41,7 +46,9 @@ export default function LoginPage() {
       return;
     }
     const role = data.user?.user_metadata?.role;
-    if (role === "prestataire") {
+    if (redirectAfterLogin?.startsWith("/")) {
+      router.push(redirectAfterLogin);
+    } else if (role === "prestataire") {
       router.push("/dashboard/prestataire");
     } else {
       router.push("/dashboard/marie");
@@ -306,5 +313,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen" />}>
+      <LoginContent />
+    </Suspense>
   );
 }
