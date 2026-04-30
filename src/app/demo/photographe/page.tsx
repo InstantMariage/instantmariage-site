@@ -34,7 +34,14 @@ function useInView(threshold = 0.15) {
   return { ref, inView }
 }
 
-const GALLERY_SEEDS = [20, 37, 42, 55, 78, 91]
+const GALLERY_PHOTOS = [
+  'photo-1519225421980-715cb0215aed',
+  'photo-1511285560929-80b456fea0bc',
+  'photo-1465495976277-4387d4b0b4c6',
+  'photo-1606800052052-a08af7148866',
+  'photo-1583939003579-730e3918a45a',
+  'photo-1591604021695-0c69b7c05981',
+]
 
 const SERVICES = [
   { num: '01', name: 'Reportage Complet', desc: 'Cérémonie + cocktail + soirée, livraison 400+ photos', price: 'À partir de 2 500€' },
@@ -142,7 +149,7 @@ export default function PhotographePage() {
       <section id="hero" style={{ position: 'relative', height: '100svh', minHeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="https://picsum.photos/seed/10/1920/1080"
+          src="https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=80&auto=format&fit=crop"
           alt="Mariage"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
         />
@@ -187,11 +194,11 @@ export default function PhotographePage() {
       {/* ── GALLERY ── */}
       <section id="gallery" style={{ backgroundColor: '#0A0A0A', padding: '0 0 3px' }}>
         <div ref={gallerySection.ref} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 3 }}>
-          {GALLERY_SEEDS.map((seed, i) => (
-            <div key={seed} style={{ overflow: 'hidden', height: 380, opacity: gallerySection.inView ? 1 : 0, transform: gallerySection.inView ? 'translateY(0)' : 'translateY(40px)', transition: `opacity 0.8s ease ${i * 0.1}s, transform 0.8s ease ${i * 0.1}s` }}>
+          {GALLERY_PHOTOS.map((photoId, i) => (
+            <div key={photoId} style={{ overflow: 'hidden', height: 380, opacity: gallerySection.inView ? 1 : 0, transform: gallerySection.inView ? 'translateY(0)' : 'translateY(40px)', transition: `opacity 0.8s ease ${i * 0.1}s, transform 0.8s ease ${i * 0.1}s` }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`https://picsum.photos/seed/${seed}/800/600`}
+                src={`https://images.unsplash.com/${photoId}?w=800&q=80&auto=format&fit=crop`}
                 alt={`Photo mariage ${i + 1}`}
                 style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.88)', transition: 'filter 0.5s ease, transform 0.6s ease', cursor: 'pointer' }}
                 onMouseEnter={e => { e.currentTarget.style.filter = 'brightness(1.0)'; e.currentTarget.style.transform = 'scale(1.02)' }}
@@ -207,7 +214,7 @@ export default function PhotographePage() {
         <div ref={aboutSection.ref} style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center', opacity: aboutSection.inView ? 1 : 0, transform: aboutSection.inView ? 'translateY(0)' : 'translateY(30px)', transition: 'opacity 0.9s ease, transform 0.9s ease' }}>
           <div style={{ aspectRatio: '3/4', overflow: 'hidden' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="https://picsum.photos/seed/64/600/800" alt="Léa Martin" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=1200&q=80&auto=format&fit=crop" alt="Léa Martin" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
           <div>
             <h2 style={{ fontFamily: 'var(--font-cormorant), serif', fontSize: 'clamp(44px, 5vw, 64px)', fontWeight: 400, color: '#0A0A0A', margin: '0 0 12px', lineHeight: 1.05 }}>Léa Martin</h2>
