@@ -10,10 +10,6 @@ type ActivityType =
   | "photographe" | "videaste" | "dj" | "traiteur"
   | "wedding-planner" | "fleuriste" | "autre";
 
-type TemplateId =
-  | "luxe-noir" | "elegance-blanche" | "rose-boheme"
-  | "nature-or" | "violet-moderne";
-
 interface FormState {
   domaine: string;
   typeActivite: ActivityType | "";
@@ -23,9 +19,7 @@ interface FormState {
   telephone: string;
   email_contact: string;
   site_actuel: string;
-  template: TemplateId | "";
-  couleurPrincipale: string;
-  couleurSecondaire: string;
+  style_description: string;
   logoFile: File | null;
   logoUrl: string;
   photoFiles: File[];
@@ -49,51 +43,13 @@ const ACTIVITY_TYPES: { id: ActivityType; icon: string; label: string }[] = [
   { id: "autre",          icon: "✨", label: "Autre" },
 ];
 
-const TEMPLATES: {
-  id: TemplateId; icon: string; label: string; desc: string;
-  gradient: string; textColor: string; needsBorder?: boolean;
-}[] = [
-  {
-    id: "luxe-noir", icon: "🖤", label: "Luxe Noir", desc: "Élégant et sophistiqué",
-    gradient: "linear-gradient(135deg, #1C1C1E 0%, #2D2D30 100%)", textColor: "#FFFFFF",
-  },
-  {
-    id: "elegance-blanche", icon: "🤍", label: "Élégance Blanche", desc: "Pur et raffiné",
-    gradient: "linear-gradient(135deg, #FAFAFA 0%, #F0EDE8 100%)", textColor: "#374151",
-    needsBorder: true,
-  },
-  {
-    id: "rose-boheme", icon: "🌸", label: "Rose Bohème", desc: "Romantique et chaleureux",
-    gradient: "linear-gradient(135deg, #FCE4EC 0%, #F8BBD9 100%)", textColor: "#880E4F",
-  },
-  {
-    id: "nature-or", icon: "🌿", label: "Nature & Or", desc: "Naturel et lumineux",
-    gradient: "linear-gradient(135deg, #E8F5E9 0%, #FFF8E1 100%)", textColor: "#1B5E20",
-  },
-  {
-    id: "violet-moderne", icon: "💜", label: "Violet Moderne", desc: "Contemporain et audacieux",
-    gradient: "linear-gradient(135deg, #7C3AED 0%, #4C1D95 100%)", textColor: "#FFFFFF",
-  },
-];
-
-const COLOR_SWATCHES = [
-  { value: "#F06292", label: "Rose" },
-  { value: "#7C3AED", label: "Violet" },
-  { value: "#880E4F", label: "Bordeaux" },
-  { value: "#D4AF37", label: "Or" },
-  { value: "#1C1C1E", label: "Noir" },
-  { value: "#9CAF88", label: "Vert sauge" },
-  { value: "#1B3A6B", label: "Marine" },
-  { value: "#F5F0E8", label: "Ivoire" },
-];
-
 const STATUS_LABELS: Record<string, { label: string; icon: string; desc: string }> = {
   en_cours:  { label: "En cours de création", icon: "🔨", desc: "Notre équipe travaille activement sur votre site." },
   en_ligne:  { label: "En ligne", icon: "🌐", desc: "Votre site est en ligne et accessible à vos clients." },
   suspendu:  { label: "Suspendu", icon: "⏸️", desc: "Votre site est temporairement suspendu." },
 };
 
-const STEPS = ["Votre activité", "Votre style", "Vos contenus"];
+const STEPS = ["Votre activité", "Vos contenus"];
 
 const ELITE_GRADIENT = "linear-gradient(135deg, #7C3AED, #F06292)";
 
@@ -106,9 +62,7 @@ const INITIAL_FORM: FormState = {
   telephone: "",
   email_contact: "",
   site_actuel: "",
-  template: "",
-  couleurPrincipale: "#F06292",
-  couleurSecondaire: "#7C3AED",
+  style_description: "",
   logoFile: null,
   logoUrl: "",
   photoFiles: [],
@@ -196,9 +150,7 @@ export default function EliteQuestionnaire() {
           telephone:           eliteSite.telephone || "",
           email_contact:       eliteSite.email_contact || session.user.email || "",
           site_actuel:         eliteSite.site_actuel || "",
-          template:            (eliteSite.template || "") as TemplateId | "",
-          couleurPrincipale:   eliteSite.couleur_principale || "#F06292",
-          couleurSecondaire:   eliteSite.couleur_secondaire || "#7C3AED",
+          style_description:   eliteSite.style_description || "",
           logoFile:   null,
           logoUrl:    eliteSite.logo_url || "",
           photoFiles: [],
@@ -247,9 +199,6 @@ export default function EliteQuestionnaire() {
       if (!form.email_contact.trim()) errs.email_contact = "Champ obligatoire";
     }
     if (s === 2) {
-      if (!form.template) errs.template = "Veuillez choisir un template";
-    }
-    if (s === 3) {
       if (!form.cgvAccepte) errs.cgvAccepte = "Vous devez accepter les conditions";
     }
     setErrors(errs);
@@ -304,7 +253,7 @@ export default function EliteQuestionnaire() {
   }
 
   const handleSubmit = async () => {
-    if (!validateStep(3) || !prestataireId) return;
+    if (!validateStep(2) || !prestataireId) return;
     setSubmitting(true);
     setUploadProgress(10);
 
@@ -336,9 +285,7 @@ export default function EliteQuestionnaire() {
         nom_professionnel:   form.nomProfessionnel,
         description_activite: form.descriptionActivite || null,
         ville_principale:    form.villePrincipale,
-        template:            form.template || null,
-        couleur_principale:  form.couleurPrincipale,
-        couleur_secondaire:  form.couleurSecondaire,
+        style_description:   form.style_description   || null,
         logo_url:            logoUrl   || null,
         photos_urls:         photoUrls,
         telephone:           form.telephone     || null,
@@ -483,7 +430,7 @@ export default function EliteQuestionnaire() {
             👑 Pack Elite — Création de votre site
           </span>
           <h1 className="text-3xl font-bold text-gray-900">Configurez votre site</h1>
-          <p className="text-gray-500 mt-2 text-sm">3 étapes pour créer votre site pro mariage</p>
+          <p className="text-gray-500 mt-2 text-sm">2 étapes pour créer votre site pro mariage</p>
         </div>
 
         {/* Stepper */}
@@ -493,7 +440,7 @@ export default function EliteQuestionnaire() {
           <div
             className="absolute top-5 left-5 h-0.5 transition-all duration-500"
             style={{
-              right: step === 3 ? "20px" : step === 2 ? "calc(50% + 5px)" : "calc(100% - 20px)",
+              right: step === 2 ? "20px" : "calc(100% - 20px)",
               background: ELITE_GRADIENT,
             }}
           />
@@ -700,78 +647,6 @@ export default function EliteQuestionnaire() {
 
           {/* ── STEP 2 ─────────────────────────────────────────────────────────── */}
           {step === 2 && (
-            <div className="space-y-8">
-              <h2 className="text-xl font-bold text-gray-900">Votre style</h2>
-
-              {/* Template choice */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-4">
-                  Choisissez votre template <span className="text-rose-400">*</span>
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {TEMPLATES.map(t => (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => setField("template", t.id)}
-                      className="relative rounded-2xl overflow-hidden text-left transition-all duration-200"
-                      style={
-                        form.template === t.id
-                          ? { outline: "3px solid #7C3AED", outlineOffset: "2px", transform: "scale(1.02)" }
-                          : { outline: "2px solid transparent" }
-                      }
-                    >
-                      {/* Preview area */}
-                      <div
-                        className="h-24 flex flex-col items-center justify-center gap-1.5 p-4"
-                        style={{
-                          background:  t.gradient,
-                          color:       t.textColor,
-                          border:      t.needsBorder ? "1px solid #E5E7EB" : undefined,
-                          borderBottom: "none",
-                        }}
-                      >
-                        <span className="text-3xl">{t.icon}</span>
-                        <span className="font-bold text-sm">{t.label}</span>
-                      </div>
-                      {/* Description */}
-                      <div className="bg-white px-4 py-2.5 flex items-center justify-between border border-t-0 border-gray-100 rounded-b-2xl">
-                        <p className="text-xs text-gray-500">{t.desc}</p>
-                        {form.template === t.id && (
-                          <div
-                            className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
-                            style={{ background: "#7C3AED" }}
-                          >
-                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                        )}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-                {errors.template && (
-                  <p className="text-rose-400 text-xs mt-2">{errors.template}</p>
-                )}
-              </div>
-
-              {/* Color pickers */}
-              <ColorPicker
-                label="Couleur principale"
-                value={form.couleurPrincipale}
-                onChange={v => setField("couleurPrincipale", v)}
-              />
-              <ColorPicker
-                label="Couleur secondaire"
-                value={form.couleurSecondaire}
-                onChange={v => setField("couleurSecondaire", v)}
-              />
-            </div>
-          )}
-
-          {/* ── STEP 3 ─────────────────────────────────────────────────────────── */}
-          {step === 3 && (
             <div className="space-y-7">
               <h2 className="text-xl font-bold text-gray-900">Vos contenus</h2>
 
@@ -944,6 +819,23 @@ export default function EliteQuestionnaire() {
                 </div>
               </div>
 
+              {/* Style description */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Décrivez votre style souhaité
+                  <span className="text-gray-400 font-normal ml-2 text-xs">
+                    ({form.style_description.length}/1000)
+                  </span>
+                </label>
+                <textarea
+                  value={form.style_description}
+                  onChange={e => setField("style_description", e.target.value.slice(0, 1000))}
+                  placeholder="Ex: je veux quelque chose d'élégant, noir et or, minimaliste, dans l'esprit Apple..."
+                  rows={4}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-200 focus:border-violet-400 text-gray-900 resize-none transition-colors"
+                />
+              </div>
+
               {/* CGV */}
               <div>
                 <label className="flex items-start gap-3 cursor-pointer">
@@ -984,7 +876,7 @@ export default function EliteQuestionnaire() {
               </button>
             )}
 
-            {step < 3 ? (
+            {step < 2 ? (
               <button
                 type="button"
                 onClick={handleNext}
@@ -1014,76 +906,6 @@ export default function EliteQuestionnaire() {
           </div>
         </div>
 
-      </div>
-    </div>
-  );
-}
-
-// ─── ColorPicker sub-component ────────────────────────────────────────────────
-
-function ColorPicker({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  const isCustom = !COLOR_SWATCHES.find(s => s.value === value);
-
-  return (
-    <div>
-      <label className="block text-sm font-semibold text-gray-700 mb-3">{label}</label>
-      <div className="flex flex-wrap items-center gap-2.5">
-        {COLOR_SWATCHES.map(({ value: sv, label: sl }) => (
-          <button
-            key={sv}
-            type="button"
-            title={sl}
-            onClick={() => onChange(sv)}
-            className="w-9 h-9 rounded-full transition-all"
-            style={{
-              backgroundColor: sv,
-              border:       sv === "#F5F0E8" ? "1px solid #E5E7EB" : undefined,
-              outline:      value === sv ? "3px solid #7C3AED" : "3px solid transparent",
-              outlineOffset: "2px",
-              transform:    value === sv ? "scale(1.1)" : undefined,
-            }}
-          />
-        ))}
-
-        {/* Custom color */}
-        <div className="relative w-9 h-9">
-          <input
-            type="color"
-            value={value}
-            onChange={e => onChange(e.target.value)}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer rounded-full"
-            title="Couleur personnalisée"
-          />
-          <div
-            className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold pointer-events-none transition-all"
-            style={{
-              backgroundColor: isCustom ? value : "white",
-              border:          "2px dashed #D1D5DB",
-              outline:         isCustom ? "3px solid #7C3AED" : "3px solid transparent",
-              outlineOffset:   "2px",
-              color:           isCustom ? "transparent" : "#9CA3AF",
-            }}
-          >
-            {!isCustom && "+"}
-          </div>
-        </div>
-
-        {/* Current value preview */}
-        <div className="flex items-center gap-2 ml-1">
-          <div
-            className="w-8 h-8 rounded-lg border border-gray-100 shadow-inner flex-shrink-0"
-            style={{ backgroundColor: value }}
-          />
-          <span className="text-xs font-mono text-gray-500 uppercase">{value}</span>
-        </div>
       </div>
     </div>
   );
