@@ -498,21 +498,33 @@ export default function EliteQuestionnaire() {
             <div className="space-y-6">
               <h2 className="text-xl font-bold text-gray-900">Votre activité</h2>
 
-              {/* Domaine — locked */}
+              {/* Domaine */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Nom de domaine
                 </label>
-                <div className="relative">
+                {form.domaine ? (
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={form.domaine}
+                      disabled
+                      className="w-full px-4 py-3 pr-11 rounded-xl bg-gray-50 border border-gray-200 text-gray-500 cursor-not-allowed select-none"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-lg">🔒</span>
+                  </div>
+                ) : (
                   <input
                     type="text"
-                    value={form.domaine || "Non disponible — contactez le support"}
-                    disabled
-                    className="w-full px-4 py-3 pr-11 rounded-xl bg-gray-50 border border-gray-200 text-gray-500 cursor-not-allowed select-none"
+                    value={form.domaine}
+                    onChange={e => setForm(prev => ({ ...prev, domaine: e.target.value }))}
+                    placeholder="ex: mon-entreprise.fr"
+                    className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-gray-900 focus:outline-none focus:ring-2 focus:ring-violet-300"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-lg">🔒</span>
-                </div>
-                <p className="text-xs text-gray-400 mt-1">Domaine validé lors de votre souscription</p>
+                )}
+                <p className="text-xs text-gray-400 mt-1">
+                  {form.domaine ? "Domaine validé lors de votre souscription" : "Indiquez le nom de domaine souhaité pour votre site"}
+                </p>
               </div>
 
               {/* Type d'activité */}
