@@ -418,6 +418,15 @@ export default function Header() {
             >
               Annuaire prestataires
             </Link>
+            {(!mounted || !user) && (
+              <Link
+                href="/elite"
+                className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
+                onClick={() => setMobileOpen(false)}
+              >
+                Mon site pro
+              </Link>
+            )}
             {(!mounted || user?.role !== "prestataire") && (
             <Link
               href="/boutique"
