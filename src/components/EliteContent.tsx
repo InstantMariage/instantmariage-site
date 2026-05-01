@@ -171,8 +171,8 @@ function DomainChecker({ eliteMode, setEliteMode, onCheckout, loading }: DomainC
 }
 
 const ELITE_PRICE_IDS = {
-  vitrine: { monthly: "price_1TS1eHKKBs85XtqBRcnibPry" },
-  shop:    { monthly: "price_1TS1g9KKBs85XtqBFP7t07pC" },
+  vitrine: { monthly: "price_1TS1eHKKBs85XtqBRcnibPry", yearly: "price_1TS1kJKKBs85XtqB2FHvqvCk" },
+  shop:    { monthly: "price_1TS1g9KKBs85XtqBFP7t07pC", yearly: "price_1TS1nRKKBs85XtqBiwR5Zbm8" },
 };
 
 /* ─── Comparatif table data ──────────────────────────── */
@@ -225,6 +225,7 @@ export default function EliteContent() {
     searchParams.get("plan") === "shop" ? "shop" : "vitrine"
   );
   const [loading, setLoading] = useState(false);
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
 
   function scrollToDomainChecker() {
     document.getElementById("verifier-domaine")?.scrollIntoView({ behavior: "smooth" });
@@ -253,7 +254,7 @@ export default function EliteContent() {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId: ELITE_PRICE_IDS[m].monthly, prestataireId: prestataire.id, domain }),
+        body: JSON.stringify({ priceId: ELITE_PRICE_IDS[m][billingCycle === "yearly" ? "yearly" : "monthly"], prestataireId: prestataire.id, domain }),
       });
       const data = await res.json();
       if (data.url) {
@@ -303,13 +304,22 @@ export default function EliteContent() {
           <p className="text-purple-200 text-lg md:text-xl max-w-xl mx-auto mb-10 leading-relaxed">
             Nom de domaine inclus&nbsp;•&nbsp;Maintenance incluse&nbsp;•&nbsp;Visibilité sur InstantMariage
           </p>
-          <button
-            onClick={scrollToDomainChecker}
-            className="px-8 py-4 rounded-2xl font-bold text-base text-white shadow-xl transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5"
-            style={{ background: "linear-gradient(135deg, #7C3AED, #5B21B6)" }}
-          >
-            Vérifier mon domaine →
-          </button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button
+              onClick={() => document.getElementById("realisations")?.scrollIntoView({ behavior: "smooth" })}
+              className="px-8 py-4 rounded-2xl font-bold text-base text-white shadow-xl transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5"
+              style={{ background: "linear-gradient(135deg, #7C3AED, #5B21B6)" }}
+            >
+              Voir nos réalisations →
+            </button>
+            <button
+              onClick={() => document.getElementById("tarifs-elite")?.scrollIntoView({ behavior: "smooth" })}
+              className="px-8 py-4 rounded-2xl font-bold text-base text-white shadow-xl transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5"
+              style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.3)" }}
+            >
+              Voir les tarifs →
+            </button>
+          </div>
         </div>
       </section>
 
@@ -341,7 +351,7 @@ export default function EliteContent() {
       </section>
 
       {/* ── SECTION 3 — NOS RÉALISATIONS ──────────────────── */}
-      <section className="py-16 md:py-24 bg-white">
+      <section id="realisations" className="py-16 md:py-24 bg-white">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-12">
             <h2
@@ -430,7 +440,7 @@ export default function EliteContent() {
       </section>
 
       {/* ── SECTION 4 — CE QUI EST INCLUS ─────────────────── */}
-      <section className="py-16 md:py-24" style={{ background: "#F9F5EE" }}>
+      <section id="tarifs-elite" className="py-16 md:py-24" style={{ background: "#F9F5EE" }}>
         <div className="max-w-5xl mx-auto px-4">
           <div className="text-center mb-12">
             <h2
@@ -445,16 +455,54 @@ export default function EliteContent() {
             <p className="text-gray-500 text-base md:text-lg">
               Choisissez le pack adapté à votre activité
             </p>
+
+            {/* Toggle Mensuel / Annuel */}
+            <div className="flex items-center justify-center mt-6">
+              <div className="inline-flex rounded-full overflow-hidden border border-purple-200 bg-white shadow-sm">
+                <button
+                  onClick={() => setBillingCycle("monthly")}
+                  className="px-6 py-2.5 text-sm font-semibold transition-all duration-200"
+                  style={
+                    billingCycle === "monthly"
+                      ? { background: "#7C3AED", color: "#fff" }
+                      : { background: "transparent", color: "#7C3AED" }
+                  }
+                >
+                  Mensuel
+                </button>
+                <button
+                  onClick={() => setBillingCycle("yearly")}
+                  className="px-6 py-2.5 text-sm font-semibold transition-all duration-200"
+                  style={
+                    billingCycle === "yearly"
+                      ? { background: "#7C3AED", color: "#fff" }
+                      : { background: "transparent", color: "#7C3AED" }
+                  }
+                >
+                  Annuel
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
             {/* Card Vitrine */}
             <div className="rounded-3xl overflow-hidden bg-white shadow-lg border border-gray-200 flex flex-col">
               <div className="px-7 py-6 text-center" style={{ background: "#7C3AED" }}>
                 <p className="text-white text-xl font-bold mb-1">Elite Vitrine 👑</p>
-                <p className="text-purple-200 font-extrabold" style={{ fontSize: 32 }}>
-                  149€<span className="text-lg font-semibold">/mois</span>
-                </p>
+                {billingCycle === "monthly" ? (
+                  <p className="text-purple-200 font-extrabold" style={{ fontSize: 32 }}>
+                    149€<span className="text-lg font-semibold">/mois</span>
+                  </p>
+                ) : (
+                  <>
+                    <p className="text-purple-200 font-extrabold" style={{ fontSize: 32 }}>
+                      119€<span className="text-lg font-semibold">/mois</span>
+                    </p>
+                    <p className="text-purple-300 text-xs mt-1">soit 1 428€/an</p>
+                    <p className="text-green-300 text-xs font-semibold mt-0.5">Économisez 2 mois</p>
+                  </>
+                )}
               </div>
               <div className="px-7 py-6 flex flex-col flex-1">
                 <ul className="space-y-2.5 text-sm flex-1 mb-8">
@@ -506,9 +554,19 @@ export default function EliteContent() {
                   ⭐ Le plus complet
                 </span>
                 <p className="text-white text-xl font-bold mb-1">Elite Shop 👑</p>
-                <p className="text-gray-300 font-extrabold" style={{ fontSize: 32 }}>
-                  199€<span className="text-lg font-semibold">/mois</span>
-                </p>
+                {billingCycle === "monthly" ? (
+                  <p className="text-gray-300 font-extrabold" style={{ fontSize: 32 }}>
+                    199€<span className="text-lg font-semibold">/mois</span>
+                  </p>
+                ) : (
+                  <>
+                    <p className="text-gray-300 font-extrabold" style={{ fontSize: 32 }}>
+                      159€<span className="text-lg font-semibold">/mois</span>
+                    </p>
+                    <p className="text-gray-400 text-xs mt-1">soit 1 908€/an</p>
+                    <p className="text-green-400 text-xs font-semibold mt-0.5">Économisez 2 mois</p>
+                  </>
+                )}
               </div>
               <div className="px-7 py-6 flex flex-col flex-1">
                 <ul className="space-y-2.5 text-sm text-gray-700 flex-1 mb-8">
