@@ -37,12 +37,12 @@ function useInView(threshold = 0.12) {
 const BASE = 'https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/elite-assets/demo/chauffeur'
 
 const FLEET = [
-  { img: `${BASE}/car-1.jpg`, name: 'Rolls-Royce Phantom', tagline: 'La quintessence du luxe' },
-  { img: `${BASE}/car-2.jpg`, name: 'Mercedes Maybach S580', tagline: 'Confort et prestige absolu' },
-  { img: `${BASE}/car-3.jpg`, name: 'Bentley Continental GT', tagline: 'Sport et raffinement' },
-  { img: `${BASE}/car-4.jpg`, name: 'Mercedes Classe S AMG', tagline: 'Élégance moderne' },
-  { img: `${BASE}/car-5.jpg`, name: 'Lamborghini Urus', tagline: 'Pour les mariés audacieux' },
-  { img: `${BASE}/car-6.jpg`, name: 'Range Rover Autobiography', tagline: 'Majestueux et imposant' },
+  { img: `${BASE}/car-1.jpg`, name: 'Mercedes Classe S', tagline: 'Élégance et raffinement' },
+  { img: `${BASE}/car-2.jpg`, name: 'Mercedes AMG G63', tagline: 'Puissance et prestance' },
+  { img: `${BASE}/car-10.jpg`, name: 'Bentley Continental GT', tagline: 'Raffinement britannique' },
+  { img: `${BASE}/car-4.jpg`, name: 'Rolls-Royce Silver Cloud', tagline: 'La quintessence du luxe' },
+  { img: `${BASE}/car-5.jpg`, name: 'Mercedes Maybach S580', tagline: 'Confort et prestige absolu' },
+  { img: `${BASE}/car-6.jpg`, name: 'Mercedes AMG', tagline: 'Sport et élégance' },
 ]
 
 const SERVICES = [
@@ -64,7 +64,7 @@ const TESTIMONIALS = [
   { quote: 'Le cortège était magnifique. Tous nos invités ont été impressionnés.', couple: 'Camille & Julien', date: 'Mars 2026' },
 ]
 
-const VEHICLES = ['Rolls-Royce Phantom', 'Mercedes Maybach S580', 'Bentley Continental GT', 'Mercedes Classe S AMG', 'Lamborghini Urus', 'Range Rover Autobiography']
+const VEHICLES = ['Mercedes Classe S', 'Mercedes AMG G63', 'Bentley Continental GT', 'Rolls-Royce Silver Cloud', 'Mercedes Maybach S580', 'Mercedes AMG']
 
 function FadeSection({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
   const { ref, inView } = useInView()
