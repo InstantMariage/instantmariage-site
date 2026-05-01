@@ -181,7 +181,6 @@ export default function Header() {
             </Link>
 
             {/* Mon site pro */}
-            {!user && (
             <Link
               href="/elite"
               className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors duration-200 relative group py-2"
@@ -189,7 +188,6 @@ export default function Header() {
               Mon site pro
               <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-rose-400 group-hover:w-full transition-all duration-200" />
             </Link>
-            )}
 
             {/* Boutique */}
             {user?.role !== "prestataire" && (
