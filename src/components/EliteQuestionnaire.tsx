@@ -321,6 +321,7 @@ export default function EliteQuestionnaire() {
 
       setUploadProgress(100);
       setSubmitted(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       const e = err as Record<string, unknown>;
       console.error("[elite-questionnaire] Erreur complète:", {
