@@ -32,113 +32,136 @@ function buildEliteHtml(nomEntreprise: string): string {
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Pack Elite — InstantMariage.fr</title>
 </head>
-<body style="margin:0;padding:0;background-color:#F8F4FF;font-family:Arial,Helvetica,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F8F4FF;">
+<body style="margin:0;padding:0;background-color:#F5F3F0;font-family:Georgia,'Times New Roman',serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F5F3F0;">
     <tr>
-      <td align="center" style="padding:32px 16px;">
+      <td align="center" style="padding:40px 16px;">
         <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;">
 
           <!-- HEADER -->
           <tr>
-            <td style="background:linear-gradient(135deg,#F06292,#E91E8C);border-radius:16px 16px 0 0;padding:32px 40px;text-align:center;">
-              <p style="margin:0 0 10px;font-size:24px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;">&#128141; InstantMariage.fr</p>
-              <span style="display:inline-block;background:rgba(255,255,255,0.2);color:#ffffff;font-size:13px;padding:4px 16px;border-radius:20px;letter-spacing:0.5px;">&#10024; Nouveauté exclusive</span>
+            <td style="background-color:#1C1410;border-radius:12px 12px 0 0;padding:36px 48px;text-align:center;">
+              <img src="https://www.instantmariage.fr/logo.png" alt="InstantMariage.fr" height="40" style="display:block;margin:0 auto;" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/>
+              <p style="display:none;margin:0;font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:400;color:#ffffff;letter-spacing:1px;">InstantMariage.fr</p>
             </td>
           </tr>
 
           <!-- HERO -->
           <tr>
-            <td style="background-color:#ffffff;padding:40px 40px 32px;text-align:center;">
-              <p style="margin:0 0 16px;font-size:16px;color:#888888;">Bonjour <strong style="color:#1a1a1a;">${nomEntreprise}</strong>,</p>
-              <h1 style="margin:0 0 12px;font-size:32px;font-weight:800;color:#1a1a1a;line-height:1.2;">Votre site pro mariage en 72h</h1>
-              <p style="margin:0 0 28px;font-size:16px;color:#666666;line-height:1.6;">Créé sur mesure par notre équipe — à partir de <strong>149€/mois</strong></p>
-              <a href="https://www.instantmariage.fr/elite" style="display:inline-block;background:linear-gradient(135deg,#F06292,#E91E8C);color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;padding:16px 32px;border-radius:50px;letter-spacing:0.3px;">Découvrir le Pack Elite →</a>
+            <td style="background-color:#ffffff;padding:48px 48px 40px;text-align:center;border-left:1px solid #E8E4DF;border-right:1px solid #E8E4DF;">
+              <p style="margin:0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#888888;">Bonjour <strong style="color:#1a1a1a;">${nomEntreprise}</strong>,</p>
+              <h1 style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:36px;font-weight:400;color:#1C1410;line-height:1.25;letter-spacing:-0.5px;">Votre site professionnel mariage,<br/>livré en 72 heures</h1>
+              <p style="margin:0 0 36px;font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#666666;line-height:1.7;">Conçu sur mesure par notre équipe — à partir de <strong style="color:#1C1410;">149 €/mois</strong></p>
+              <a href="https://www.instantmariage.fr/elite" style="display:inline-block;background-color:#B5395A;color:#ffffff;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;padding:16px 36px;border-radius:4px;letter-spacing:0.5px;">Découvrir le Pack Elite</a>
+            </td>
+          </tr>
+
+          <!-- SEPARATOR -->
+          <tr>
+            <td style="background-color:#ffffff;padding:0 48px;border-left:1px solid #E8E4DF;border-right:1px solid #E8E4DF;">
+              <hr style="border:none;border-top:1px solid #E8E4DF;margin:0;"/>
             </td>
           </tr>
 
           <!-- FEATURES -->
           <tr>
-            <td style="background-color:#ffffff;padding:0 40px 40px;">
+            <td style="background-color:#ffffff;padding:36px 48px 40px;border-left:1px solid #E8E4DF;border-right:1px solid #E8E4DF;">
+              <h2 style="margin:0 0 24px;font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:400;color:#1C1410;letter-spacing:0.2px;">Ce qui est inclus</h2>
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td width="33%" style="text-align:center;padding:20px 8px;border-radius:12px;background-color:#F8F4FF;">
-                    <p style="margin:0 0 6px;font-size:28px;">&#127912;</p>
-                    <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:#1a1a1a;">100% sur mesure</p>
-                    <p style="margin:0;font-size:12px;color:#888888;line-height:1.5;">Design adapté à votre activité</p>
+                  <td style="padding:10px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#333333;border-bottom:1px solid #F0EDE9;">
+                    <strong style="color:#1C1410;">Design 100% sur mesure</strong><br/>
+                    <span style="color:#777777;">Identité visuelle adaptée à votre activité et votre image</span>
                   </td>
-                  <td width="4%">&nbsp;</td>
-                  <td width="33%" style="text-align:center;padding:20px 8px;border-radius:12px;background-color:#F8F4FF;">
-                    <p style="margin:0 0 6px;font-size:28px;">&#9889;</p>
-                    <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:#1a1a1a;">Livraison en 72h</p>
-                    <p style="margin:0;font-size:12px;color:#888888;line-height:1.5;">Site en ligne rapidement</p>
+                </tr>
+                <tr>
+                  <td style="padding:10px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#333333;border-bottom:1px solid #F0EDE9;">
+                    <strong style="color:#1C1410;">Livraison en 72 heures</strong><br/>
+                    <span style="color:#777777;">Site en ligne et opérationnel en moins de 3 jours ouvrés</span>
                   </td>
-                  <td width="4%">&nbsp;</td>
-                  <td width="33%" style="text-align:center;padding:20px 8px;border-radius:12px;background-color:#F8F4FF;">
-                    <p style="margin:0 0 6px;font-size:28px;">&#127760;</p>
-                    <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:#1a1a1a;">Domaine inclus</p>
-                    <p style="margin:0;font-size:12px;color:#888888;line-height:1.5;">Votre propre nom de domaine</p>
+                </tr>
+                <tr>
+                  <td style="padding:10px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#333333;border-bottom:1px solid #F0EDE9;">
+                    <strong style="color:#1C1410;">Nom de domaine personnalisé inclus</strong><br/>
+                    <span style="color:#777777;">Votre propre adresse web, enregistrée à votre nom</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#333333;">
+                    <strong style="color:#1C1410;">Référencement et hébergement compris</strong><br/>
+                    <span style="color:#777777;">Optimisé pour Google dès le lancement, hébergement inclus</span>
                   </td>
                 </tr>
               </table>
+            </td>
+          </tr>
+
+          <!-- SEPARATOR -->
+          <tr>
+            <td style="background-color:#ffffff;padding:0 48px;border-left:1px solid #E8E4DF;border-right:1px solid #E8E4DF;">
+              <hr style="border:none;border-top:1px solid #E8E4DF;margin:0;"/>
             </td>
           </tr>
 
           <!-- EXEMPLES DE SITES -->
           <tr>
-            <td style="background-color:#F8F4FF;padding:32px 40px;">
-              <h2 style="margin:0 0 24px;font-size:20px;font-weight:700;color:#1a1a1a;text-align:center;">Nos réalisations</h2>
+            <td style="background-color:#FAF8F6;padding:36px 48px 40px;border-left:1px solid #E8E4DF;border-right:1px solid #E8E4DF;">
+              <h2 style="margin:0 0 20px;font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:400;color:#1C1410;letter-spacing:0.2px;">Exemples de réalisations</h2>
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td width="48%" style="background:#ffffff;border-radius:12px;padding:16px;vertical-align:top;">
-                    <p style="margin:0 0 4px;font-size:22px;">&#128247;</p>
-                    <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#1a1a1a;">Léa Martin Photographie</p>
-                    <a href="https://instantmariage.fr/demo/photographe" style="font-size:12px;color:#7C3AED;text-decoration:none;font-weight:600;">Voir le site →</a>
+                  <td width="48%" style="background:#ffffff;border:1px solid #E8E4DF;border-radius:6px;padding:16px 20px;vertical-align:top;">
+                    <p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;color:#1C1410;">Léa Martin Photographie</p>
+                    <a href="https://instantmariage.fr/demo/photographe" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#B5395A;text-decoration:none;">Voir le site</a>
                   </td>
                   <td width="4%">&nbsp;</td>
-                  <td width="48%" style="background:#ffffff;border-radius:12px;padding:16px;vertical-align:top;">
-                    <p style="margin:0 0 4px;font-size:22px;">&#128248;</p>
-                    <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#1a1a1a;">Maison Blanche Bridal</p>
-                    <a href="https://instantmariage.fr/demo/boutique" style="font-size:12px;color:#7C3AED;text-decoration:none;font-weight:600;">Voir le site →</a>
+                  <td width="48%" style="background:#ffffff;border:1px solid #E8E4DF;border-radius:6px;padding:16px 20px;vertical-align:top;">
+                    <p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;color:#1C1410;">Maison Blanche Bridal</p>
+                    <a href="https://instantmariage.fr/demo/boutique" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#B5395A;text-decoration:none;">Voir le site</a>
                   </td>
                 </tr>
-                <tr><td colspan="3" style="height:12px;"></td></tr>
+                <tr><td colspan="3" style="height:10px;"></td></tr>
                 <tr>
-                  <td width="48%" style="background:#ffffff;border-radius:12px;padding:16px;vertical-align:top;">
-                    <p style="margin:0 0 4px;font-size:22px;">&#128664;</p>
-                    <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#1a1a1a;">Prestige Wedding Cars</p>
-                    <a href="https://instantmariage.fr/demo/chauffeur" style="font-size:12px;color:#7C3AED;text-decoration:none;font-weight:600;">Voir le site →</a>
+                  <td width="48%" style="background:#ffffff;border:1px solid #E8E4DF;border-radius:6px;padding:16px 20px;vertical-align:top;">
+                    <p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;color:#1C1410;">Prestige Wedding Cars</p>
+                    <a href="https://instantmariage.fr/demo/chauffeur" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#B5395A;text-decoration:none;">Voir le site</a>
                   </td>
                   <td width="4%">&nbsp;</td>
-                  <td width="48%" style="background:#ffffff;border-radius:12px;padding:16px;vertical-align:top;">
-                    <p style="margin:0 0 4px;font-size:22px;">&#127984;</p>
-                    <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#1a1a1a;">Domaine des Lumières</p>
-                    <a href="https://instantmariage.fr/demo/salle" style="font-size:12px;color:#7C3AED;text-decoration:none;font-weight:600;">Voir le site →</a>
+                  <td width="48%" style="background:#ffffff;border:1px solid #E8E4DF;border-radius:6px;padding:16px 20px;vertical-align:top;">
+                    <p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;color:#1C1410;">Domaine des Lumières</p>
+                    <a href="https://instantmariage.fr/demo/salle" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#B5395A;text-decoration:none;">Voir le site</a>
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
 
+          <!-- SEPARATOR -->
+          <tr>
+            <td style="background-color:#FAF8F6;padding:0 48px;border-left:1px solid #E8E4DF;border-right:1px solid #E8E4DF;">
+              <hr style="border:none;border-top:1px solid #E8E4DF;margin:0;"/>
+            </td>
+          </tr>
+
           <!-- PRICING -->
           <tr>
-            <td style="background-color:#ffffff;padding:32px 40px;">
-              <h2 style="margin:0 0 24px;font-size:20px;font-weight:700;color:#1a1a1a;text-align:center;">Choisissez votre formule</h2>
+            <td style="background-color:#FAF8F6;padding:36px 48px 40px;border-left:1px solid #E8E4DF;border-right:1px solid #E8E4DF;">
+              <h2 style="margin:0 0 24px;font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:400;color:#1C1410;letter-spacing:0.2px;">Nos formules</h2>
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td width="48%" style="background-color:#F3E8FF;border:2px solid #7C3AED;border-radius:16px;padding:24px;text-align:center;vertical-align:top;">
-                    <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#7C3AED;letter-spacing:1px;text-transform:uppercase;">Elite Vitrine</p>
-                    <p style="margin:0 0 16px;font-size:32px;font-weight:800;color:#1a1a1a;line-height:1;">149€<span style="font-size:14px;font-weight:400;color:#888888;">/mois</span></p>
-                    <p style="margin:0 0 6px;font-size:13px;color:#444444;">&#10003; Site vitrine sur mesure</p>
-                    <p style="margin:0 0 6px;font-size:13px;color:#444444;">&#10003; Domaine personnalisé</p>
-                    <p style="margin:0;font-size:13px;color:#444444;">&#10003; Livraison en 72h</p>
+                  <td width="48%" style="background-color:#ffffff;border:1px solid #D4B5BC;border-radius:6px;padding:24px;vertical-align:top;">
+                    <p style="margin:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;color:#B5395A;letter-spacing:1.5px;text-transform:uppercase;">Elite Vitrine</p>
+                    <p style="margin:0 0 20px;font-family:Georgia,'Times New Roman',serif;font-size:30px;font-weight:400;color:#1C1410;line-height:1;">149 €<span style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:400;color:#999999;">/mois</span></p>
+                    <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#444444;">- Site vitrine sur mesure</p>
+                    <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#444444;">- Domaine personnalisé</p>
+                    <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#444444;">- Livraison en 72h</p>
                   </td>
                   <td width="4%">&nbsp;</td>
-                  <td width="48%" style="background-color:#FCE7F3;border:2px solid #F06292;border-radius:16px;padding:24px;text-align:center;vertical-align:top;">
-                    <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#E91E8C;letter-spacing:1px;text-transform:uppercase;">Elite Shop</p>
-                    <p style="margin:0 0 16px;font-size:32px;font-weight:800;color:#1a1a1a;line-height:1;">199€<span style="font-size:14px;font-weight:400;color:#888888;">/mois</span></p>
-                    <p style="margin:0 0 6px;font-size:13px;color:#444444;">&#10003; Boutique en ligne</p>
-                    <p style="margin:0 0 6px;font-size:13px;color:#444444;">&#10003; Paiement en ligne intégré</p>
-                    <p style="margin:0;font-size:13px;color:#444444;">&#10003; Catalogue produits illimité</p>
+                  <td width="48%" style="background-color:#1C1410;border:1px solid #1C1410;border-radius:6px;padding:24px;vertical-align:top;">
+                    <p style="margin:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;color:#D4B5BC;letter-spacing:1.5px;text-transform:uppercase;">Elite Shop</p>
+                    <p style="margin:0 0 20px;font-family:Georgia,'Times New Roman',serif;font-size:30px;font-weight:400;color:#ffffff;line-height:1;">199 €<span style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:400;color:#999999;">/mois</span></p>
+                    <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#cccccc;">- Boutique en ligne</p>
+                    <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#cccccc;">- Paiement en ligne intégré</p>
+                    <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#cccccc;">- Catalogue produits illimité</p>
                   </td>
                 </tr>
               </table>
@@ -147,19 +170,19 @@ function buildEliteHtml(nomEntreprise: string): string {
 
           <!-- CTA FINAL -->
           <tr>
-            <td style="background:linear-gradient(135deg,#F06292,#E91E8C);padding:40px;text-align:center;">
-              <h2 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#ffffff;">Prêt à booster votre activité mariage ?</h2>
-              <p style="margin:0 0 24px;font-size:15px;color:rgba(255,255,255,0.85);">Rejoignez les professionnels qui font confiance à InstantMariage</p>
-              <a href="https://www.instantmariage.fr/elite" style="display:inline-block;background:#ffffff;color:#E91E8C;text-decoration:none;font-size:16px;font-weight:700;padding:16px 32px;border-radius:50px;">Réserver mon domaine maintenant →</a>
+            <td style="background-color:#1C1410;padding:44px 48px;text-align:center;">
+              <h2 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:400;color:#ffffff;letter-spacing:0.2px;">Votre site mariage professionnel vous attend</h2>
+              <p style="margin:0 0 28px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#aaaaaa;line-height:1.7;">Rejoignez les prestataires qui font confiance à InstantMariage</p>
+              <a href="https://www.instantmariage.fr/elite" style="display:inline-block;background-color:#B5395A;color:#ffffff;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;padding:16px 36px;border-radius:4px;letter-spacing:0.5px;">Réserver mon domaine</a>
             </td>
           </tr>
 
           <!-- FOOTER -->
           <tr>
-            <td style="background-color:#f3f4f6;border-radius:0 0 16px 16px;padding:24px 40px;text-align:center;">
-              <p style="margin:0 0 8px;font-size:12px;color:#999999;">© 2026 InstantMariage.fr — Tous droits réservés</p>
-              <p style="margin:0 0 8px;font-size:12px;color:#999999;">Vous recevez cet email car vous êtes prestataire sur <a href="https://www.instantmariage.fr" style="color:#F06292;text-decoration:none;">InstantMariage.fr</a></p>
-              <p style="margin:0;font-size:12px;"><a href="mailto:contact@instantmariage.fr?subject=unsubscribe" style="color:#cccccc;text-decoration:underline;">Se désabonner</a></p>
+            <td style="background-color:#F0EDE9;border-radius:0 0 12px 12px;padding:24px 48px;text-align:center;">
+              <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#999999;">© 2026 InstantMariage.fr — Tous droits réservés</p>
+              <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#999999;">Vous recevez cet email car vous êtes prestataire sur <a href="https://www.instantmariage.fr" style="color:#B5395A;text-decoration:none;">InstantMariage.fr</a></p>
+              <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:11px;"><a href="mailto:contact@instantmariage.fr?subject=unsubscribe" style="color:#bbbbbb;text-decoration:underline;">Se désabonner</a></p>
             </td>
           </tr>
 
