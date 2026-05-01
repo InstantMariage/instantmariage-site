@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -78,6 +78,7 @@ const INITIAL_FORM: FormState = {
 
 export default function EliteQuestionnaire() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [loading, setLoading]               = useState(true);
   const [prestataireId, setPrestataireId]   = useState<string | null>(null);
@@ -120,9 +121,12 @@ export default function EliteQuestionnaire() {
         .limit(1)
         .maybeSingle();
 
+      const fromDashboard = searchParams.get("from") === "dashboard";
       if (!abonnement || !["elite-vitrine", "elite-shop"].includes(abonnement.plan)) {
-        router.replace("/tarifs");
-        return;
+        if (!fromDashboard) {
+          router.replace("/tarifs");
+          return;
+        }
       }
 
       setPrestataireId(prestataire.id);

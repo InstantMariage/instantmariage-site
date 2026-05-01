@@ -209,7 +209,7 @@ export default function EliteSitePage() {
                 Remplissez le questionnaire pour que notre équipe crée votre site professionnel personnalisé sous 72h.
               </p>
               <Link
-                href="/elite/questionnaire"
+                href="/elite/questionnaire?from=dashboard"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-white transition-all duration-200 hover:opacity-90"
                 style={{ background: "linear-gradient(135deg, #7C3AED, #5B21B6)" }}
               >
@@ -333,7 +333,7 @@ export default function EliteSitePage() {
                   {eliteSite.statut === "en_attente" && (
                     <div className="mt-5 pt-4 border-t border-gray-100">
                       <Link
-                        href="/elite/questionnaire"
+                        href="/elite/questionnaire?from=dashboard"
                         className="inline-flex items-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-xl transition-all duration-200 hover:opacity-80"
                         style={{ background: "#F3F0FF", color: "#7C3AED" }}
                       >
