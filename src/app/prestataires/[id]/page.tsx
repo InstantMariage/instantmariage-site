@@ -21,13 +21,24 @@ async function fetchPrestataire(id: string) {
   return data;
 }
 
+function truncate(text: string, max: number): string {
+  if (!text || text.length <= max) return text;
+  return text.slice(0, max - 1).trimEnd() + "…";
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const p = await fetchPrestataire(id);
   if (p) {
+    const shortDesc = p.description
+      ? truncate(p.description, 110)
+      : null;
+    const description = shortDesc
+      ? `Découvrez ${p.nom_entreprise}, ${p.categorie} mariage à ${p.ville}. ${shortDesc}. Contactez-les sur InstantMariage.fr`
+      : `Découvrez ${p.nom_entreprise}, ${p.categorie} mariage à ${p.ville}. Consultez les avis et contactez ce prestataire sur InstantMariage.fr`;
     return {
-      title: `${p.nom_entreprise} – ${p.categorie} à ${p.ville} | InstantMariage.fr`,
-      description: p.description || `${p.nom_entreprise}, ${p.categorie} pour mariage à ${p.ville}. Consultez les avis et contactez ce prestataire.`,
+      title: `${p.nom_entreprise} — ${p.categorie} mariage à ${p.ville} | InstantMariage`,
+      description: truncate(description, 155),
     };
   }
   return { title: "Prestataire – InstantMariage" };
@@ -41,8 +52,9 @@ export default async function PrestatairePage({ params }: Props) {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     name: p.nom_entreprise,
-    description: p.description,
-    url: `https://instantmariage.fr/prestataires/${id}`,
+    description: p.description || undefined,
+    ...(p.avatar_url ? { image: p.avatar_url } : {}),
+    url: `https://www.instantmariage.fr/prestataires/${id}`,
     address: { "@type": "PostalAddress", addressLocality: p.ville, addressCountry: "FR" },
     ...(p.nb_avis > 0 ? {
       aggregateRating: {
@@ -59,9 +71,9 @@ export default async function PrestatairePage({ params }: Props) {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Accueil", item: "https://instantmariage.fr" },
-      { "@type": "ListItem", position: 2, name: "Annuaire", item: "https://instantmariage.fr/annuaire" },
-      { "@type": "ListItem", position: 3, name: p.nom_entreprise, item: `https://instantmariage.fr/prestataires/${id}` },
+      { "@type": "ListItem", position: 1, name: "Accueil", item: "https://www.instantmariage.fr" },
+      { "@type": "ListItem", position: 2, name: "Annuaire", item: "https://www.instantmariage.fr/annuaire" },
+      { "@type": "ListItem", position: 3, name: p.nom_entreprise, item: `https://www.instantmariage.fr/prestataires/${id}` },
     ],
   } : null;
 
