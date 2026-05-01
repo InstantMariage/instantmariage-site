@@ -396,6 +396,16 @@ export default function Header() {
         {mobileOpen && (
           <div className="lg:hidden border-t border-rose-100 py-4 space-y-1">
 
+            {(!user || user.role === "prestataire") && (
+              <Link
+                href="/elite"
+                className="block mx-4 px-4 py-3 text-white text-sm font-semibold rounded-full text-center transition-all duration-200 hover:opacity-90"
+                style={{ background: "#7C3AED" }}
+                onClick={() => setMobileOpen(false)}
+              >
+                Mon site pro
+              </Link>
+            )}
             <Link
               href="/annuaire"
               className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
@@ -403,15 +413,6 @@ export default function Header() {
             >
               Annuaire prestataires
             </Link>
-            {(!user || user.role === "prestataire") && (
-              <Link
-                href="/elite"
-                className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
-                onClick={() => setMobileOpen(false)}
-              >
-                Mon site pro
-              </Link>
-            )}
             {user?.role !== "prestataire" && (
             <Link
               href="/boutique"
