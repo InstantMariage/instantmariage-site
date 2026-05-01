@@ -47,7 +47,7 @@ function buildEliteHtml(nomEntreprise: string): string {
                     <img src="https://www.instantmariage.fr/logo.png" alt="" height="50" style="display:block;" onerror="this.style.display='none'"/>
                   </td>
                   <td style="vertical-align:middle;padding-left:12px;">
-                    <span style="font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:400;color:#F06292;">Instant</span><span style="font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:400;color:#1C1410;">Mariage.fr</span>
+                    <span style="font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:400;color:#F06292;">Instant</span><span style="font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:400;color:#1C1410;">Mariage&#8203;.fr</span>
                   </td>
                 </tr>
               </table>
