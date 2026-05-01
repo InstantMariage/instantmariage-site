@@ -184,6 +184,7 @@ export default function Header() {
             </Link>
 
             {/* Mon site pro */}
+            {(!mounted || !user) && (
             <Link
               href="/elite"
               className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors duration-200 relative group py-2"
@@ -191,6 +192,7 @@ export default function Header() {
               Mon site pro
               <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-rose-400 group-hover:w-full transition-all duration-200" />
             </Link>
+            )}
 
             {/* Boutique */}
             {(!mounted || user?.role !== "prestataire") && (
@@ -326,7 +328,8 @@ export default function Header() {
                 </Link>
                 <Link
                   href={`/dashboard/${user.role}`}
-                  className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors px-4 py-2"
+                  className="text-sm font-semibold px-5 py-2.5 rounded-full text-white transition-all duration-200 hover:opacity-90"
+                  style={{ background: "#F06292" }}
                 >
                   Mon espace
                 </Link>
