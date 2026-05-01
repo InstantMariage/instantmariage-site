@@ -319,6 +319,21 @@ export default function EliteQuestionnaire() {
         () => console.log("[elite-questionnaire] Demande soumise:", form.domaine),
       );
 
+      // Email admin — best-effort
+      fetch("/api/elite/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type:              "new_request",
+          nomProfessionnel:  form.nomProfessionnel,
+          domaine:           form.domaine,
+          typeActivite:      form.typeActivite,
+          telephone:         form.telephone,
+          emailContact:      form.email_contact,
+          plan:              "Elite",
+        }),
+      }).catch(() => {});
+
       setUploadProgress(100);
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });

@@ -83,6 +83,18 @@ export default function AdminElitePage() {
       const next = sc.next;
       setSites(prev => prev.map(s => s.id === site.id ? { ...s, statut: next } : s));
       setSelectedSite(prev => prev?.id === site.id ? { ...prev, statut: next } : prev);
+
+      if (next === "en_ligne" && site.email_contact && site.domaine) {
+        fetch("/api/elite/notify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type:           "site_online",
+            recipientEmail: site.email_contact,
+            domaine:        site.domaine,
+          }),
+        }).catch(() => {});
+      }
     }
     setUpdating(null);
   };

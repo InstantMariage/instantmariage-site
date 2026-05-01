@@ -1805,3 +1805,127 @@ export async function sendTemplateDigitalEmail({
     text,
   });
 }
+
+// ─── Email 16 : Nouvelle demande Elite (admin) ────────────────────────────────
+
+export async function sendEliteNewRequestAdminEmail({
+  nomProfessionnel,
+  domaine,
+  typeActivite,
+  telephone,
+  emailContact,
+  plan,
+}: {
+  nomProfessionnel: string;
+  domaine: string;
+  typeActivite: string;
+  telephone: string;
+  emailContact: string;
+  plan: string;
+}) {
+  const adminEmail = "adel.bendj@icloud.com";
+  const adminLink = `${SITE_URL}/admin/elite`;
+
+  const content = `
+    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#7C3AED;letter-spacing:0.5px;text-transform:uppercase;">Nouvelle demande Elite</p>
+    <h1 style="margin:0 0 24px;font-size:22px;font-weight:700;color:#1a1a1a;line-height:1.25;">
+      🔔 ${nomProfessionnel}
+    </h1>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+      ${[
+        ["Nom professionnel", nomProfessionnel],
+        ["Domaine", domaine],
+        ["Activité", typeActivite],
+        ["Téléphone", telephone || "—"],
+        ["Email de contact", emailContact || "—"],
+        ["Plan", plan],
+      ].map(([label, value], i) => `
+      <tr style="background:${i % 2 === 0 ? "#f9f9f9" : "#ffffff"};">
+        <td style="padding:10px 12px;font-size:13px;color:#888888;width:40%;">${label}</td>
+        <td style="padding:10px 12px;font-size:13px;color:#1a1a1a;font-weight:600;">${value}</td>
+      </tr>`).join("")}
+    </table>
+    ${ctaButton("Voir dans le dashboard admin →", adminLink)}
+  `;
+
+  const text = [
+    `🔔 Nouvelle demande Elite — ${nomProfessionnel}`,
+    "",
+    `Nom professionnel : ${nomProfessionnel}`,
+    `Domaine : ${domaine}`,
+    `Activité : ${typeActivite}`,
+    `Téléphone : ${telephone || "—"}`,
+    `Email de contact : ${emailContact || "—"}`,
+    `Plan : ${plan}`,
+    "",
+    `Dashboard admin : ${adminLink}`,
+    textFooter(),
+  ].join("\n");
+
+  return resend.emails.send({
+    from: FROM,
+    to: adminEmail,
+    subject: `🔔 Nouvelle demande Elite — ${nomProfessionnel}`,
+    html: baseTemplate(content),
+    text,
+  });
+}
+
+// ─── Email 17 : Site Elite en ligne (client) ──────────────────────────────────
+
+export async function sendEliteSiteOnlineEmail({
+  recipientEmail,
+  domaine,
+}: {
+  recipientEmail: string;
+  domaine: string;
+}) {
+  const dashboardUrl = `${SITE_URL}/dashboard/prestataire/elite`;
+  const siteUrl = `https://${domaine}`;
+
+  const content = `
+    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#16A34A;letter-spacing:0.5px;text-transform:uppercase;">Pack Elite InstantMariage</p>
+    <h1 style="margin:0 0 24px;font-size:26px;font-weight:700;color:#1a1a1a;line-height:1.25;">
+      🎉 Votre site est en ligne !
+    </h1>
+    <p style="margin:0 0 16px;font-size:15px;color:#555555;line-height:1.65;">
+      Bonjour,
+    </p>
+    <p style="margin:0 0 16px;font-size:15px;color:#555555;line-height:1.65;">
+      Votre site professionnel est maintenant en ligne ! Vous pouvez le consulter ici :
+    </p>
+    <p style="margin:0 0 24px;">
+      <a href="${siteUrl}" style="color:#7C3AED;font-weight:700;font-size:16px;text-decoration:none;">${siteUrl}</a>
+    </p>
+    ${ctaButton("Voir les stats dans mon dashboard →", dashboardUrl)}
+    ${divider()}
+    <p style="margin:0;font-size:13px;color:#aaaaaa;line-height:1.6;text-align:center;">
+      À très bientôt,<br/>
+      <strong style="color:#1a1a1a;">L&rsquo;équipe InstantMariage.fr</strong>
+    </p>
+  `;
+
+  const text = [
+    `🎉 Votre site est en ligne !`,
+    "",
+    `Bonjour,`,
+    "",
+    `Votre site professionnel est maintenant en ligne ! Vous pouvez le consulter ici : ${siteUrl}`,
+    "",
+    `Connectez-vous à votre dashboard pour voir les stats : ${dashboardUrl}`,
+    "",
+    `À très bientôt,`,
+    `L'équipe InstantMariage.fr`,
+    textFooter(false),
+  ].join("\n");
+
+  return resend.emails.send({
+    from: FROM,
+    to: recipientEmail,
+    replyTo: REPLY_TO,
+    subject: `🎉 Votre site est en ligne — ${domaine}`,
+    html: baseTemplate(content),
+    text,
+    headers: unsubscribeHeaders,
+  });
+}
