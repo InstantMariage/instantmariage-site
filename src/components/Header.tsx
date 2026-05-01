@@ -318,6 +318,15 @@ export default function Header() {
                 >
                   Mon espace
                 </Link>
+                {user.role === "prestataire" && (
+                  <Link
+                    href="/elite"
+                    className="text-sm font-semibold px-5 py-2.5 rounded-full text-white transition-all duration-200 hover:opacity-90"
+                    style={{ background: "#7C3AED" }}
+                  >
+                    Mon site pro
+                  </Link>
+                )}
                 <button
                   onClick={handleLogout}
                   className="text-sm font-semibold px-5 py-2.5 rounded-full border-2 border-rose-400 text-rose-400 hover:bg-rose-400 hover:text-white transition-all duration-200"
@@ -394,6 +403,15 @@ export default function Header() {
             >
               Annuaire prestataires
             </Link>
+            {(!user || user.role === "prestataire") && (
+              <Link
+                href="/elite"
+                className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
+                onClick={() => setMobileOpen(false)}
+              >
+                Mon site pro
+              </Link>
+            )}
             {user?.role !== "prestataire" && (
             <Link
               href="/boutique"

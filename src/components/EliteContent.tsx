@@ -230,8 +230,9 @@ export default function EliteContent() {
     document.getElementById("verifier-domaine")?.scrollIntoView({ behavior: "smooth" });
   }
 
-  async function handleCheckout(domain: string) {
-    const redirectParam = encodeURIComponent(`/elite?plan=${eliteMode}`);
+  async function handleCheckout(domain: string, mode?: "vitrine" | "shop") {
+    const m = mode ?? eliteMode;
+    const redirectParam = encodeURIComponent(`/elite?plan=${m}`);
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       router.push(`/login?redirect=${redirectParam}`);
@@ -252,7 +253,7 @@ export default function EliteContent() {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId: ELITE_PRICE_IDS[eliteMode].monthly, prestataireId: prestataire.id, domain }),
+        body: JSON.stringify({ priceId: ELITE_PRICE_IDS[m].monthly, prestataireId: prestataire.id, domain }),
       });
       const data = await res.json();
       if (data.url) {
@@ -428,7 +429,127 @@ export default function EliteContent() {
         </div>
       </section>
 
-      {/* ── SECTION 4 — COMPARATIF ─────────────────────────── */}
+      {/* ── SECTION 4 — CE QUI EST INCLUS ─────────────────── */}
+      <section className="py-16 md:py-24" style={{ background: "#F9F5EE" }}>
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2
+              className="font-bold text-gray-900 mb-4 leading-tight"
+              style={{
+                fontFamily: "Cormorant Garamond, var(--font-playfair), Georgia, serif",
+                fontSize: "clamp(40px, 6vw, 64px)",
+              }}
+            >
+              Ce qui est inclus
+            </h2>
+            <p className="text-gray-500 text-base md:text-lg">
+              Choisissez le pack adapté à votre activité
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Card Vitrine */}
+            <div className="rounded-3xl overflow-hidden bg-white shadow-lg border border-gray-200 flex flex-col">
+              <div className="px-7 py-6 text-center" style={{ background: "#7C3AED" }}>
+                <p className="text-white text-xl font-bold mb-1">Elite Vitrine 👑</p>
+                <p className="text-purple-200 font-extrabold" style={{ fontSize: 32 }}>
+                  149€<span className="text-lg font-semibold">/mois</span>
+                </p>
+              </div>
+              <div className="px-7 py-6 flex flex-col flex-1">
+                <ul className="space-y-2.5 text-sm flex-1 mb-8">
+                  {[
+                    ["✅", "Site web sur mesure créé en 72h"],
+                    ["✅", "Nom de domaine personnalisé inclus"],
+                    ["✅", "Certificat SSL sécurisé"],
+                    ["✅", "Page d'accueil avec hero plein écran"],
+                    ["✅", "Page services & tarifs"],
+                    ["✅", "Galerie photos illimitée"],
+                    ["✅", "Page à propos"],
+                    ["✅", "Formulaire de contact"],
+                    ["✅", "100% responsive mobile"],
+                    ["✅", "Dashboard : stats de visites"],
+                    ["✅", "Profil mis en avant sur InstantMariage"],
+                    ["✅", "Maintenance & mises à jour incluses"],
+                    ["✅", "Support prioritaire 7j/7"],
+                    ["❌", "Boutique en ligne"],
+                    ["❌", "Paiement client intégré"],
+                    ["❌", "Gestion commandes & stocks"],
+                  ].map(([icon, label]) => (
+                    <li key={label} className={`flex items-center gap-2 ${icon === "❌" ? "text-gray-400" : "text-gray-700"}`}>
+                      <span>{icon}</span>
+                      <span>{label}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={() => handleCheckout("", "vitrine")}
+                  disabled={loading}
+                  className="w-full py-3.5 rounded-xl text-white font-bold text-sm transition hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
+                  style={{ background: "#7C3AED" }}
+                >
+                  {loading ? "Chargement…" : "Choisir Vitrine →"}
+                </button>
+              </div>
+            </div>
+
+            {/* Card Shop */}
+            <div
+              className="rounded-3xl overflow-hidden bg-white shadow-xl flex flex-col border-2"
+              style={{ borderColor: "#C9A84C" }}
+            >
+              <div className="px-7 py-6 text-center" style={{ background: "#0A0A0A" }}>
+                <span
+                  className="inline-block text-xs font-bold px-3 py-1 rounded-full mb-2"
+                  style={{ background: "#C9A84C", color: "#0A0A0A" }}
+                >
+                  ⭐ Le plus complet
+                </span>
+                <p className="text-white text-xl font-bold mb-1">Elite Shop 👑</p>
+                <p className="text-gray-300 font-extrabold" style={{ fontSize: 32 }}>
+                  199€<span className="text-lg font-semibold">/mois</span>
+                </p>
+              </div>
+              <div className="px-7 py-6 flex flex-col flex-1">
+                <ul className="space-y-2.5 text-sm text-gray-700 flex-1 mb-8">
+                  {[
+                    "Tout le pack Vitrine inclus",
+                    "Boutique en ligne complète",
+                    "Paiement Stripe intégré pour vos clients",
+                    "Gestion des commandes",
+                    "Gestion des stocks",
+                    "Dashboard ventes & statistiques avancées",
+                    "Emails automatiques à vos clients",
+                    "Page catalogue produits",
+                    "Panier d'achat",
+                    "Historique commandes clients",
+                    "Export comptable CSV",
+                  ].map((label) => (
+                    <li key={label} className="flex items-center gap-2">
+                      <span>✅</span>
+                      <span>{label}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={() => handleCheckout("", "shop")}
+                  disabled={loading}
+                  className="w-full py-3.5 rounded-xl text-white font-bold text-sm transition hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
+                  style={{ background: "#0A0A0A" }}
+                >
+                  {loading ? "Chargement…" : "Choisir Shop →"}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <p className="mt-8 text-center text-sm text-gray-500">
+            Sans engagement&nbsp;•&nbsp;Résiliation = site hors ligne&nbsp;•&nbsp;Domaine inclus tant que vous êtes abonné
+          </p>
+        </div>
+      </section>
+
+      {/* ── SECTION 5 — COMPARATIF ─────────────────────────── */}
       <section
         className="py-16 md:py-20"
         style={{ background: "linear-gradient(135deg, #F9F5FF, #FDF2F8)" }}
