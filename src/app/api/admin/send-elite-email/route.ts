@@ -40,14 +40,14 @@ function buildEliteHtml(nomEntreprise: string): string {
 
           <!-- HEADER -->
           <tr>
-            <td style="background-color:#FFFFFF;border-radius:12px 12px 0 0;padding:24px 48px;border-top:1px solid #E8E4DF;border-left:1px solid #E8E4DF;border-right:1px solid #E8E4DF;">
-              <table cellpadding="0" cellspacing="0" border="0">
+            <td align="center" style="background-color:#FFFFFF;border-radius:12px 12px 0 0;padding:24px 48px;border-top:1px solid #E8E4DF;border-left:1px solid #E8E4DF;border-right:1px solid #E8E4DF;">
+              <table cellpadding="0" cellspacing="0" border="0" align="center">
                 <tr>
                   <td style="vertical-align:middle;">
-                    <img src="https://www.instantmariage.fr/logo.png" alt="" height="40" style="display:block;" onerror="this.style.display='none'"/>
+                    <img src="https://www.instantmariage.fr/logo.png" alt="" height="50" style="display:block;" onerror="this.style.display='none'"/>
                   </td>
                   <td style="vertical-align:middle;padding-left:12px;">
-                    <span style="font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:400;color:#F06292;">Instant</span><span style="font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:400;color:#1C1410;">Mariage.fr</span>
+                    <span style="font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:400;color:#F06292;">Instant</span><span style="font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:400;color:#1C1410;">Mariage.fr</span>
                   </td>
                 </tr>
               </table>
