@@ -526,6 +526,18 @@ function DashboardPrestataire() {
                   </svg>
                   Mon abonnement
                 </Link>
+                {(plan === "elite-vitrine" || plan === "elite-shop") && (
+                  <Link
+                    href="/dashboard/prestataire/elite"
+                    className="inline-flex items-center gap-2 font-semibold px-4 py-2 rounded-full text-sm transition-all duration-200 shadow-sm"
+                    style={{ background: "linear-gradient(135deg, #7C3AED, #5B21B6)", color: "white" }}
+                  >
+                    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                    </svg>
+                    Mon site Elite
+                  </Link>
+                )}
                 <Link
                   href="/dashboard/prestataire/documents"
                   className="inline-flex items-center gap-2 bg-white/20 text-white font-semibold px-4 py-2 rounded-full text-sm hover:bg-white/30 transition-all duration-200 shadow-sm"
