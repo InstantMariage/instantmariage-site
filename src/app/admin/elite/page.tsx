@@ -60,9 +60,13 @@ export default function AdminElitePage() {
       .from("abonnements")
       .select("prestataire_id, plan")
       .in("prestataire_id", ids)
-      .eq("statut", "actif");
+      .eq("statut", "actif")
+      .order("created_at", { ascending: false });
 
-    const planMap = new Map(abos?.map(a => [a.prestataire_id, a.plan]) ?? []);
+    const planMap = new Map<string, string>();
+    for (const a of abos ?? []) {
+      if (!planMap.has(a.prestataire_id)) planMap.set(a.prestataire_id, a.plan);
+    }
     setSites(sitesData.map(s => ({ ...s, plan: planMap.get(s.prestataire_id) ?? null })));
     setLoading(false);
   };
@@ -154,7 +158,7 @@ export default function AdminElitePage() {
                       <td className="px-4 py-3 whitespace-nowrap">
                         {site.plan ? (
                           <span className="px-2 py-0.5 rounded-full text-xs font-semibold" style={{ background: "#F3E8FF", color: "#7C3AED" }}>
-                            {site.plan}
+                            {site.plan === "elite-vitrine" ? "Elite Vitrine" : site.plan === "elite-shop" ? "Elite Shop" : site.plan}
                           </span>
                         ) : "—"}
                       </td>
@@ -252,7 +256,7 @@ export default function AdminElitePage() {
                 })()}
                 {selectedSite.plan && (
                   <span className="px-3 py-1 rounded-full text-sm font-semibold" style={{ background: "#F3E8FF", color: "#7C3AED" }}>
-                    {selectedSite.plan}
+                    {selectedSite.plan === "elite-vitrine" ? "Elite Vitrine" : selectedSite.plan === "elite-shop" ? "Elite Shop" : selectedSite.plan}
                   </span>
                 )}
                 <span className="text-xs text-gray-400 ml-1">
