@@ -1657,6 +1657,66 @@ export async function sendDiamondExpirationEmail({
   });
 }
 
+// ─── Email Elite : Bienvenue Pack Elite (prestataire) ────────────────────────
+
+export async function sendEliteWelcomeEmail({
+  recipientEmail,
+}: {
+  recipientEmail: string;
+}) {
+  const content = `
+    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#F06292;letter-spacing:0.5px;text-transform:uppercase;">Pack Elite InstantMariage</p>
+    <h1 style="margin:0 0 24px;font-size:26px;font-weight:700;color:#1a1a1a;line-height:1.25;">
+      Votre site est en cours de création&nbsp;🎉
+    </h1>
+    <p style="margin:0 0 16px;font-size:15px;color:#555555;line-height:1.65;">
+      Bonjour,
+    </p>
+    <p style="margin:0 0 16px;font-size:15px;color:#555555;line-height:1.65;">
+      Merci pour votre souscription au Pack Elite InstantMariage&nbsp;!
+    </p>
+    <p style="margin:0 0 24px;font-size:15px;color:#555555;line-height:1.65;">
+      Votre site professionnel sera créé dans les <strong>72 heures</strong> suivant la réception de votre questionnaire.
+    </p>
+    ${ctaButton("Compléter mon questionnaire", "https://www.instantmariage.fr/elite/questionnaire")}
+    ${divider()}
+    <p style="margin:0;font-size:14px;color:#555555;line-height:1.65;">
+      Une fois votre questionnaire soumis, notre équipe commencera la création de votre site immédiatement.
+    </p>
+    ${divider()}
+    <p style="margin:0;font-size:13px;color:#aaaaaa;line-height:1.6;text-align:center;">
+      À très bientôt,<br/>
+      <strong style="color:#1a1a1a;">L&rsquo;équipe InstantMariage.fr</strong>
+    </p>
+  `;
+
+  const text = [
+    `Bonjour,`,
+    "",
+    `Merci pour votre souscription au Pack Elite InstantMariage !`,
+    "",
+    `Votre site professionnel sera créé dans les 72 heures suivant la réception de votre questionnaire.`,
+    "",
+    `👉 Complétez votre questionnaire ici : https://www.instantmariage.fr/elite/questionnaire`,
+    "",
+    `Une fois votre questionnaire soumis, notre équipe commencera la création de votre site immédiatement.`,
+    "",
+    `À très bientôt,`,
+    `L'équipe InstantMariage.fr`,
+    textFooter(false),
+  ].join("\n");
+
+  return resend.emails.send({
+    from: FROM,
+    to: recipientEmail,
+    replyTo: REPLY_TO,
+    subject: `Bienvenue dans le Pack Elite — votre site est en cours de création 🎉`,
+    html: baseTemplate(content),
+    text,
+    headers: unsubscribeHeaders,
+  });
+}
+
 // ─── Email 15 : Nouvelle vente template digital (admin) ───────────────────────
 
 export async function sendTemplateDigitalEmail({

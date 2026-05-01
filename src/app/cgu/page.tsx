@@ -280,6 +280,55 @@ export default function CGU() {
               </p>
             </section>
 
+            {/* 12. Pack Elite */}
+            <section>
+              <h2 className="text-xl font-bold text-gray-900 mb-4 pb-2 border-b border-gray-100">
+                12. Pack Elite : propriété intellectuelle et rachat du site
+              </h2>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold text-gray-800 mb-2">12.1 Propriété du site</h3>
+                  <p>
+                    Le site web créé dans le cadre du Pack Elite reste la propriété intellectuelle et
+                    technique d&apos;InstantMariage.fr tant que l&apos;abonnement est actif. Le prestataire
+                    dispose d&apos;un droit d&apos;usage exclusif du site pendant toute la durée de son abonnement.
+                  </p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-800 mb-2">12.2 Suspension en cas de résiliation</h3>
+                  <p>
+                    En cas de résiliation ou de non-paiement de l&apos;abonnement Elite, le site sera mis hors
+                    ligne dans un délai de 48 heures. Le nom de domaine reste la propriété
+                    d&apos;InstantMariage.fr. Aucun export du code source n&apos;est possible sans rachat préalable.
+                  </p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-800 mb-2">12.3 Option de rachat</h3>
+                  <p className="mb-3">
+                    Le prestataire peut racheter son site à tout moment selon le barème dégressif suivant :
+                  </p>
+                  <ul className="list-disc list-inside space-y-1 ml-2">
+                    <li>Moins de 6 mois d&apos;abonnement : <strong className="text-gray-800">8 000 € HT</strong></li>
+                    <li>De 6 à 12 mois d&apos;abonnement : <strong className="text-gray-800">6 000 € HT</strong></li>
+                    <li>De 1 à 2 ans d&apos;abonnement : <strong className="text-gray-800">4 500 € HT</strong></li>
+                    <li>Plus de 2 ans d&apos;abonnement : <strong className="text-gray-800">3 000 € HT</strong></li>
+                  </ul>
+                  <p className="mt-3">
+                    Le prix de rachat inclut le transfert du code source, du nom de domaine et de
+                    l&apos;hébergement. Le site représente un investissement technique évalué à plus de
+                    15 000 € en agence web traditionnelle.
+                  </p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-800 mb-2">12.4 Données du prestataire</h3>
+                  <p>
+                    Les contenus fournis par le prestataire (photos, textes, logo) restent sa propriété.
+                    En cas de résiliation sans rachat, ces contenus sont supprimés dans un délai de 30 jours.
+                  </p>
+                </div>
+              </div>
+            </section>
+
             {/* Contact */}
             <div className="bg-rose-50 rounded-2xl p-6">
               <p className="font-semibold text-gray-800 mb-1">Contact</p>

@@ -489,7 +489,7 @@ export default function EliteContent() {
             {/* Card Vitrine */}
             <div className="rounded-3xl overflow-hidden bg-white shadow-lg border border-gray-200 flex flex-col">
               <div className="px-7 py-6 text-center" style={{ background: "#7C3AED" }}>
-                <p className="text-white text-xl font-bold mb-1">Elite Vitrine 👑</p>
+                <p className="text-white text-xl font-bold mb-1">Elite Vitrine</p>
                 {billingCycle === "monthly" ? (
                   <p className="text-purple-200 font-extrabold" style={{ fontSize: 32 }}>
                     149€<span className="text-lg font-semibold">/mois</span>
@@ -553,7 +553,7 @@ export default function EliteContent() {
                 >
                   ⭐ Le plus complet
                 </span>
-                <p className="text-white text-xl font-bold mb-1">Elite Shop 👑</p>
+                <p className="text-white text-xl font-bold mb-1">Elite Shop</p>
                 {billingCycle === "monthly" ? (
                   <p className="text-gray-300 font-extrabold" style={{ fontSize: 32 }}>
                     199€<span className="text-lg font-semibold">/mois</span>

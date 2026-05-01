@@ -5,7 +5,7 @@ import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import type { PlanAbonnement } from "@/lib/supabase";
 import { renderInvitationVideo } from "../../../../../lib/remotion-lambda";
-import { sendInvitationConfirmationEmail, sendCagnotteMerciEmail, sendCagnotteNotifEmail, sendCommandeCadreEmail, sendCommandeChevaletEmail, sendTemplateDigitalEmail, sendAlbumPhotoEmail, sendAlbumConfirmationEmail } from "@/lib/emails";
+import { sendInvitationConfirmationEmail, sendCagnotteMerciEmail, sendCagnotteNotifEmail, sendCommandeCadreEmail, sendCommandeChevaletEmail, sendTemplateDigitalEmail, sendAlbumPhotoEmail, sendAlbumConfirmationEmail, sendEliteWelcomeEmail } from "@/lib/emails";
 import { generateAlbumPdf } from "@/lib/generate-album-pdf";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -768,6 +768,18 @@ export async function POST(req: NextRequest) {
 
       if (updatePrestErr) {
         console.error("[webhook] Erreur UPDATE prestataires.abonnement_actif/verifie:", JSON.stringify(updatePrestErr));
+      }
+
+      // Email de bienvenue Pack Elite
+      if (plan === "elite-vitrine" || plan === "elite-shop") {
+        const eliteEmail = session.customer_details?.email ?? session.customer_email;
+        if (eliteEmail) {
+          try {
+            await sendEliteWelcomeEmail({ recipientEmail: eliteEmail });
+          } catch (emailErr) {
+            console.error("[webhook/elite] Erreur email bienvenue:", emailErr);
+          }
+        }
       }
     }
 
