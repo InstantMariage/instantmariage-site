@@ -5,17 +5,17 @@ import EliteContent from "@/components/EliteContent";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Pack Elite – Site Pro Mariage en 72h | InstantMariage.fr",
+  title: "Créez votre site web mariage professionnel en 72h | Pack Elite InstantMariage",
   description:
-    "Votre site professionnel mariage créé en 72h, clé en main. Nom de domaine inclus, maintenance incluse, visibilité sur InstantMariage. À partir de 149€/mois.",
+    "Obtenez un site web sur mesure pour votre activité mariage en 72h. Nom de domaine inclus, maintenance incluse, visibilité sur InstantMariage. À partir de 149€/mois.",
   keywords:
-    "site web mariage prestataire, site photographe mariage, site traiteur mariage, site wedding planner, pack elite instantmariage",
+    "site web prestataire mariage, site vitrine photographe mariage, site internet traiteur mariage, agence web mariage France",
   alternates: { canonical: "/elite" },
   openGraph: {
-    title: "Pack Elite – Site Pro Mariage en 72h | InstantMariage.fr",
+    title: "Créez votre site web mariage professionnel en 72h | Pack Elite InstantMariage",
     description:
-      "Votre site professionnel mariage créé en 72h, clé en main. Nom de domaine inclus, maintenance incluse, visibilité sur InstantMariage.",
-    url: "https://instantmariage.fr/elite",
+      "Obtenez un site web sur mesure pour votre activité mariage en 72h. Nom de domaine inclus, maintenance incluse, visibilité sur InstantMariage. À partir de 149€/mois.",
+    url: "https://www.instantmariage.fr/elite",
     siteName: "InstantMariage.fr",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Pack Elite InstantMariage.fr" }],
     locale: "fr_FR",
@@ -23,16 +23,60 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Pack Elite – Site Pro Mariage en 72h | InstantMariage.fr",
+    title: "Créez votre site web mariage professionnel en 72h | Pack Elite InstantMariage",
     description:
-      "Site pro mariage clé en main en 72h. Domaine inclus, maintenance incluse, visibilité InstantMariage. À partir de 149€/mois.",
+      "Obtenez un site web sur mesure pour votre activité mariage en 72h. Nom de domaine inclus, maintenance incluse. À partir de 149€/mois.",
     images: ["/og-image.png"],
   },
+};
+
+const serviceSchema = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: "Pack Elite - Création de site web mariage",
+  provider: {
+    "@type": "Organization",
+    name: "InstantMariage.fr",
+    url: "https://www.instantmariage.fr",
+  },
+  description: "Création de site web professionnel sur mesure pour prestataires mariage en 72h",
+  offers: [
+    {
+      "@type": "Offer",
+      name: "Elite Vitrine",
+      price: "149",
+      priceCurrency: "EUR",
+      priceSpecification: {
+        "@type": "UnitPriceSpecification",
+        price: "149",
+        priceCurrency: "EUR",
+        unitText: "MONTH",
+      },
+    },
+    {
+      "@type": "Offer",
+      name: "Elite Shop",
+      price: "199",
+      priceCurrency: "EUR",
+      priceSpecification: {
+        "@type": "UnitPriceSpecification",
+        price: "199",
+        priceCurrency: "EUR",
+        unitText: "MONTH",
+      },
+    },
+  ],
+  areaServed: "France",
+  serviceType: "Web Design",
 };
 
 export default function ElitePage() {
   return (
     <main className="min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
+      />
       <Header />
       <Suspense fallback={<div className="min-h-screen" />}>
         <EliteContent />

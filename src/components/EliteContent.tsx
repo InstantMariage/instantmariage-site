@@ -239,6 +239,102 @@ const buyoutRows = [
   { period: "Plus de 2 ans", price: "3 000€" },
 ];
 
+/* ─── FAQ data & component ───────────────────────────── */
+
+const FAQ_ITEMS = [
+  {
+    q: "Combien coûte la création d'un site web avec le Pack Elite ?",
+    a: "À partir de 149€/mois pour un site vitrine, 199€/mois pour un site avec boutique en ligne. Le nom de domaine est inclus.",
+  },
+  {
+    q: "En combien de temps mon site sera-t-il en ligne ?",
+    a: "Votre site est livré en 72h après réception de votre questionnaire complet.",
+  },
+  {
+    q: "Je reste propriétaire de mon site ?",
+    a: "Le site reste la propriété d'InstantMariage tant que vous êtes abonné. Vous pouvez le racheter à tout moment selon notre barème dégressif.",
+  },
+  {
+    q: "Puis-je modifier mon site après livraison ?",
+    a: "Oui, les mises à jour sont incluses dans votre abonnement. Contactez notre équipe pour toute modification.",
+  },
+  {
+    q: "Que se passe-t-il si j'arrête mon abonnement ?",
+    a: "En cas de résiliation, votre site est mis hors ligne dans les 48h. Votre domaine reste réservé pendant 30 jours.",
+  },
+  {
+    q: "Le Pack Elite inclut-il la visibilité sur InstantMariage ?",
+    a: "Oui, votre profil est mis en avant sur l'annuaire InstantMariage avec un badge Elite exclusif.",
+  },
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQ_ITEMS.map(({ q, a }) => ({
+    "@type": "Question",
+    name: q,
+    acceptedAnswer: { "@type": "Answer", text: a },
+  })),
+};
+
+function FAQSection() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  return (
+    <section className="py-16 md:py-24 bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <div className="max-w-3xl mx-auto px-4">
+        <h2
+          className="text-center mb-12 text-gray-900"
+          style={{
+            fontFamily: "Cormorant Garamond, Georgia, serif",
+            fontSize: "clamp(36px, 5vw, 48px)",
+            fontWeight: 700,
+          }}
+        >
+          Questions fréquentes
+        </h2>
+        <div>
+          {FAQ_ITEMS.map((item, i) => (
+            <div key={i} style={{ borderTop: "1px solid #E5E7EB" }}>
+              <button
+                onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                className="w-full flex items-center justify-between py-5 text-left gap-4"
+              >
+                <span
+                  className="text-gray-900 font-medium text-base leading-snug"
+                  style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: 20 }}
+                >
+                  {item.q}
+                </span>
+                <span
+                  className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-white text-lg font-bold transition-colors"
+                  style={{ background: openIndex === i ? "#7C3AED" : "#E5E7EB", color: openIndex === i ? "#fff" : "#6B7280" }}
+                >
+                  {openIndex === i ? "−" : "+"}
+                </span>
+              </button>
+              {openIndex === i && (
+                <p
+                  className="pb-5 text-gray-600 leading-relaxed text-sm md:text-base"
+                  style={{ fontFamily: "DM Sans, sans-serif" }}
+                >
+                  {item.a}
+                </p>
+              )}
+            </div>
+          ))}
+          <div style={{ borderTop: "1px solid #E5E7EB" }} />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ─── Main component ─────────────────────────────────── */
 
 export default function EliteContent() {
@@ -755,6 +851,9 @@ export default function EliteContent() {
           </p>
         </div>
       </section>
+
+      {/* ── SECTION FAQ ────────────────────────────────────── */}
+      <FAQSection />
 
       {/* ── SECTION 5 — CTA FINAL ──────────────────────────── */}
       <section
