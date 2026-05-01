@@ -39,10 +39,10 @@ const BASE = 'https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/
 const FLEET = [
   { img: `${BASE}/car-1.jpg`, name: 'Mercedes Classe S', tagline: 'Élégance et raffinement' },
   { img: `${BASE}/g63.jpg`, name: 'Mercedes AMG G63', tagline: 'Puissance et prestance' },
-  { img: `${BASE}/car-10.jpg`, name: 'Bentley Continental GT', tagline: 'Raffinement britannique' },
+  { img: `${BASE}/bentley.jpg`, name: 'Bentley Continental GT', tagline: 'Raffinement britannique' },
   { img: `${BASE}/car-4.jpg`, name: 'Rolls-Royce Silver Cloud', tagline: 'La quintessence du luxe' },
   { img: `${BASE}/car-5.jpg`, name: 'Mercedes Maybach S580', tagline: 'Confort et prestige absolu' },
-  { img: `${BASE}/car-13.jpg`, name: 'Lamborghini Urus', tagline: 'Pour les mariés audacieux' },
+  { img: `${BASE}/urus.jpg`, name: 'Lamborghini Urus', tagline: 'Pour les mariés audacieux' },
 ]
 
 const SERVICES = [
