@@ -510,13 +510,13 @@ export default function Header() {
                 <>
                   <Link
                     href="/messages"
-                    className="w-full flex items-center justify-between border-2 border-rose-100 text-gray-700 hover:border-rose-300 font-medium px-5 py-2.5 rounded-full transition-all duration-200 text-sm"
+                    className="relative w-full text-center border-2 border-rose-100 text-gray-700 hover:border-rose-300 font-medium px-5 py-2.5 rounded-full transition-all duration-200 text-sm"
                     onClick={() => setMobileOpen(false)}
                   >
-                    <span>Messages</span>
+                    Messages
                     {unreadCount > 0 && (
                       <span
-                        className="w-5 h-5 rounded-full text-white text-xs font-bold flex items-center justify-center"
+                        className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-white text-xs font-bold flex items-center justify-center"
                         style={{ background: "#F06292" }}
                       >
                         {unreadCount > 9 ? "9+" : unreadCount}
