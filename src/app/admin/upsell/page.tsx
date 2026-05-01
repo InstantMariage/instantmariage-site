@@ -23,16 +23,16 @@ const PLAN_ORDER: Record<string, number> = {
 };
 
 const NEXT_PLAN: Record<PlanKey, string> = {
-  gratuit: "Starter",
-  starter: "Pro",
-  pro: "Premium",
+  gratuit: "Pro",
+  starter: "Premium",
+  pro: "Elite",
 };
 
 const FILTER_LABELS: { key: FilterKey; label: string }[] = [
   { key: "all", label: "Tous" },
-  { key: "gratuit", label: "Gratuit → Starter" },
-  { key: "starter", label: "Starter → Pro" },
-  { key: "pro", label: "Pro → Premium" },
+  { key: "gratuit", label: "Gratuit → Pro" },
+  { key: "starter", label: "Pro → Premium" },
+  { key: "pro", label: "Premium → Elite" },
 ];
 
 const DEFAULT_SUJET =
