@@ -23,7 +23,7 @@ export const metadata: Metadata = {
       "Comparez et contactez facilement photographes, traiteurs, DJ, wedding planners et tous vos prestataires mariage en France. Devis gratuit, avis vérifiés.",
     url: "https://instantmariage.fr",
     siteName: "InstantMariage.fr",
-    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "InstantMariage.fr" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "InstantMariage.fr" }],
     locale: "fr_FR",
     type: "website",
   },
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     title: "InstantMariage.fr – Trouvez les meilleurs prestataires mariage en France",
     description:
       "Comparez et contactez photographes, traiteurs, DJ, wedding planners et tous vos prestataires mariage. Devis gratuit.",
-    images: ["/logo.png"],
+    images: ["/og-image.png"],
   },
 };
 

@@ -28,7 +28,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "InstantMariage.fr - Trouvez les meilleurs prestataires mariage",
   description:
-    "La plateforme #1 des prestataires mariage en France",
+    "InstantMariage.fr est la plateforme #1 des prestataires mariage en France. Trouvez photographes, traiteurs, DJ, fleuristes et tous les pros du mariage près de chez vous. Gratuit pour les mariés.",
   keywords: "mariage, prestataires mariage, photographe mariage, traiteur mariage, DJ mariage",
   metadataBase: new URL("https://instantmariage.fr"),
   alternates: { canonical: "/" },
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     siteName: "InstantMariage.fr",
     images: [
       {
-        url: "/logo.png",
+        url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "InstantMariage.fr",
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "InstantMariage.fr - Trouvez les meilleurs prestataires mariage",
     description: "La plateforme #1 des prestataires mariage en France",
-    images: ["/logo.png"],
+    images: ["/og-image.png"],
   },
   verification: {
     google: "qW9lilNNncGB3P5WZ4eybkNFySB7hIYCCl65bGGxuLk",

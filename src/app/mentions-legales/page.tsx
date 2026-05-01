@@ -13,7 +13,7 @@ export const metadata: Metadata = {
       "Mentions légales du site InstantMariage.fr : éditeur, hébergeur, directeur de publication et informations de contact.",
     url: "https://instantmariage.fr/mentions-legales",
     siteName: "InstantMariage.fr",
-    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "InstantMariage.fr" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "InstantMariage.fr" }],
     locale: "fr_FR",
     type: "website",
   },

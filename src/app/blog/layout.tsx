@@ -12,7 +12,7 @@ export const metadata: Metadata = {
       "Tous nos conseils pour organiser votre mariage : choisir votre photographe, les tendances déco 2025, budget, inspiration et guides pratiques pour futurs mariés.",
     url: "https://instantmariage.fr/blog",
     siteName: "InstantMariage.fr",
-    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "Blog InstantMariage.fr" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Blog InstantMariage.fr" }],
     locale: "fr_FR",
     type: "website",
   },
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     title: "Blog mariage – Conseils, tendances et inspiration – InstantMariage.fr",
     description:
       "Tous nos conseils pour organiser votre mariage : choisir votre photographe, les tendances déco 2025, budget, inspiration et guides pratiques.",
-    images: ["/logo.png"],
+    images: ["/og-image.png"],
   },
 };
 

@@ -45,9 +45,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     for (const ville of VILLES_SEO) {
       villePages.push({
         url: `${baseUrl}/annuaire/${buildSlug(metier.slug, ville.slug)}`,
-        lastModified: new Date(),
+        lastModified: new Date("2026-01-01"),
         changeFrequency: "weekly",
-        priority: 0.8,
+        priority: 0.6,
       });
     }
   }
@@ -58,9 +58,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     for (const departement of DEPARTEMENTS_SEO) {
       departementPages.push({
         url: `${baseUrl}/annuaire/departement/${buildSlugDepartement(metier.slug, departement.slug)}`,
-        lastModified: new Date(),
+        lastModified: new Date("2026-01-01"),
         changeFrequency: "weekly",
-        priority: 0.75,
+        priority: 0.6,
       });
     }
   }
@@ -71,9 +71,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     for (const region of REGIONS_SEO) {
       regionPages.push({
         url: `${baseUrl}/annuaire/region/${buildSlugRegion(metier.slug, region.slug)}`,
-        lastModified: new Date(),
+        lastModified: new Date("2026-01-01"),
         changeFrequency: "weekly",
-        priority: 0.85,
+        priority: 0.6,
       });
     }
   }
@@ -81,7 +81,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     ...staticPages.map(({ path, priority, changeFrequency }) => ({
       url: `${baseUrl}${path}`,
-      lastModified: new Date(),
+      lastModified: new Date("2026-01-01"),
       changeFrequency,
       priority,
     })),

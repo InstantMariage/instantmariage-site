@@ -14,7 +14,7 @@ export const metadata: Metadata = {
       "Déclaration d'accessibilité d'InstantMariage.fr : niveau de conformité RGAA, limitations connues et moyens de nous contacter.",
     url: "https://instantmariage.fr/accessibilite",
     siteName: "InstantMariage.fr",
-    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "InstantMariage.fr" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "InstantMariage.fr" }],
     locale: "fr_FR",
     type: "website",
   },

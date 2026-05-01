@@ -54,7 +54,7 @@ export const metadata: Metadata = {
       "Découvrez nos formules pour les prestataires mariage : Starter, Pro et Premium. Gérez vos devis, factures et visibilité en ligne.",
     url: "https://instantmariage.fr/tarifs",
     siteName: "InstantMariage.fr",
-    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "Tarifs InstantMariage.fr" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Tarifs InstantMariage.fr" }],
     locale: "fr_FR",
     type: "website",
   },
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
     title: "Tarifs – InstantMariage.fr",
     description:
       "Formules Starter, Pro et Premium pour les prestataires mariage. Gérez vos devis, factures et visibilité en ligne.",
-    images: ["/logo.png"],
+    images: ["/og-image.png"],
   },
 };
 

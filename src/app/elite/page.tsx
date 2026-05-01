@@ -17,7 +17,7 @@ export const metadata: Metadata = {
       "Votre site professionnel mariage créé en 72h, clé en main. Nom de domaine inclus, maintenance incluse, visibilité sur InstantMariage.",
     url: "https://instantmariage.fr/elite",
     siteName: "InstantMariage.fr",
-    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "Pack Elite InstantMariage.fr" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Pack Elite InstantMariage.fr" }],
     locale: "fr_FR",
     type: "website",
   },
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     title: "Pack Elite – Site Pro Mariage en 72h | InstantMariage.fr",
     description:
       "Site pro mariage clé en main en 72h. Domaine inclus, maintenance incluse, visibilité InstantMariage. À partir de 149€/mois.",
-    images: ["/logo.png"],
+    images: ["/og-image.png"],
   },
 };
 

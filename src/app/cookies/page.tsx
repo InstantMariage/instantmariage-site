@@ -14,7 +14,7 @@ export const metadata: Metadata = {
       "Politique de gestion des cookies d'InstantMariage.fr : types de cookies utilisés, finalités, durée de conservation et comment les désactiver.",
     url: "https://instantmariage.fr/cookies",
     siteName: "InstantMariage.fr",
-    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "InstantMariage.fr" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "InstantMariage.fr" }],
     locale: "fr_FR",
     type: "website",
   },

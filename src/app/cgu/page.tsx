@@ -13,7 +13,7 @@ export const metadata: Metadata = {
       "Conditions Générales d'Utilisation de la marketplace InstantMariage.fr : règles d'accès, rôles des utilisateurs, abonnements prestataires et responsabilités.",
     url: "https://instantmariage.fr/cgu",
     siteName: "InstantMariage.fr",
-    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "InstantMariage.fr" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "InstantMariage.fr" }],
     locale: "fr_FR",
     type: "website",
   },

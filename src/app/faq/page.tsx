@@ -17,7 +17,7 @@ export const metadata: Metadata = {
       "Toutes les réponses à vos questions sur InstantMariage.fr : comment trouver un prestataire, comment s'inscrire, les tarifs et la gestion du profil.",
     url: "https://instantmariage.fr/faq",
     siteName: "InstantMariage.fr",
-    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "FAQ InstantMariage.fr" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "FAQ InstantMariage.fr" }],
     locale: "fr_FR",
     type: "website",
   },
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     title: "FAQ – Questions fréquentes | InstantMariage.fr",
     description:
       "Toutes les réponses à vos questions sur InstantMariage.fr : futurs mariés et prestataires.",
-    images: ["/logo.png"],
+    images: ["/og-image.png"],
   },
 };
 

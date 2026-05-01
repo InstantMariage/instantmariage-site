@@ -16,7 +16,7 @@ export const metadata: Metadata = {
       "Trouvez les meilleurs photographes, traiteurs, DJ, fleuristes et tous vos prestataires mariage en France. Filtrez par région, budget et métier.",
     url: "https://instantmariage.fr/annuaire",
     siteName: "InstantMariage.fr",
-    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "Annuaire prestataires mariage" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Annuaire prestataires mariage" }],
     locale: "fr_FR",
     type: "website",
   },
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     title: "Annuaire des prestataires mariage – InstantMariage.fr",
     description:
       "Trouvez les meilleurs photographes, traiteurs, DJ, fleuristes et tous vos prestataires mariage en France.",
-    images: ["/logo.png"],
+    images: ["/og-image.png"],
   },
 };
 

@@ -15,7 +15,7 @@ export const metadata: Metadata = {
       "Découvrez l'histoire d'InstantMariage.fr, notre mission et l'équipe qui connecte chaque jour des couples avec les meilleurs prestataires de France.",
     url: "https://instantmariage.fr/a-propos",
     siteName: "InstantMariage.fr",
-    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "À propos InstantMariage.fr" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "À propos InstantMariage.fr" }],
     locale: "fr_FR",
     type: "website",
   },
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     title: "À propos – InstantMariage.fr",
     description:
       "Découvrez notre mission et l'équipe qui connecte des couples avec les meilleurs prestataires de France.",
-    images: ["/logo.png"],
+    images: ["/og-image.png"],
   },
 };
 

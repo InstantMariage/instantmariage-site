@@ -11,7 +11,7 @@ export const metadata: Metadata = {
       "Connectez-vous à votre espace InstantMariage.fr pour gérer vos demandes de devis, vos messages et votre profil prestataire mariage.",
     url: "https://instantmariage.fr/login",
     siteName: "InstantMariage.fr",
-    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "Connexion InstantMariage.fr" }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Connexion InstantMariage.fr" }],
     locale: "fr_FR",
     type: "website",
   },
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     title: "Connexion – InstantMariage.fr",
     description:
       "Connectez-vous à votre espace InstantMariage.fr pour gérer vos demandes de devis, vos messages et votre profil.",
-    images: ["/logo.png"],
+    images: ["/og-image.png"],
   },
 };
 
