@@ -35,10 +35,30 @@ const FILTER_LABELS: { key: FilterKey; label: string }[] = [
   { key: "pro", label: "Pro → Premium" },
 ];
 
+const DEFAULT_SUJET =
+  "Votre site pro mariage en 72h — Pack Elite InstantMariage";
+
+const DEFAULT_CORPS = `Bonjour [nom_entreprise],
+
+Nous avons une nouveauté exclusive pour vous sur InstantMariage.fr !
+
+🚀 Lancez votre site professionnel en 72h avec le Pack Elite :
+✅ Site web sur mesure créé par notre équipe
+✅ Nom de domaine personnalisé inclus
+✅ Maintenance & mises à jour incluses
+✅ Visibilité renforcée sur InstantMariage
+✅ À partir de 149€/mois seulement
+
+👉 Découvrez nos réalisations et réservez votre domaine :
+https://www.instantmariage.fr/elite
+
+L'équipe InstantMariage.fr`;
+
 type PrestataireStat = {
   id: string;
   nom_entreprise: string;
   user_id: string;
+  email: string;
   active_plan: PlanKey;
   completeness_score: number;
   nb_avis: number;
@@ -108,6 +128,19 @@ export default function AdminUpsellPage() {
   const [sent, setSent] = useState<Set<string>>(new Set());
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+
+  // Sélection pour envoi email Elite
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // Modal email Elite
+  const [showModal, setShowModal] = useState(false);
+  const [modalSujet, setModalSujet] = useState(DEFAULT_SUJET);
+  const [modalCorps, setModalCorps] = useState(DEFAULT_CORPS);
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailResult, setEmailResult] = useState<{
+    sent: number;
+    errors: number;
+  } | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -210,6 +243,78 @@ export default function AdminUpsellPage() {
     });
   }, [prestataires, filter, sortColumn, sortDirection]);
 
+  // Vider la sélection au changement de filtre
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [filter]);
+
+  const allVisibleSelected =
+    filtered.length > 0 && filtered.every((p) => selectedIds.has(p.id));
+
+  function handleToggleAll() {
+    if (allVisibleSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filtered.map((p) => p.id)));
+    }
+  }
+
+  function handleToggleOne(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  const selectedPrestataires = useMemo(
+    () => prestataires.filter((p) => selectedIds.has(p.id)),
+    [prestataires, selectedIds]
+  );
+
+  async function handleSendEliteEmail() {
+    if (emailSending || selectedPrestataires.length === 0) return;
+    setEmailSending(true);
+    setEmailResult(null);
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) return;
+      const res = await fetch("/api/admin/send-elite-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          prestataires: selectedPrestataires.map((p) => ({
+            id: p.id,
+            email: p.email,
+            nom_entreprise: p.nom_entreprise,
+          })),
+          sujet: modalSujet,
+          corps: modalCorps,
+        }),
+      });
+      const json = await res.json();
+      setEmailResult({ sent: json.sent ?? 0, errors: json.errors ?? 0 });
+    } finally {
+      setEmailSending(false);
+    }
+  }
+
+  function openModal() {
+    setEmailResult(null);
+    setShowModal(true);
+  }
+
+  function closeModal() {
+    setShowModal(false);
+    setEmailResult(null);
+  }
+
   const thClass =
     "text-xs font-semibold text-gray-500 px-5 py-3.5 cursor-pointer select-none hover:text-gray-700 whitespace-nowrap";
   const thClassCenter =
@@ -252,6 +357,30 @@ export default function AdminUpsellPage() {
         ))}
       </div>
 
+      {/* Barre de sélection */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center justify-between gap-4 mb-4 px-4 py-3 rounded-xl border"
+          style={{ background: "#F5F3FF", borderColor: "#DDD6FE" }}
+        >
+          <span className="text-sm font-medium" style={{ color: "#6D28D9" }}>
+            {selectedIds.size} prestataire{selectedIds.size > 1 ? "s" : ""}{" "}
+            sélectionné{selectedIds.size > 1 ? "s" : ""}
+          </span>
+          <button
+            onClick={openModal}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all duration-150"
+            style={{ background: "#7C3AED" }}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
+            </svg>
+            Envoyer l&apos;offre Elite par email
+          </button>
+        </div>
+      )}
+
       {loading && (
         <div className="flex items-center justify-center py-16 text-gray-400 text-sm">
           Chargement…
@@ -270,6 +399,15 @@ export default function AdminUpsellPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100">
+                  <th className="pl-5 pr-3 py-3.5">
+                    <input
+                      type="checkbox"
+                      checked={allVisibleSelected}
+                      onChange={handleToggleAll}
+                      title="Tout sélectionner"
+                      className="w-4 h-4 rounded border-gray-300 cursor-pointer accent-violet-600"
+                    />
+                  </th>
                   <th
                     onClick={() => handleSort("nom")}
                     className={`text-left ${thClass}`}
@@ -286,7 +424,7 @@ export default function AdminUpsellPage() {
                   </th>
                   <th
                     onClick={() => handleSort("score")}
-                    className={`text-left text-xs font-semibold text-gray-500 px-4 py-3.5 min-w-[160px] cursor-pointer select-none hover:text-gray-700 whitespace-nowrap`}
+                    className="text-left text-xs font-semibold text-gray-500 px-4 py-3.5 min-w-[160px] cursor-pointer select-none hover:text-gray-700 whitespace-nowrap"
                   >
                     Score d&apos;activité{" "}
                     <SortIcon col="score" sortColumn={sortColumn} sortDirection={sortDirection} />
@@ -319,7 +457,7 @@ export default function AdminUpsellPage() {
                 {filtered.length === 0 && (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={8}
                       className="text-center text-gray-400 py-10 text-sm"
                     >
                       Aucun prestataire dans cette catégorie
@@ -330,11 +468,21 @@ export default function AdminUpsellPage() {
                   const badge = PLAN_BADGE[p.active_plan] ?? PLAN_BADGE.gratuit;
                   const nextPlan = NEXT_PLAN[p.active_plan] ?? "Premium";
                   const alreadySent = sent.has(p.id);
+                  const isSelected = selectedIds.has(p.id);
                   return (
                     <tr
                       key={p.id}
                       className="hover:bg-gray-50/50 transition-colors"
+                      style={isSelected ? { background: "#F5F3FF" } : undefined}
                     >
+                      <td className="pl-5 pr-3 py-3.5">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => handleToggleOne(p.id)}
+                          className="w-4 h-4 rounded border-gray-300 cursor-pointer accent-violet-600"
+                        />
+                      </td>
                       <td className="px-5 py-3.5">
                         <span className="font-medium text-gray-900">
                           {p.nom_entreprise}
@@ -413,6 +561,119 @@ export default function AdminUpsellPage() {
               {filtered.length} prestataire{filtered.length > 1 ? "s" : ""}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Modal envoi email Elite */}
+      {showModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.45)" }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeModal();
+          }}
+        >
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="px-6 pt-6 pb-4 border-b border-gray-100">
+              <h2 className="text-lg font-bold text-gray-900">
+                Envoyer l&apos;offre Elite par email
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                {selectedIds.size} prestataire{selectedIds.size > 1 ? "s" : ""}{" "}
+                sélectionné{selectedIds.size > 1 ? "s" : ""}
+              </p>
+            </div>
+
+            <div className="px-6 py-5 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                  Sujet
+                </label>
+                <input
+                  type="text"
+                  value={modalSujet}
+                  onChange={(e) => setModalSujet(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:border-violet-400"
+                  style={{ "--tw-ring-color": "#DDD6FE" } as React.CSSProperties}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                  Corps de l&apos;email{" "}
+                  <span className="font-normal text-gray-400">
+                    — utilisez [nom_entreprise] pour personnaliser
+                  </span>
+                </label>
+                <textarea
+                  value={modalCorps}
+                  onChange={(e) => setModalCorps(e.target.value)}
+                  rows={14}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 font-mono focus:outline-none focus:ring-2 focus:border-violet-400 resize-y"
+                  style={{ "--tw-ring-color": "#DDD6FE" } as React.CSSProperties}
+                />
+              </div>
+
+              {emailResult && (
+                <div
+                  className="rounded-lg px-4 py-3 text-sm font-medium"
+                  style={
+                    emailResult.errors === 0
+                      ? { background: "#F0FDF4", color: "#16a34a" }
+                      : { background: "#FFF7ED", color: "#C2410C" }
+                  }
+                >
+                  {emailResult.sent > 0 && (
+                    <span>
+                      ✓ {emailResult.sent} email
+                      {emailResult.sent > 1 ? "s" : ""} envoyé
+                      {emailResult.sent > 1 ? "s" : ""}
+                    </span>
+                  )}
+                  {emailResult.errors > 0 && (
+                    <span className="ml-2">
+                      — {emailResult.errors} erreur
+                      {emailResult.errors > 1 ? "s" : ""}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="px-6 pb-6 flex items-center justify-end gap-3 border-t border-gray-100 pt-4">
+              <button
+                onClick={closeModal}
+                className="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                Fermer
+              </button>
+              <button
+                onClick={handleSendEliteEmail}
+                disabled={
+                  emailSending ||
+                  !modalSujet.trim() ||
+                  !modalCorps.trim() ||
+                  !!emailResult
+                }
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white transition-all duration-150 disabled:opacity-60"
+                style={{ background: "#7C3AED" }}
+              >
+                {emailSending ? (
+                  "Envoi en cours…"
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                      />
+                    </svg>
+                    Envoyer à {selectedIds.size} prestataire
+                    {selectedIds.size > 1 ? "s" : ""}
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

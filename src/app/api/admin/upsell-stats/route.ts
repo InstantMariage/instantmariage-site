@@ -39,8 +39,8 @@ export async function GET(req: NextRequest) {
   const prestataireIds = prestataires.map((p) => p.id as string);
   const userIds = prestataires.map((p) => p.user_id as string);
 
-  // Comptes documents et messages en parallèle
-  const [{ data: docRows }, { data: msgRows }] = await Promise.all([
+  // Comptes documents, messages et emails en parallèle
+  const [{ data: docRows }, { data: msgRows }, { data: usersData }] = await Promise.all([
     supabase
       .from("documents_prestataire")
       .select("prestataire_id")
@@ -49,6 +49,10 @@ export async function GET(req: NextRequest) {
       .from("messages")
       .select("destinataire_id")
       .in("destinataire_id", userIds),
+    supabase
+      .from("users")
+      .select("id, email")
+      .in("id", userIds),
   ]);
 
   // Grouper documents par prestataire_id
@@ -63,10 +67,17 @@ export async function GET(req: NextRequest) {
     msgCounts.set(row.destinataire_id, (msgCounts.get(row.destinataire_id) ?? 0) + 1);
   }
 
+  // Email par user_id
+  const emailByUserId = new Map<string, string>();
+  for (const u of usersData ?? []) {
+    emailByUserId.set(u.id as string, u.email as string);
+  }
+
   const result = prestataires.map((p) => ({
     id: p.id as string,
     nom_entreprise: p.nom_entreprise as string,
     user_id: p.user_id as string,
+    email: emailByUserId.get(p.user_id as string) ?? "",
     active_plan: p.active_plan as string,
     completeness_score: (p.completeness_score as number) ?? 0,
     nb_avis: (p.nb_avis as number) ?? 0,
