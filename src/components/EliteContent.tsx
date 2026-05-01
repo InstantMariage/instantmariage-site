@@ -35,13 +35,23 @@ interface DomainCheckerProps {
 function DomainChecker({ eliteMode, setEliteMode, onCheckout, loading }: DomainCheckerProps) {
   const [input, setInput] = useState("");
   const [status, setStatus] = useState<DomainStatus>("idle");
+  const [autoExtension, setAutoExtension] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const check = useCallback(async (domain: string) => {
-    const trimmed = domain.trim();
+    let trimmed = domain.trim();
     if (!trimmed || trimmed.length < 4) {
       setStatus("idle");
+      setAutoExtension(false);
       return;
+    }
+    const hasDot = trimmed.includes(".");
+    if (!hasDot) {
+      trimmed = trimmed + ".fr";
+      setInput(trimmed);
+      setAutoExtension(true);
+    } else {
+      setAutoExtension(false);
     }
     setStatus("checking");
     const available = await checkDomainRDAP(trimmed);
@@ -51,16 +61,31 @@ function DomainChecker({ eliteMode, setEliteMode, onCheckout, loading }: DomainC
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const val = e.target.value;
     setInput(val);
+    setAutoExtension(false);
     setStatus(val.trim().length >= 4 ? "checking" : "idle");
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => check(val), 500);
+  }
+
+  function handleAlternativeClick(alt: string) {
+    setInput(alt);
+    setAutoExtension(false);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    check(alt);
   }
 
   useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
 
   const base = getDomainBase(input);
   const suggestions = base
-    ? [`${base}-pro.fr`, `${base}-mariage.fr`, `${base}-events.fr`]
+    ? [
+        `${base}-mariage.fr`,
+        `${base}-pro.fr`,
+        `${base}-mariage2026.fr`,
+        `${base}-events.fr`,
+        `${base}-wedding.fr`,
+        `atelier-${base}.fr`,
+      ]
     : [];
 
   return (
@@ -81,6 +106,9 @@ function DomainChecker({ eliteMode, setEliteMode, onCheckout, loading }: DomainC
           Vérifier
         </button>
       </div>
+      {autoExtension && (
+        <p className="mt-1.5 text-xs text-gray-400 pl-1">Nous avons ajouté .fr automatiquement</p>
+      )}
 
       {/* Spinner */}
       {status === "checking" && (
@@ -140,27 +168,25 @@ function DomainChecker({ eliteMode, setEliteMode, onCheckout, loading }: DomainC
         </div>
       )}
 
-      {/* Taken → suggestions only, no checkout */}
+      {/* Taken → clickable alternatives, no /contact link */}
       {status === "taken" && (
         <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-5 py-4">
           <p className="text-red-600 font-semibold mb-3">
             Ce domaine est déjà pris. Voici quelques alternatives :
           </p>
-          <ul className="space-y-2 mb-4">
+          <ul className="space-y-2">
             {suggestions.map((s) => (
-              <li key={s} className="flex items-center gap-2 text-sm text-gray-700">
-                <span className="w-2 h-2 rounded-full bg-purple-400 inline-block" />
-                <span className="font-mono font-medium">{s}</span>
+              <li key={s}>
+                <button
+                  onClick={() => handleAlternativeClick(s)}
+                  className="flex items-center gap-2 text-sm text-gray-700 hover:text-purple-700 transition-colors group w-full text-left"
+                >
+                  <span className="w-2 h-2 rounded-full bg-purple-400 group-hover:bg-purple-600 inline-block flex-shrink-0 transition-colors" />
+                  <span className="font-mono font-medium group-hover:underline">{s}</span>
+                </button>
               </li>
             ))}
           </ul>
-          <Link
-            href="/contact"
-            className="inline-block px-5 py-2.5 rounded-xl text-white text-sm font-semibold transition hover:opacity-90"
-            style={{ background: "linear-gradient(135deg, #7C3AED, #5B21B6)" }}
-          >
-            Choisir une alternative →
-          </Link>
         </div>
       )}
     </div>
