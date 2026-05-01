@@ -327,21 +327,17 @@ export default function EliteContent() {
           <p className="text-purple-200 text-lg md:text-xl max-w-xl mx-auto mb-10 leading-relaxed">
             Nom de domaine inclus&nbsp;•&nbsp;Maintenance incluse&nbsp;•&nbsp;Visibilité sur InstantMariage
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-col items-center gap-5">
             <button
               onClick={() => document.getElementById("realisations")?.scrollIntoView({ behavior: "smooth" })}
-              className="px-8 py-4 rounded-2xl font-bold text-base text-white shadow-xl transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5"
-              style={{ background: "linear-gradient(135deg, #7C3AED, #5B21B6)" }}
+              className="px-10 py-4 rounded-full font-bold text-base shadow-2xl transition-all duration-200 hover:shadow-white/20 hover:-translate-y-0.5 active:translate-y-0"
+              style={{ background: "#fff", color: "#7C3AED" }}
             >
-              Voir nos réalisations →
+              Découvrir nos réalisations →
             </button>
-            <button
-              onClick={() => document.getElementById("tarifs-elite")?.scrollIntoView({ behavior: "smooth" })}
-              className="px-8 py-4 rounded-2xl font-bold text-base text-white shadow-xl transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5"
-              style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.3)" }}
-            >
-              Voir les tarifs →
-            </button>
+            <p className="text-sm text-white/60 tracking-wide">
+              4 sites démo&nbsp;•&nbsp;Livraison 72h&nbsp;•&nbsp;Domaine inclus
+            </p>
           </div>
         </div>
       </section>
