@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
   const { data: prestataires, error: prestError } = await supabase
     .from("prestataires_ranked")
     .select("id, nom_entreprise, user_id, completeness_score, active_plan, nb_avis, created_at")
-    .in("active_plan", ["gratuit", "starter", "pro"]);
+    .in("active_plan", ["gratuit", "starter", "pro", "premium"]);
 
   if (prestError || !prestataires) {
     return NextResponse.json({ error: "Impossible de charger les prestataires" }, { status: 500 });

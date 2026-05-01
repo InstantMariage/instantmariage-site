@@ -3,36 +3,40 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 
-type PlanKey = "gratuit" | "starter" | "pro";
-type FilterKey = "all" | "gratuit" | "starter" | "pro";
+type PlanKey = "gratuit" | "starter" | "pro" | "premium";
+type FilterKey = "all" | "gratuit" | "starter" | "pro" | "premium";
 
 const PLAN_LABEL: Record<string, string> = {
   gratuit: "Gratuit",
   starter: "Starter",
   pro: "Pro",
+  premium: "Premium",
 };
 
 const PLAN_BADGE: Record<string, { bg: string; color: string }> = {
   gratuit: { bg: "#F3F4F6", color: "#6B7280" },
   starter: { bg: "#EFF6FF", color: "#3B82F6" },
   pro: { bg: "#FFF0F5", color: "#F06292" },
+  premium: { bg: "#FFF7ED", color: "#EA580C" },
 };
 
 const PLAN_ORDER: Record<string, number> = {
-  gratuit: 1, starter: 2, pro: 3,
+  gratuit: 1, starter: 2, pro: 3, premium: 4,
 };
 
 const NEXT_PLAN: Record<PlanKey, string> = {
   gratuit: "Pro",
   starter: "Premium",
   pro: "Elite",
+  premium: "Elite",
 };
 
 const FILTER_LABELS: { key: FilterKey; label: string }[] = [
   { key: "all", label: "Tous" },
   { key: "gratuit", label: "Gratuit → Pro" },
-  { key: "starter", label: "Pro → Premium" },
-  { key: "pro", label: "Premium → Elite" },
+  { key: "starter", label: "Starter → Premium" },
+  { key: "pro", label: "Pro → Elite" },
+  { key: "premium", label: "Premium → Elite" },
 ];
 
 const DEFAULT_SUJET =
