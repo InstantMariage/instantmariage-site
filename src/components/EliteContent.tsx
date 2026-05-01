@@ -339,7 +339,96 @@ export default function EliteContent() {
         </div>
       </section>
 
-      {/* ── SECTION 3 — COMPARATIF ─────────────────────────── */}
+      {/* ── SECTION 3 — NOS RÉALISATIONS ──────────────────── */}
+      <section className="py-16 md:py-24 bg-white">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2
+              className="text-5xl md:text-6xl font-bold text-gray-900 mb-4"
+              style={{ fontFamily: "Cormorant Garamond, var(--font-playfair), Georgia, serif", fontWeight: 700 }}
+            >
+              Nos réalisations
+            </h2>
+            <p className="text-gray-500 text-base md:text-lg">
+              Des sites créés sur mesure pour des prestataires mariage
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[
+              {
+                image: "https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/elite-assets/demo/photographe/hero.jpg",
+                badge: "📸 Photographie",
+                name: "Léa Martin Photographie",
+                description: "Site vitrine élégant pour photographe de mariage — style Apple noir et or",
+                href: "/demo/photographe",
+              },
+              {
+                image: "https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/elite-assets/demo/boutique/hero.jpg",
+                badge: "👗 Boutique",
+                name: "Maison Blanche Bridal",
+                description: "Boutique de robes de mariée sur mesure — style luxe blanc et champagne",
+                href: "/demo/boutique",
+              },
+              {
+                image: "https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/elite-assets/demo/chauffeur/hero.jpg",
+                badge: "🚗 Chauffeur",
+                name: "Prestige Wedding Cars",
+                description: "Service de chauffeur privé de luxe — style sombre et or",
+                href: "/demo/chauffeur",
+              },
+              {
+                image: "https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/elite-assets/demo/salle/hero.jpg",
+                badge: "🏰 Salle de réception",
+                name: "Domaine des Lumières",
+                description: "Salle de réception haut de gamme — style champagne et or",
+                href: "/demo/salle",
+              },
+            ].map((card) => (
+              <a
+                key={card.href}
+                href={card.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block rounded-2xl overflow-hidden bg-white border border-[#E5E7EB] transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+              >
+                <div className="relative overflow-hidden" style={{ height: 250 }}>
+                  <img
+                    src={card.image}
+                    alt={card.name}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <span
+                    className="absolute top-3 left-3 text-xs font-semibold text-white px-3 py-1.5 rounded-full"
+                    style={{ background: "rgba(0,0,0,0.5)" }}
+                  >
+                    {card.badge}
+                  </span>
+                </div>
+                <div className="p-5">
+                  <h3
+                    className="text-gray-900 mb-1"
+                    style={{ fontFamily: "Cormorant Garamond, var(--font-playfair), Georgia, serif", fontSize: 24, fontWeight: 700 }}
+                  >
+                    {card.name}
+                  </h3>
+                  <p className="text-gray-500 mb-4" style={{ fontFamily: "DM Sans, sans-serif", fontSize: 14 }}>
+                    {card.description}
+                  </p>
+                  <span
+                    className="text-sm font-semibold transition-all group-hover:underline"
+                    style={{ color: "#7C3AED" }}
+                  >
+                    Voir le site →
+                  </span>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── SECTION 4 — COMPARATIF ─────────────────────────── */}
       <section
         className="py-16 md:py-20"
         style={{ background: "linear-gradient(135deg, #F9F5FF, #FDF2F8)" }}
