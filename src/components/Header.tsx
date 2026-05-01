@@ -411,16 +411,6 @@ export default function Header() {
         {mobileOpen && (
           <div className="lg:hidden border-t border-rose-100 py-4 space-y-1">
 
-            {(!mounted || !user || user.role === "prestataire") && (
-              <Link
-                href="/elite"
-                className="block mx-4 px-4 py-3 text-white text-sm font-semibold rounded-full text-center transition-all duration-200 hover:opacity-90"
-                style={{ background: "#7C3AED" }}
-                onClick={() => setMobileOpen(false)}
-              >
-                Mon site pro
-              </Link>
-            )}
             <Link
               href="/annuaire"
               className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
@@ -520,7 +510,7 @@ export default function Header() {
                 <>
                   <Link
                     href="/messages"
-                    className="flex items-center justify-between border-2 border-rose-100 text-gray-700 hover:border-rose-300 font-medium px-5 py-2.5 rounded-full transition-all duration-200 text-sm"
+                    className="w-full flex items-center justify-between border-2 border-rose-100 text-gray-700 hover:border-rose-300 font-medium px-5 py-2.5 rounded-full transition-all duration-200 text-sm"
                     onClick={() => setMobileOpen(false)}
                   >
                     <span>Messages</span>
@@ -535,18 +525,25 @@ export default function Header() {
                   </Link>
                   <Link
                     href={`/dashboard/${user.role}`}
-                    className={`text-center border-2 font-semibold px-5 py-2.5 rounded-full transition-all duration-200 text-sm ${
-                      pathname.startsWith("/dashboard")
-                        ? "border-rose-400 bg-rose-400 text-white"
-                        : "border-gray-200 text-gray-700 hover:border-rose-400 hover:text-rose-400"
-                    }`}
+                    className="w-full text-center font-semibold px-5 py-2.5 rounded-full transition-all duration-200 text-sm text-white hover:opacity-90"
+                    style={{ background: "#F06292" }}
                     onClick={() => setMobileOpen(false)}
                   >
                     Mon espace
                   </Link>
+                  {user.role === "prestataire" && (
+                    <Link
+                      href="/elite"
+                      className="w-full text-center font-semibold px-5 py-2.5 rounded-full transition-all duration-200 text-sm text-white hover:opacity-90"
+                      style={{ background: "#7C3AED" }}
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      Mon site pro
+                    </Link>
+                  )}
                   <button
                     onClick={() => { setMobileOpen(false); handleLogout(); }}
-                    className="text-center bg-rose-400 hover:bg-rose-500 text-white font-semibold px-5 py-2.5 rounded-full transition-all duration-200 text-sm"
+                    className="w-full text-center border-2 border-rose-400 text-rose-400 hover:bg-rose-400 hover:text-white font-semibold px-5 py-2.5 rounded-full transition-all duration-200 text-sm"
                   >
                     Déconnexion
                   </button>
