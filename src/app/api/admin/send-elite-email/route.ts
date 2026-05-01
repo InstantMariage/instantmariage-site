@@ -40,9 +40,17 @@ function buildEliteHtml(nomEntreprise: string): string {
 
           <!-- HEADER -->
           <tr>
-            <td style="background-color:#1C1410;border-radius:12px 12px 0 0;padding:36px 48px;text-align:center;">
-              <img src="https://www.instantmariage.fr/logo.png" alt="InstantMariage.fr" height="40" style="display:block;margin:0 auto;" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/>
-              <p style="display:none;margin:0;font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:400;color:#ffffff;letter-spacing:1px;">InstantMariage.fr</p>
+            <td style="background-color:#FFFFFF;border-radius:12px 12px 0 0;padding:24px 48px;border-top:1px solid #E8E4DF;border-left:1px solid #E8E4DF;border-right:1px solid #E8E4DF;">
+              <table cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="vertical-align:middle;">
+                    <img src="https://www.instantmariage.fr/logo.png" alt="" height="40" style="display:block;" onerror="this.style.display='none'"/>
+                  </td>
+                  <td style="vertical-align:middle;padding-left:12px;">
+                    <span style="font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:400;color:#F06292;">Instant</span><span style="font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:400;color:#1C1410;">Mariage.fr</span>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
 
@@ -52,7 +60,7 @@ function buildEliteHtml(nomEntreprise: string): string {
               <p style="margin:0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#888888;">Bonjour <strong style="color:#1a1a1a;">${nomEntreprise}</strong>,</p>
               <h1 style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:36px;font-weight:400;color:#1C1410;line-height:1.25;letter-spacing:-0.5px;">Votre site professionnel mariage,<br/>livré en 72 heures</h1>
               <p style="margin:0 0 36px;font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#666666;line-height:1.7;">Conçu sur mesure par notre équipe — à partir de <strong style="color:#1C1410;">149 €/mois</strong></p>
-              <a href="https://www.instantmariage.fr/elite" style="display:inline-block;background-color:#B5395A;color:#ffffff;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;padding:16px 36px;border-radius:4px;letter-spacing:0.5px;">Découvrir le Pack Elite</a>
+              <a href="https://www.instantmariage.fr/elite" style="display:inline-block;background-color:#F06292;color:#ffffff;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;padding:16px 36px;border-radius:4px;letter-spacing:0.5px;">Découvrir le Pack Elite</a>
             </td>
           </tr>
 
@@ -109,26 +117,54 @@ function buildEliteHtml(nomEntreprise: string): string {
               <h2 style="margin:0 0 20px;font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:400;color:#1C1410;letter-spacing:0.2px;">Exemples de réalisations</h2>
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td width="48%" style="background:#ffffff;border:1px solid #E8E4DF;border-radius:6px;padding:16px 20px;vertical-align:top;">
-                    <p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;color:#1C1410;">Léa Martin Photographie</p>
-                    <a href="https://instantmariage.fr/demo/photographe" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#B5395A;text-decoration:none;">Voir le site</a>
+                  <td width="48%" style="background:#ffffff;border:1px solid #E8E4DF;border-radius:8px;vertical-align:top;overflow:hidden;">
+                    <img src="https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777676591464-capture-d-ecran-2026-05-02-a-00.47.00.png" width="100%" height="160" style="display:block;object-fit:cover;border-radius:8px 8px 0 0;" alt="Léa Martin Photographie"/>
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="padding:14px 16px;">
+                          <p style="margin:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;color:#1C1410;">Léa Martin Photographie</p>
+                          <a href="https://instantmariage.fr/demo/photographe" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#F06292;text-decoration:none;">Voir le site →</a>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                   <td width="4%">&nbsp;</td>
-                  <td width="48%" style="background:#ffffff;border:1px solid #E8E4DF;border-radius:6px;padding:16px 20px;vertical-align:top;">
-                    <p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;color:#1C1410;">Maison Blanche Bridal</p>
-                    <a href="https://instantmariage.fr/demo/boutique" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#B5395A;text-decoration:none;">Voir le site</a>
+                  <td width="48%" style="background:#ffffff;border:1px solid #E8E4DF;border-radius:8px;vertical-align:top;overflow:hidden;">
+                    <img src="https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777676622087-capture-d-ecran-2026-05-02-a-00.50.00.png" width="100%" height="160" style="display:block;object-fit:cover;border-radius:8px 8px 0 0;" alt="Maison Blanche Bridal"/>
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="padding:14px 16px;">
+                          <p style="margin:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;color:#1C1410;">Maison Blanche Bridal</p>
+                          <a href="https://instantmariage.fr/demo/boutique" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#F06292;text-decoration:none;">Voir le site →</a>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
-                <tr><td colspan="3" style="height:10px;"></td></tr>
+                <tr><td colspan="3" style="height:12px;"></td></tr>
                 <tr>
-                  <td width="48%" style="background:#ffffff;border:1px solid #E8E4DF;border-radius:6px;padding:16px 20px;vertical-align:top;">
-                    <p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;color:#1C1410;">Prestige Wedding Cars</p>
-                    <a href="https://instantmariage.fr/demo/chauffeur" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#B5395A;text-decoration:none;">Voir le site</a>
+                  <td width="48%" style="background:#ffffff;border:1px solid #E8E4DF;border-radius:8px;vertical-align:top;overflow:hidden;">
+                    <img src="https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777676640884-capture-d-ecran-2026-05-02-a-00.51.34.png" width="100%" height="160" style="display:block;object-fit:cover;border-radius:8px 8px 0 0;" alt="Prestige Wedding Cars"/>
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="padding:14px 16px;">
+                          <p style="margin:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;color:#1C1410;">Prestige Wedding Cars</p>
+                          <a href="https://instantmariage.fr/demo/chauffeur" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#F06292;text-decoration:none;">Voir le site →</a>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                   <td width="4%">&nbsp;</td>
-                  <td width="48%" style="background:#ffffff;border:1px solid #E8E4DF;border-radius:6px;padding:16px 20px;vertical-align:top;">
-                    <p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;color:#1C1410;">Domaine des Lumières</p>
-                    <a href="https://instantmariage.fr/demo/salle" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#B5395A;text-decoration:none;">Voir le site</a>
+                  <td width="48%" style="background:#ffffff;border:1px solid #E8E4DF;border-radius:8px;vertical-align:top;overflow:hidden;">
+                    <img src="https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777676659070-capture-d-ecran-2026-05-02-a-00.52.16.png" width="100%" height="160" style="display:block;object-fit:cover;border-radius:8px 8px 0 0;" alt="Domaine des Lumières"/>
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="padding:14px 16px;">
+                          <p style="margin:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;color:#1C1410;">Domaine des Lumières</p>
+                          <a href="https://instantmariage.fr/demo/salle" style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#F06292;text-decoration:none;">Voir le site →</a>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
               </table>
@@ -148,16 +184,16 @@ function buildEliteHtml(nomEntreprise: string): string {
               <h2 style="margin:0 0 24px;font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:400;color:#1C1410;letter-spacing:0.2px;">Nos formules</h2>
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td width="48%" style="background-color:#ffffff;border:1px solid #D4B5BC;border-radius:6px;padding:24px;vertical-align:top;">
-                    <p style="margin:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;color:#B5395A;letter-spacing:1.5px;text-transform:uppercase;">Elite Vitrine</p>
-                    <p style="margin:0 0 20px;font-family:Georgia,'Times New Roman',serif;font-size:30px;font-weight:400;color:#1C1410;line-height:1;">149 €<span style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:400;color:#999999;">/mois</span></p>
+                  <td width="48%" style="background-color:#ffffff;border:1px solid #F9C2D6;border-radius:6px;padding:24px;vertical-align:top;">
+                    <p style="margin:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;color:#F06292;letter-spacing:1.5px;text-transform:uppercase;">Elite Vitrine</p>
+                    <p style="margin:0 0 20px;font-family:Georgia,'Times New Roman',serif;font-size:30px;font-weight:400;color:#F06292;line-height:1;">149 €<span style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:400;color:#999999;">/mois</span></p>
                     <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#444444;">- Site vitrine sur mesure</p>
                     <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#444444;">- Domaine personnalisé</p>
                     <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#444444;">- Livraison en 72h</p>
                   </td>
                   <td width="4%">&nbsp;</td>
                   <td width="48%" style="background-color:#1C1410;border:1px solid #1C1410;border-radius:6px;padding:24px;vertical-align:top;">
-                    <p style="margin:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;color:#D4B5BC;letter-spacing:1.5px;text-transform:uppercase;">Elite Shop</p>
+                    <p style="margin:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;color:#F06292;letter-spacing:1.5px;text-transform:uppercase;">Elite Shop</p>
                     <p style="margin:0 0 20px;font-family:Georgia,'Times New Roman',serif;font-size:30px;font-weight:400;color:#ffffff;line-height:1;">199 €<span style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:400;color:#999999;">/mois</span></p>
                     <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#cccccc;">- Boutique en ligne</p>
                     <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#cccccc;">- Paiement en ligne intégré</p>
@@ -173,7 +209,7 @@ function buildEliteHtml(nomEntreprise: string): string {
             <td style="background-color:#1C1410;padding:44px 48px;text-align:center;">
               <h2 style="margin:0 0 12px;font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:400;color:#ffffff;letter-spacing:0.2px;">Votre site mariage professionnel vous attend</h2>
               <p style="margin:0 0 28px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#aaaaaa;line-height:1.7;">Rejoignez les prestataires qui font confiance à InstantMariage</p>
-              <a href="https://www.instantmariage.fr/elite" style="display:inline-block;background-color:#B5395A;color:#ffffff;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;padding:16px 36px;border-radius:4px;letter-spacing:0.5px;">Réserver mon domaine</a>
+              <a href="https://www.instantmariage.fr/elite" style="display:inline-block;background-color:#F06292;color:#ffffff;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;padding:16px 36px;border-radius:4px;letter-spacing:0.5px;">Réserver mon domaine</a>
             </td>
           </tr>
 
@@ -181,7 +217,7 @@ function buildEliteHtml(nomEntreprise: string): string {
           <tr>
             <td style="background-color:#F0EDE9;border-radius:0 0 12px 12px;padding:24px 48px;text-align:center;">
               <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#999999;">© 2026 InstantMariage.fr — Tous droits réservés</p>
-              <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#999999;">Vous recevez cet email car vous êtes prestataire sur <a href="https://www.instantmariage.fr" style="color:#B5395A;text-decoration:none;">InstantMariage.fr</a></p>
+              <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#999999;">Vous recevez cet email car vous êtes prestataire sur <a href="https://www.instantmariage.fr" style="color:#F06292;text-decoration:none;">InstantMariage.fr</a></p>
               <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:11px;"><a href="mailto:contact@instantmariage.fr?subject=unsubscribe" style="color:#bbbbbb;text-decoration:underline;">Se désabonner</a></p>
             </td>
           </tr>
