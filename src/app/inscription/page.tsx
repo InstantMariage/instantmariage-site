@@ -65,11 +65,13 @@ export default function InscriptionPage() {
 
   const [refCode, setRefCode] = useState<string | null>(null);
 
-  // Lire le code parrainage depuis l'URL (?ref=CODE)
+  // Lire le code parrainage et le type de compte depuis l'URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const ref = params.get("ref");
     if (ref) setRefCode(ref.toUpperCase().trim());
+    const type = params.get("type");
+    if (type === "prestataire") setAccountType("prestataire");
   }, []);
 
   const mPasswordsMatch = mConfirmPassword === "" || mPassword === mConfirmPassword;

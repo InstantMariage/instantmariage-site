@@ -236,7 +236,7 @@ export default function EliteContent() {
     const redirectParam = encodeURIComponent(`/elite?plan=${m}`);
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-      router.push(`/inscription?redirect=${redirectParam}`);
+      router.push(`/inscription?type=prestataire&redirect=${redirectParam}`);
       return;
     }
     setLoading(true);
