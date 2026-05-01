@@ -41,6 +41,7 @@ export default function AdminElitePage() {
   const [sites, setSites]           = useState<EliteSite[]>([]);
   const [loading, setLoading]       = useState(true);
   const [updating, setUpdating]     = useState<string | null>(null);
+  const [deleting, setDeleting]     = useState<string | null>(null);
   const [selectedSite, setSelectedSite] = useState<EliteSite | null>(null);
 
   useEffect(() => { fetchSites(); }, []);
@@ -80,6 +81,14 @@ export default function AdminElitePage() {
       setSelectedSite(prev => prev?.id === site.id ? { ...prev, statut: next } : prev);
     }
     setUpdating(null);
+  };
+
+  const handleDelete = async (site: EliteSite) => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cette demande ?")) return;
+    setDeleting(site.id);
+    await supabase.from("elite_sites").delete().eq("id", site.id);
+    setDeleting(null);
+    fetchSites();
   };
 
   if (loading) {
@@ -185,6 +194,13 @@ export default function AdminElitePage() {
                             className="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-gray-700"
                           >
                             Voir les détails
+                          </button>
+                          <button
+                            onClick={() => handleDelete(site)}
+                            disabled={deleting === site.id}
+                            className="text-xs font-medium px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition-colors text-red-500 disabled:opacity-50"
+                          >
+                            {deleting === site.id ? "..." : "Supprimer"}
                           </button>
                         </div>
                       </td>
