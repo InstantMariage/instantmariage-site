@@ -13,18 +13,15 @@ function getDomainBase(domain: string): string {
   return domain.replace(/\.(fr|com|net|org|io)$/i, "").toLowerCase().trim();
 }
 
-async function checkDomainRDAP(domain: string): Promise<boolean> {
-  const ext = domain.endsWith(".fr") ? "fr" : "com";
-  const url =
-    ext === "fr"
-      ? `https://rdap.nic.fr/domain/${domain}`
-      : `https://rdap.verisign.com/com/v1/domain/${domain}`;
+async function checkDomainRDAP(domain: string): Promise<boolean | null> {
   try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
-    // 200 = domain registered, 404 = available
-    return res.status === 404;
+    const res = await fetch(`/api/elite/check-domain?domain=${encodeURIComponent(domain)}`, {
+      signal: AbortSignal.timeout(10000),
+    });
+    const data = await res.json();
+    return data.available ?? null;
   } catch {
-    return true;
+    return null;
   }
 }
 
@@ -48,7 +45,7 @@ function DomainChecker({ eliteMode, setEliteMode, onCheckout, loading }: DomainC
     }
     setStatus("checking");
     const available = await checkDomainRDAP(trimmed);
-    setStatus(available ? "available" : "taken");
+    setStatus(available === null ? "idle" : available ? "available" : "taken");
   }, []);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
