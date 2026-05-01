@@ -38,11 +38,11 @@ const BASE = 'https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/
 
 const FLEET = [
   { img: `${BASE}/car-1.jpg`, name: 'Mercedes Classe S', tagline: 'Élégance et raffinement' },
-  { img: `${BASE}/car-2.jpg`, name: 'Mercedes AMG G63', tagline: 'Puissance et prestance' },
+  { img: `${BASE}/g63.jpg`, name: 'Mercedes AMG G63', tagline: 'Puissance et prestance' },
   { img: `${BASE}/car-10.jpg`, name: 'Bentley Continental GT', tagline: 'Raffinement britannique' },
   { img: `${BASE}/car-4.jpg`, name: 'Rolls-Royce Silver Cloud', tagline: 'La quintessence du luxe' },
   { img: `${BASE}/car-5.jpg`, name: 'Mercedes Maybach S580', tagline: 'Confort et prestige absolu' },
-  { img: `${BASE}/car-6.jpg`, name: 'Mercedes AMG', tagline: 'Sport et élégance' },
+  { img: `${BASE}/car-13.jpg`, name: 'Lamborghini Urus', tagline: 'Pour les mariés audacieux' },
 ]
 
 const SERVICES = [
@@ -64,7 +64,7 @@ const TESTIMONIALS = [
   { quote: 'Le cortège était magnifique. Tous nos invités ont été impressionnés.', couple: 'Camille & Julien', date: 'Mars 2026' },
 ]
 
-const VEHICLES = ['Mercedes Classe S', 'Mercedes AMG G63', 'Bentley Continental GT', 'Rolls-Royce Silver Cloud', 'Mercedes Maybach S580', 'Mercedes AMG']
+const VEHICLES = ['Mercedes Classe S', 'Mercedes AMG G63', 'Bentley Continental GT', 'Rolls-Royce Silver Cloud', 'Mercedes Maybach S580', 'Lamborghini Urus']
 
 function FadeSection({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
   const { ref, inView } = useInView()
