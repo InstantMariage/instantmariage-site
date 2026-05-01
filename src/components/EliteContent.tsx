@@ -389,7 +389,7 @@ export default function EliteContent() {
                 href: "/demo/chauffeur",
               },
               {
-                image: "https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/elite-assets/demo/salle/hero.jpg",
+                image: "https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/elite-assets/demo/salle/exterieur.jpg",
                 badge: "🏰 Salle de réception",
                 name: "Domaine des Lumières",
                 description: "Salle de réception haut de gamme — style champagne et or",
