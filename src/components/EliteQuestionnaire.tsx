@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -78,9 +78,9 @@ const INITIAL_FORM: FormState = {
 
 export default function EliteQuestionnaire() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [loading, setLoading]               = useState(true);
+  const [isDomainLocked, setIsDomainLocked] = useState(false);
   const [prestataireId, setPrestataireId]   = useState<string | null>(null);
   const [existingSiteId, setExistingSiteId] = useState<string | null>(null);
   const [eliteSiteStatus, setEliteSiteStatus] = useState<string | null>(null);
@@ -112,23 +112,6 @@ export default function EliteQuestionnaire() {
 
       if (!prestataire) { router.replace("/login"); return; }
 
-      const { data: abonnement } = await supabase
-        .from("abonnements")
-        .select("plan, statut")
-        .eq("prestataire_id", prestataire.id)
-        .eq("statut", "actif")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      const fromDashboard = searchParams.get("from") === "dashboard";
-      if (!abonnement || !["elite-vitrine", "elite-shop"].includes(abonnement.plan)) {
-        if (!fromDashboard) {
-          router.replace("/tarifs");
-          return;
-        }
-      }
-
       setPrestataireId(prestataire.id);
 
       const { data: eliteSite } = await supabase
@@ -144,6 +127,7 @@ export default function EliteQuestionnaire() {
           return;
         }
         setExistingSiteId(eliteSite.id);
+        if (eliteSite.domaine) setIsDomainLocked(true);
         setForm({
           domaine:             eliteSite.domaine || "",
           typeActivite:        (eliteSite.type_activite || "") as ActivityType | "",
@@ -170,7 +154,10 @@ export default function EliteQuestionnaire() {
           const res = await fetch(`/api/elite/domain?prestataire_id=${prestataire.id}`);
           if (res.ok) {
             const { domain } = await res.json();
-            if (domain) setForm(prev => ({ ...prev, domaine: domain }));
+            if (domain) {
+              setForm(prev => ({ ...prev, domaine: domain }));
+              setIsDomainLocked(true);
+            }
           }
         } catch { /* domain stays empty */ }
       }
@@ -503,7 +490,7 @@ export default function EliteQuestionnaire() {
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Nom de domaine
                 </label>
-                {form.domaine ? (
+                {isDomainLocked ? (
                   <div className="relative">
                     <input
                       type="text"
@@ -523,7 +510,7 @@ export default function EliteQuestionnaire() {
                   />
                 )}
                 <p className="text-xs text-gray-400 mt-1">
-                  {form.domaine ? "Domaine validé lors de votre souscription" : "Indiquez le nom de domaine souhaité pour votre site"}
+                  {isDomainLocked ? "Domaine validé lors de votre souscription" : "Indiquez le nom de domaine souhaité pour votre site"}
                 </p>
               </div>
 
