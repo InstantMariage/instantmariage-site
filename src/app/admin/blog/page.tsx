@@ -40,13 +40,16 @@ export default function AdminBlogPage() {
 
   async function fetchArticles() {
     setLoading(true);
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
-    const res = await fetch("/api/admin/blog", {
-      headers: { Authorization: `Bearer ${session.access_token}` },
-    });
-    if (res.ok) setArticles(await res.json());
-    setLoading(false);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const res = await fetch("/api/admin/blog", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (res.ok) setArticles(await res.json());
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleDelete(id: string, titre: string) {

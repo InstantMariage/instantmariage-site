@@ -8,21 +8,23 @@ function getSupabaseAdmin() {
   return createClient(url, key);
 }
 
-async function checkAdmin(req: NextRequest): Promise<boolean> {
-  const authHeader = req.headers.get("authorization");
-  if (!authHeader?.startsWith("Bearer ")) return false;
-  const token = authHeader.slice(7);
-  const supabase = getSupabaseAdmin();
-  const { data: { user } } = await supabase.auth.getUser(token);
-  if (!user) return false;
-  const { data } = await supabase.from("users").select("role").eq("id", user.id).single();
-  return data?.role === "admin";
+async function checkAdmin(req: NextRequest, supabase: ReturnType<typeof getSupabaseAdmin>): Promise<boolean> {
+  try {
+    const authHeader = req.headers.get("authorization");
+    if (!authHeader?.startsWith("Bearer ")) return false;
+    const token = authHeader.slice(7);
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) return false;
+    const { data } = await supabase.from("users").select("role").eq("id", user.id).single();
+    return data?.role === "admin";
+  } catch {
+    return false;
+  }
 }
 
 export async function GET(req: NextRequest) {
-  if (!(await checkAdmin(req))) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
   const supabase = getSupabaseAdmin();
+  if (!(await checkAdmin(req, supabase))) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { data, error } = await supabase
     .from("articles")
     .select("id, slug, titre, excerpt, category, image, read_time, date_publication, nb_vues, statut, updated_at")
@@ -33,10 +35,10 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  if (!(await checkAdmin(req))) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const supabase = getSupabaseAdmin();
+  if (!(await checkAdmin(req, supabase))) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from("articles")
     .insert(body)
