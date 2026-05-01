@@ -336,7 +336,7 @@ export default function EliteContent() {
               Découvrir nos réalisations →
             </button>
             <p className="text-sm text-white/60 tracking-wide">
-              4 sites démo&nbsp;•&nbsp;Livraison 72h&nbsp;•&nbsp;Domaine inclus
+              100% sur mesure&nbsp;•&nbsp;Livraison 72h&nbsp;•&nbsp;Domaine inclus
             </p>
           </div>
         </div>
