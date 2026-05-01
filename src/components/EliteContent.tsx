@@ -7,25 +7,10 @@ import { supabase } from "@/lib/supabase";
 
 /* ─── Domain checker ─────────────────────────────────── */
 
-type DomainStatus = "idle" | "checking" | "available" | "taken";
+type DomainStatus = "idle" | "checking" | "available" | "taken" | "error";
 
 function getDomainBase(domain: string): string {
   return domain.replace(/\.(fr|com|net|org|io)$/i, "").toLowerCase().trim();
-}
-
-async function checkDomainRDAP(domain: string): Promise<boolean> {
-  const ext = domain.endsWith(".fr") ? "fr" : "com";
-  const url =
-    ext === "fr"
-      ? `https://rdap.nic.fr/domain/${domain}`
-      : `https://rdap.verisign.com/com/v1/domain/${domain}`;
-  try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
-    // 200 = domain registered, 404 = available
-    return res.status === 404;
-  } catch {
-    return true;
-  }
 }
 
 interface DomainCheckerProps {
@@ -47,8 +32,15 @@ function DomainChecker({ eliteMode, setEliteMode, onCheckout, loading }: DomainC
       return;
     }
     setStatus("checking");
-    const available = await checkDomainRDAP(trimmed);
-    setStatus(available ? "available" : "taken");
+    try {
+      const res = await fetch(`/api/elite/check-domain?domain=${encodeURIComponent(trimmed)}`);
+      const data = await res.json();
+      if (data.available === true) setStatus("available");
+      else if (data.available === false) setStatus("taken");
+      else setStatus("error");
+    } catch {
+      setStatus("error");
+    }
   }, []);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -163,6 +155,25 @@ function DomainChecker({ eliteMode, setEliteMode, onCheckout, loading }: DomainC
             style={{ background: "linear-gradient(135deg, #7C3AED, #5B21B6)" }}
           >
             Choisir une alternative →
+          </Link>
+        </div>
+      )}
+
+      {/* Error → cannot verify */}
+      {status === "error" && (
+        <div className="mt-4 rounded-2xl border border-orange-200 bg-orange-50 px-5 py-4">
+          <p className="text-orange-700 font-semibold mb-1">
+            Impossible de vérifier ce domaine.
+          </p>
+          <p className="text-orange-600 text-sm mb-3">
+            Contactez-nous et nous nous en occupons pour vous.
+          </p>
+          <Link
+            href="/contact"
+            className="inline-block px-5 py-2.5 rounded-xl text-white text-sm font-semibold transition hover:opacity-90"
+            style={{ background: "linear-gradient(135deg, #7C3AED, #5B21B6)" }}
+          >
+            Nous contacter →
           </Link>
         </div>
       )}
