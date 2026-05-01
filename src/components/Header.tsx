@@ -57,6 +57,7 @@ export default function Header() {
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [user, setUser] = useState<{ id: string; email: string; role: string } | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [mounted, setMounted] = useState(false);
 
   const loadUnreadCount = async (uid: string) => {
     const { count } = await supabase
@@ -95,6 +96,8 @@ export default function Header() {
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => setMounted(true), []);
 
   // Realtime : badge non-lu
   useEffect(() => {
@@ -190,7 +193,7 @@ export default function Header() {
             </Link>
 
             {/* Boutique */}
-            {user?.role !== "prestataire" && (
+            {(!mounted || user?.role !== "prestataire") && (
             <Link
               href="/boutique"
               className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors duration-200 relative group py-2"
@@ -201,7 +204,7 @@ export default function Header() {
             )}
 
             {/* Outils mariés */}
-            {user?.role !== "prestataire" && (
+            {(!mounted || user?.role !== "prestataire") && (
             <div
               className="relative"
               onMouseEnter={() => openDropdown("outils")}
@@ -260,7 +263,7 @@ export default function Header() {
             )}
 
             {/* Autres liens simples */}
-            {user?.role !== "marie" && (
+            {(!mounted || user?.role !== "marie") && (
               <Link
                 href="/tarifs"
                 className="text-gray-600 hover:text-rose-500 text-sm font-medium transition-colors duration-200 relative group py-2"
@@ -301,7 +304,7 @@ export default function Header() {
 
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center gap-3">
-            {user ? (
+            {mounted && user ? (
               <>
                 {/* Icône messages avec badge */}
                 <Link
@@ -363,7 +366,7 @@ export default function Header() {
 
           {/* Mobile: icône messages + bouton menu */}
           <div className="lg:hidden flex items-center gap-1">
-            {user && (
+            {mounted && user && (
               <Link
                 href="/messages"
                 className="relative p-2 rounded-full hover:bg-rose-50 text-gray-500 hover:text-rose-400 transition-colors md:hidden"
@@ -405,7 +408,7 @@ export default function Header() {
         {mobileOpen && (
           <div className="lg:hidden border-t border-rose-100 py-4 space-y-1">
 
-            {(!user || user.role === "prestataire") && (
+            {(!mounted || !user || user.role === "prestataire") && (
               <Link
                 href="/elite"
                 className="block mx-4 px-4 py-3 text-white text-sm font-semibold rounded-full text-center transition-all duration-200 hover:opacity-90"
@@ -422,7 +425,7 @@ export default function Header() {
             >
               Annuaire prestataires
             </Link>
-            {user?.role !== "prestataire" && (
+            {(!mounted || user?.role !== "prestataire") && (
             <Link
               href="/boutique"
               className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
@@ -431,7 +434,7 @@ export default function Header() {
               Boutique
             </Link>
             )}
-            {user?.role !== "marie" && (
+            {(!mounted || user?.role !== "marie") && (
               <Link
                 href="/tarifs"
                 className="block px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
@@ -442,7 +445,7 @@ export default function Header() {
             )}
 
             {/* Outils mariés (mobile) */}
-            {user?.role !== "prestataire" && (
+            {(!mounted || user?.role !== "prestataire") && (
             <div>
               <button
                 className="w-full flex items-center justify-between px-4 py-3 text-gray-700 hover:text-rose-500 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"
@@ -510,7 +513,7 @@ export default function Header() {
             </Link>
 
             <div className="pt-3 px-4 flex flex-col gap-2 border-t border-rose-100">
-              {user ? (
+              {mounted && user ? (
                 <>
                   <Link
                     href="/messages"
