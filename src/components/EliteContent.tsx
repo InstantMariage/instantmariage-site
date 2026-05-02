@@ -542,10 +542,16 @@ export default function EliteContent() {
                     {card.description}
                   </p>
                   <span
-                    className="text-sm font-semibold transition-all group-hover:underline"
-                    style={{ color: "#7C3AED" }}
+                    className="inline-block rounded-full text-white font-semibold transition-colors"
+                    style={{
+                      background: "#7C3AED",
+                      padding: "8px 20px",
+                      fontSize: 14,
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "#5B21B6")}
+                    onMouseLeave={e => (e.currentTarget.style.background = "#7C3AED")}
                   >
-                    Voir le site →
+                    Voir le site
                   </span>
                 </div>
               </a>
