@@ -34,6 +34,15 @@ export async function generateStaticParams() {
   return params;
 }
 
+// ─── Client Supabase partagé ──────────────────────────────────────────────────
+
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
+
 // ─── Metadata dynamique ────────────────────────────────────────────────────────
 
 interface Props {
@@ -53,10 +62,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const supabase = getSupabase();
   const { count } = await supabase
     .from("prestataires_ranked")
     .select("*", { count: "exact", head: true })
@@ -97,40 +103,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 const PER_PAGE = 24;
 
-// Tri par score décroissant, en garantissant que les prestataires sans photo
-// de couverture apparaissent toujours en dernier dans leur groupe de plan.
-// sort_score = plan_score × 1000 + has_cover × 100 + completeness_score
-// → max no-cover dans un tier (45) < min with-cover dans ce tier (115) ✓
-function scoreSort(a: PrestataireRanked, b: PrestataireRanked): number {
-  const sortA = a.plan_score * 1000 + (a.has_cover ? 100 : 0) + a.completeness_score;
-  const sortB = b.plan_score * 1000 + (b.has_cover ? 100 : 0) + b.completeness_score;
-  if (sortB !== sortA) return sortB - sortA;
-  return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-}
-
 async function fetchPrestataires(
   categorie: string,
   ville: string,
   departement: string,
   page: number
 ): Promise<{ data: PrestataireRanked[]; total: number }> {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const from = (page - 1) * PER_PAGE;
 
-  const { data, error } = await supabase
+  const { data, count, error } = await getSupabase()
     .from("prestataires_ranked")
-    .select("*")
+    .select("*", { count: "exact" })
     .eq("categorie", categorie)
-    .or(`ville.ilike.%${ville}%,departement.ilike.%${departement}%`);
+    .or(`ville.ilike.%${ville}%,departement.ilike.%${departement}%`)
+    .order("plan_score", { ascending: false })
+    .order("has_cover", { ascending: false })
+    .order("completeness_score", { ascending: false })
+    .order("created_at", { ascending: true })
+    .range(from, from + PER_PAGE - 1);
 
   if (error || !data) return { data: [], total: 0 };
-
-  const sorted = (data as PrestataireRanked[]).sort(scoreSort);
-
-  const from = (page - 1) * PER_PAGE;
-  return { data: sorted.slice(from, from + PER_PAGE), total: sorted.length };
+  return { data: data as PrestataireRanked[], total: count ?? 0 };
 }
 
 // ─── Composant carte prestataire ──────────────────────────────────────────────

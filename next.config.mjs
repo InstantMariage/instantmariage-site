@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  compress: true,
+
   experimental: {
     serverActions: {
       bodySizeLimit: "50mb",
@@ -7,6 +9,8 @@ const nextConfig = {
   },
 
   images: {
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 3600,
     remotePatterns: [
       {
         protocol: "https",
