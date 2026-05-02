@@ -1,6 +1,7 @@
 export const revalidate = 60;
 
 import { createClient } from "@supabase/supabase-js";
+import Image from "next/image";
 import Link from "next/link";
 
 type FeaturedPrestataire = {
@@ -102,10 +103,12 @@ export default async function FeaturedProviders() {
                 >
                   <div className="relative h-48 bg-rose-50 overflow-hidden">
                     {photo ? (
-                      <img
+                      <Image
                         src={photo}
                         alt={p.nom_entreprise}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 300px"
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-4xl text-rose-200">
