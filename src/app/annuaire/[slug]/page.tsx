@@ -46,16 +46,34 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { metier, ville } = parseSlug(slug);
 
   if (!metier || !ville) {
-    return { title: "Page introuvable – InstantMariage" };
+    return {
+      title: "Annuaire prestataires mariage – InstantMariage.fr",
+      description: "Trouvez les meilleurs prestataires pour votre mariage en France. Photographes, traiteurs, fleuristes et bien d'autres professionnels vérifiés.",
+      robots: { index: false },
+    };
   }
 
-  const title = `${metier.nom} mariage ${ville.nom} – Les meilleurs ${metier.nomPluriel} | InstantMariage.fr`;
-  const description = `Trouvez les meilleurs ${metier.nomPluriel} pour votre mariage à ${ville.nom} (${ville.departement}). Comparez les tarifs, consultez les avis et contactez directement les professionnels près de chez vous.`;
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const { count } = await supabase
+    .from("prestataires_ranked")
+    .select("*", { count: "exact", head: true })
+    .eq("categorie", metier.categorie)
+    .or(`ville.ilike.%${ville.nom}%,departement.ilike.%${ville.departement}%`);
+
+  const nbLabel = count && count > 0
+    ? `${count} ${metier.nomPluriel} vérifiés`
+    : `Les meilleurs ${metier.nomPluriel}`;
+
+  const title = `${metier.nom} mariage ${ville.nom} – ${nbLabel} | InstantMariage.fr`;
+  const description = `${nbLabel} pour votre mariage à ${ville.nom} (${ville.departement}). Comparez les tarifs, consultez les photos et avis clients. Trouvez votre ${metier.nom.toLowerCase()} idéal et demandez un devis gratuit.`;
 
   return {
     title,
     description,
-    keywords: `${metier.nom.toLowerCase()} mariage ${ville.nom}, ${metier.nomPluriel} mariage ${ville.nom}, prestataire mariage ${ville.nom}`,
+    keywords: `${metier.nom.toLowerCase()} mariage ${ville.nom}, ${metier.nomPluriel} mariage ${ville.nom}, prestataire mariage ${ville.nom}, meilleur ${metier.nom.toLowerCase()} ${ville.nom}, prix ${metier.nom.toLowerCase()} ${ville.nom}`,
     openGraph: {
       title,
       description,

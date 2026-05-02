@@ -46,16 +46,34 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { metier, region } = parseSlugRegion(slug);
 
   if (!metier || !region) {
-    return { title: "Page introuvable – InstantMariage" };
+    return {
+      title: "Annuaire prestataires mariage par région – InstantMariage.fr",
+      description: "Trouvez les meilleurs prestataires pour votre mariage dans votre région. Photographes, traiteurs, fleuristes et bien d'autres professionnels vérifiés.",
+      robots: { index: false },
+    };
   }
 
-  const title = `${metier.nom} mariage ${region.nom} – Les meilleurs ${metier.nomPluriel} | InstantMariage.fr`;
-  const description = `Trouvez les meilleurs ${metier.nomPluriel} pour votre mariage en ${region.nom}. Comparez les prestataires par département et par ville, consultez les avis et contactez les professionnels.`;
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const { count } = await supabase
+    .from("prestataires_ranked")
+    .select("*", { count: "exact", head: true })
+    .eq("categorie", metier.categorie)
+    .ilike("region", `%${region.nom}%`);
+
+  const nbLabel = count && count > 0
+    ? `${count} prestataire${count > 1 ? "s" : ""} vérifié${count > 1 ? "s" : ""}`
+    : "Prestataires vérifiés";
+
+  const title = `${metier.nom} mariage en ${region.nom} — ${nbLabel} | InstantMariage.fr`;
+  const description = `${nbLabel} pour votre mariage en ${region.nom}. Comparez ${metier.nomPluriel} par département et par ville, consultez les tarifs, photos et avis clients. Trouvez le prestataire idéal près de chez vous.`;
 
   return {
     title,
     description,
-    keywords: `${metier.nom.toLowerCase()} mariage ${region.nom}, ${metier.nomPluriel} ${region.nom}, prestataire mariage ${region.nom}`,
+    keywords: `${metier.nom.toLowerCase()} mariage ${region.nom}, ${metier.nomPluriel} ${region.nom}, prestataire mariage ${region.nom}, meilleur ${metier.nom.toLowerCase()} ${region.nom}`,
     openGraph: {
       title,
       description,

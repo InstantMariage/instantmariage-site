@@ -46,16 +46,34 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { metier, departement } = parseSlugDepartement(slug);
 
   if (!metier || !departement) {
-    return { title: "Page introuvable – InstantMariage" };
+    return {
+      title: "Annuaire prestataires mariage par département – InstantMariage.fr",
+      description: "Trouvez les meilleurs prestataires pour votre mariage dans votre département. Photographes, traiteurs, fleuristes et bien d'autres professionnels vérifiés.",
+      robots: { index: false },
+    };
   }
 
-  const title = `${metier.nom} mariage ${departement.nom} (${departement.code}) – Les meilleurs ${metier.nomPluriel} | InstantMariage.fr`;
-  const description = `Trouvez les meilleurs ${metier.nomPluriel} pour votre mariage dans le département ${departement.nom} (${departement.code}). Comparez les tarifs, consultez les avis et contactez les professionnels de ${departement.region}.`;
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const { count } = await supabase
+    .from("prestataires_ranked")
+    .select("*", { count: "exact", head: true })
+    .eq("categorie", metier.categorie)
+    .ilike("departement", `%${departement.code}%`);
+
+  const nbLabel = count && count > 0
+    ? `${count} prestataire${count > 1 ? "s" : ""} vérifié${count > 1 ? "s" : ""}`
+    : "Prestataires vérifiés";
+
+  const title = `${metier.nom} mariage dans le ${departement.nom} (${departement.code}) — ${nbLabel} | InstantMariage.fr`;
+  const description = `${nbLabel} pour votre mariage dans le ${departement.nom} (${departement.code}). Comparez les tarifs, photos et avis de ${metier.nomPluriel} en ${departement.region}. Devis gratuit, réponse rapide.`;
 
   return {
     title,
     description,
-    keywords: `${metier.nom.toLowerCase()} mariage ${departement.nom}, ${metier.nomPluriel} ${departement.nom}, prestataire mariage ${departement.nom}, mariage ${departement.code}`,
+    keywords: `${metier.nom.toLowerCase()} mariage ${departement.nom}, ${metier.nomPluriel} ${departement.nom}, prestataire mariage ${departement.nom}, mariage ${departement.code}, ${metier.nom.toLowerCase()} pas cher ${departement.nom}`,
     openGraph: {
       title,
       description,
