@@ -164,6 +164,11 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
         { event: "INSERT", schema: "public", table: "messages" },
         () => loadConversations(userId)
       )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "messages" },
+        () => loadConversations(userId)
+      )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
@@ -337,6 +342,13 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
                     <li key={conv.id} className="group relative">
                       <Link
                         href={`/messages/${conv.id}`}
+                        onClick={() =>
+                          setConversations((prev) =>
+                            prev.map((c) =>
+                              c.id === conv.id ? { ...c, unread_count: 0 } : c
+                            )
+                          )
+                        }
                         className={`flex items-center gap-3 px-4 py-3.5 transition-colors ${
                           isSelected
                             ? "bg-rose-50"
