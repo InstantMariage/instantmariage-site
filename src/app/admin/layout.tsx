@@ -216,7 +216,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         supabase.from("prestataires").select("id", { count: "exact", head: true }).gte("created_at", maxDate(lastVisit("prestataires"), weekAgo)),
         supabase.from("maries").select("id", { count: "exact", head: true }).gte("created_at", maxDate(lastVisit("maries"), todayStart)),
         supabase.from("signalements").select("id", { count: "exact", head: true }).eq("statut", "en_attente").gte("created_at", lastVisit("signalements")),
-        supabase.from("avis").select("id", { count: "exact", head: true }).eq("statut", "en_attente").gte("created_at", lastVisit("avis")),
+        supabase.from("avis").select("id", { count: "exact", head: true }).eq("approuve", false),
         supabase.from("abonnements").select("id", { count: "exact", head: true }).gte("created_at", maxDate(lastVisit("abonnements"), weekAgo)),
         supabase.from("invitations").select("id", { count: "exact", head: true }).eq("virement_statut", "demande").gte("created_at", lastVisit("cagnottes")),
         supabase.from("cagnotte_contributions").select("id", { count: "exact", head: true }).eq("statut", "paye").gte("created_at", maxDate(lastVisit("cagnottes"), dayAgo)),
