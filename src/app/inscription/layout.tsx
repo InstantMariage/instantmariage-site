@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Inscription – Rejoignez InstantMariage.fr",
+  title: "Inscription gratuite — Rejoignez InstantMariage.fr",
   description:
-    "Créez votre compte InstantMariage.fr : futurs mariés, trouvez vos prestataires idéaux ; professionnels du mariage, développez votre activité et recevez des demandes de devis.",
+    "Créez votre compte gratuit sur InstantMariage.fr. Mariés : trouvez les meilleurs prestataires. Prestataires : développez votre activité mariage.",
   keywords: "inscription mariage, créer compte prestataire mariage, rejoindre plateforme mariage",
+  robots: { index: true, follow: true },
   openGraph: {
-    title: "Inscription – Rejoignez InstantMariage.fr",
+    title: "Inscription gratuite — Rejoignez InstantMariage.fr",
     description:
-      "Créez votre compte InstantMariage.fr : futurs mariés, trouvez vos prestataires idéaux ; professionnels du mariage, développez votre activité et recevez des demandes de devis.",
+      "Créez votre compte gratuit sur InstantMariage.fr. Mariés : trouvez les meilleurs prestataires. Prestataires : développez votre activité mariage.",
     url: "https://instantmariage.fr/inscription",
     siteName: "InstantMariage.fr",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Inscription InstantMariage.fr" }],
@@ -17,9 +18,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Inscription – Rejoignez InstantMariage.fr",
+    title: "Inscription gratuite — Rejoignez InstantMariage.fr",
     description:
-      "Créez votre compte InstantMariage.fr : futurs mariés, trouvez vos prestataires idéaux ; professionnels du mariage, développez votre activité.",
+      "Créez votre compte gratuit sur InstantMariage.fr. Mariés : trouvez les meilleurs prestataires. Prestataires : développez votre activité mariage.",
     images: ["/og-image.png"],
   },
 };
