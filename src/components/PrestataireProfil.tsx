@@ -1746,12 +1746,9 @@ export default function PrestataireProfil({ id }: { id?: string }) {
     if (!id || isNumericId) return;
     supabase.from("prestataires").select("*, abonnements(plan, statut), prestataire_videos(id, bunny_video_id, thumbnail_url, play_url, title, aspect_ratio, created_at)").eq("id", id).maybeSingle()
       .then(({ data, error }) => {
-        console.log("[PrestataireProfil] raw Supabase response:", JSON.stringify({ data, error }, null, 2));
-        console.log("[PrestataireProfil] abonnements:", data?.abonnements);
-        console.log("[PrestataireProfil] verifie:", data?.verifie);
+        if (error) console.error("[PrestataireProfil] Erreur lecture prestataire:", error);
         if (data) {
           const built = buildPrestataireFromSupabase(data as SupabasePrestataire & { abonnements?: { plan: string; statut: string }[] });
-          console.log("[PrestataireProfil] built.plan:", built.plan, "built.verifie:", built.verifie);
           setPRESTATAIRE(built);
           // Enregistrer la vue (fire-and-forget)
           supabase.from("profile_views").insert({ prestataire_id: id });

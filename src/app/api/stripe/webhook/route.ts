@@ -714,7 +714,6 @@ export async function POST(req: NextRequest) {
             if (sub.id !== subscriptionId) {
               try {
                 await stripe.subscriptions.cancel(sub.id);
-                console.log(`[webhook] Ancien abonnement annulé: ${sub.id}`);
               } catch {
                 // Déjà annulé ou introuvable, on continue
               }

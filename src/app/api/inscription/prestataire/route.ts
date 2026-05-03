@@ -88,13 +88,11 @@ async function appliquerParrainage({
     .maybeSingle();
 
   if (parrainErr || !parrain) {
-    console.log(`[parrainage] Code introuvable ou invalide: ${refCode}`);
     return;
   }
 
   // 2. Éviter l'auto-parrainage
   if (parrain.id === filleulId) {
-    console.log("[parrainage] Auto-parrainage ignoré");
     return;
   }
 
@@ -106,7 +104,6 @@ async function appliquerParrainage({
     .maybeSingle();
 
   if (existingParrainage) {
-    console.log("[parrainage] Filleul a déjà un parrain");
     return;
   }
 
@@ -138,7 +135,6 @@ async function appliquerParrainage({
           }
         );
         stripeCreditId = txn.id;
-        console.log(`[parrainage] Crédit Stripe appliqué: ${txn.id} (${creditCents} cts) → customer ${abo.stripe_customer_id}`);
       }
     } catch (stripeErr) {
       console.error("[parrainage] Erreur Stripe (crédit ignoré):", stripeErr);
@@ -160,7 +156,5 @@ async function appliquerParrainage({
     if (insertErr.code !== "23505") {
       console.error("[parrainage] Erreur INSERT parrainages:", insertErr);
     }
-  } else {
-    console.log(`[parrainage] Parrainage créé : parrain=${parrain.id} filleul=${filleulId}`);
   }
 }
