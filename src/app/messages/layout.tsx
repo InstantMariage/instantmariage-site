@@ -40,6 +40,8 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const selectedId = pathname.startsWith("/messages/")
     ? pathname.replace("/messages/", "")
@@ -192,6 +194,25 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
     };
   }, [userId]);
 
+  const handleDeleteConversation = async (convId: string) => {
+    setDeletingId(convId);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { setDeletingId(null); return; }
+
+    await fetch(`/api/messages/${convId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+
+    setConversations((prev) => prev.filter((c) => c.id !== convId));
+    setDeletingId(null);
+    setConfirmDeleteId(null);
+
+    if (selectedId === convId) {
+      router.push("/messages");
+    }
+  };
+
   const totalUnread = conversations.reduce((n, c) => n + c.unread_count, 0);
 
   return (
@@ -313,7 +334,7 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
                   const hasUnread = conv.unread_count > 0;
 
                   return (
-                    <li key={conv.id}>
+                    <li key={conv.id} className="group relative">
                       <Link
                         href={`/messages/${conv.id}`}
                         className={`flex items-center gap-3 px-4 py-3.5 transition-colors ${
@@ -418,6 +439,18 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
                           </div>
                         </div>
                       </Link>
+
+                      {/* Bouton supprimer — visible au hover */}
+                      <button
+                        onClick={() => setConfirmDeleteId(conv.id)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-full hover:bg-red-50"
+                        title="Supprimer la conversation"
+                      >
+                        <svg className="w-4 h-4 text-gray-400 hover:text-red-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+
                       {/* Divider (skip after last) */}
                       <div className="mx-[72px] h-px bg-gray-50" />
                     </li>
@@ -437,6 +470,50 @@ export default function MessagesLayout({ children }: { children: React.ReactNode
           {children}
         </div>
       </div>
+
+      {/* Modale de confirmation suppression */}
+      {confirmDeleteId && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+          onClick={() => setConfirmDeleteId(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-50 mx-auto mb-4">
+              <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </div>
+            <h2
+              className="text-center font-bold text-gray-900 text-lg mb-2"
+              style={{ fontFamily: "var(--font-playfair), serif" }}
+            >
+              Supprimer la conversation ?
+            </h2>
+            <p className="text-center text-sm text-gray-500 mb-6">
+              Tous les messages seront définitivement supprimés. Cette action est irréversible.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmDeleteId(null)}
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => handleDeleteConversation(confirmDeleteId)}
+                disabled={deletingId === confirmDeleteId}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors disabled:opacity-60"
+                style={{ background: "#EF4444" }}
+              >
+                {deletingId === confirmDeleteId ? "Suppression…" : "Supprimer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
