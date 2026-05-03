@@ -1,4 +1,5 @@
 import { MetadataRoute } from "next";
+import { createClient } from "@supabase/supabase-js";
 import {
   METIERS_SEO,
   VILLES_SEO,
@@ -9,7 +10,14 @@ import {
   buildSlugRegion,
 } from "@/data/seo-local";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://instantmariage.fr";
 
   const staticPages = [
@@ -42,6 +50,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/cgu", priority: 0.3, changeFrequency: "yearly" as const },
     { path: "/confidentialite", priority: 0.3, changeFrequency: "yearly" as const },
   ];
+
+  // Articles de blog publiés
+  const { data: articles } = await getSupabase()
+    .from("articles")
+    .select("slug, date_publication")
+    .eq("statut", "publie");
+
+  const blogArticlePages: MetadataRoute.Sitemap = (articles ?? []).map((a) => ({
+    url: `${baseUrl}/blog/${a.slug}`,
+    lastModified: new Date(a.date_publication),
+    changeFrequency: "monthly" as const,
+    priority: 0.8,
+  }));
 
   // Pages SEO villes : [metier]-mariage-[ville] — 100 × 9 = 900 pages
   const villePages: MetadataRoute.Sitemap = [];
@@ -89,6 +110,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency,
       priority,
     })),
+    ...blogArticlePages,
     ...regionPages,    // Régions en premier (priorité haute)
     ...departementPages,
     ...villePages,

@@ -299,8 +299,9 @@ export default async function ArticlePage({
 
   const { data: otherArticles } = await getSupabase()
     .from("articles")
-    .select("slug, titre, image, read_time")
+    .select("slug, titre, image, excerpt, read_time")
     .eq("statut", "publie")
+    .eq("category", article.category)
     .neq("slug", slug)
     .limit(3);
 
@@ -559,6 +560,51 @@ export default async function ArticlePage({
           </aside>
         </div>
       </section>
+
+      {/* ── Vous pourriez aussi lire ────────────────────────── */}
+      {otherArticles && otherArticles.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-gray-100">
+          <h2
+            className="text-2xl md:text-3xl font-bold text-gray-900 mb-8"
+            style={{ fontFamily: "var(--font-playfair), serif" }}
+          >
+            Vous pourriez aussi lire
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {otherArticles.map((a) => (
+              <Link
+                key={a.slug}
+                href={`/blog/${a.slug}`}
+                className="group rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow bg-white"
+              >
+                <div className="relative h-48 overflow-hidden">
+                  {a.image ? (
+                    <Image
+                      src={a.image}
+                      alt={a.titre}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-rose-50" />
+                  )}
+                </div>
+                <div className="p-5">
+                  <p className="font-bold text-gray-900 group-hover:text-rose-500 transition-colors mb-2 line-clamp-2 text-base">
+                    {a.titre}
+                  </p>
+                  {a.excerpt && (
+                    <p className="text-sm text-gray-500 line-clamp-3 leading-relaxed">
+                      {a.excerpt}
+                    </p>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       <Footer />
     </main>
