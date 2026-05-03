@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { sendWelcomeMarieEmail } from "@/lib/emails";
 
 export async function POST(req: NextRequest) {
   try {
@@ -39,6 +40,16 @@ export async function POST(req: NextRequest) {
         hint: error.hint,
       });
       return NextResponse.json({ error: error.message, code: error.code, details: error.details }, { status: 500 });
+    }
+
+    // Email de bienvenue — non bloquant
+    const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(user_id);
+    if (authUser?.user?.email) {
+      sendWelcomeMarieEmail({
+        recipientEmail: authUser.user.email,
+        prenomMarie1,
+        prenomMarie2: prenom_marie2 || null,
+      }).catch((err) => console.error("[api/inscription/marie] Erreur email bienvenue:", err));
     }
 
     return NextResponse.json({ ok: true });

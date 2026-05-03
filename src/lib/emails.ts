@@ -1929,3 +1929,87 @@ export async function sendEliteSiteOnlineEmail({
     headers: unsubscribeHeaders,
   });
 }
+
+// ─── Email 18 : Bienvenue mariés ──────────────────────────────────────────────
+
+export async function sendWelcomeMarieEmail({
+  recipientEmail,
+  prenomMarie1,
+  prenomMarie2,
+}: {
+  recipientEmail: string;
+  prenomMarie1: string;
+  prenomMarie2?: string | null;
+}) {
+  const titleNames = prenomMarie2
+    ? `${prenomMarie1} &amp; ${prenomMarie2}`
+    : prenomMarie1;
+
+  const content = `
+    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#F06292;letter-spacing:0.5px;text-transform:uppercase;">Bienvenue sur InstantMariage.fr</p>
+    <h1 style="margin:0 0 24px;font-size:26px;font-weight:700;color:#1a1a1a;line-height:1.25;">
+      Bienvenue, ${titleNames}&nbsp;! 💍
+    </h1>
+    <p style="margin:0 0 20px;font-size:15px;color:#555555;line-height:1.65;">
+      Votre compte est créé&nbsp;! Voici ce que vous pouvez faire dès maintenant&nbsp;:
+    </p>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
+      ${[
+        ["Parcourir les prestataires vérifiés", "#F06292"],
+        ["Contacter directement les pros qui vous plaisent", "#F06292"],
+        ["Utiliser nos outils gratuits (checklist, budget, rétroplanning…)", "#F06292"],
+        ["Créer votre album photo collaboratif", "#F06292"],
+      ].map(([label]) => `
+      <tr>
+        <td style="padding:10px 0;border-bottom:1px solid #fce4ec;">
+          <table cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="width:28px;vertical-align:top;padding-top:1px;">
+                <span style="display:inline-block;width:20px;height:20px;background-color:#fce4ec;border-radius:50%;text-align:center;line-height:20px;font-size:11px;font-weight:700;color:#F06292;">✓</span>
+              </td>
+              <td style="font-size:14px;color:#333333;line-height:1.5;">${label}</td>
+            </tr>
+          </table>
+        </td>
+      </tr>`).join("")}
+    </table>
+    ${ctaButton("Commencer ma recherche →", "https://www.instantmariage.fr/annuaire")}
+    ${divider()}
+    <p style="margin:0;font-size:13px;color:#aaaaaa;line-height:1.6;text-align:center;">
+      À très bientôt,<br/>
+      <strong style="color:#1a1a1a;">L&rsquo;équipe InstantMariage.fr</strong>
+    </p>
+    <p style="margin:12px 0 0;font-size:11px;color:#cccccc;line-height:1.5;text-align:center;">
+      Pour vous désabonner : <a href="mailto:${UNSUBSCRIBE_EMAIL}?subject=unsubscribe" style="color:#cccccc;">cliquez ici</a>
+    </p>
+  `;
+
+  const coupleLabel = prenomMarie2 ? `${prenomMarie1} & ${prenomMarie2}` : prenomMarie1;
+
+  const text = [
+    `Bienvenue sur InstantMariage.fr, ${coupleLabel} !`,
+    "",
+    `Votre compte est créé ! Voici ce que vous pouvez faire dès maintenant :`,
+    "",
+    `✓ Parcourir les prestataires vérifiés`,
+    `✓ Contacter directement les pros qui vous plaisent`,
+    `✓ Utiliser nos outils gratuits (checklist, budget, rétroplanning...)`,
+    `✓ Créer votre album photo collaboratif`,
+    "",
+    `👉 Commencer ma recherche : https://www.instantmariage.fr/annuaire`,
+    "",
+    `À très bientôt,`,
+    `L'équipe InstantMariage.fr`,
+    textFooter(true),
+  ].join("\n");
+
+  return resend.emails.send({
+    from: FROM,
+    to: recipientEmail,
+    replyTo: REPLY_TO,
+    subject: `Bienvenue sur InstantMariage.fr, ${coupleLabel} 💍`,
+    html: baseTemplate(content),
+    text,
+    headers: unsubscribeHeaders,
+  });
+}
