@@ -2091,3 +2091,90 @@ export async function sendWelcomeMarieEmail({
     headers: unsubscribeHeaders,
   });
 }
+
+// ─── Email 19 : Nouvelle demande de devis (prestataire) ──────────────────────
+
+export async function sendDemandeDevisEmail({
+  recipientEmail,
+  nomPrestataire,
+  prenomMarie1,
+  prenomMarie2,
+  message,
+  dateMariage,
+  budgetMax,
+}: {
+  recipientEmail: string;
+  nomPrestataire: string;
+  prenomMarie1: string;
+  prenomMarie2: string | null;
+  message: string;
+  dateMariage: string | null;
+  budgetMax: number | null;
+}) {
+  const dashboardUrl = `${SITE_URL}/dashboard/prestataire`;
+  const coupleLabel = prenomMarie2 ? `${prenomMarie1} & ${prenomMarie2}` : prenomMarie1;
+
+  const rows = [
+    ["Couple", coupleLabel],
+    dateMariage ? ["Date du mariage", new Date(dateMariage).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })] : null,
+    budgetMax ? ["Budget maximum", `${budgetMax.toLocaleString("fr-FR")} €`] : null,
+  ].filter(Boolean) as string[][];
+
+  const content = `
+    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#F06292;letter-spacing:0.5px;text-transform:uppercase;">Nouvelle demande de devis</p>
+    <h1 style="margin:0 0 24px;font-size:22px;font-weight:700;color:#1a1a1a;line-height:1.25;">
+      💌 ${coupleLabel} vous contacte
+    </h1>
+    <p style="margin:0 0 20px;font-size:15px;color:#555555;line-height:1.65;">
+      Bonjour ${nomPrestataire},
+    </p>
+    <p style="margin:0 0 20px;font-size:15px;color:#555555;line-height:1.65;">
+      Vous avez reçu une nouvelle demande de devis sur InstantMariage.fr.
+    </p>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;border-radius:12px;overflow:hidden;">
+      ${rows.map(([label, value], i) => `
+      <tr style="background:${i % 2 === 0 ? "#f9f9f9" : "#ffffff"};">
+        <td style="padding:10px 14px;font-size:13px;color:#888888;width:40%;border-bottom:1px solid #f0f0f0;">${label}</td>
+        <td style="padding:10px 14px;font-size:13px;color:#1a1a1a;font-weight:600;border-bottom:1px solid #f0f0f0;">${value}</td>
+      </tr>`).join("")}
+    </table>
+    <div style="background:#FFF0F5;border-left:3px solid #F06292;border-radius:8px;padding:16px 18px;margin-bottom:28px;">
+      <p style="margin:0 0 6px;font-size:12px;font-weight:600;color:#F06292;text-transform:uppercase;letter-spacing:0.5px;">Message</p>
+      <p style="margin:0;font-size:14px;color:#333333;line-height:1.7;white-space:pre-wrap;">${message}</p>
+    </div>
+    ${ctaButton("Voir la demande dans mon dashboard →", dashboardUrl)}
+    ${divider()}
+    <p style="margin:0;font-size:13px;color:#aaaaaa;line-height:1.6;text-align:center;">
+      À très bientôt,<br/>
+      <strong style="color:#1a1a1a;">L&rsquo;équipe InstantMariage.fr</strong>
+    </p>
+  `;
+
+  const text = [
+    `💌 Nouvelle demande de devis — ${coupleLabel}`,
+    "",
+    `Bonjour ${nomPrestataire},`,
+    "",
+    `Vous avez reçu une nouvelle demande de devis sur InstantMariage.fr.`,
+    "",
+    `Couple : ${coupleLabel}`,
+    dateMariage ? `Date du mariage : ${new Date(dateMariage).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}` : "",
+    budgetMax ? `Budget maximum : ${budgetMax.toLocaleString("fr-FR")} €` : "",
+    "",
+    `Message :`,
+    message,
+    "",
+    `Voir la demande : ${dashboardUrl}`,
+    textFooter(false),
+  ].filter(Boolean).join("\n");
+
+  return resend.emails.send({
+    from: FROM,
+    to: recipientEmail,
+    replyTo: REPLY_TO,
+    subject: `💌 Nouvelle demande de devis — ${coupleLabel}`,
+    html: baseTemplate(content),
+    text,
+    headers: unsubscribeHeaders,
+  });
+}

@@ -117,6 +117,18 @@ type FavoriPrestataire = {
   };
 };
 
+type DemandeDevis = {
+  id: string;
+  statut: "en_attente" | "vue" | "repondue" | "refusee";
+  created_at: string;
+  prestataires: {
+    id: string;
+    nom_entreprise: string;
+    categorie: string;
+    avatar_url: string | null;
+  };
+};
+
 type ConversationItem = {
   id: string;
   other_name: string;
@@ -146,6 +158,8 @@ export default function DashboardMarie() {
   const [lieuMariage, setLieuMariage] = useState<string | null>(null);
   const [favoris, setFavoris] = useState<FavoriPrestataire[]>([]);
   const [favorisLoaded, setFavorisLoaded] = useState(false);
+  const [demandesDevis, setDemandesDevis] = useState<DemandeDevis[]>([]);
+  const [demandesLoaded, setDemandesLoaded] = useState(false);
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [convsLoaded, setConvsLoaded] = useState(false);
   const weddingDate = dateMariage ? new Date(dateMariage) : null;
@@ -185,6 +199,15 @@ export default function DashboardMarie() {
         .order("created_at", { ascending: false });
       if (favData) setFavoris(favData as unknown as FavoriPrestataire[]);
       setFavorisLoaded(true);
+
+      // Charger les demandes de devis
+      const { data: demandesData } = await supabase
+        .from("demandes_devis")
+        .select("id, statut, created_at, prestataires(id, nom_entreprise, categorie, avatar_url)")
+        .order("created_at", { ascending: false })
+        .limit(10);
+      if (demandesData) setDemandesDevis(demandesData as unknown as DemandeDevis[]);
+      setDemandesLoaded(true);
 
       // Charger les conversations
       const uid = session.user.id;
@@ -523,6 +546,108 @@ export default function DashboardMarie() {
                       <IconChevronRight />
                     </Link>
                   )}
+                </>
+              )}
+            </div>
+          </section>
+
+          {/* ── Mes demandes de devis ── */}
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400">Mes demandes de devis</h2>
+              <Link
+                href="/annuaire"
+                className="text-xs font-semibold transition-opacity hover:opacity-70"
+                style={{ color: "#F06292" }}
+              >
+                Annuaire
+              </Link>
+            </div>
+
+            <div
+              className="rounded-3xl overflow-hidden"
+              style={{ background: "white", boxShadow: "0 4px 24px rgba(240,98,146,0.08)", border: "1px solid #FECDD3" }}
+            >
+              {!demandesLoaded ? (
+                <div className="flex items-center justify-center py-10">
+                  <div className="w-5 h-5 border-2 border-gray-200 border-t-transparent rounded-full animate-spin" style={{ borderTopColor: "#F06292" }} />
+                </div>
+              ) : demandesDevis.length === 0 ? (
+                <div className="flex flex-col items-center text-center p-8">
+                  <div
+                    className="w-11 h-11 rounded-2xl flex items-center justify-center mb-3"
+                    style={{ background: "#FFF0F5", color: "#F06292" }}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <p className="text-sm font-semibold text-gray-700 mb-1">Aucune demande envoyée</p>
+                  <p className="text-xs text-gray-400 mb-4 leading-relaxed">
+                    Demandez un devis directement depuis la fiche d&apos;un prestataire
+                  </p>
+                  <Link
+                    href="/annuaire"
+                    className="text-sm font-semibold px-5 py-2 rounded-full transition-all duration-200 hover:opacity-80"
+                    style={{ background: "#F06292", color: "white" }}
+                  >
+                    Trouver un prestataire
+                  </Link>
+                </div>
+              ) : (
+                <>
+                  {demandesDevis.map((demande, i) => {
+                    const p = demande.prestataires;
+                    const isLast = i === demandesDevis.length - 1;
+                    const initial = p.nom_entreprise.charAt(0).toUpperCase();
+                    const statutConfig = {
+                      en_attente: { label: "En attente", bg: "#FFF3CD", color: "#856404" },
+                      vue: { label: "Vue", bg: "#D1ECF1", color: "#0C5460" },
+                      repondue: { label: "Répondue", bg: "#D4EDDA", color: "#155724" },
+                      refusee: { label: "Refusée", bg: "#F8D7DA", color: "#721C24" },
+                    }[demande.statut];
+
+                    return (
+                      <Link
+                        key={demande.id}
+                        href={`/prestataires/${p.id}`}
+                        className="flex items-center gap-4 px-5 py-4 hover:bg-rose-50/40 transition-colors duration-200 cursor-pointer group"
+                        style={{ borderBottom: isLast ? "none" : "1px solid #FEE2E2" }}
+                      >
+                        <div
+                          className="relative w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden text-white font-bold text-sm"
+                          style={{ background: "#F06292" }}
+                        >
+                          {p.avatar_url ? (
+                            <Image
+                              src={p.avatar_url.startsWith("http") ? p.avatar_url : `https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/photos/${p.avatar_url}`}
+                              alt={p.nom_entreprise}
+                              fill
+                              className="object-cover"
+                              sizes="44px"
+                            />
+                          ) : (
+                            initial
+                          )}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-gray-900 truncate">{p.nom_entreprise}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">{p.categorie}</p>
+                        </div>
+
+                        <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                          <span
+                            className="text-xs font-semibold px-2.5 py-0.5 rounded-full"
+                            style={{ background: statutConfig.bg, color: statutConfig.color }}
+                          >
+                            {statutConfig.label}
+                          </span>
+                          <span className="text-xs text-gray-400">{timeAgo(demande.created_at)}</span>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </>
               )}
             </div>

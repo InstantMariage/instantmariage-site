@@ -1548,9 +1548,60 @@ function SectionTarifs({ tarifs, options }: { tarifs: typeof TARIFS; options: ty
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 
-function Sidebar({ prestataire, isLoggedIn }: { prestataire: PrestatireData; isLoggedIn: boolean | null }) {
+function Sidebar({ prestataire, isLoggedIn, prestataireId }: { prestataire: PrestatireData; isLoggedIn: boolean | null; prestataireId?: string }) {
   const PRESTATAIRE = prestataire;
   const hasContact = !!(PRESTATAIRE.telephone || PRESTATAIRE.instagram || PRESTATAIRE.tiktok || PRESTATAIRE.facebook || PRESTATAIRE.email || PRESTATAIRE.site);
+
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [showDevisModal, setShowDevisModal] = useState(false);
+  const [devisMessage, setDevisMessage] = useState("");
+  const [devisBudget, setDevisBudget] = useState("");
+  const [devisDate, setDevisDate] = useState("");
+  const [devisSending, setDevisSending] = useState(false);
+  const [devisSent, setDevisSent] = useState(false);
+  const [devisError, setDevisError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) return;
+      const role = session.user.user_metadata?.role ?? "marie";
+      setUserRole(role);
+      if (role === "marie") {
+        const { data: marie } = await supabase
+          .from("maries")
+          .select("date_mariage")
+          .eq("user_id", session.user.id)
+          .maybeSingle();
+        if (marie?.date_mariage) setDevisDate(marie.date_mariage);
+      }
+    });
+  }, [isLoggedIn]);
+
+  const handleDevisSubmit = async () => {
+    if (!prestataireId || !devisMessage.trim()) return;
+    setDevisSending(true);
+    setDevisError(null);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { setDevisSending(false); return; }
+    const res = await fetch("/api/devis", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session.access_token}` },
+      body: JSON.stringify({
+        prestataire_id: prestataireId,
+        message: devisMessage,
+        date_mariage: devisDate || null,
+        budget_max: devisBudget ? parseInt(devisBudget, 10) : null,
+      }),
+    });
+    setDevisSending(false);
+    if (res.ok) {
+      setDevisSent(true);
+    } else {
+      const data = await res.json().catch(() => ({})) as { error?: string };
+      setDevisError(data.error === "Demande déjà envoyée" ? "Vous avez déjà envoyé une demande à ce prestataire." : "Une erreur est survenue. Réessayez.");
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -1675,6 +1726,20 @@ function Sidebar({ prestataire, isLoggedIn }: { prestataire: PrestatireData; isL
               {!hasContact && (
                 <p className="text-xs text-gray-300 italic text-center py-1">Coordonnées non renseignées</p>
               )}
+              {userRole === "marie" && prestataireId && (
+                <div className="border-t border-gray-100 mt-2 pt-3">
+                  <button
+                    onClick={() => { setShowDevisModal(true); setDevisSent(false); setDevisError(null); }}
+                    className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-2xl text-sm font-semibold transition-all duration-200 hover:opacity-90 active:scale-95"
+                    style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)", color: "white" }}
+                  >
+                    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Demander un devis
+                  </button>
+                </div>
+              )}
             </>
           ) : (
             <div className="flex flex-col items-center gap-3 py-2">
@@ -1715,6 +1780,120 @@ function Sidebar({ prestataire, isLoggedIn }: { prestataire: PrestatireData; isL
               <p className="text-sm font-bold text-gray-900">Prestataire vérifié</p>
               <p className="text-xs text-gray-500">Identité et qualité contrôlées par InstantMariage</p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal demande de devis */}
+      {showDevisModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: "rgba(0,0,0,0.5)" }}
+          onClick={() => setShowDevisModal(false)}
+        >
+          <div
+            className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {devisSent ? (
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: "#FFF0F5" }}>
+                  <svg className="w-8 h-8" style={{ color: "#F06292" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Demande envoyée !</h3>
+                <p className="text-sm text-gray-500 mb-6">
+                  {PRESTATAIRE.nom} a reçu votre demande de devis et vous répondra prochainement.
+                </p>
+                <button
+                  onClick={() => setShowDevisModal(false)}
+                  className="w-full py-3 rounded-2xl text-sm font-semibold text-white transition-all hover:opacity-90"
+                  style={{ background: "#F06292" }}
+                >
+                  Fermer
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: "#FFF0F5" }}>
+                    <svg className="w-6 h-6" style={{ color: "#F06292" }} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900">Demande de devis</h3>
+                    <p className="text-xs text-gray-400">{PRESTATAIRE.nom}</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                      Votre message <span style={{ color: "#F06292" }}>*</span>
+                    </label>
+                    <textarea
+                      value={devisMessage}
+                      onChange={(e) => setDevisMessage(e.target.value)}
+                      rows={4}
+                      placeholder="Décrivez votre mariage, le nombre d'invités, vos attentes..."
+                      className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2 resize-none"
+                      style={{ focusRingColor: "#F06292" } as React.CSSProperties}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5">Date du mariage</label>
+                      <input
+                        type="date"
+                        value={devisDate}
+                        onChange={(e) => setDevisDate(e.target.value)}
+                        className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm text-gray-900 focus:outline-none focus:ring-2"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5">Budget max (€)</label>
+                      <input
+                        type="number"
+                        value={devisBudget}
+                        onChange={(e) => setDevisBudget(e.target.value)}
+                        placeholder="ex : 3000"
+                        min={0}
+                        className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2"
+                      />
+                    </div>
+                  </div>
+
+                  {devisError && (
+                    <p className="text-xs font-medium text-red-500 text-center">{devisError}</p>
+                  )}
+
+                  <div className="flex gap-3 pt-1">
+                    <button
+                      onClick={() => setShowDevisModal(false)}
+                      className="flex-1 py-3 rounded-2xl text-sm font-semibold text-gray-500 border border-gray-200 hover:bg-gray-50 transition-all"
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      onClick={handleDevisSubmit}
+                      disabled={devisSending || !devisMessage.trim()}
+                      className="flex-1 py-3 rounded-2xl text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                      style={{ background: "linear-gradient(135deg, #F06292, #E91E8C)" }}
+                    >
+                      {devisSending ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Envoi...
+                        </span>
+                      ) : "Envoyer la demande"}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -2236,7 +2415,7 @@ export default function PrestataireProfil({ id }: { id?: string }) {
             {/* Sidebar */}
             <aside className="w-full lg:w-80 flex-shrink-0">
               <div className="lg:sticky lg:top-8">
-                <Sidebar prestataire={PRESTATAIRE} isLoggedIn={isLoggedIn} />
+                <Sidebar prestataire={PRESTATAIRE} isLoggedIn={isLoggedIn} prestataireId={!isNumericId ? id : undefined} />
               </div>
             </aside>
           </div>

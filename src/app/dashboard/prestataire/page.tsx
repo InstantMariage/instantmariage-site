@@ -150,6 +150,20 @@ type ConversationItem = {
   unread_count: number;
 };
 
+type DemandeDevis = {
+  id: string;
+  message: string;
+  date_mariage: string | null;
+  budget_max: number | null;
+  statut: "en_attente" | "vue" | "repondue" | "refusee";
+  created_at: string;
+  maries: {
+    id: string;
+    prenom_marie1: string;
+    prenom_marie2: string | null;
+  };
+};
+
 function timeAgo(dateStr: string): string {
   const date = new Date(dateStr);
   const now = new Date();
@@ -199,6 +213,8 @@ function DashboardPrestataire() {
   const [moisGagnes, setMoisGagnes] = useState(0);
   const [copiedCode, setCopiedCode] = useState(false);
   const [showUpsellBanner, setShowUpsellBanner] = useState(false);
+  const [demandesDevis, setDemandesDevis] = useState<DemandeDevis[]>([]);
+  const [demandesLoaded, setDemandesLoaded] = useState(false);
 
   useEffect(() => {
     if (searchParams.get("success") === "true") {
@@ -249,13 +265,16 @@ function DashboardPrestataire() {
         setProfileSuggestions(suggItems);
 
         // Stats + abonnement en parallèle
-        const [{ count: views }, { count: contacts }, { data: avisData }, { data: parrainagesData }, { data: abonnement }] = await Promise.all([
+        const [{ count: views }, { count: contacts }, { data: avisData }, { data: parrainagesData }, { data: abonnement }, { data: demandesData }] = await Promise.all([
           supabase.from("profile_views").select("id", { count: "exact", head: true }).eq("prestataire_id", prestataire.id),
           supabase.from("conversations").select("id", { count: "exact", head: true }).or(`participant1_id.eq.${uid},participant2_id.eq.${uid}`),
           supabase.from("avis").select("note").eq("prestataire_id", prestataire.id),
           supabase.from("parrainages").select("mois_offerts").eq("parrain_id", prestataire.id).eq("statut", "valide"),
           supabase.from("abonnements").select("plan, statut, date_fin, stripe_subscription_id").eq("prestataire_id", prestataire.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+          supabase.from("demandes_devis").select("id, message, date_mariage, budget_max, statut, created_at, maries(id, prenom_marie1, prenom_marie2)").eq("prestataire_id", prestataire.id).order("created_at", { ascending: false }).limit(10),
         ]);
+        if (demandesData) setDemandesDevis(demandesData as unknown as DemandeDevis[]);
+        setDemandesLoaded(true);
         setProfileViews(views ?? 0);
         setNbContacts(contacts ?? 0);
         const nb = avisData?.length ?? 0;
@@ -784,6 +803,81 @@ function DashboardPrestataire() {
                     </div>
                     <p className="font-semibold text-gray-700 mb-1">Pas encore d&apos;avis</p>
                     <p className="text-sm text-gray-400">Les avis de vos clients apparaîtront ici après leurs mariages</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Demandes de devis */}
+              <div className="bg-white rounded-2xl shadow-card overflow-hidden">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                  <h2 className="font-semibold text-gray-900">Demandes de devis</h2>
+                  {demandesDevis.length > 0 && (
+                    <span className="text-xs font-bold px-2.5 py-1 rounded-full text-white" style={{ background: "#F06292" }}>
+                      {demandesDevis.filter((d) => d.statut === "en_attente").length > 0
+                        ? `${demandesDevis.filter((d) => d.statut === "en_attente").length} nouvelle${demandesDevis.filter((d) => d.statut === "en_attente").length > 1 ? "s" : ""}`
+                        : demandesDevis.length}
+                    </span>
+                  )}
+                </div>
+
+                {!demandesLoaded ? (
+                  <div className="flex items-center justify-center py-10">
+                    <div className="w-6 h-6 border-2 border-gray-200 border-t-transparent rounded-full animate-spin" style={{ borderTopColor: "#F06292" }} />
+                  </div>
+                ) : demandesDevis.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-10 px-6 text-center">
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3" style={{ background: "#FFF0F5" }}>
+                      <svg className="w-6 h-6" style={{ color: "#F06292" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <p className="font-semibold text-gray-700 mb-1 text-sm">Aucune demande de devis</p>
+                    <p className="text-xs text-gray-400">Les demandes des futurs mariés apparaîtront ici</p>
+                  </div>
+                ) : (
+                  <div>
+                    {demandesDevis.map((demande, i) => {
+                      const isLast = i === demandesDevis.length - 1;
+                      const couple = demande.maries.prenom_marie2
+                        ? `${demande.maries.prenom_marie1} & ${demande.maries.prenom_marie2}`
+                        : demande.maries.prenom_marie1;
+                      const statutConfig = {
+                        en_attente: { label: "En attente", bg: "#FFF3CD", color: "#856404" },
+                        vue: { label: "Vue", bg: "#D1ECF1", color: "#0C5460" },
+                        repondue: { label: "Répondue", bg: "#D4EDDA", color: "#155724" },
+                        refusee: { label: "Refusée", bg: "#F8D7DA", color: "#721C24" },
+                      }[demande.statut];
+
+                      return (
+                        <div
+                          key={demande.id}
+                          className="px-5 py-4"
+                          style={{ borderBottom: isLast ? "none" : "1px solid #FEE2E2" }}
+                        >
+                          <div className="flex items-start justify-between gap-3 mb-2">
+                            <div>
+                              <p className="text-sm font-semibold text-gray-900">{couple}</p>
+                              <p className="text-xs text-gray-400 mt-0.5">{timeAgo(demande.created_at)}</p>
+                            </div>
+                            <span
+                              className="flex-shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full"
+                              style={{ background: statutConfig.bg, color: statutConfig.color }}
+                            >
+                              {statutConfig.label}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-500 leading-relaxed line-clamp-2 mb-2">{demande.message}</p>
+                          <div className="flex items-center gap-3 text-xs text-gray-400">
+                            {demande.date_mariage && (
+                              <span>📅 {new Date(demande.date_mariage).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</span>
+                            )}
+                            {demande.budget_max && (
+                              <span>💰 max {demande.budget_max.toLocaleString("fr-FR")} €</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
