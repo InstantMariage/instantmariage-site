@@ -159,6 +159,7 @@ type DemandeDevis = {
   created_at: string;
   maries: {
     id: string;
+    user_id: string;
     prenom_marie1: string;
     prenom_marie2: string | null;
   };
@@ -215,6 +216,7 @@ function DashboardPrestataire() {
   const [showUpsellBanner, setShowUpsellBanner] = useState(false);
   const [demandesDevis, setDemandesDevis] = useState<DemandeDevis[]>([]);
   const [demandesLoaded, setDemandesLoaded] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     if (searchParams.get("success") === "true") {
@@ -232,6 +234,7 @@ function DashboardPrestataire() {
       }
 
       const uid = session.user.id;
+      setUserId(uid);
 
       // Récupérer profil prestataire
       const { data: prestataire } = await supabase
@@ -271,7 +274,7 @@ function DashboardPrestataire() {
           supabase.from("avis").select("note").eq("prestataire_id", prestataire.id),
           supabase.from("parrainages").select("mois_offerts").eq("parrain_id", prestataire.id).eq("statut", "valide"),
           supabase.from("abonnements").select("plan, statut, date_fin, stripe_subscription_id").eq("prestataire_id", prestataire.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
-          supabase.from("demandes_devis").select("id, message, date_mariage, budget_max, statut, created_at, maries(id, prenom_marie1, prenom_marie2)").eq("prestataire_id", prestataire.id).order("created_at", { ascending: false }).limit(10),
+          supabase.from("demandes_devis").select("id, message, date_mariage, budget_max, statut, created_at, maries(id, user_id, prenom_marie1, prenom_marie2)").eq("prestataire_id", prestataire.id).order("created_at", { ascending: false }).limit(10),
         ]);
         if (demandesData) setDemandesDevis(demandesData as unknown as DemandeDevis[]);
         setDemandesLoaded(true);
@@ -875,6 +878,31 @@ function DashboardPrestataire() {
                               <span>💰 max {demande.budget_max.toLocaleString("fr-FR")} €</span>
                             )}
                           </div>
+                          <button
+                            onClick={async () => {
+                              const marieUserId = demande.maries.user_id;
+                              const [p1, p2] = [userId, marieUserId].sort();
+                              let { data: conv } = await supabase
+                                .from("conversations")
+                                .select("id")
+                                .eq("participant1_id", p1)
+                                .eq("participant2_id", p2)
+                                .maybeSingle();
+                              if (!conv) {
+                                const { data: newConv } = await supabase
+                                  .from("conversations")
+                                  .insert({ participant1_id: p1, participant2_id: p2 })
+                                  .select("id")
+                                  .single();
+                                conv = newConv;
+                              }
+                              if (conv) router.push(`/messages/${conv.id}`);
+                            }}
+                            className="mt-3 text-xs font-semibold px-4 py-1.5 rounded-xl text-white transition-opacity hover:opacity-90"
+                            style={{ background: "#F06292" }}
+                          >
+                            Répondre →
+                          </button>
                         </div>
                       );
                     })}
