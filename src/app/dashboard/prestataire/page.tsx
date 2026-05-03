@@ -888,6 +888,7 @@ function DashboardPrestataire() {
                                 .eq("participant1_id", p1)
                                 .eq("participant2_id", p2)
                                 .maybeSingle();
+                              let isNewConv = false;
                               if (!conv) {
                                 const { data: newConv } = await supabase
                                   .from("conversations")
@@ -895,6 +896,21 @@ function DashboardPrestataire() {
                                   .select("id")
                                   .single();
                                 conv = newConv;
+                                isNewConv = true;
+                              }
+                              if (conv && isNewConv) {
+                                const dateMariage = demande.date_mariage
+                                  ? new Date(demande.date_mariage).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })
+                                  : "Non précisée";
+                                const budgetMax = demande.budget_max
+                                  ? `${demande.budget_max.toLocaleString("fr-FR")} €`
+                                  : "Non précisé";
+                                await supabase.from("messages").insert({
+                                  conversation_id: conv.id,
+                                  expediteur_id: userId,
+                                  destinataire_id: marieUserId,
+                                  contenu: `📋 Demande de devis reçue\n\nMessage : ${demande.message}\nDate du mariage : ${dateMariage}\nBudget maximum : ${budgetMax}`,
+                                });
                               }
                               if (conv) router.push(`/messages/${conv.id}`);
                             }}
