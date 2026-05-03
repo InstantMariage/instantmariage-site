@@ -88,6 +88,7 @@ function buildPrestataire(id: number): PrestatireData {
       nom: fb.nom, metier: fb.metier, ville: fb.ville, region: fb.region,
       note: fb.note, nbAvis: fb.nbAvis, verifie: fb.verifie, plan: null, prixMin: fb.prixMin,
       telephone: fb.telephone, email: fb.email, site: fb.site, instagram: fb.instagram,
+      tiktok: null, facebook: null,
       photo: fb.photo, couverture: fb.couverture, coverPosition: 50, description: fb.description,
       specialites: fb.specialites, experience: fb.experience, zones: fb.zones,
       langues: fb.langues, equipements: fb.equipements, galerie: GALERIE, videos: [],
@@ -110,6 +111,8 @@ function buildPrestataire(id: number): PrestatireData {
     email: `contact@${emailSlug}.fr`,
     site: `www.${emailSlug}.fr`,
     instagram: `@${emailSlug}`,
+    tiktok: null,
+    facebook: null,
     photo: provider.photo,
     couverture: COUVERTURES[provider.metier] ?? fb.couverture,
     coverPosition: 50,
@@ -148,6 +151,8 @@ function buildPrestataireFromSupabase(
     email: null,
     site: p.site_web ?? null,
     instagram: p.instagram ?? null,
+    tiktok: (p as unknown as { tiktok?: string }).tiktok || null,
+    facebook: (p as unknown as { facebook?: string }).facebook || null,
     photo: avatar,
     couverture: buildPhotoUrl(p.cover_url) ?? COUVERTURES[p.categorie] ?? null,
     coverPosition: p.cover_position ?? 50,
@@ -276,6 +281,8 @@ type PrestatireData = {
   email: string | null;
   site: string | null;
   instagram: string | null;
+  tiktok: string | null;
+  facebook: string | null;
   photo: string | null;
   couverture: string | null;
   coverPosition: number;
@@ -1541,8 +1548,9 @@ function SectionTarifs({ tarifs, options }: { tarifs: typeof TARIFS; options: ty
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 
-function Sidebar({ prestataire }: { prestataire: PrestatireData }) {
+function Sidebar({ prestataire, isLoggedIn }: { prestataire: PrestatireData; isLoggedIn: boolean }) {
   const PRESTATAIRE = prestataire;
+  const hasContact = !!(PRESTATAIRE.telephone || PRESTATAIRE.instagram || PRESTATAIRE.email || PRESTATAIRE.site || PRESTATAIRE.tiktok || PRESTATAIRE.facebook);
 
   return (
     <div className="space-y-4">
@@ -1564,64 +1572,126 @@ function Sidebar({ prestataire }: { prestataire: PrestatireData }) {
           </div>
         </div>
         <div className="mt-4 space-y-2.5 border-t border-gray-100 pt-4">
-          {PRESTATAIRE.telephone ? (
-            <a
-              href={`tel:${PRESTATAIRE.telephone.replace(/\s/g, "")}`}
-              className="flex items-center justify-center gap-2.5 w-full py-3 px-4 rounded-2xl text-white text-sm font-semibold shadow-md transition-all duration-200 hover:brightness-110 hover:shadow-lg hover:-translate-y-0.5 active:scale-95"
-              style={{ backgroundColor: "#F06292" }}
-            >
-              <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-              </svg>
-              {PRESTATAIRE.telephone}
-            </a>
-          ) : null}
-          {PRESTATAIRE.instagram ? (
-            <a
-              href={
-                PRESTATAIRE.instagram.startsWith("http")
-                  ? PRESTATAIRE.instagram
-                  : `https://instagram.com/${PRESTATAIRE.instagram.replace(/^@/, "")}`
-              }
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2.5 w-full py-3 px-4 rounded-2xl text-white text-sm font-semibold shadow-md transition-all duration-200 hover:brightness-110 hover:shadow-lg hover:-translate-y-0.5 active:scale-95"
-              style={{ background: "linear-gradient(135deg, #833AB4 0%, #E1306C 50%, #F77737 100%)" }}
-            >
-              <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
-              </svg>
-              Instagram
-            </a>
-          ) : null}
-          {PRESTATAIRE.email ? (
-            <a
-              href={`mailto:${PRESTATAIRE.email}`}
-              className="flex items-center gap-3 text-sm text-gray-600 hover:text-rose-500 transition-colors group"
-            >
-              <div className="w-8 h-8 bg-gray-50 group-hover:bg-rose-50 rounded-lg flex items-center justify-center transition-colors">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
+          {isLoggedIn ? (
+            <>
+              {PRESTATAIRE.telephone ? (
+                <a
+                  href={`tel:${PRESTATAIRE.telephone.replace(/\s/g, "")}`}
+                  className="flex items-center justify-center gap-2.5 w-full py-3 px-4 rounded-2xl text-white text-sm font-semibold shadow-md transition-all duration-200 hover:brightness-110 hover:shadow-lg hover:-translate-y-0.5 active:scale-95"
+                  style={{ backgroundColor: "#F06292" }}
+                >
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                  {PRESTATAIRE.telephone}
+                </a>
+              ) : null}
+              {PRESTATAIRE.instagram ? (
+                <a
+                  href={
+                    PRESTATAIRE.instagram.startsWith("http")
+                      ? PRESTATAIRE.instagram
+                      : `https://instagram.com/${PRESTATAIRE.instagram.replace(/^@/, "")}`
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2.5 w-full py-3 px-4 rounded-2xl text-white text-sm font-semibold shadow-md transition-all duration-200 hover:brightness-110 hover:shadow-lg hover:-translate-y-0.5 active:scale-95"
+                  style={{ background: "linear-gradient(135deg, #833AB4 0%, #E1306C 50%, #F77737 100%)" }}
+                >
+                  <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+                  </svg>
+                  Instagram
+                </a>
+              ) : null}
+              {PRESTATAIRE.tiktok ? (
+                <a
+                  href={
+                    PRESTATAIRE.tiktok.startsWith("http")
+                      ? PRESTATAIRE.tiktok
+                      : `https://tiktok.com/@${PRESTATAIRE.tiktok.replace(/^@/, "")}`
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2.5 w-full py-3 px-4 rounded-2xl text-white text-sm font-semibold shadow-md transition-all duration-200 hover:brightness-110 hover:shadow-lg hover:-translate-y-0.5 active:scale-95"
+                  style={{ backgroundColor: "#010101" }}
+                >
+                  <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.75a4.85 4.85 0 01-1.01-.06z" />
+                  </svg>
+                  TikTok
+                </a>
+              ) : null}
+              {PRESTATAIRE.facebook ? (
+                <a
+                  href={
+                    PRESTATAIRE.facebook.startsWith("http")
+                      ? PRESTATAIRE.facebook
+                      : `https://facebook.com/${PRESTATAIRE.facebook}`
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2.5 w-full py-3 px-4 rounded-2xl text-white text-sm font-semibold shadow-md transition-all duration-200 hover:brightness-110 hover:shadow-lg hover:-translate-y-0.5 active:scale-95"
+                  style={{ backgroundColor: "#1877F2" }}
+                >
+                  <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M24 12.073C24 5.406 18.627 0 12 0S0 5.406 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.313 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.268h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z" />
+                  </svg>
+                  Facebook
+                </a>
+              ) : null}
+              {PRESTATAIRE.email ? (
+                <a
+                  href={`mailto:${PRESTATAIRE.email}`}
+                  className="flex items-center gap-3 text-sm text-gray-600 hover:text-rose-500 transition-colors group"
+                >
+                  <div className="w-8 h-8 bg-gray-50 group-hover:bg-rose-50 rounded-lg flex items-center justify-center transition-colors">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  {PRESTATAIRE.email}
+                </a>
+              ) : null}
+              {PRESTATAIRE.site ? (
+                <a
+                  href={PRESTATAIRE.site.startsWith("http") ? PRESTATAIRE.site : `https://${PRESTATAIRE.site}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2.5 w-full py-3 px-4 rounded-2xl text-white text-sm font-semibold shadow-md transition-all duration-200 hover:brightness-125 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 bg-gray-900"
+                >
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                  </svg>
+                  Visiter le site web
+                </a>
+              ) : null}
+              {!hasContact && (
+                <p className="text-xs text-gray-300 italic text-center py-1">Coordonnées non renseignées</p>
+              )}
+            </>
+          ) : (
+            <div className="flex flex-col items-center gap-3 py-2">
+              <div className="flex flex-col items-center gap-1.5 text-center">
+                <span className="text-2xl">🔒</span>
+                <p className="text-sm text-gray-400 leading-snug">
+                  Coordonnées disponibles<br />après inscription
+                </p>
               </div>
-              {PRESTATAIRE.email}
-            </a>
-          ) : null}
-          {PRESTATAIRE.site ? (
-            <a
-              href={PRESTATAIRE.site.startsWith("http") ? PRESTATAIRE.site : `https://${PRESTATAIRE.site}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2.5 w-full py-3 px-4 rounded-2xl text-white text-sm font-semibold shadow-md transition-all duration-200 hover:brightness-125 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 bg-gray-900"
-            >
-              <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-              </svg>
-              Visiter le site web
-            </a>
-          ) : null}
-          {!PRESTATAIRE.telephone && !PRESTATAIRE.instagram && !PRESTATAIRE.email && !PRESTATAIRE.site && (
-            <p className="text-xs text-gray-300 italic text-center py-1">Coordonnées non renseignées</p>
+              <Link
+                href="/inscription?type=marie"
+                className="flex items-center justify-center w-full py-3 px-4 rounded-2xl text-white text-sm font-semibold shadow-md transition-all duration-200 hover:brightness-110 hover:shadow-lg hover:-translate-y-0.5 active:scale-95"
+                style={{ backgroundColor: "#F06292" }}
+              >
+                Inscription gratuite
+              </Link>
+              <p className="text-xs text-gray-400">
+                Déjà inscrit ?{" "}
+                <Link href="/login" className="text-rose-500 hover:underline font-medium">
+                  Connexion
+                </Link>
+              </p>
+            </div>
           )}
         </div>
       </div>
@@ -1659,11 +1729,20 @@ export default function PrestataireProfil({ id }: { id?: string }) {
       nom: "", metier: "", ville: "", region: "",
       note: 0, nbAvis: 0, verifie: false, plan: null, prixMin: null,
       telephone: null, email: null, site: null, instagram: null,
+      tiktok: null, facebook: null,
       photo: null, couverture: null, coverPosition: 50, description: null,
       specialites: [], experience: null, zones: [], langues: [], equipements: [],
       galerie: [], videos: [],
     }
   );
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session);
+    });
+  }, []);
 
   useEffect(() => {
     if (!id || isNumericId) return;
@@ -2150,7 +2229,7 @@ export default function PrestataireProfil({ id }: { id?: string }) {
             {/* Sidebar */}
             <aside className="w-full lg:w-80 flex-shrink-0">
               <div className="lg:sticky lg:top-8">
-                <Sidebar prestataire={PRESTATAIRE} />
+                <Sidebar prestataire={PRESTATAIRE} isLoggedIn={isLoggedIn} />
               </div>
             </aside>
           </div>
