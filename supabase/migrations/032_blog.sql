@@ -27,6 +27,8 @@ ALTER TABLE public.articles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Lecture publique" ON public.articles
   FOR SELECT USING (statut = 'publie');
 
+GRANT SELECT ON public.articles TO anon, authenticated;
+
 CREATE POLICY "Admin full access" ON public.articles
   FOR ALL USING (
     EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin')
