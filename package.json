@@ -23,6 +23,7 @@
     "@remotion/lambda": "^4.0.448",
     "@remotion/player": "^4.0.448",
     "@stripe/stripe-js": "^9.1.0",
+    "@supabase/auth-helpers-nextjs": "^0.15.0",
     "@supabase/supabase-js": "^2.102.1",
     "@vercel/analytics": "^2.0.1",
     "html2canvas": "^1.4.1",

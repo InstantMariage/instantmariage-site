@@ -26,6 +26,8 @@ export type Prestataire = {
   telephone: string | null
   site_web: string | null
   instagram: string | null
+  facebook: string | null
+  tiktok: string | null
   photos: string[]
   avatar_url: string | null
   cover_url: string | null
