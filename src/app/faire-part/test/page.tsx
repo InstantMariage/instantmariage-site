@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 const COMPOSITIONS = [
   "EleganceDoree",
@@ -38,17 +40,30 @@ interface RenderResult {
 }
 
 export default function FairepartTestPage() {
+  const router = useRouter();
+  const [authChecked, setAuthChecked] = useState(false);
   const [envStatus, setEnvStatus] = useState<EnvStatus | null>(null);
   const [selectedComposition, setSelectedComposition] = useState("EleganceDoree");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<RenderResult | null>(null);
 
   useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        router.replace("/login");
+      } else {
+        setAuthChecked(true);
+      }
+    });
+  }, [router]);
+
+  useEffect(() => {
+    if (!authChecked) return;
     fetch("/api/faire-part/test-render")
       .then((r) => r.json())
       .then(setEnvStatus)
       .catch(() => setEnvStatus({ ok: false, vars: [] }));
-  }, []);
+  }, [authChecked]);
 
   async function handleRender() {
     setLoading(true);
@@ -66,6 +81,14 @@ export default function FairepartTestPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-400 text-sm">Vérification…</p>
+      </div>
+    );
   }
 
   return (

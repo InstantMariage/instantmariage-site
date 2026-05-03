@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { PlanAbonnement } from "@/lib/supabase";
 import { renderInvitationVideo } from "../../../../../lib/remotion-lambda";
 import { sendInvitationConfirmationEmail, sendCagnotteMerciEmail, sendCagnotteNotifEmail, sendCommandeCadreEmail, sendCommandeChevaletEmail, sendTemplateDigitalEmail, sendAlbumPhotoEmail, sendAlbumConfirmationEmail, sendEliteWelcomeEmail } from "@/lib/emails";
@@ -14,9 +14,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 // ── Invitation payment handler ────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function handleInvitationPayment(
-  supabase: any,
+  supabase: SupabaseClient,
   session: Stripe.Checkout.Session
 ) {
   const invitationId = session.metadata?.invitation_id ?? null;
@@ -133,8 +132,7 @@ async function handleInvitationPayment(
 
 // ── Cagnotte payment handler ──────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function handleCagnottePayment(supabase: any, session: Stripe.Checkout.Session) {
+async function handleCagnottePayment(supabase: SupabaseClient, session: Stripe.Checkout.Session) {
   const stripeSessionId = session.id;
   const meta = session.metadata ?? {};
 

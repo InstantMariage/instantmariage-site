@@ -96,6 +96,9 @@ function formatDateFr(isoDate: string): string {
 const INPUT_CLS =
   'w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-transparent transition-all duration-200 bg-white';
 
+const INPUT_ERR_CLS =
+  'w-full px-4 py-2.5 rounded-xl border border-red-300 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-300 focus:border-transparent transition-all duration-200 bg-white';
+
 // ─── Static preview (for templates without Remotion comp) ─────────────────────
 
 function StaticPreview({
@@ -208,6 +211,7 @@ export default function FairePartEditorPage() {
   const [invitationSlug, setInvitationSlug] = useState<string | null>(null);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [session, setSession] = useState<any>(null);
+  const [formErrors, setFormErrors] = useState<Partial<Record<keyof typeof form, string>>>({});
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -324,6 +328,7 @@ export default function FairePartEditorPage() {
 
   const setField = useCallback((field: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+    setFormErrors((prev) => ({ ...prev, [field]: undefined }));
   }, []);
 
   const setCagnotteField = useCallback((field: keyof typeof cagnotte, value: string | boolean) => {
@@ -344,12 +349,12 @@ export default function FairePartEditorPage() {
       router.push(`/login?redirect=/faire-part/${templateId}`);
       return;
     }
-    if (!form.prenomMariee || !form.prenomMarie) {
-      setToast({ type: 'error', message: 'Veuillez indiquer les prénoms des mariés' });
-      return;
-    }
-    if (!form.dateMariage) {
-      setToast({ type: 'error', message: 'Veuillez indiquer la date du mariage' });
+    const saveErrors: Partial<Record<keyof typeof form, string>> = {};
+    if (!form.prenomMariee.trim()) saveErrors.prenomMariee = 'Prénom de la mariée requis';
+    if (!form.prenomMarie.trim()) saveErrors.prenomMarie = 'Prénom du marié requis';
+    if (!form.dateMariage) saveErrors.dateMariage = 'Date du mariage requise';
+    if (Object.keys(saveErrors).length > 0) {
+      setFormErrors(saveErrors);
       return;
     }
 
@@ -444,12 +449,12 @@ export default function FairePartEditorPage() {
       router.push(`/login?redirect=/faire-part/${templateId}`);
       return;
     }
-    if (!form.prenomMariee || !form.prenomMarie) {
-      setToast({ type: 'error', message: 'Veuillez indiquer les prénoms des mariés' });
-      return;
-    }
-    if (!form.dateMariage) {
-      setToast({ type: 'error', message: 'Veuillez indiquer la date du mariage' });
+    const publishErrors: Partial<Record<keyof typeof form, string>> = {};
+    if (!form.prenomMariee.trim()) publishErrors.prenomMariee = 'Prénom de la mariée requis';
+    if (!form.prenomMarie.trim()) publishErrors.prenomMarie = 'Prénom du marié requis';
+    if (!form.dateMariage) publishErrors.dateMariage = 'Date du mariage requise';
+    if (Object.keys(publishErrors).length > 0) {
+      setFormErrors(publishErrors);
       return;
     }
 
@@ -651,26 +656,38 @@ export default function FairePartEditorPage() {
               <FormSection number={1} title="Les mariés">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1.5 font-medium">Prénom de la mariée</label>
+                    <label className="block text-xs text-gray-500 mb-1.5 font-medium">
+                      Prénom de la mariée <span className="text-rose-400">*</span>
+                    </label>
                     <input
                       type="text"
                       placeholder="Sophie"
                       value={form.prenomMariee}
                       onChange={(e) => setField('prenomMariee', e.target.value)}
-                      className={INPUT_CLS}
+                      className={formErrors.prenomMariee ? INPUT_ERR_CLS : INPUT_CLS}
                       maxLength={40}
+                      required
                     />
+                    {formErrors.prenomMariee && (
+                      <p className="text-xs text-red-500 mt-1">{formErrors.prenomMariee}</p>
+                    )}
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1.5 font-medium">Prénom du marié</label>
+                    <label className="block text-xs text-gray-500 mb-1.5 font-medium">
+                      Prénom du marié <span className="text-rose-400">*</span>
+                    </label>
                     <input
                       type="text"
                       placeholder="Antoine"
                       value={form.prenomMarie}
                       onChange={(e) => setField('prenomMarie', e.target.value)}
-                      className={INPUT_CLS}
+                      className={formErrors.prenomMarie ? INPUT_ERR_CLS : INPUT_CLS}
                       maxLength={40}
+                      required
                     />
+                    {formErrors.prenomMarie && (
+                      <p className="text-xs text-red-500 mt-1">{formErrors.prenomMarie}</p>
+                    )}
                   </div>
                 </div>
                 {(form.prenomMariee || form.prenomMarie) && (
@@ -696,8 +713,12 @@ export default function FairePartEditorPage() {
                     type="date"
                     value={form.dateMariage}
                     onChange={(e) => setField('dateMariage', e.target.value)}
-                    className={INPUT_CLS}
+                    className={formErrors.dateMariage ? INPUT_ERR_CLS : INPUT_CLS}
+                    required
                   />
+                  {formErrors.dateMariage && (
+                    <p className="text-xs text-red-500 mt-1">{formErrors.dateMariage}</p>
+                  )}
                   {form.dateMariage && (
                     <p className="text-xs text-gray-400 mt-1.5 flex items-center gap-1">
                       <span>Affiché :</span>
