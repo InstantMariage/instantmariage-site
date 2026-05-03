@@ -278,6 +278,7 @@ export const METIERS_SEO: MetierSEO[] = [
   { slug: "costumes-smokings", nom: "Costumes & Smokings", categorie: "Costumes & Smokings", icon: "", nomPluriel: "boutiques de costumes et smokings" },
   { slug: "tenues-invites", nom: "Tenues invités", categorie: "Tenues invités", icon: "", nomPluriel: "boutiques de tenues pour invités" },
   { slug: "voiture-de-mariage", nom: "Voiture de mariage", categorie: "Voiture de mariage", icon: "🚗", nomPluriel: "voitures de mariage" },
+  { slug: "chauffeur", nom: "Chauffeur", categorie: "Chauffeur", icon: "🚘", nomPluriel: "chauffeurs" },
 ];
 
 // ─── Fonctions utilitaires — Villes ───────────────────────────────────────────
