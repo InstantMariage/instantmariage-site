@@ -58,6 +58,7 @@ export default async function PrestatairePage({ params }: Props) {
   );
   const { data: { session } } = await supabaseAuth.auth.getSession();
   const isLoggedIn = !!session;
+  console.log('[prestataire page] session:', session?.user?.email, 'isLoggedIn:', isLoggedIn);
 
   const localBusinessLd = p ? {
     "@context": "https://schema.org",
