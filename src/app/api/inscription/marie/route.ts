@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     if (authUser?.user?.email) {
       sendWelcomeMarieEmail({
         recipientEmail: authUser.user.email,
-        prenomMarie1,
+        prenomMarie1: prenom_marie1,
         prenomMarie2: prenom_marie2 || null,
       }).catch((err) => console.error("[api/inscription/marie] Erreur email bienvenue:", err));
     }
