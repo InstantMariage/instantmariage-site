@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import { createClient } from "@supabase/supabase-js";
-import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/auth-helpers-nextjs";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PrestataireProfil from "@/components/PrestataireProfil";
@@ -50,16 +48,6 @@ export default async function PrestatairePage({ params }: Props) {
   const { id } = await params;
   const p = await fetchPrestataire(id);
 
-  const cookieStore = cookies();
-  const supabaseAuth = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { getAll: () => cookieStore.getAll() } }
-  );
-  const { data: { session } } = await supabaseAuth.auth.getSession();
-  const isLoggedIn = !!session;
-  console.log('[prestataire page] session:', session?.user?.email, 'isLoggedIn:', isLoggedIn);
-
   const localBusinessLd = p ? {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -99,7 +87,7 @@ export default async function PrestatairePage({ params }: Props) {
       )}
       <main className="min-h-screen bg-gray-50 overflow-x-hidden max-w-full">
         <Header />
-        <PrestataireProfil id={id} isLoggedIn={isLoggedIn} />
+        <PrestataireProfil id={id} />
         <Footer />
       </main>
     </>

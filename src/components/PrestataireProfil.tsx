@@ -1548,7 +1548,7 @@ function SectionTarifs({ tarifs, options }: { tarifs: typeof TARIFS; options: ty
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 
-function Sidebar({ prestataire, isLoggedIn }: { prestataire: PrestatireData; isLoggedIn: boolean }) {
+function Sidebar({ prestataire, isLoggedIn }: { prestataire: PrestatireData; isLoggedIn: boolean | null }) {
   const PRESTATAIRE = prestataire;
   const hasContact = !!(PRESTATAIRE.telephone || PRESTATAIRE.instagram || PRESTATAIRE.tiktok || PRESTATAIRE.facebook || PRESTATAIRE.email || PRESTATAIRE.site);
 
@@ -1572,7 +1572,13 @@ function Sidebar({ prestataire, isLoggedIn }: { prestataire: PrestatireData; isL
           </div>
         </div>
         <div className="mt-4 space-y-2.5 border-t border-gray-100 pt-4">
-          {isLoggedIn ? (
+          {isLoggedIn === null ? (
+            <div className="space-y-2.5">
+              <div className="h-12 bg-gray-100 rounded-2xl animate-pulse" />
+              <div className="h-12 bg-gray-100 rounded-2xl animate-pulse" />
+              <div className="h-12 bg-gray-100 rounded-2xl animate-pulse" />
+            </div>
+          ) : isLoggedIn ? (
             <>
               {PRESTATAIRE.telephone ? (
                 <a
@@ -1718,7 +1724,7 @@ function Sidebar({ prestataire, isLoggedIn }: { prestataire: PrestatireData; isL
 
 // ─── Composant principal ──────────────────────────────────────────────────────
 
-export default function PrestataireProfil({ id, isLoggedIn }: { id?: string; isLoggedIn: boolean }) {
+export default function PrestataireProfil({ id }: { id?: string }) {
   const router = useRouter();
 
   const numId = id ? Number(id) : NaN;
@@ -1752,6 +1758,18 @@ export default function PrestataireProfil({ id, isLoggedIn }: { id?: string; isL
         }
       });
   }, [id, isNumericId]);
+
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   const [activeTab, setActiveTab] = useState<Tab>("avis");
   const [saved, setSaved] = useState(false);
