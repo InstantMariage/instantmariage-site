@@ -1242,6 +1242,84 @@ export async function sendCommandeChevaletEmail({
   });
 }
 
+// ─── Email 17 : Relance profil incomplet (prestataire) ───────────────────────
+
+export async function sendIncompleteProfileReminderEmail({
+  recipientEmail,
+  nomEntreprise,
+  missingItems,
+}: {
+  recipientEmail: string;
+  nomEntreprise: string;
+  missingItems: string[];
+}) {
+  const missingHtml = missingItems
+    .map(
+      (item) => `
+    <tr>
+      <td style="padding:8px 0;border-bottom:1px solid #fce4ec;">
+        <table cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <td style="width:28px;vertical-align:top;padding-top:1px;">
+              <span style="display:inline-block;width:20px;height:20px;background-color:#fee2e2;border-radius:50%;text-align:center;line-height:20px;font-size:12px;color:#EF4444;font-weight:700;">✗</span>
+            </td>
+            <td style="font-size:14px;color:#333333;line-height:1.5;">${item}</td>
+          </tr>
+        </table>
+      </td>
+    </tr>`
+    )
+    .join("");
+
+  const content = `
+    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#F06292;letter-spacing:0.5px;text-transform:uppercase;">Votre profil est incomplet</p>
+    <h1 style="margin:0 0 24px;font-size:26px;font-weight:700;color:#1a1a1a;line-height:1.25;">
+      Votre profil InstantMariage est incomplet, ${nomEntreprise}&nbsp;!
+    </h1>
+    <p style="margin:0 0 20px;font-size:15px;color:#555555;line-height:1.65;">
+      Votre profil est visible mais incomplet. Les prestataires avec un profil complet reçoivent <strong>5x plus de contacts</strong>. Il vous manque&nbsp;:
+    </p>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
+      ${missingHtml}
+    </table>
+    ${ctaButton("Compléter mon profil →", "https://www.instantmariage.fr/dashboard/prestataire/profil")}
+    ${divider()}
+    <p style="margin:0;font-size:13px;color:#aaaaaa;line-height:1.6;text-align:center;">
+      À très bientôt,<br/>
+      <strong style="color:#1a1a1a;">L&rsquo;équipe InstantMariage.fr</strong>
+    </p>
+    <p style="margin:12px 0 0;font-size:11px;color:#cccccc;line-height:1.5;text-align:center;">
+      Pour vous désabonner : <a href="mailto:${UNSUBSCRIBE_EMAIL}?subject=unsubscribe" style="color:#cccccc;">cliquez ici</a>
+    </p>
+  `;
+
+  const text = [
+    `Bonjour ${nomEntreprise},`,
+    "",
+    `Votre profil InstantMariage est visible mais incomplet.`,
+    `Les prestataires avec un profil complet reçoivent 5x plus de contacts.`,
+    "",
+    `Il vous manque :`,
+    ...missingItems.map((item) => `✗ ${item}`),
+    "",
+    `Complétez votre profil : https://www.instantmariage.fr/dashboard/prestataire/profil`,
+    "",
+    `À très bientôt,`,
+    `L'équipe InstantMariage.fr`,
+    textFooter(true),
+  ].join("\n");
+
+  return resend.emails.send({
+    from: FROM,
+    to: recipientEmail,
+    replyTo: REPLY_TO,
+    subject: `Votre profil InstantMariage est incomplet, ${nomEntreprise} !`,
+    html: baseTemplate(content),
+    text,
+    headers: unsubscribeHeaders,
+  });
+}
+
 // ─── Email 14 : Commande expédiée (marié) ─────────────────────────────────────
 
 export async function sendCommandeExpedieeEmail({

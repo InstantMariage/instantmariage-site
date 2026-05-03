@@ -63,8 +63,12 @@ function StatCard({ card }: { card: Card }) {
   );
 }
 
+type ReminderState = "idle" | "loading" | "done" | "error";
+
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
+  const [reminderState, setReminderState] = useState<ReminderState>("idle");
+  const [reminderResult, setReminderResult] = useState<{ sent: number; skipped: number } | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -141,6 +145,38 @@ export default function AdminDashboardPage() {
     }
     load();
   }, []);
+
+  async function handleSendReminders() {
+    if (
+      !window.confirm(
+        "Envoyer les relances aux prestataires inscrits il y a 3–4 jours avec un profil incomplet ?"
+      )
+    )
+      return;
+
+    setReminderState("loading");
+    setReminderResult(null);
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const res = await fetch("/api/admin/send-incomplete-reminders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token ?? ""}`,
+        },
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Erreur inconnue");
+      setReminderResult(json);
+      setReminderState("done");
+    } catch (err) {
+      console.error("[admin] send-incomplete-reminders:", err);
+      setReminderState("error");
+    }
+  }
 
   if (!stats) {
     return <div className="text-sm text-gray-400">Chargement…</div>;
@@ -411,6 +447,49 @@ export default function AdminDashboardPage() {
             ))}
           </div>
         )}
+      </div>
+
+      {/* ── Actions manuelles ─────────────────────────────────────────────────── */}
+      <div>
+        <h3 className="text-base font-semibold text-gray-700 mb-4">⚡ Actions manuelles</h3>
+        <div className="flex items-center gap-4 flex-wrap">
+          <button
+            type="button"
+            onClick={handleSendReminders}
+            disabled={reminderState === "loading"}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)" }}
+          >
+            {reminderState === "loading" ? (
+              <>
+                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+                Envoi en cours…
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                Envoyer relances profils incomplets
+              </>
+            )}
+          </button>
+
+          {reminderState === "done" && reminderResult && (
+            <span className="text-sm font-medium text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+              ✓ {reminderResult.sent} email{reminderResult.sent > 1 ? "s" : ""} envoyé{reminderResult.sent > 1 ? "s" : ""} · {reminderResult.skipped} ignoré{reminderResult.skipped > 1 ? "s" : ""}
+            </span>
+          )}
+
+          {reminderState === "error" && (
+            <span className="text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+              Erreur lors de l&apos;envoi — consultez les logs
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
