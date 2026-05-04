@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Créer une session Checkout Stripe dans tous les cas ───────────────────
-    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
+    const lineItems = [
       { price: priceId, quantity: 1 },
       ...(priceId === DIAMOND_PRICE_ID
         ? [
