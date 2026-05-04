@@ -2,7 +2,7 @@ export const revalidate = 60;
 
 import type { Metadata } from "next";
 import Header from "@/components/Header";
-import Hero from "@/components/Hero";
+import HeroWrapper from "@/components/HeroWrapper";
 import HowItWorks from "@/components/HowItWorks";
 import VendorBanner from "@/components/VendorBanner";
 import FeaturedProviders from "@/components/FeaturedProviders";
@@ -63,7 +63,7 @@ export default function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Header />
-      <Hero />
+      <HeroWrapper />
       <HowItWorks />
       <FeaturedProviders />
       <VendorBanner />

@@ -25,7 +25,7 @@ const regions = [
 
 const metiers = ["Tous les métiers", ...CATEGORIES.map((c) => c.name)];
 
-export default function Hero() {
+export default function Hero({ targetCount = 100 }: { targetCount?: number }) {
   const [metier, setMetier] = useState("");
   const [region, setRegion] = useState("");
   const [count, setCount] = useState(0);
@@ -37,12 +37,12 @@ export default function Hero() {
     let raf: number;
     const animate = (now: number) => {
       const progress = Math.min((now - start) / duration, 1);
-      setCount(Math.floor(progress * 100));
+      setCount(Math.floor(progress * targetCount));
       if (progress < 1) raf = requestAnimationFrame(animate);
     };
     raf = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(raf);
-  }, []);
+  }, [targetCount]);
 
   const handleSearch = () => {
     const params = new URLSearchParams();
