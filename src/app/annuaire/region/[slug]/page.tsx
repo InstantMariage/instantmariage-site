@@ -53,22 +53,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-  const { count } = await supabase
-    .from("prestataires_ranked")
-    .select("*", { count: "exact", head: true })
-    .eq("categorie", metier.categorie)
-    .ilike("region", `%${region.nom}%`);
-
-  const nbLabel = count && count > 0
-    ? `${count} prestataire${count > 1 ? "s" : ""} vérifié${count > 1 ? "s" : ""}`
-    : "Prestataires vérifiés";
-
-  const title = `${metier.nom} mariage en ${region.nom} — ${nbLabel} | InstantMariage.fr`;
-  const description = `${nbLabel} pour votre mariage en ${region.nom}. Comparez ${metier.nomPluriel} par département et par ville, consultez les tarifs, photos et avis clients. Trouvez le prestataire idéal près de chez vous.`;
+  const title = `${metier.nom} mariage en ${region.nom} — Les meilleurs ${metier.nomPluriel} | InstantMariage.fr`;
+  const description = `Les meilleurs ${metier.nomPluriel} pour votre mariage en ${region.nom}. Comparez par département et par ville, consultez les tarifs, photos et avis clients. Trouvez le prestataire idéal près de chez vous.`;
 
   return {
     title,

@@ -53,22 +53,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-  const { count } = await supabase
-    .from("prestataires_ranked")
-    .select("*", { count: "exact", head: true })
-    .eq("categorie", metier.categorie)
-    .or(`ville.ilike.%${ville.nom}%,departement.ilike.%${ville.departement}%`);
-
-  const nbLabel = count && count > 0
-    ? `${count} ${metier.nomPluriel} vérifiés`
-    : `Les meilleurs ${metier.nomPluriel}`;
-
-  const title = `${metier.nom} mariage ${ville.nom} – ${nbLabel} | InstantMariage.fr`;
-  const description = `${nbLabel} pour votre mariage à ${ville.nom} (${ville.departement}). Comparez les tarifs, consultez les photos et avis clients. Trouvez votre ${metier.nom.toLowerCase()} idéal et demandez un devis gratuit.`;
+  const title = `${metier.nom} mariage ${ville.nom} – Les meilleurs ${metier.nomPluriel} | InstantMariage.fr`;
+  const description = `Les meilleurs ${metier.nomPluriel} pour votre mariage à ${ville.nom} (${ville.departement}). Comparez les tarifs, consultez les photos et avis clients. Trouvez votre ${metier.nom.toLowerCase()} idéal et demandez un devis gratuit.`;
 
   return {
     title,
