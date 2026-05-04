@@ -665,6 +665,9 @@ export default function TarifsContent() {
                       >
                         {loadingPlan === "diamond" ? "Chargement…" : "Souscrire au Pack Diamond →"}
                       </button>
+                      <p className="text-center text-xs text-gray-400 mt-1.5">
+                        1 049,80€ aujourd&apos;hui (mise en place + 1er mois) · puis 49,90€/mois
+                      </p>
                     ) : isElite ? (
                       <button
                         onClick={() => handleSubscribe(
