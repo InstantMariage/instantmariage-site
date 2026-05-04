@@ -61,7 +61,7 @@ export default function Hero({ targetCount = 100 }: { targetCount?: number }) {
           muted
           loop
           playsInline
-          preload="none"
+          preload="auto"
           poster="https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777030776686-pexels-imagestudio-1488312-2.jpg"
         >
           <source
