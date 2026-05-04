@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CATEGORIES } from "@/data/categories";
@@ -54,7 +53,35 @@ export default function Hero({ targetCount = 100 }: { targetCount?: number }) {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-8">
-      {/* Background image with overlay */}
+      {/* Video background */}
+      <div className="absolute inset-0 z-0">
+        <video
+          className="absolute inset-0 w-full h-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="none"
+          poster="https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777030776686-pexels-imagestudio-1488312-2.jpg"
+        >
+          <source
+            src="https://vz-2f50daff-316.b-cdn.net/22d0635e-b0ad-422f-81c2-487231460783/play_720p.mp4"
+            type="video/mp4"
+          />
+        </video>
+        {/* Overlay rose #F06292 à 40% */}
+        <div className="absolute inset-0" style={{ backgroundColor: "rgba(240,98,146,0.40)" }} />
+        {/* Decorative gold dots */}
+        <div className="absolute inset-0 opacity-10"
+          style={{
+            backgroundImage: "radial-gradient(circle, #C9A96E 1px, transparent 1px)",
+            backgroundSize: "60px 60px"
+          }}
+        />
+      </div>
+
+      {/* Ancien hero image — pour revenir en arrière : supprimer le bloc "Video background" ci-dessus,
+          décommenter ce bloc, et remettre "import Image from 'next/image'" dans les imports
       <div className="absolute inset-0 z-0">
         <Image
           src="https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777030776686-pexels-imagestudio-1488312-2.jpg"
@@ -65,7 +92,6 @@ export default function Hero({ targetCount = 100 }: { targetCount?: number }) {
           sizes="100vw"
         />
         <div className="absolute inset-0 bg-gradient-to-br from-black/65 via-black/40 to-rose-900/30" />
-        {/* Decorative gold dots */}
         <div className="absolute inset-0 opacity-10"
           style={{
             backgroundImage: "radial-gradient(circle, #C9A96E 1px, transparent 1px)",
@@ -73,6 +99,7 @@ export default function Hero({ targetCount = 100 }: { targetCount?: number }) {
           }}
         />
       </div>
+      */}
 
       {/* Content */}
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-16">
