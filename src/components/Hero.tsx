@@ -69,8 +69,6 @@ export default function Hero({ targetCount = 100 }: { targetCount?: number }) {
             type="video/mp4"
           />
         </video>
-        {/* Overlay rose #F06292 à 40% */}
-        <div className="absolute inset-0" style={{ backgroundColor: "rgba(240,98,146,0.40)" }} />
         {/* Decorative gold dots */}
         <div className="absolute inset-0 opacity-10"
           style={{
