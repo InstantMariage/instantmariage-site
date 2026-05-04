@@ -93,8 +93,8 @@ const plans = [
   {
     id: "elite-vitrine",
     name: "Elite Vitrine",
-    price: 149,
-    priceAnnual: 119,
+    price: 99.90,
+    priceAnnual: 79.90,
     period: "/mois",
     description: "Votre site professionnel + visibilité maximale",
     color: "elite",
@@ -114,8 +114,8 @@ const plans = [
   {
     id: "elite-shop",
     name: "Elite Shop",
-    price: 199,
-    priceAnnual: 159,
+    price: 149,
+    priceAnnual: 119,
     period: "/mois",
     description: "Tout Elite Vitrine + boutique en ligne intégrée",
     color: "elite",
@@ -133,8 +133,8 @@ const plans = [
   {
     id: "diamond",
     name: "Diamond 💎",
-    price: 1490,
-    priceAnnual: 1490,
+    price: 999.90,
+    priceAnnual: 999.90,
     period: "",
     description: "Exclusif & Limité",
     color: "diamond",
@@ -474,14 +474,14 @@ export default function TarifsContent() {
                           className="flex-1 text-xs font-semibold px-3 py-1.5 transition-all duration-200"
                           style={eliteMode === "vitrine" ? { background: "#5B21B6", color: "#fff" } : { background: "transparent", color: "#A78BFA" }}
                         >
-                          Vitrine 149€
+                          Vitrine 99,90€
                         </button>
                         <button
                           onClick={() => setEliteMode("shop")}
                           className="flex-1 text-xs font-semibold px-3 py-1.5 transition-all duration-200"
                           style={eliteMode === "shop" ? { background: "#5B21B6", color: "#fff" } : { background: "transparent", color: "#A78BFA" }}
                         >
-                          Shop 199€
+                          Shop 149€
                         </button>
                       </div>
                     )}
@@ -528,14 +528,14 @@ export default function TarifsContent() {
                               className="text-3xl lg:text-2xl font-extrabold leading-none"
                               style={{ fontFamily: "var(--font-playfair), serif", color: "#C9A84C" }}
                             >
-                              1 490€
+                              999,90€
                             </span>
                             <span className="text-sm pb-1.5" style={{ color: "#C9A84C80" }}>
                               paiement unique
                             </span>
                           </div>
                           <p className="text-xs mt-2" style={{ color: "#C9A84C99" }}>
-                            puis 99,90€/mois après 12 mois
+                            puis 49,90€/mois
                           </p>
                         </div>
                       ) : plan.price === 0 ? (

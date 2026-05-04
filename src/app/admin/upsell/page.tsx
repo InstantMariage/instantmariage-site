@@ -51,7 +51,7 @@ Nous avons une nouveauté exclusive pour vous sur InstantMariage.fr !
 ✅ Nom de domaine personnalisé inclus
 ✅ Maintenance & mises à jour incluses
 ✅ Visibilité renforcée sur InstantMariage
-✅ À partir de 149€/mois seulement
+✅ À partir de 99,90€/mois seulement
 
 👉 Découvrez nos réalisations et réservez votre domaine :
 https://www.instantmariage.fr/elite

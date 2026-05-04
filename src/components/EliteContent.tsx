@@ -138,7 +138,7 @@ function DomainChecker({ eliteMode, setEliteMode, onCheckout, loading }: DomainC
                     : { background: "transparent", color: "#5B21B6" }
                 }
               >
-                Vitrine — 149€/mois
+                Vitrine — 99,90€/mois
               </button>
               <button
                 onClick={() => setEliteMode("shop")}
@@ -149,7 +149,7 @@ function DomainChecker({ eliteMode, setEliteMode, onCheckout, loading }: DomainC
                     : { background: "transparent", color: "#5B21B6" }
                 }
               >
-                Shop — 199€/mois
+                Shop — 149€/mois
               </button>
             </div>
           </div>
@@ -244,7 +244,7 @@ const buyoutRows = [
 const FAQ_ITEMS = [
   {
     q: "Combien coûte la création d'un site web avec le Pack Elite ?",
-    a: "À partir de 149€/mois pour un site vitrine, 199€/mois pour un site avec boutique en ligne. Le nom de domaine est inclus.",
+    a: "À partir de 99,90€/mois pour un site vitrine, 149€/mois pour un site avec boutique en ligne. Le nom de domaine est inclus.",
   },
   {
     q: "En combien de temps mon site sera-t-il en ligne ?",
@@ -613,14 +613,14 @@ export default function EliteContent() {
                 <p className="text-white text-xl font-bold mb-1">Elite Vitrine</p>
                 {billingCycle === "monthly" ? (
                   <p className="text-purple-200 font-extrabold" style={{ fontSize: 32 }}>
-                    149€<span className="text-lg font-semibold">/mois</span>
+                    99,90€<span className="text-lg font-semibold">/mois</span>
                   </p>
                 ) : (
                   <>
                     <p className="text-purple-200 font-extrabold" style={{ fontSize: 32 }}>
-                      119€<span className="text-lg font-semibold">/mois</span>
+                      79,90€<span className="text-lg font-semibold">/mois</span>
                     </p>
-                    <p className="text-purple-300 text-xs mt-1">soit 1 428€/an</p>
+                    <p className="text-purple-300 text-xs mt-1">soit 958,80€/an</p>
                     <p className="text-green-300 text-xs font-semibold mt-0.5">Économisez 2 mois</p>
                   </>
                 )}
@@ -677,14 +677,14 @@ export default function EliteContent() {
                 <p className="text-white text-xl font-bold mb-1">Elite Shop</p>
                 {billingCycle === "monthly" ? (
                   <p className="text-gray-300 font-extrabold" style={{ fontSize: 32 }}>
-                    199€<span className="text-lg font-semibold">/mois</span>
+                    149€<span className="text-lg font-semibold">/mois</span>
                   </p>
                 ) : (
                   <>
                     <p className="text-gray-300 font-extrabold" style={{ fontSize: 32 }}>
-                      159€<span className="text-lg font-semibold">/mois</span>
+                      119€<span className="text-lg font-semibold">/mois</span>
                     </p>
-                    <p className="text-gray-400 text-xs mt-1">soit 1 908€/an</p>
+                    <p className="text-gray-400 text-xs mt-1">soit 1 428€/an</p>
                     <p className="text-green-400 text-xs font-semibold mt-0.5">Économisez 2 mois</p>
                   </>
                 )}
@@ -890,14 +890,14 @@ export default function EliteContent() {
                 className="px-6 py-2.5 text-sm font-semibold transition-all duration-200"
                 style={eliteMode === "vitrine" ? { background: "#5B21B6", color: "#fff" } : { background: "transparent", color: "#C4B5FD" }}
               >
-                Vitrine — 149€/mois
+                Vitrine — 99,90€/mois
               </button>
               <button
                 onClick={() => setEliteMode("shop")}
                 className="px-6 py-2.5 text-sm font-semibold transition-all duration-200"
                 style={eliteMode === "shop" ? { background: "#5B21B6", color: "#fff" } : { background: "transparent", color: "#C4B5FD" }}
               >
-                Shop — 199€/mois
+                Shop — 149€/mois
               </button>
             </div>
             <button

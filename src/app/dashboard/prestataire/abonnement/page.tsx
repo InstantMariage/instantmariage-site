@@ -97,7 +97,7 @@ const PLAN_CONFIG: Record<PlanAbonnement, {
     badgeBg: "#1C1C1E",
     badgeColor: "#C9A84C",
     prix: null,
-    prixLabel: "1 490€ paiement unique, puis 99,90€/mois",
+    prixLabel: "999,90€ paiement unique, puis 49,90€/mois",
     features: [
       "Tout le pack Premium inclus",
       "Reportage vidéo 1 journée complète par notre créatrice de contenu",
@@ -112,7 +112,7 @@ const PLAN_CONFIG: Record<PlanAbonnement, {
     label: "Elite Vitrine 👑",
     badgeBg: "linear-gradient(135deg, #7C3AED, #5B21B6)",
     badgeColor: "white",
-    prix: 149,
+    prix: 99.90,
     features: [
       "Tout le pack Premium inclus",
       "Site web professionnel sur mesure créé en 72h",
@@ -126,7 +126,7 @@ const PLAN_CONFIG: Record<PlanAbonnement, {
     label: "Elite Shop 👑",
     badgeBg: "linear-gradient(135deg, #7C3AED, #5B21B6)",
     badgeColor: "white",
-    prix: 199,
+    prix: 149,
     features: [
       "Tout Elite Vitrine inclus",
       "Boutique en ligne complète",

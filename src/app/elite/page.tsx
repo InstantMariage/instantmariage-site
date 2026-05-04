@@ -7,14 +7,14 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Créez votre site web mariage professionnel en 72h | Pack Elite InstantMariage",
   description:
-    "Obtenez un site web sur mesure pour votre activité mariage en 72h. Nom de domaine inclus, maintenance incluse, visibilité sur InstantMariage. À partir de 149€/mois.",
+    "Obtenez un site web sur mesure pour votre activité mariage en 72h. Nom de domaine inclus, maintenance incluse, visibilité sur InstantMariage. À partir de 99,90€/mois.",
   keywords:
     "site web prestataire mariage, site vitrine photographe mariage, site internet traiteur mariage, agence web mariage France",
   alternates: { canonical: "/elite" },
   openGraph: {
     title: "Créez votre site web mariage professionnel en 72h | Pack Elite InstantMariage",
     description:
-      "Obtenez un site web sur mesure pour votre activité mariage en 72h. Nom de domaine inclus, maintenance incluse, visibilité sur InstantMariage. À partir de 149€/mois.",
+      "Obtenez un site web sur mesure pour votre activité mariage en 72h. Nom de domaine inclus, maintenance incluse, visibilité sur InstantMariage. À partir de 99,90€/mois.",
     url: "https://www.instantmariage.fr/elite",
     siteName: "InstantMariage.fr",
     images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Pack Elite InstantMariage.fr" }],
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Créez votre site web mariage professionnel en 72h | Pack Elite InstantMariage",
     description:
-      "Obtenez un site web sur mesure pour votre activité mariage en 72h. Nom de domaine inclus, maintenance incluse. À partir de 149€/mois.",
+      "Obtenez un site web sur mesure pour votre activité mariage en 72h. Nom de domaine inclus, maintenance incluse. À partir de 99,90€/mois.",
     images: ["/og-image.png"],
   },
 };
@@ -44,11 +44,11 @@ const serviceSchema = {
     {
       "@type": "Offer",
       name: "Elite Vitrine",
-      price: "149",
+      price: "99.90",
       priceCurrency: "EUR",
       priceSpecification: {
         "@type": "UnitPriceSpecification",
-        price: "149",
+        price: "99.90",
         priceCurrency: "EUR",
         unitText: "MONTH",
       },
@@ -56,11 +56,11 @@ const serviceSchema = {
     {
       "@type": "Offer",
       name: "Elite Shop",
-      price: "199",
+      price: "149",
       priceCurrency: "EUR",
       priceSpecification: {
         "@type": "UnitPriceSpecification",
-        price: "199",
+        price: "149",
         priceCurrency: "EUR",
         unitText: "MONTH",
       },
