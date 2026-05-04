@@ -71,6 +71,7 @@ const nextConfig = {
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https://images.unsplash.com https://guvayyadovhytvoxugyg.supabase.co https://www.google-analytics.com https://*.b-cdn.net",
               "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://vitals.vercel-insights.com https://vitals.vercel-analytics.com https://guvayyadovhytvoxugyg.supabase.co https://api.stripe.com wss://guvayyadovhytvoxugyg.supabase.co https://video.bunnycdn.com",
+              "media-src 'self' https://*.b-cdn.net",
               "frame-src https://js.stripe.com https://hooks.stripe.com https://iframe.mediadelivery.net",
               "worker-src 'self' blob:",
             ].join("; "),
