@@ -252,7 +252,7 @@ export default function TarifsContent() {
     setLoadingPlan(key);
 
     // Abonnement actif → Customer Portal (upgrade/downgrade/annulation/carte)
-    if (hasActiveSubscription && prestataireId && key !== "elite") {
+    if (hasActiveSubscription && prestataireId && key !== "elite" && key !== "diamond") {
       try {
         const res = await fetch("/api/stripe/portal", {
           method: "POST",

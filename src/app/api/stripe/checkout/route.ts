@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
       const supabase = getSupabaseAdmin();
       const { data: existing } = await supabase
         .from("abonnements")
-        .select("stripe_customer_id")
+        .select("stripe_customer_id, stripe_subscription_id, statut")
         .eq("prestataire_id", prestataireId)
         .not("stripe_customer_id", "is", null)
         .order("created_at", { ascending: false })
@@ -53,6 +53,10 @@ export async function POST(req: NextRequest) {
         .single();
 
       existingCustomerId = existing?.stripe_customer_id ?? null;
+
+      if (priceId === DIAMOND_PRICE_ID && existing?.stripe_subscription_id && existing?.statut === "actif") {
+        await stripe.subscriptions.cancel(existing.stripe_subscription_id);
+      }
     }
 
     // ── Créer une session Checkout Stripe dans tous les cas ───────────────────
