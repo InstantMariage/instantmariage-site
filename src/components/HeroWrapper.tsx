@@ -11,7 +11,7 @@ async function getActiveCount(): Promise<number> {
   )
     .from("prestataires")
     .select("*", { count: "exact", head: true })
-    .eq("abonnement_actif", true);
+    .eq("verifie", true);
   return count ?? 0;
 }
 
