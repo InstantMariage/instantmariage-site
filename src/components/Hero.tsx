@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CATEGORIES } from "@/data/categories";
@@ -53,31 +54,13 @@ export default function Hero({ targetCount = 100 }: { targetCount?: number }) {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-8">
-      {/* Video background */}
-      <div className="absolute inset-0 z-0">
-        <iframe
-          src="https://iframe.mediadelivery.net/embed/638400/22d0635e-b0ad-422f-81c2-487231460783?autoplay=true&loop=true&muted=true&preload=true&responsive=true"
-          className="absolute inset-0 w-full h-full"
-          style={{ border: "none", pointerEvents: "none" }}
-          allow="autoplay"
-        />
-        {/* Decorative gold dots */}
-        <div className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage: "radial-gradient(circle, #C9A96E 1px, transparent 1px)",
-            backgroundSize: "60px 60px"
-          }}
-        />
-      </div>
-
-      {/* Ancien hero image — pour revenir en arrière : supprimer le bloc "Video background" ci-dessus,
-          décommenter ce bloc, et remettre "import Image from 'next/image'" dans les imports
-      <div className="absolute inset-0 z-0">
+      {/* Mobile : image statique (< md) */}
+      <div className="absolute inset-0 z-0 block md:hidden">
         <Image
           src="https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777030776686-pexels-imagestudio-1488312-2.jpg"
           alt="Couple lors de leur mariage"
           fill
-          className="object-cover object-[60%_center] md:object-center"
+          className="object-cover object-[60%_center]"
           priority
           sizes="100vw"
         />
@@ -89,7 +72,22 @@ export default function Hero({ targetCount = 100 }: { targetCount?: number }) {
           }}
         />
       </div>
-      */}
+
+      {/* Desktop : vidéo Bunny (>= md) */}
+      <div className="absolute inset-0 z-0 hidden md:block">
+        <iframe
+          src="https://iframe.mediadelivery.net/embed/638400/22d0635e-b0ad-422f-81c2-487231460783?autoplay=true&loop=true&muted=true&preload=true&responsive=true"
+          className="absolute inset-0 w-full h-full"
+          style={{ border: "none", pointerEvents: "none" }}
+          allow="autoplay"
+        />
+        <div className="absolute inset-0 opacity-10"
+          style={{
+            backgroundImage: "radial-gradient(circle, #C9A96E 1px, transparent 1px)",
+            backgroundSize: "60px 60px"
+          }}
+        />
+      </div>
 
       {/* Content */}
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-16">
