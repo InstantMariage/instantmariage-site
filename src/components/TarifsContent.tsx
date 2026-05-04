@@ -379,8 +379,6 @@ export default function TarifsContent() {
               const activePlan = isEliteVitrine ? (eliteMode === "vitrine" ? plan : eliteShopData) : plan;
               const displayPrice = annual ? activePlan.priceAnnual : activePlan.price;
 
-              const DIAMOND_MAILTO =
-                "mailto:contact@instantmariage.fr?subject=Pack%20Diamond%20InstantMariage&body=Bonjour%2C%20je%20suis%20int%C3%A9ress%C3%A9(e)%20par%20le%20pack%20Diamond.%0AMon%20nom%20est%20%3A%20%0AMon%20m%C3%A9tier%20%3A%20%0AMa%20ville%20%3A%20";
 
               return (
                 <div
@@ -654,13 +652,19 @@ export default function TarifsContent() {
 
                     {/* CTA */}
                     {isDiamond ? (
-                      <a
-                        href={DIAMOND_MAILTO}
-                        className="block w-full text-center text-sm font-semibold px-4 py-2.5 rounded-2xl transition-all duration-200 hover:opacity-90"
+                      <button
+                        onClick={() => handleSubscribe(
+                          plan,
+                          "price_1TTOh0KKBs85XtqB50ifaiKX",
+                          "diamond",
+                          "/inscription?type=prestataire&redirect=/tarifs"
+                        )}
+                        disabled={loadingPlan === "diamond"}
+                        className="block w-full text-center text-sm font-semibold px-4 py-2.5 rounded-2xl transition-all duration-200 hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
                         style={{ background: "#C9A84C", color: "#1C1C1E" }}
                       >
-                        {plan.cta}
-                      </a>
+                        {loadingPlan === "diamond" ? "Chargement…" : "Souscrire au Pack Diamond →"}
+                      </button>
                     ) : isElite ? (
                       <button
                         onClick={() => handleSubscribe(
