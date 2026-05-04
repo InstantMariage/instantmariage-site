@@ -60,6 +60,15 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Créer une session Checkout Stripe dans tous les cas ───────────────────
+    const subscriptionData = {
+      ...(prestataireId && { metadata: { prestataire_id: prestataireId, ...(domain ? { domain } : {}) } }),
+      ...(priceId === DIAMOND_PRICE_ID && {
+        add_invoice_items: [
+          { price_data: { currency: "eur", product_data: { name: "Frais de mise en place Diamond" }, unit_amount: 99990 } },
+        ],
+      }),
+    };
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sessionParams: any = {
       mode: "subscription",
@@ -68,22 +77,25 @@ export async function POST(req: NextRequest) {
       cancel_url: `${origin}/tarifs`,
       ...(prestataireId && {
         metadata: { prestataire_id: prestataireId, ...(domain ? { domain } : {}) },
-        subscription_data: {
-          metadata: { prestataire_id: prestataireId, ...(domain ? { domain } : {}) },
-        },
       }),
+      ...(Object.keys(subscriptionData).length > 0 && { subscription_data: subscriptionData }),
       ...(existingCustomerId && { customer: existingCustomerId }),
-      ...(priceId === DIAMOND_PRICE_ID && {
-        add_invoice_items: [
-          { price_data: { currency: "eur", product_data: { name: "Frais de mise en place Diamond" }, unit_amount: 99990 } },
-        ],
-      }),
     };
 
     const session = await stripe.checkout.sessions.create(sessionParams);
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    console.error("[checkout] Erreur:", error);
+    if (error instanceof Stripe.errors.StripeError) {
+      console.error("[checkout] Stripe error:", {
+        type: error.type,
+        code: error.code,
+        param: error.param,
+        message: error.message,
+        statusCode: error.statusCode,
+      });
+    } else {
+      console.error("[checkout] Erreur:", error);
+    }
     return NextResponse.json(
       { error: "Erreur lors de la création de la session" },
       { status: 500 }
