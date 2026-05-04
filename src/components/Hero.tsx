@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -28,7 +28,21 @@ const metiers = ["Tous les métiers", ...CATEGORIES.map((c) => c.name)];
 export default function Hero() {
   const [metier, setMetier] = useState("");
   const [region, setRegion] = useState("");
+  const [count, setCount] = useState(0);
   const router = useRouter();
+
+  useEffect(() => {
+    const duration = 2000;
+    const start = performance.now();
+    let raf: number;
+    const animate = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
+      setCount(Math.floor(progress * 100));
+      if (progress < 1) raf = requestAnimationFrame(animate);
+    };
+    raf = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   const handleSearch = () => {
     const params = new URLSearchParams();
@@ -81,7 +95,7 @@ export default function Hero() {
 
         {/* Subtitle */}
         <p className="text-lg md:text-xl text-white/80 mb-10 max-w-2xl mx-auto leading-relaxed">
-          Plus de <strong className="text-white">100 prestataires</strong> vérifiés partout en France —
+          Plus de <strong className="text-white">{count} prestataires</strong> vérifiés partout en France —
           photographes, traiteurs, DJ, fleuristes et bien plus encore.
         </p>
 
@@ -136,7 +150,7 @@ export default function Hero() {
             </div>
 
             {/* Search button */}
-            <button onClick={handleSearch} className="text-white font-semibold px-8 py-3.5 rounded-xl transition-all duration-200 shadow-sm hover:shadow-lg flex items-center justify-center gap-2 whitespace-nowrap" style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)" }}>
+            <button onClick={handleSearch} className="text-white font-semibold px-8 py-3.5 rounded-xl transition-all duration-150 shadow-sm hover:shadow-lg hover:scale-[1.02] active:scale-[0.99] flex items-center justify-center gap-2 whitespace-nowrap" style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)" }}>
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />

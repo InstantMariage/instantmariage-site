@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
@@ -55,8 +55,28 @@ const tools = [
   },
 ];
 
+function useScrollReveal(threshold = 0.15) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
+      { threshold }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [threshold]);
+
+  return { ref, visible };
+}
+
 export default function FreeTools() {
   const [isMarie, setIsMarie] = useState(false);
+  const { ref: headerRef, visible: headerVisible } = useScrollReveal(0.2);
+  const { ref: gridRef, visible: gridVisible } = useScrollReveal(0.1);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -68,7 +88,15 @@ export default function FreeTools() {
     <section id="outils" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-14">
+        <div
+          ref={headerRef}
+          className="text-center mb-14"
+          style={{
+            opacity: headerVisible ? 1 : 0,
+            transform: headerVisible ? "translateY(0)" : "translateY(24px)",
+            transition: "opacity 0.6s ease, transform 0.6s ease",
+          }}
+        >
           <p className="text-[#F06292] text-sm font-semibold tracking-widest uppercase mb-3">
             100% gratuit
           </p>
@@ -86,47 +114,51 @@ export default function FreeTools() {
         </div>
 
         {/* Tools grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-          {tools.map((tool) => (
-            <Link
+        <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+          {tools.map((tool, i) => (
+            <div
               key={tool.title}
-              href={isMarie ? tool.href : "/inscription"}
-              {...(isMarie && tool.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-              className={`group ${tool.bg} border ${tool.border} rounded-2xl p-6 hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 cursor-pointer block`}
+              style={{
+                opacity: gridVisible ? 1 : 0,
+                transform: gridVisible ? "translateY(0)" : "translateY(32px)",
+                transition: `opacity 0.5s ease ${i * 0.1}s, transform 0.5s ease ${i * 0.1}s`,
+              }}
             >
-              <div className="flex items-start gap-5">
-                {/* Icon */}
-                <div
-                  className={`flex-shrink-0 w-14 h-14 bg-gradient-to-br ${tool.color} rounded-2xl flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform duration-200`}
-                >
-                  {tool.icon}
-                </div>
+              <Link
+                href={isMarie ? tool.href : "/inscription"}
+                {...(isMarie && tool.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                className={`group ${tool.bg} border ${tool.border} rounded-2xl p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer block h-full`}
+              >
+                <div className="flex items-start gap-5">
+                  <div
+                    className={`flex-shrink-0 w-14 h-14 bg-gradient-to-br ${tool.color} rounded-2xl flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform duration-200`}
+                  >
+                    {tool.icon}
+                  </div>
 
-                {/* Content */}
-                <div className="flex-1">
-                  <h3 className="font-bold text-gray-900 text-lg mb-1">{tool.title}</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed mb-3">{tool.description}</p>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-gray-900 text-lg mb-1">{tool.title}</h3>
+                    <p className="text-gray-600 text-sm leading-relaxed mb-3">{tool.description}</p>
 
-                  {/* Features */}
-                  <ul className="space-y-1.5">
-                    {tool.features.map((feat) => (
-                      <li key={feat} className="flex items-center gap-2 text-gray-600 text-xs">
-                        <svg className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                        {feat}
-                      </li>
-                    ))}
-                  </ul>
+                    <ul className="space-y-1.5">
+                      {tool.features.map((feat) => (
+                        <li key={feat} className="flex items-center gap-2 text-gray-600 text-xs">
+                          <svg className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                          {feat}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-              </div>
-            </Link>
+              </Link>
+            </div>
           ))}
         </div>
 
         {/* CTA Banner */}
         <div className="relative overflow-hidden rounded-3xl p-8 md:p-12 text-center shadow-lg" style={{ background: "linear-gradient(135deg, #F06292 0%, #e91e8c 100%)" }}>
-          {/* Decorative elements */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32" />
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24" />
           <div className="absolute top-4 left-8 text-white/20 text-6xl font-playfair">♥</div>
@@ -147,10 +179,10 @@ export default function FreeTools() {
               outils pour organiser le mariage de vos rêves.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link href="/inscription" className="bg-white text-[#e91e8c] hover:bg-rose-50 font-bold px-8 py-3.5 rounded-full transition-all duration-200 shadow-md hover:shadow-lg text-sm">
+              <Link href="/inscription" className="bg-white text-[#e91e8c] hover:bg-rose-50 font-bold px-8 py-3.5 rounded-full transition-all duration-150 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.99] text-sm">
                 Accéder gratuitement
               </Link>
-              <Link href="/demo" className="bg-white/15 hover:bg-white/25 text-white font-semibold px-8 py-3.5 rounded-full border border-white/40 transition-all duration-200 text-sm backdrop-blur-sm">
+              <Link href="/demo" className="bg-white/15 hover:bg-white/25 text-white font-semibold px-8 py-3.5 rounded-full border border-white/40 transition-all duration-150 hover:scale-[1.02] active:scale-[0.99] text-sm backdrop-blur-sm">
                 Voir une démo
               </Link>
             </div>

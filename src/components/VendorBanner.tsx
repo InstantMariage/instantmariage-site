@@ -82,7 +82,7 @@ export default function VendorBanner() {
 
           <Link
             href="/inscription"
-            className="inline-flex items-center gap-2 bg-white text-pink-600 font-semibold px-8 py-4 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 text-sm sm:text-base"
+            className="inline-flex items-center gap-2 bg-white text-pink-600 font-semibold px-8 py-4 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 hover:scale-[1.02] active:scale-[0.99] transition-all duration-150 text-sm sm:text-base"
           >
             Rejoindre gratuitement
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
