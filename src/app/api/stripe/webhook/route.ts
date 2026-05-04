@@ -248,10 +248,11 @@ const PRICE_TO_PLAN: Record<string, PlanAbonnement> = {
   "price_1TJbkIKKBs85XtqBrD4MvZDu": "starter",
   "price_1TJblgKKBs85XtqBUD5euLaF": "pro",
   "price_1TJbmfKKBs85XtqBN57D6Z5U": "premium",
-  "price_1TS1eHKKBs85XtqBRcnibPry": "elite-vitrine",
+  "price_1TTOW1KKBs85XtqBEJMJ1GVr": "elite-vitrine",
   "price_1TS1kJKKBs85XtqB2FHvqvCk": "elite-vitrine",
-  "price_1TS1g9KKBs85XtqBFP7t07pC": "elite-shop",
-  "price_1TS1nRKKBs85XtqBiwR5Zbm8": "elite-shop",
+  "price_1TTOaUKKBs85XtqBMVJfxlET": "elite-shop",
+  "price_1TTOc3KKBs85XtqB4woasCVh": "elite-shop",
+  "price_1TTOh0KKBs85XtqB50ifaiKX": "diamond",
 };
 
 // Plans payants → badge vérifié automatique

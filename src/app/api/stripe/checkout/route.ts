@@ -12,11 +12,14 @@ const ALLOWED_PRICE_IDS = new Set([
   "price_1TJbkIKKBs85XtqBrD4MvZDu", // Starter 9,90€/mois
   "price_1TJblgKKBs85XtqBUD5euLaF", // Pro 19,90€/mois
   "price_1TJbmfKKBs85XtqBN57D6Z5U", // Premium 39,90€/mois
-  "price_1TS1eHKKBs85XtqBRcnibPry", // Elite Vitrine mensuel
+  "price_1TTOW1KKBs85XtqBEJMJ1GVr", // Elite Vitrine mensuel
   "price_1TS1kJKKBs85XtqB2FHvqvCk", // Elite Vitrine annuel
-  "price_1TS1g9KKBs85XtqBFP7t07pC", // Elite Shop mensuel
-  "price_1TS1nRKKBs85XtqBiwR5Zbm8", // Elite Shop annuel
+  "price_1TTOaUKKBs85XtqBMVJfxlET", // Elite Shop mensuel
+  "price_1TTOc3KKBs85XtqB4woasCVh", // Elite Shop annuel
+  "price_1TTOh0KKBs85XtqB50ifaiKX", // Diamond
 ]);
+
+const DIAMOND_PRICE_ID = "price_1TTOh0KKBs85XtqB50ifaiKX";
 
 function getSupabaseAdmin() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -66,6 +69,11 @@ export async function POST(req: NextRequest) {
         },
       }),
       ...(existingCustomerId && { customer: existingCustomerId }),
+      ...(priceId === DIAMOND_PRICE_ID && {
+        add_invoice_items: [
+          { price_data: { currency: "eur", product_data: { name: "Frais de mise en place Diamond" }, unit_amount: 99990 } },
+        ],
+      }),
     };
 
     const session = await stripe.checkout.sessions.create(sessionParams);

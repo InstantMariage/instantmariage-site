@@ -194,8 +194,8 @@ function DomainChecker({ eliteMode, setEliteMode, onCheckout, loading }: DomainC
 }
 
 const ELITE_PRICE_IDS = {
-  vitrine: { monthly: "price_1TS1eHKKBs85XtqBRcnibPry", yearly: "price_1TS1kJKKBs85XtqB2FHvqvCk" },
-  shop:    { monthly: "price_1TS1g9KKBs85XtqBFP7t07pC", yearly: "price_1TS1nRKKBs85XtqBiwR5Zbm8" },
+  vitrine: { monthly: "price_1TTOW1KKBs85XtqBEJMJ1GVr", yearly: "price_1TS1kJKKBs85XtqB2FHvqvCk" },
+  shop:    { monthly: "price_1TTOaUKKBs85XtqBMVJfxlET", yearly: "price_1TTOc3KKBs85XtqB4woasCVh" },
 };
 
 /* ─── Comparatif table data ──────────────────────────── */

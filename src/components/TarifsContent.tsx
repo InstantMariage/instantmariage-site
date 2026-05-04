@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 const ELITE_PRICE_IDS = {
-  vitrine: { monthly: "price_1TS1eHKKBs85XtqBRcnibPry", annual: "price_1TS1kJKKBs85XtqB2FHvqvCk" },
-  shop:    { monthly: "price_1TS1g9KKBs85XtqBFP7t07pC", annual: "price_1TS1nRKKBs85XtqBiwR5Zbm8" },
+  vitrine: { monthly: "price_1TTOW1KKBs85XtqBEJMJ1GVr", annual: "price_1TS1kJKKBs85XtqB2FHvqvCk" },
+  shop:    { monthly: "price_1TTOaUKKBs85XtqBMVJfxlET", annual: "price_1TTOc3KKBs85XtqB4woasCVh" },
 };
 
 const plans = [
