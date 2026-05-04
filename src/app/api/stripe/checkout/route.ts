@@ -54,9 +54,6 @@ export async function POST(req: NextRequest) {
 
       existingCustomerId = existing?.stripe_customer_id ?? null;
 
-      if (priceId === DIAMOND_PRICE_ID && existing?.stripe_subscription_id && existing?.statut === "actif") {
-        await stripe.subscriptions.cancel(existing.stripe_subscription_id);
-      }
     }
 
     // ── Créer une session Checkout Stripe dans tous les cas ───────────────────
