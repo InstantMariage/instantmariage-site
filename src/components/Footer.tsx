@@ -23,6 +23,7 @@ const footerLinks = {
       { label: "Comment ça marche", href: "/#comment-ca-marche" },
       { label: "Tarifs prestataires", href: "/tarifs" },
       { label: "Blog & Inspirations", href: "/blog" },
+      { label: "Prestataires par ville", href: "/sitemap-villes" },
     ],
   },
   aide: {
