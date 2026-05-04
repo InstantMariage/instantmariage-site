@@ -60,25 +60,36 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Créer une session Checkout Stripe dans tous les cas ───────────────────
-    const subscriptionData = {
-      ...(prestataireId && { metadata: { prestataire_id: prestataireId, ...(domain ? { domain } : {}) } }),
-      ...(priceId === DIAMOND_PRICE_ID && {
-        add_invoice_items: [
-          { price_data: { currency: "eur", product_data: { name: "Frais de mise en place Diamond" }, unit_amount: 99990 } },
-        ],
-      }),
-    };
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
+      { price: priceId, quantity: 1 },
+      ...(priceId === DIAMOND_PRICE_ID
+        ? [
+            {
+              price_data: {
+                currency: "eur",
+                product_data: { name: "Frais de mise en place Diamond" },
+                unit_amount: 99990,
+              },
+              quantity: 1,
+            },
+          ]
+        : []),
+    ];
+
+    const subscriptionData = prestataireId
+      ? { metadata: { prestataire_id: prestataireId, ...(domain ? { domain } : {}) } }
+      : undefined;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sessionParams: any = {
       mode: "subscription",
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: lineItems,
       success_url: `${origin}/dashboard/prestataire?success=true`,
       cancel_url: `${origin}/tarifs`,
       ...(prestataireId && {
         metadata: { prestataire_id: prestataireId, ...(domain ? { domain } : {}) },
       }),
-      ...(Object.keys(subscriptionData).length > 0 && { subscription_data: subscriptionData }),
+      ...(subscriptionData && { subscription_data: subscriptionData }),
       ...(existingCustomerId && { customer: existingCustomerId }),
     };
 
