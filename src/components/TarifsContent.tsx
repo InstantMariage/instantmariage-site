@@ -652,22 +652,24 @@ export default function TarifsContent() {
 
                     {/* CTA */}
                     {isDiamond ? (
-                      <button
-                        onClick={() => handleSubscribe(
-                          plan,
-                          "price_1TTOh0KKBs85XtqB50ifaiKX",
-                          "diamond",
-                          "/inscription?type=prestataire&redirect=/tarifs"
-                        )}
-                        disabled={loadingPlan === "diamond"}
-                        className="block w-full text-center text-sm font-semibold px-4 py-2.5 rounded-2xl transition-all duration-200 hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
-                        style={{ background: "#C9A84C", color: "#1C1C1E" }}
-                      >
-                        {loadingPlan === "diamond" ? "Chargement…" : "Souscrire au Pack Diamond →"}
-                      </button>
-                      <p className="text-center text-xs text-gray-400 mt-1.5">
-                        1 049,80€ aujourd&apos;hui (mise en place + 1er mois) · puis 49,90€/mois
-                      </p>
+                      <>
+                        <button
+                          onClick={() => handleSubscribe(
+                            plan,
+                            "price_1TTOh0KKBs85XtqB50ifaiKX",
+                            "diamond",
+                            "/inscription?type=prestataire&redirect=/tarifs"
+                          )}
+                          disabled={loadingPlan === "diamond"}
+                          className="block w-full text-center text-sm font-semibold px-4 py-2.5 rounded-2xl transition-all duration-200 hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
+                          style={{ background: "#C9A84C", color: "#1C1C1E" }}
+                        >
+                          {loadingPlan === "diamond" ? "Chargement…" : "Souscrire au Pack Diamond →"}
+                        </button>
+                        <p className="text-center text-xs text-gray-400 mt-1.5">
+                          1 049,80€ aujourd&apos;hui (mise en place + 1er mois) · puis 49,90€/mois
+                        </p>
+                      </>
                     ) : isElite ? (
                       <button
                         onClick={() => handleSubscribe(
