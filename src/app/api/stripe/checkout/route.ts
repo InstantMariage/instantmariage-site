@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Créer une session Checkout Stripe dans tous les cas ───────────────────
-    const sessionParams: Stripe.checkout.SessionCreateParams = {
+    const sessionParams = {
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${origin}/dashboard/prestataire?success=true`,
