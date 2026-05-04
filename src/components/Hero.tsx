@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CATEGORIES } from "@/data/categories";
@@ -29,20 +29,6 @@ export default function Hero({ targetCount = 100 }: { targetCount?: number }) {
   const [region, setRegion] = useState("");
   const [count, setCount] = useState(0);
   const router = useRouter();
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    const handleTimeUpdate = () => {
-      if (video.duration && video.currentTime >= video.duration - 0.5) {
-        video.currentTime = 0;
-        video.play();
-      }
-    };
-    video.addEventListener("timeupdate", handleTimeUpdate);
-    return () => video.removeEventListener("timeupdate", handleTimeUpdate);
-  }, []);
 
   useEffect(() => {
     const duration = 2000;
@@ -69,20 +55,12 @@ export default function Hero({ targetCount = 100 }: { targetCount?: number }) {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-8">
       {/* Video background */}
       <div className="absolute inset-0 z-0">
-        <video
-          ref={videoRef}
-          className="absolute inset-0 w-full h-full object-cover"
-          autoPlay
-          muted
-          playsInline
-          preload="auto"
-          poster="https://guvayyadovhytvoxugyg.supabase.co/storage/v1/object/public/blog/1777030776686-pexels-imagestudio-1488312-2.jpg"
-        >
-          <source
-            src="https://vz-2f50daff-316.b-cdn.net/22d0635e-b0ad-422f-81c2-487231460783/play_720p.mp4"
-            type="video/mp4"
-          />
-        </video>
+        <iframe
+          src="https://iframe.mediadelivery.net/embed/638400/22d0635e-b0ad-422f-81c2-487231460783?autoplay=true&loop=true&muted=true&preload=true&responsive=true"
+          className="absolute inset-0 w-full h-full"
+          style={{ border: "none", pointerEvents: "none" }}
+          allow="autoplay"
+        />
         {/* Decorative gold dots */}
         <div className="absolute inset-0 opacity-10"
           style={{
