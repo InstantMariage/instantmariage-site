@@ -53,24 +53,19 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Créer une session Checkout Stripe dans tous les cas ───────────────────
-    const sessionParams = {
+    const sessionParams: Stripe.checkout.SessionCreateParams = {
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${origin}/dashboard/prestataire?success=true`,
       cancel_url: `${origin}/tarifs`,
-    };
-
-    if (prestataireId) {
-      sessionParams.metadata = { prestataire_id: prestataireId, ...(domain ? { domain } : {}) };
-      sessionParams.subscription_data = {
+      ...(prestataireId && {
         metadata: { prestataire_id: prestataireId, ...(domain ? { domain } : {}) },
-      };
-    }
-
-    // Réutiliser le customer existant pour pré-remplir le Checkout
-    if (existingCustomerId) {
-      sessionParams.customer = existingCustomerId;
-    }
+        subscription_data: {
+          metadata: { prestataire_id: prestataireId, ...(domain ? { domain } : {}) },
+        },
+      }),
+      ...(existingCustomerId && { customer: existingCustomerId }),
+    };
 
     const session = await stripe.checkout.sessions.create(sessionParams);
     return NextResponse.json({ url: session.url });
