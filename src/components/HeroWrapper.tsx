@@ -10,8 +10,7 @@ async function getActiveCount(): Promise<number> {
     { auth: { persistSession: false } }
   )
     .from("prestataires")
-    .select("*", { count: "exact", head: true })
-    .eq("verifie", true);
+    .select("*", { count: "exact", head: true });
   return count ?? 0;
 }
 
