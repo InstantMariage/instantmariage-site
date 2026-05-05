@@ -81,6 +81,13 @@ export default function Hero({ targetCount = 100 }: { targetCount?: number }) {
           style={{ border: "none", pointerEvents: "none" }}
           allow="autoplay"
         />
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.4) 100%)",
+            pointerEvents: "none",
+          }}
+        />
         <div className="absolute inset-0 opacity-10"
           style={{
             backgroundImage: "radial-gradient(circle, #C9A96E 1px, transparent 1px)",
